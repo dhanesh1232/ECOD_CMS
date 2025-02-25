@@ -6,7 +6,7 @@ const Editor = dynamic(
     ssr: false,
   }
 );
-const EDITOR_API = process.env.NEXT_PUBLIC_TINYMCE_API_KEY;
+const EDITOR_API = process.env.NEXT_PUBLIC_TINYMCE_API;
 const InputEditor = ({ onChangeTitle, onChangeContent }) => {
   const handleEditorChange = (content) => {
     onChangeContent(content);
