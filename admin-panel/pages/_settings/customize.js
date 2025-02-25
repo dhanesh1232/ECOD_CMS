@@ -1,165 +1,229 @@
+import { ChevronDown, ChevronUp, MoveLeft } from "lucide-react";
+import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 
+const theme_id = "theme_ecod";
+
 const CustomizePage = () => {
+  const router = useRouter();
   const [themeData, setThemeData] = useState(null);
   const [editedData, setEditedData] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [openSections, setOpenSections] = useState({});
 
-  // Fetch JSON Data
   useEffect(() => {
-    fetch("/JSON/schema__json.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setThemeData(data);
-        setEditedData(JSON.parse(JSON.stringify(data))); // Deep copy for editing
-      })
-      .catch((error) => console.error("Error loading theme settings:", error));
+    const fetchThemeData = async () => {
+      try {
+        const response = await fetch(
+          `/api/_settings/schema_theme?theme_id=${theme_id}`
+        );
+        if (!response.ok)
+          throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const data = await response.json();
+        if (data?.themeData) {
+          setThemeData(data.themeData.data);
+          setEditedData(JSON.parse(JSON.stringify(data.themeData.data))); // Deep copy
+        }
+      } catch (error) {
+        console.error("Error loading theme settings:", error);
+      }
+    };
+
+    fetchThemeData();
   }, []);
 
   if (!themeData || !editedData) return <p>Loading theme settings...</p>;
 
-  const handleChange = (section, key, value) => {
-    setEditedData((prevData) => {
-      const updatedData = { ...prevData };
-      updatedData[section][key] = value;
-      return updatedData;
-    });
+  const toggleSection = (sectionKey) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
+  };
+
+  const handleInputChange = (section, key, value) => {
+    setEditedData((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [key]: value },
+    }));
     setHasChanges(true);
   };
 
-  // Save changes to API
+  const handleNestedChange = (section, subSection, key, value) => {
+    setEditedData((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [subSection]: { ...prev[section][subSection], [key]: value },
+      },
+    }));
+    setHasChanges(true);
+  };
+
   const saveChanges = async () => {
     try {
       const response = await fetch("/api/_settings/schema_theme", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: editedData }),
+        body: JSON.stringify({ data: editedData, theme_id }),
       });
 
       if (response.ok) {
         alert("Theme updated successfully!");
-        setThemeData(editedData);
         setHasChanges(false);
       } else {
-        alert("Failed to save theme.");
+        const errorData = await response.json();
+        alert(`Failed to save theme: ${errorData.message}`);
       }
     } catch (error) {
       alert("Error saving theme settings.");
     }
   };
 
-  // Reset Changes
-  const resetChanges = () => {
-    setEditedData(JSON.parse(JSON.stringify(themeData))); // Restore original data
-    setHasChanges(false);
+  const resetChanges = async () => {
+    try {
+      const response = await fetch(
+        `/api/_settings/schema_theme?theme_id=${theme_id}`
+      );
+      if (!response.ok)
+        throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const data = await response.json();
+      if (data?.themeData) {
+        setEditedData(JSON.parse(JSON.stringify(data.themeData.data)));
+        setHasChanges(false);
+      }
+    } catch (error) {
+      console.error("Error resetting theme settings:", error);
+    }
   };
 
-  return (
-    <div
-      className="p-6 min-h-screen"
-      style={{
-        backgroundColor: editedData.settings.background_color,
-        color: editedData.settings.text_color,
-        fontFamily: editedData.settings.font_family,
-      }}
-    >
-      <h1 className="text-3xl font-bold">{editedData.theme.name}</h1>
-      <p>
-        <strong>Author:</strong> {editedData.theme.theme_author}
-      </p>
+  const renderInputField = (
+    section,
+    key,
+    value,
+    isNested = false,
+    subSection = null
+  ) => {
+    const handleChange = (e) => {
+      const newValue = e.target.value;
+      if (isNested) {
+        handleNestedChange(section, subSection, key, newValue);
+      } else {
+        handleInputChange(section, key, newValue);
+      }
+    };
 
-      {/* Colors */}
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold">Colors</h2>
-        {[
-          "primary_color",
-          "secondary_color",
-          "accent_color",
-          "background_color",
-          "text_color",
-        ].map((colorKey) => (
-          <div key={colorKey} className="flex items-center space-x-2">
-            <label>{colorKey.replace("_", " ")}:</label>
+    return (
+      <div key={key} className="flex items-center gap-2">
+        <label className="capitalize text-black w-40">
+          {key.replace("_", " ")}:
+        </label>
+        {typeof value === "string" && value.startsWith("#") ? (
+          <div className="flex items-center gap-2">
             <input
               type="color"
-              value={editedData.settings[colorKey]}
-              onChange={(e) =>
-                handleChange("settings", colorKey, e.target.value)
-              }
+              value={value}
+              onChange={handleChange}
+              className="w-10 h-6 border rounded"
             />
-            <span>{editedData.settings[colorKey]}</span>
+            <input
+              type="text"
+              value={value}
+              onChange={handleChange}
+              className="border p-1 w-20 text-center"
+            />
           </div>
-        ))}
+        ) : key.includes("shadow") ? (
+          <input
+            type="text"
+            value={value}
+            onChange={handleChange}
+            className="border p-1 w-40"
+            placeholder="e.g. 2px 4px 6px rgba(0,0,0,0.2)"
+          />
+        ) : (
+          <input
+            type="text"
+            value={value}
+            onChange={handleChange}
+            className="border p-1 w-40"
+          />
+        )}
+      </div>
+    );
+  };
+
+  const renderSection = (sectionKey, sectionValue) => (
+    <div className="w-full mb-6 border-b pb-2" key={sectionKey}>
+      <h2 className="text-xl font-bold text-gray-700 mb-2">
+        {sectionKey.replace("_", " ")}
+      </h2>
+      <div className="w-full flex items-center justify-between">
+        <h3 className="capitalize text-lg text-gray-400">
+          {sectionKey.replace("_", " ")}
+        </h3>
+        <button type="button" onClick={() => toggleSection(sectionKey)}>
+          {openSections[sectionKey] ? <ChevronUp /> : <ChevronDown />}
+        </button>
+      </div>
+      {openSections[sectionKey] && (
+        <div className="flex flex-col w-full mt-2">
+          {Object.entries(sectionValue).map(([innerKey, innerValue]) =>
+            typeof innerValue === "object" ? (
+              <div
+                key={innerKey}
+                className="w-full border p-2 mb-2 bg-gray-50 rounded"
+              >
+                <h4 className="text-md font-semibold text-gray-600 mb-1">
+                  {innerKey.replace("_", " ")}
+                </h4>
+                {Object.entries(innerValue).map(([subKey, subValue]) =>
+                  renderInputField(sectionKey, subKey, subValue, true, innerKey)
+                )}
+              </div>
+            ) : (
+              renderInputField(sectionKey, innerKey, innerValue)
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen px-4">
+      <button type="button" onClick={() => router.push("/settings")}>
+        <MoveLeft />
+      </button>
+
+      <div className="border py-2">
+        <h1 className="px-2 text-base md:text-xl text-gray-800 font-bold">
+          Customize Theme Settings
+        </h1>
+        <hr className="divide-1 mb-4" />
+        <div className="p-2">
+          {Object.entries(themeData).map(([sectionKey, sectionValue]) =>
+            renderSection(sectionKey, sectionValue)
+          )}
+        </div>
       </div>
 
-      {/* Typography */}
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold">Typography</h2>
-        <label>Heading Font:</label>
-        <input
-          type="text"
-          value={editedData.settings.typography.heading_font}
-          onChange={(e) =>
-            handleChange("settings", "typography", {
-              ...editedData.settings.typography,
-              heading_font: e.target.value,
-            })
-          }
-        />
-        <label>Body Font:</label>
-        <input
-          type="text"
-          value={editedData.settings.typography.body_font}
-          onChange={(e) =>
-            handleChange("settings", "typography", {
-              ...editedData.settings.typography,
-              body_font: e.target.value,
-            })
-          }
-        />
-      </div>
-
-      {/* Button Styles */}
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold">Button Styles</h2>
-        <label>Background Color:</label>
-        <input
-          type="color"
-          value={editedData.settings.button.background_color}
-          onChange={(e) =>
-            handleChange("settings", "button", {
-              ...editedData.settings.button,
-              background_color: e.target.value,
-            })
-          }
-        />
-        <label>Border Radius:</label>
-        <input
-          type="text"
-          value={editedData.settings.button.border_radius}
-          onChange={(e) =>
-            handleChange("settings", "button", {
-              ...editedData.settings.button,
-              border_radius: e.target.value,
-            })
-          }
-        />
-      </div>
-
-      {/* Save & Reset Buttons */}
       {hasChanges && (
-        <div className="mt-6 space-x-4">
-          <button
-            onClick={resetChanges}
-            className="py-2 px-4 bg-gray-300 rounded"
-          >
-            Reset
-          </button>
+        <div className="mt-4 flex gap-4">
           <button
             onClick={saveChanges}
-            className="py-2 px-4 bg-blue-500 text-white rounded"
+            className="px-4 py-2 bg-green-600 text-white rounded"
+            disabled={!hasChanges}
           >
-            Save
+            Save Changes
+          </button>
+          <button
+            onClick={resetChanges}
+            className="px-4 py-2 bg-gray-400 text-white rounded"
+          >
+            Reset
           </button>
         </div>
       )}

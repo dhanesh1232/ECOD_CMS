@@ -1,39 +1,37 @@
 {
   "theme": {
-    "name": "ECOD Blog",
-    "theme_name": "ecod",
+    "name": "ECOD",
+    "theme_name": "ecod_services",
     "theme_author": "Dhanesh"
   },
   "settings": {
-    "page_width": "1200px",
-    "background_color": "#ff0000",
-    "text_color": "#333333",
+    "max_width": "1500px",
+    "page_width": "1300px",
+    "background_color": "#703e3e",
+    "text_color": "#d10000",
     "font_family": "Arial, sans-serif",
-    "primary_color": "#007bff",
+    "primary_color": "#decece",
     "secondary_color": "#6c757d",
-    "accent_color": "#28a745",
+    "accent_color": "#b2c7b7",
     "link_color": "#007bff",
     "button": {
-      "background_color": "#007bff",
+      "background_color": "#d96d6d",
       "text_color": "#ffffff",
-      "border_radius": "8px",
-      "padding": "10px 20px",
-      "hover": {
-        "background_color": "#0056b3",
-        "text_color": "#ffffff"
-      },
-      "shadow": "0px 4px 6px rgba(0, 0, 0, 0.1)"
+      "border_radius": "6px",
+      "padding": "22",
+      "hover": "#3d0021",
+      "shadow": "0px 4px 21px rgba(0,0,0,0.2)"
     },
     "typography": {
       "heading_font": "Poppins, sans-serif",
-      "body_font": "Arial, sans-serif",
+      "body_font": "Roboto, sans-serif",
       "heading_size": "24px",
       "body_size": "16px",
       "line_height": "1.6"
     },
     "layout": {
       "container_max_width": "1200px",
-      "section_padding": "40px",
+      "section_padding": "10",
       "card_border_radius": "10px",
       "card_shadow": "0px 4px 8px rgba(0, 0, 0, 0.1)"
     }
@@ -52,52 +50,10 @@
       "link_color": "#f8f9fa"
     },
     "cards": {
-      "background_color": "#f8f9fa",
+      "background_color": "#0080ff",
       "text_color": "#333333",
       "border_radius": "8px",
       "shadow": "0px 4px 6px rgba(0, 0, 0, 0.1)"
     }
-  },
-  "pages": [
-    {
-      "name": "Home Page",
-      "settings": [
-        {
-          "label": "Title",
-          "id": "home_page_title",
-          "value": "Welcome to ECOD Blog"
-        },
-        {
-          "label": "Description",
-          "id": "home_page_description",
-          "value": "Discover the latest news, articles, and blog posts from the ECOD community"
-        },
-        {
-          "label": "Hero Section Background",
-          "id": "home_hero_bg",
-          "value": "#f0f0f0"
-        },
-        {
-          "label": "Hero Button Color",
-          "id": "home_hero_button_color",
-          "value": "#007bff"
-        }
-      ]
-    },
-    {
-      "name": "About Page",
-      "settings": [
-        {
-          "label": "Title",
-          "id": "about_page_title",
-          "value": "About ECOD Blog"
-        },
-        {
-          "label": "Description",
-          "id": "about_page_description",
-          "value": "Learn more about our mission and goals."
-        }
-      ]
-    }
-  ]
+  }
 }

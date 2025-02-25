@@ -72,34 +72,52 @@ export default function Header() {
             <Link
               href="/"
               className="text-lg hover:text-gray-500 transition-all duration-150 ease-in-out"
+              onClick={() => {
+                setIsMenuOpen(false);
+              }}
             >
               Dashboard
             </Link>
             <Link
               href="/posts"
               className="text-lg hover:text-gray-500 transition-all duration-150 ease-in-out"
+              onClick={() => {
+                setIsMenuOpen(false);
+              }}
             >
               Posts
             </Link>
             <Link
               href="/pages"
+              onClick={() => {
+                setIsMenuOpen(false);
+              }}
               className="text-lg hover:text-gray-500 transition-all duration-150 ease-in-out"
             >
               Pages
             </Link>
             <Link
               href="/products"
+              onClick={() => {
+                setIsMenuOpen(false);
+              }}
               className="text-lg hover:text-gray-500 transition-all duration-150 ease-in-out"
             >
               Prodcuts
             </Link>
             <Link
               href="/wild"
+              onClick={() => {
+                setIsMenuOpen(false);
+              }}
               className="text-lg hover:text-gray-500 transition-all duration-150 ease-in-out"
             >
               Wild
             </Link>
             <Link
+              onClick={() => {
+                setIsMenuOpen(false);
+              }}
               href="/settings"
               className="text-lg hover:text-gray-500 transition-all duration-150 ease-in-out"
             >
