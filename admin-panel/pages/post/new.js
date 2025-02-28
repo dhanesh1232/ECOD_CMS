@@ -2,6 +2,7 @@ import { useState } from "react";
 import EditHeader from "../components/add_content_header";
 import InputEditor from "../components/input_editor";
 import SEOEditor from "../components/seo_editor";
+import TemplateId from "../components/template_id";
 
 const { default: Head } = require("next/head");
 
@@ -38,8 +39,9 @@ const PostNewPage = () => {
             />
           </div>
         </div>
-        <div className="w-full lg:w-2/5 bg-gray-500 py-6 px-2 flex items-center justify-center">
+        <div className="w-full flex-col lg:w-2/5 bg-gray-500 py-6 px-2 flex items-center justify-center">
           <SEOEditor />
+          <TemplateId />
         </div>
       </div>
     </>

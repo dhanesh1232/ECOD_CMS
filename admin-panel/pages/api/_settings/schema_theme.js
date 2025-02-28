@@ -4,6 +4,10 @@ import connectToDatabase from "./../lib/mongodb";
 import ThemeSettings from "./../models/themeSettings";
 
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
   const filePath = path.join(process.cwd(), "public/JSON/schema__json.json");
 
   await connectToDatabase();
