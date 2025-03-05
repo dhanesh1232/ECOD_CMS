@@ -3,15 +3,35 @@
 @tailwind utilities;
 
 :root {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
+  --primary-color: #000000;
+  --secondary-color: #6a6a6a;
   --font-family: Arial, sans-serif;
   --font-size: 16px;
 }
 
 body {
-  font-family: var(--font-family);
-  font-size: var(--font-size);
-  color: var(--primary-color);
-  background-color: var(--secondary-color);
+  font-family: Arial, Helvetica, sans-serif;
+}
+body > * {
+  @apply transition ease-in-out duration-150;
+}
+.layout-main {
+  @apply h-screen;
+  background: linear-gradient(45deg, #00c6ff, #98c0f0);
+}
+/* Hide Scrollbar for Webkit Browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Hide Scrollbar for Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* Hide Scrollbar for Edge */
+body {
+  -ms-overflow-style: none;
 }

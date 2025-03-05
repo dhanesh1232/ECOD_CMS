@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import connectToDatabase from "./../lib/mongodb";
 import ThemeSettings from "./../models/themeSettings";
 
@@ -7,8 +5,6 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  const filePath = path.join(process.cwd(), "public/JSON/schema__json.json");
 
   await connectToDatabase();
 
@@ -44,12 +40,6 @@ export default async function handler(req, res) {
           .status(500)
           .json({ message: "Failed to retrieve updated theme data" });
       }
-
-      // ✅ **Write the retrieved data to JSON file**
-      await fs.promises.writeFile(
-        filePath,
-        JSON.stringify(updatedData.data, null, 2)
-      );
 
       res.status(200).json({
         message: "Theme updated successfully!",

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 const settings_array = [
-  { name: "Theme Settings", href: "/_settings/theme_edit" },
-  { name: "Customize", href: "/_settings/customize" },
+  { name: "Theme Settings", href: "/theme_edit" },
+  { name: "Customize", href: "/customize" },
 ];
 const Settings = () => {
   return (
@@ -13,7 +13,7 @@ const Settings = () => {
       <hr className="border" />
       <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {settings_array.map((item) => (
-          <Link key={item.name} href={item.href}>
+          <Link key={item.name} href={`/_settings${item.href}`}>
             <div className="py-3 px-6 text-sm sm:text-base md:text-lg hover:bg-gray-100 transition-all duration-300 w-full shadow-md rounded-md h-[180px] border flex justify-center items-center">
               {item.name}
             </div>

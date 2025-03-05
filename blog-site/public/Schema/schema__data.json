@@ -1,0 +1,104 @@
+{
+  "theme": {
+    "name": "ECOD",
+    "theme_name": "ecod_services",
+    "theme_author": "Dhanesh",
+    "version": "1.0.0",
+    "description": "ECOD services theme",
+    "author": "Dhanesh Reddy",
+    "website": "https://www.ecodservices.com",
+    "logo": "/images/logo.png"
+  },
+  "settings": {
+    "max_width": "1510px",
+    "page_width": "1300px",
+    "background_color": "#ff0000",
+    "text_color": "#b04a4a",
+    "font_family": "'Afacad', sans-serif",
+    "primary_color": "#0494ef",
+    "secondary_color": "#0494ef",
+    "accent_color": "#002aff",
+    "link_color": "#000fdb",
+    "shadow": {
+      "offsetX": "15px",
+      "offsetY": "4px",
+      "blur": "6px",
+      "spread": "0px",
+      "color": "#e7e0e0"
+    },
+    "button": {
+      "primary_background": "#e7e0e0",
+      "secondary_background": "#e00000",
+      "primary_text_color": "#fdfdfd",
+      "secondary_text_color": "#170a0a",
+      "border_radius": "6px",
+      "padding": "22px",
+      "primary_hover": "#89245a",
+      "secondary_hover": "#89245a",
+      "border": "none",
+      "border_style": "solid",
+      "border_width": "1px",
+      "border_color": "#e7e0e0"
+    },
+    "typography": {
+      "heading_weight": "700",
+      "body_weight": "400",
+      "heading_color": "#383333",
+      "body_color": "#383333",
+      "primary_heading_size": "48px",
+      "primary_body_size": "24px",
+      "primary_line_height": "1.6px",
+      "secondary_heading_size": "24px",
+      "secondary_body_size": "16px",
+      "secondary_line_height": "1.6px"
+    }
+  },
+  "sections": {
+    "header": {
+      "max_width": "1240px",
+      "background_color": "#ffffff",
+      "text_color": "#ffffff",
+      "logo_size": "120px",
+      "nav_link_color": "#383333",
+      "nav_hover_color": "#0494ef",
+      "nav_active_color": "#0494ef",
+      "nav_border_color": "#333333",
+      "nav_border_width": "1px",
+      "nav_border_style": "solid",
+      "nav_border_radius": "6px",
+      "hamburger_icon_color": "#ffffff",
+      "hamburger_icon_size": "32px",
+      "hamburger_icon_hover_color": "#0494ef"
+    },
+    "footer": {
+      "background_color": "#333333",
+      "text_color": "#ffffff",
+      "link_color": "#0080ff",
+      "social_media_color": "#ffffff",
+      "social_media_hover_color": "#0daaf1",
+      "social_media_size": "32px",
+      "copyright_text": "2024 ECOD. All rights reserved.",
+      "footer_width": "1240px",
+      "footer_height": "200px",
+      "footer_padding": "40px"
+    },
+    "cards": {
+      "background_color": "#0080ff",
+      "text_color": "#333333",
+      "border_radius": "8px",
+      "padding": "24px",
+      "hover_background_color": "#004d9c",
+      "hover_text_color": "#ffffff",
+      "hover_border_color": "#004d9c",
+      "heading_size": "24px",
+      "heading_weight": "600",
+      "heading_color": "#ffffff",
+      "body_size": "16px",
+      "body_color": "#7c7171",
+      "button_text_color": "#2c2a2a",
+      "button_background_color": "#333333",
+      "button_hover_text_color": "#ffffff",
+      "button_hover_background_color": "#0080ff"
+    }
+  }
+}
