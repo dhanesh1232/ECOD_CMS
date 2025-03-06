@@ -21,8 +21,10 @@ const Disclaimer = () => {
         </h1>
 
         <p className="text-gray-600 dark:text-gray-300 mb-4">
-          The information provided by <strong>ECOD</strong> ("we," "us," or
-          "our") on this website is for general informational purposes only. All
+          The information provided by <strong>ECOD</strong>
+          {`("we," "us," or
+          "our")`}
+          on this website is for general informational purposes only. All
           information on this site is provided in good faith; however, we make
           no representation or warranty of any kind, express or implied,
           regarding the accuracy, reliability, availability, or completeness of

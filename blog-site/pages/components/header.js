@@ -137,8 +137,8 @@ const HeaderSection = () => {
   }, []);
 
   return (
-    <header className="w-full bg-white shadow-md relative top-0 left-0 z-50">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 sm:px-12">
+    <header className="w-full bg-white relative top-0 left-0 z-50">
+      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 sm:px-12 xl:w-[80%]">
         {/* Mobile Menu Button (Left) */}
         <button
           className="md:hidden p-2 absolute left-2 top-2"

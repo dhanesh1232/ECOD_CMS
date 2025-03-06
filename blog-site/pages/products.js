@@ -58,7 +58,7 @@ const Products = () => {
         />
       </Head>
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <div className="max-w-full mx-auto px-4 py-12">
         <h1 className="text-xl lg:text-2xl xl:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
           Featured Products
         </h1>
@@ -76,7 +76,7 @@ const Products = () => {
 
         {/* Products Grid */}
         {filteredProducts.length > 0 ? (
-          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}

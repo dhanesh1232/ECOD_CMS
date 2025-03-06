@@ -43,7 +43,7 @@ const testimonials = [
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gray-900 text-white pt-12 pb-6">
       <div className="container mx-auto justify-center flex-wrap px-4 md:px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
         {/* About ECOD */}
         <div>
@@ -130,7 +130,7 @@ const Footer = () => {
       <div className="grid mx-auto grid-cols-1 lg:grid-cols-2 mt-5">
         {/* Newsletter Signup */}
         <div className="mt-10 flex flex-col w-full justify-center items-center gap-6 px-2 sm:px-4">
-          <div className="text-center lg:text-left">
+          <div className="text-center">
             <h2 className="text-xl font-semibold mb-2">
               📩 Stay Ahead of the Competition
             </h2>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Head from "next/head";
+import { MoveLeft } from "lucide-react";
+import { useRouter } from "next/router";
 
 const contact = {
   address: "Tirupati, Andhra Pradesh, India",
@@ -9,6 +11,7 @@ const contact = {
   email: "support@ecod.com",
 };
 const Contact = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -38,7 +41,14 @@ const Contact = () => {
       </Head>
 
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
+        <div className="w-full flex items-center gap-2">
+          <button type="button" onClick={() => router.push("/")}>
+            <MoveLeft />
+          </button>
+          <span className="text-sm font-medium">Back to Home</span>
+        </div>
+        <hr />
+        <h1 className="mt-2 text-2xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
           Contact Us
         </h1>
 

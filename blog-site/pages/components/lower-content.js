@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const LowerContent = () => {
   return (
     <div className="w-full mt-6 p-8 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-lg text-center">
@@ -15,18 +17,18 @@ const LowerContent = () => {
       </p>
 
       <div className="mt-6 flex justify-center gap-4">
-        <a
+        <Link
           href="/services"
           className="px-5 py-3 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 transition-all duration-300 transform hover:scale-105"
         >
           Explore Services
-        </a>
-        <a
+        </Link>
+        <Link
           href="/contact"
           className="px-5 py-3 border border-green-500 text-green-500 font-medium rounded-lg shadow-md hover:bg-green-500 hover:text-white transition-all duration-300 transform hover:scale-105"
         >
           Contact Us
-        </a>
+        </Link>
       </div>
     </div>
   );
