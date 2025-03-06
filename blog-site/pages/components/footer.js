@@ -179,7 +179,7 @@ const Footer = () => {
             <a
               key={index}
               href={link}
-              className="flex items-center text-gray-300 hover:text-green-400 transition duration-300 p-3 border border-gray-700 rounded-full"
+              className="flex items-center text-gray-300 hover:text-green-400 transition duration-300 px-3 py-2 border border-gray-700 rounded-full"
             >
               <Icon size={16} />
               <span className="ml-2 text-sm">{followers}</span>
