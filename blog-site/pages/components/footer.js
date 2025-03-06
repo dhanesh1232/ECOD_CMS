@@ -174,7 +174,7 @@ const Footer = () => {
       {/* Social Media Links */}
       <div className="mt-10 text-center">
         <h2 className="text-xl font-semibold mb-3">Follow Us</h2>
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center flex-wrap gap-2">
           {socialLinks.map(({ Icon, link, followers }, index) => (
             <a
               key={index}
