@@ -14,7 +14,7 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
 
-import { allBlogs } from "@/Data/blogs-all";
+import { blogs } from "@/Data/all-posts";
 import BlogCard from "../BlogCard";
 import { useRouter } from "next/router";
 
@@ -27,15 +27,11 @@ const categories = [
 
 const HomeBlog = () => {
   const router = useRouter();
-  const [featuredBlogs, setFeaturedBlogs] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
-    const selectedBlogs = categories.flatMap((category) =>
-      allBlogs[category] ? allBlogs[category].slice(0, 2) : []
-    );
-    setFeaturedBlogs(selectedBlogs);
-  }, []);
+  if (!blogs || !Array.isArray(blogs) || blogs.length === 0) {
+    return <p>No blogs available.</p>;
+  }
 
   return (
     <section className="w-full py-16 px-8 bg-gradient-to-b from-blue-50 to-gray-200 text-center relative">
@@ -60,7 +56,7 @@ const HomeBlog = () => {
         )}
 
         {/* Right Navigation Button */}
-        {activeIndex !== featuredBlogs.length - 1 && (
+        {activeIndex !== blogs.length - 1 && (
           <button
             type="button"
             className="absolute top-1/2 -right-10 z-10 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-md hover:scale-110 transition-all blog-next"
@@ -101,7 +97,7 @@ const HomeBlog = () => {
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
           className="mySwiper"
         >
-          {featuredBlogs.map((blog, index) => (
+          {blogs.map((blog, index) => (
             <SwiperSlide
               key={index}
               className={`shadow-xl bg-white rounded-lg transition-all transform ${

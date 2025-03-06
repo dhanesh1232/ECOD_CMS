@@ -4,6 +4,9 @@ const { default: Image } = require("next/image");
 const { default: Link } = require("next/link");
 
 const BlogCard = ({ blog }) => {
+  if (!blog || !blog.category) {
+    return null; // Prevents rendering if blog or category is missing
+  }
   return (
     <Link
       href={`/blog/${blog.category}${blog.slug}`}
