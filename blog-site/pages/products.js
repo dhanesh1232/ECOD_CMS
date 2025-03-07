@@ -51,11 +51,74 @@ const Products = () => {
   return (
     <>
       <Head>
+        {/* Page Title */}
         <title>Affiliate Products | ECOD</title>
+
+        {/* Meta Description */}
         <meta
           name="description"
           content="Shop the best affiliate products curated by ECOD. High-quality and best deals available."
         />
+
+        {/* Open Graph Meta Tags (for social media) */}
+        <meta property="og:title" content="Affiliate Products | ECOD" />
+        <meta
+          property="og:description"
+          content="Shop the best affiliate products curated by ECOD. High-quality and best deals available."
+        />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content="https://yourwebsite.com/affiliate-products"
+        />
+        <meta
+          property="og:image"
+          content="https://yourwebsite.com/images/affiliate-products-og-image.jpg"
+        />
+
+        {/* Twitter Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Affiliate Products | ECOD" />
+        <meta
+          name="twitter:description"
+          content="Shop the best affiliate products curated by ECOD. High-quality and best deals available."
+        />
+        <meta
+          name="twitter:image"
+          content="https://yourwebsite.com/images/affiliate-products-twitter-image.jpg"
+        />
+
+        {/* Canonical URL */}
+        <link
+          rel="canonical"
+          href="https://yourwebsite.com/affiliate-products"
+        />
+
+        {/* Schema Markup (JSON-LD) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Affiliate Products",
+            description:
+              "Shop the best affiliate products curated by ECOD. High-quality and best deals available.",
+            url: "https://yourwebsite.com/affiliate-products",
+            image:
+              "https://yourwebsite.com/images/affiliate-products-og-image.jpg",
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": "https://yourwebsite.com/affiliate-products",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "ECOD",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://yourwebsite.com/images/logo.png",
+              },
+            },
+          })}
+        </script>
       </Head>
 
       <div className="max-w-full mx-auto px-4 py-12">

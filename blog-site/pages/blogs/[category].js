@@ -56,18 +56,120 @@ const CategoryBlogs = () => {
   return (
     <>
       <Head>
-        <title>
-          ECOD Blog -{" "}
-          {blog_services.find((s) => s.slug === category)?.name || "Category"}
-        </title>
+        {/* Page Title */}
+        <title>{`ECOD Blog - ${
+          blog_services.find((s) => s.slug === category)?.name ||
+          "Category".find((s) => s.slug === category)?.name ||
+          "Category"
+        }`}</title>
+
+        {/* Meta Description */}
         <meta
           name="description"
           content={`Explore the latest blog posts on ${
-            blog_services.find((s) => s.slug === category)?.name
+            blog_services.find((s) => s.slug === category)?.name ||
+            "Category".find((s) => s.slug === category)?.name ||
+            "various topics"
+          } at ECOD Blog.`}
+        />
+
+        {/* Open Graph Meta Tags (for social media) */}
+        <meta
+          property="og:title"
+          content={`ECOD Blog - ${
+            blog_services.find((s) => s.slug === category)?.name ||
+            "Category".find((s) => s.slug === category)?.name ||
+            "Category"
+          }`}
+        />
+        <meta
+          property="og:description"
+          content={`Explore the latest blog posts on ${
+            blog_services.find((s) => s.slug === category)?.name ||
+            "Category".find((s) => s.slug === category)?.name ||
+            "various topics"
           } at ECOD Blog.`}
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://ecod-blog.vercel.app" />
+        <meta
+          property="og:url"
+          content={`https://ecod-blog.vercel.app/${category}`}
+        />
+        <meta
+          property="og:image"
+          content={`https://ecod-blog.vercel.app/images/${
+            blog_services.find((s) => s.slug === category)?.name ||
+            "Category".find((s) => s.slug === category)?.slug ||
+            "default"
+          }-og-image.jpg`}
+        />
+
+        {/* Twitter Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content={`ECOD Blog - ${
+            blog_services.find((s) => s.slug === category)?.name || "Category"
+          }`}
+        />
+        <meta
+          name="twitter:description"
+          content={`Explore the latest blog posts on ${
+            blog_services.find((s) => s.slug === category)?.name ||
+            "Category".find((s) => s.slug === category)?.name ||
+            "various topics"
+          } at ECOD Blog.`}
+        />
+        <meta
+          name="twitter:image"
+          content={`https://ecod-blog.vercel.app/images/${
+            blog_services.find((s) => s.slug === category)?.name ||
+            "Category".find((s) => s.slug === category)?.slug ||
+            "default"
+          }-twitter-image.jpg`}
+        />
+
+        {/* Canonical URL */}
+        <link
+          rel="canonical"
+          href={`https://ecod-blog.vercel.app/${category}`}
+        />
+
+        {/* Schema Markup (JSON-LD) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: `ECOD Blog - ${
+              blog_services.find((s) => s.slug === category)?.name ||
+              "Category".find((s) => s.slug === category)?.name ||
+              "Category"
+            }`,
+            description: `Explore the latest blog posts on ${
+              blog_services.find((s) => s.slug === category)?.name ||
+              "Category".find((s) => s.slug === category)?.name ||
+              "various topics"
+            } at ECOD Blog.`,
+            url: `https://ecod-blog.vercel.app/${category}`,
+            image: `https://ecod-blog.vercel.app/images/${
+              blog_services.find((s) => s.slug === category)?.name ||
+              "Category".find((s) => s.slug === category)?.slug ||
+              "default"
+            }-og-image.jpg`,
+            mainEntityOfPage: {
+              "@type": "WebPage",
+              "@id": `https://ecod-blog.vercel.app/${category}`,
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "ECOD",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://ecod-blog.vercel.app/images/logo.png",
+              },
+            },
+          })}
+        </script>
       </Head>
 
       <motion.div

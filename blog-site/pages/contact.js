@@ -32,11 +32,69 @@ const Contact = () => {
   return (
     <>
       <Head>
-        <title>Contact Us | ECOD</title>
+        {/* Page Title */}
+        <title>Contact Us - ECOD</title>
+
+        {/* Meta Description */}
         <meta
           name="description"
-          content="Get in touch with ECOD for inquiries about web development, digital marketing, and Shopify solutions."
+          content="Get in touch with us for inquiries, support, or collaborations. We're here to help!"
         />
+
+        {/* Open Graph Meta Tags (for social media) */}
+        <meta property="og:title" content="Contact Us - ECOD" />
+        <meta
+          property="og:description"
+          content="Get in touch with us for inquiries, support, or collaborations. We're here to help!"
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://yourwebsite.com/contact" />
+        <meta
+          property="og:image"
+          content="https://yourwebsite.com/images/contact-og-image.jpg"
+        />
+
+        {/* Twitter Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Contact Us - Your Website Name" />
+        <meta
+          name="twitter:description"
+          content="Get in touch with us for inquiries, support, or collaborations. We're here to help!"
+        />
+        <meta
+          name="twitter:image"
+          content="https://yourwebsite.com/images/contact-twitter-image.jpg"
+        />
+
+        {/* Canonical URL */}
+        <link rel="canonical" href="https://yourwebsite.com/contact" />
+
+        {/* Schema Markup (JSON-LD) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            name: "Contact Us",
+            description:
+              "Get in touch with us for inquiries, support, or collaborations. We're here to help!",
+            url: "https://yourwebsite.com/contact",
+            contactPoint: {
+              "@type": "ContactPoint",
+              telephone: "+1-123-456-7890",
+              contactType: "Customer Support",
+              email: "support@yourwebsite.com",
+              areaServed: "Worldwide",
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "Your Website Name",
+              logo: {
+                "@type": "ImageObject",
+                url: "https://yourwebsite.com/images/logo.png",
+              },
+            },
+          })}
+        </script>
       </Head>
 
       <div className="max-w-6xl mx-auto px-6 py-12">

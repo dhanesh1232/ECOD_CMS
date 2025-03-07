@@ -38,7 +38,7 @@ const HomeBlog = () => {
   }
 
   return (
-    <section className="w-full py-16 px-8 bg-gradient-to-b from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 text-center relative transition-colors duration-300">
+    <section className="w-full py-16 px-8 bg-gradient-to-b from-blue-200 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-center relative transition-colors duration-300">
       {/* Section Title */}
       <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
         📝 Latest Blog Posts
@@ -59,10 +59,10 @@ const HomeBlog = () => {
           centeredSlides={true}
           effect="coverflow"
           coverflowEffect={{
-            rotate: 10,
-            stretch: 80,
-            depth: 150,
-            modifier: 1.5,
+            rotate: 1,
+            stretch: 15,
+            depth: 100,
+            modifier: 2,
             slideShadows: true,
           }}
           breakpoints={{

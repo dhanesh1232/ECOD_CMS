@@ -2,8 +2,47 @@
 
 import Link from "next/link";
 import { eco_services } from "@/data/ecod-services";
-import Image from "next/image";
 import { MoveRight } from "lucide-react";
+import { adPerformanceData } from "@/data/ad-performance";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Legend,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
+import ServiceCard from "../serviceCard";
+
+// Function to calculate growth percentage
+const getGrowthTrend = (current, previous) => {
+  if (!previous) return "📊 No Previous Data";
+  const diff = current - previous;
+  const percentage = ((diff / previous) * 100).toFixed(2);
+  return diff > 0 ? `📈 +${percentage}%` : `📉 ${percentage}%`;
+};
+
+// Enhance data with growth trends
+const enhancedAdPerformanceData = adPerformanceData.map((data, index) => ({
+  ...data,
+  MetaTrend:
+    index > 0
+      ? getGrowthTrend(data.MetaAds, adPerformanceData[index - 1].MetaAds)
+      : "📊 No Data",
+  GoogleTrend:
+    index > 0
+      ? getGrowthTrend(data.GoogleAds, adPerformanceData[index - 1].GoogleAds)
+      : "📊 No Data",
+  SEOTrend:
+    index > 0
+      ? getGrowthTrend(data.SEO, adPerformanceData[index - 1].SEO)
+      : "📊 No Data",
+}));
+
 const OurServices = () => {
   const displayedServices = eco_services.slice(0, 4);
 
@@ -18,54 +57,135 @@ const OurServices = () => {
           success.
         </p>
       </div>
-
       <div className="grid grid-cols-1 mt-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {displayedServices.map((service, index) => (
-          <Link key={index} href={service.href} className="group">
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-transform transform hover:scale-[1.02] duration-300 border border-gray-200 hover:border-blue-500">
-              {/* Image Section */}
-              <div className="relative w-full h-52 overflow-hidden">
-                <Image
-                  src={service.image_url}
-                  layout="fill"
-                  objectFit="cover"
-                  alt={service.label}
-                  className="transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-
-              {/* Content Section */}
-              <div className="p-5">
-                <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                  {service.label} {service.icon}
-                </h3>
-                <p className="text-gray-600 mt-2 text-sm line-clamp-2">
-                  {service.description ||
-                    "Discover the latest insights and trends."}
-                </p>
-
-                {/* Read More */}
-                <div className="mt-3 text-blue-500 font-medium inline-flex items-center space-x-1 hover:underline">
-                  <span>{service.cta}</span>
-                  <svg
-                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </Link>
+          <ServiceCard key={index} service={service} />
         ))}
+      </div>
+      {/* Performance Charts */}
+      <div className="mt-16 max-w-6xl mx-auto">
+        <h3 className="text-xl font-semibold text-center text-gray-900">
+          📊 Business Growth Trends In 2024
+        </h3>
+        <p className="text-center text-gray-600 mb-6">
+          See how businesses have gained growth through online presence.
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Line Chart - Ads Performance */}
+          <div className="bg-white p-5 rounded-xl shadow-md">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+              Meta Ads & Google Ads Performance
+            </h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={enhancedAdPerformanceData}>
+                <XAxis dataKey="name" stroke="#8884d8" />
+                <YAxis stroke="#8884d8" />
+                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Line
+                  type="monotone"
+                  dataKey="MetaAds"
+                  stroke="#1D4ED8"
+                  strokeWidth={2}
+                  name="Meta Ads"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="GoogleAds"
+                  stroke="#F97316"
+                  strokeWidth={2}
+                  name="Google Ads"
+                />
+                <Legend />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="mt-4 text-center p-4 bg-blue-100 rounded-lg shadow-md">
+              <h4 className="text-xl font-semibold text-gray-900">
+                📈 Growth Insights
+              </h4>
+              <p className="text-lg text-gray-700 mt-2">
+                Meta Ads:{" "}
+                {
+                  enhancedAdPerformanceData[
+                    enhancedAdPerformanceData.length - 1
+                  ].MetaTrend
+                }{" "}
+                | Google Ads:{" "}
+                {
+                  enhancedAdPerformanceData[
+                    enhancedAdPerformanceData.length - 1
+                  ].GoogleTrend
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* Bar Chart - SEO Growth */}
+          <div className="bg-white p-5 rounded-xl shadow-md">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+              SEO Growth Over Time
+            </h4>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={enhancedAdPerformanceData}>
+                <XAxis dataKey="name" stroke="#8884d8" />
+                <YAxis stroke="#8884d8" />
+                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Bar dataKey="SEO" fill="#10B981" name="SEO Growth" />
+                <Legend />
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="mt-4 text-center p-4 bg-green-100 rounded-lg shadow-md">
+              <h4 className="text-xl font-semibold text-gray-900">
+                📈 SEO Growth Insights
+              </h4>
+              <p className="text-lg text-gray-700 mt-2">
+                SEO:{" "}
+                {
+                  enhancedAdPerformanceData[
+                    enhancedAdPerformanceData.length - 1
+                  ].SEOTrend
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Benefits of Online Presence */}
+      <div className="mt-10 max-w-4xl mx-auto text-center bg-white p-6 rounded-xl shadow-md">
+        <h3 className="text-xl font-semibold text-gray-900">
+          🌍 Why Does Online Presence Matter?
+        </h3>
+        <p className="text-gray-600 mt-4">
+          A strong online presence helps businesses reach their target audience,
+          boost brand visibility, and drive more conversions. Using tools like
+          Meta Ads, Google Ads, and SEO, businesses can connect with potential
+          customers, increase website traffic, and grow sales.
+        </p>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
+          <div className="p-4 bg-gray-100 rounded-lg shadow-sm">
+            <h4 className="text-lg font-semibold text-blue-600">
+              📢 Meta & Google Ads
+            </h4>
+            <p className="text-gray-700 text-sm mt-2">
+              Paid ads deliver **instant visibility** and **quick lead
+              generation**, ensuring your business appears at the top when
+              customers search for relevant services.
+            </p>
+          </div>
+
+          <div className="p-4 bg-gray-100 rounded-lg shadow-sm">
+            <h4 className="text-lg font-semibold text-green-600">
+              🔍 SEO Growth
+            </h4>
+            <p className="text-gray-700 text-sm mt-2">
+              SEO drives **long-term brand authority** and delivers **consistent
+              traffic** without the high costs of paid ads.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Explore More Button */}
