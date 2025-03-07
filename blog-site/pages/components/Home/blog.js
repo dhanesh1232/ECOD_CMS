@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   Navigation,
@@ -27,7 +27,17 @@ const categories = [
 
 const HomeBlog = () => {
   const router = useRouter();
+  const swiperRef = useRef(null);
+  const [progress, setProgress] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setProgress(0);
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev < 100 ? prev + 2 : 100));
+    }, 70);
+    return () => clearInterval(interval);
+  }, [activeIndex]);
 
   if (!blogs || !Array.isArray(blogs) || blogs.length === 0) {
     return <p>No blogs available.</p>;
@@ -36,7 +46,7 @@ const HomeBlog = () => {
   return (
     <section className="w-full py-16 px-8 bg-gradient-to-b from-blue-50 to-gray-200 text-center relative">
       {/* Section Title */}
-      <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">
+      <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900">
         📝 Latest Blog Posts
       </h2>
       <p className="mt-4 text-lg md:text-xl text-gray-700 max-w-3xl mx-auto">
@@ -45,32 +55,14 @@ const HomeBlog = () => {
 
       {/* Swiper Container */}
       <div className="relative w-full mt-10">
-        {/* Left Navigation Button */}
-        {activeIndex !== 0 && (
-          <button
-            type="button"
-            className="absolute top-1/2 -left-10 z-10 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-md hover:scale-110 transition-all blog-prev"
-          >
-            <ChevronLeft size={32} className="text-gray-700" />
-          </button>
-        )}
-
-        {/* Right Navigation Button */}
-        {activeIndex !== blogs.length - 1 && (
-          <button
-            type="button"
-            className="absolute top-1/2 -right-10 z-10 transform -translate-y-1/2 p-3 bg-white rounded-full shadow-md hover:scale-110 transition-all blog-next"
-          >
-            <ChevronRight size={32} className="text-gray-700" />
-          </button>
-        )}
-
         {/* Swiper Component */}
         <Swiper
+          ref={swiperRef}
           modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
           loop={false}
           slidesPerView={1}
-          spaceBetween={20}
+          initialSlide={Math.floor(blogs.length / 2)}
+          spaceBetween={30}
           centeredSlides={true}
           effect="coverflow"
           coverflowEffect={{
@@ -85,13 +77,9 @@ const HomeBlog = () => {
             768: { slidesPerView: 2, spaceBetween: 40 },
             1024: { slidesPerView: 3, spaceBetween: 50 },
           }}
-          autoplay={{ delay: 4000, disableOnInteraction: false }}
-          navigation={{
-            nextEl: ".blog-next",
-            prevEl: ".blog-prev",
-          }}
+          autoplay={{ delay: 3500, disableOnInteraction: false }}
           pagination={{
-            el: ".blog-pagination",
+            el: ".custom-pagination .blog-pagination",
             clickable: true,
           }}
           onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
@@ -100,7 +88,7 @@ const HomeBlog = () => {
           {blogs.map((blog, index) => (
             <SwiperSlide
               key={index}
-              className={`shadow-xl bg-white rounded-lg transition-all transform ${
+              className={`shadow-xl bg-white rounded-xl transition-all transform ${
                 index === activeIndex
                   ? "scale-100 pointer-events-auto"
                   : "scale-90 opacity-50 pointer-events-none"
@@ -112,6 +100,27 @@ const HomeBlog = () => {
         </Swiper>
 
         {/* Pagination */}
+
+        <div className="mt-4 flex justify-center space-x-2 custom-pagination">
+          {blogs.map((_, index) => (
+            <div
+              key={index}
+              onClick={() => {
+                setActiveIndex(index);
+                swiperRef.current?.swiper.slideTo(index);
+              }}
+              className="w-10 h-1 bg-gray-300 rounded-full cursor-pointer overflow-hidden"
+            >
+              <div
+                className="h-1 bg-green-500 transition-all"
+                style={{
+                  width: index === activeIndex ? `${progress}%` : "0%",
+                }}
+              ></div>
+            </div>
+          ))}
+        </div>
+
         <div className="blog-pagination mt-4 flex justify-center space-x-2"></div>
       </div>
 
