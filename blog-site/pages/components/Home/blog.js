@@ -8,7 +8,6 @@ import {
   Autoplay,
   EffectCoverflow,
 } from "swiper/modules";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -40,22 +39,23 @@ const HomeBlog = () => {
   }, [activeIndex]);
 
   if (!blogs || !Array.isArray(blogs) || blogs.length === 0) {
-    return <p>No blogs available.</p>;
+    return (
+      <p className="text-gray-800 dark:text-gray-300">No blogs available.</p>
+    );
   }
 
   return (
-    <section className="w-full py-16 px-8 bg-gradient-to-b from-blue-50 to-gray-200 text-center relative">
+    <section className="w-full py-16 px-8 bg-gradient-to-b from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800 text-center relative transition-colors duration-300">
       {/* Section Title */}
-      <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900">
+      <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
         📝 Latest Blog Posts
       </h2>
-      <p className="mt-4 text-lg md:text-xl text-gray-700 max-w-3xl mx-auto">
+      <p className="mt-4 text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
         Stay updated with our latest insights and trends.
       </p>
 
       {/* Swiper Container */}
       <div className="relative w-full mt-10">
-        {/* Swiper Component */}
         <Swiper
           ref={swiperRef}
           modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
@@ -100,7 +100,6 @@ const HomeBlog = () => {
         </Swiper>
 
         {/* Pagination */}
-
         <div className="mt-4 flex justify-center space-x-2 custom-pagination">
           {blogs.map((_, index) => (
             <div
@@ -109,7 +108,7 @@ const HomeBlog = () => {
                 setActiveIndex(index);
                 swiperRef.current?.swiper.slideTo(index);
               }}
-              className="w-10 h-1 bg-gray-300 rounded-full cursor-pointer overflow-hidden"
+              className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer overflow-hidden"
             >
               <div
                 className="h-1 bg-green-500 transition-all"
@@ -134,7 +133,7 @@ const HomeBlog = () => {
         </button>
         <button
           onClick={() => router.push("/blogs/shopify")}
-          className="px-8 py-3 border border-green-600 text-green-600 text-lg font-semibold rounded-lg hover:bg-green-600 hover:text-white hover:scale-105 transition-transform duration-300"
+          className="px-8 py-3 border border-green-600 text-green-600 dark:text-green-400 dark:border-green-400 text-lg font-semibold rounded-lg hover:bg-green-600 hover:text-white dark:hover:bg-green-400 dark:hover:text-gray-900 hover:scale-105 transition-transform duration-300"
         >
           Explore
         </button>

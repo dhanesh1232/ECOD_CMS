@@ -1,3 +1,6 @@
+"use client";
+
+// Import necessary components and hooks from Next.js
 import { useRouter } from "next/router";
 import Head from "next/head";
 
