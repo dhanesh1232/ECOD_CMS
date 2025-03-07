@@ -14,7 +14,7 @@ const Layout = ({ children }) => {
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
       </Head>
-      <div className="h-screen w-full flex flex-col relative">
+      <div className="h-screen w-full flex flex-col relative overflow-auto">
         <HeaderSection />
         <div className="flex flex-col md:flex-row flex-1">
           <aside className="hidden md:block md:w-[12.5%] lg:w-[10%]"></aside>

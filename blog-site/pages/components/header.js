@@ -176,30 +176,34 @@ const HeaderSection = () => {
                     />
                   </button>
                   {openDrop === item.label && (
-                    <motion.ul
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      ref={dropDeskRef}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150"
-                    >
-                      {item.subpages.map((sub) => (
-                        <motion.li
-                          key={sub.label}
-                          initial={{ opacity: 0, rotateX: -90 }}
-                          animate={{ opacity: 1, rotateX: 0 }}
-                          transition={{ duration: 0.4, ease: "easeInOut" }}
-                        >
-                          <Link
-                            href={sub.href}
-                            className="block p-2 rounded transition-all transform ease-in-out duration-150 hover:bg-blue-100"
-                            onClick={() => setOpenDrop(null)}
-                          >
-                            {sub.label}
-                          </Link>
-                        </motion.li>
-                      ))}
-                    </motion.ul>
+                    <AnimatePresence>
+                      <motion.ul
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        ref={dropDeskRef}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        className="absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150"
+                      >
+                        <AnimatePresence>
+                          {item.subpages.map((sub) => (
+                            <motion.li
+                              key={sub.label}
+                              initial={{ opacity: 0, rotateX: -90 }}
+                              animate={{ opacity: 1, rotateX: 0 }}
+                              transition={{ duration: 0.4, ease: "easeInOut" }}
+                            >
+                              <Link
+                                href={sub.href}
+                                className="block p-2 rounded transition-all transform ease-in-out duration-150 hover:bg-blue-100"
+                                onClick={() => setOpenDrop(null)}
+                              >
+                                {sub.label}
+                              </Link>
+                            </motion.li>
+                          ))}
+                        </AnimatePresence>
+                      </motion.ul>
+                    </AnimatePresence>
                   )}
                 </div>
               ) : (
@@ -213,70 +217,74 @@ const HeaderSection = () => {
       </div>
 
       {/* Mobile Navigation (Centered Above Logo) */}
-      <motion.div
-        initial={{ height: 0 }}
-        animate={{ height: isMenuOpen ? "auto" : 0 }}
-        ref={openMenuRef}
-        className="absolute w-full h-full bg-gray-50 left-0 overflow-hidden md:hidden shadow"
-      >
-        <ul className="py-4 text-center">
-          {nav_list.map((item, index) => (
-            <li key={index} className="px-6 py-2 text-black">
-              {item.subpages ? (
-                <div className="relative">
-                  <button
-                    className="flex items-center justify-center w-full"
-                    onClick={() =>
-                      setOpenDropMob(
-                        openDropMob === item.label ? null : item.label
-                      )
-                    }
-                  >
-                    {item.label}
-                    <ChevronDown
-                      className={`ml-2 transition-transform ${
-                        openDropMob === item.label ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {openDropMob === item.label && (
-                    <motion.ul
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{
-                        opacity: 1,
-                        height: "auto",
-                      }}
-                      ref={dropdownMobRef}
-                      className="px-4 py-2 mt-1 space-y-1 overflow-hidden bg-white bg-opacity-80 rounded shadow-xl"
+      <AnimatePresence>
+        <motion.div
+          initial={{ height: 0 }}
+          animate={{ height: isMenuOpen ? "auto" : 0 }}
+          ref={openMenuRef}
+          className="absolute w-full h-full bg-gray-50 left-0 overflow-hidden md:hidden shadow"
+        >
+          <ul className="py-4 text-center">
+            {nav_list.map((item, index) => (
+              <li key={index} className="px-6 py-2 text-black">
+                {item.subpages ? (
+                  <div className="relative">
+                    <button
+                      className="flex items-center justify-center w-full"
+                      onClick={() =>
+                        setOpenDropMob(
+                          openDropMob === item.label ? null : item.label
+                        )
+                      }
                     >
-                      {item.subpages.map((sub) => (
-                        <li
-                          key={sub.label}
-                          className="text-base py-1 hover:bg-gray-100 hover:text-blue-900 text-gray-900 rounded ease-in-out transform transition-all duration-150"
+                      {item.label}
+                      <ChevronDown
+                        className={`ml-2 transition-transform ${
+                          openDropMob === item.label ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {openDropMob === item.label && (
+                      <AnimatePresence>
+                        <motion.ul
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{
+                            opacity: 1,
+                            height: "auto",
+                          }}
+                          ref={dropdownMobRef}
+                          className="px-4 py-2 mt-1 space-y-1 overflow-hidden bg-white bg-opacity-80 rounded shadow-xl"
                         >
-                          <Link
-                            href={sub.href}
-                            onClick={() => {
-                              setOpenDropMob(null); // Close dropdown when a link is clicked
-                              setIsMenuOpen(false); // Close mobile menu
-                            }}
-                          >
-                            {sub.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </motion.ul>
-                  )}
-                </div>
-              ) : (
-                <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
-                  {item.label}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      </motion.div>
+                          {item.subpages.map((sub) => (
+                            <li
+                              key={sub.label}
+                              className="text-base py-1 hover:bg-gray-100 hover:text-blue-900 text-gray-900 rounded ease-in-out transform transition-all duration-150"
+                            >
+                              <Link
+                                href={sub.href}
+                                onClick={() => {
+                                  setOpenDropMob(null); // Close dropdown when a link is clicked
+                                  setIsMenuOpen(false); // Close mobile menu
+                                }}
+                              >
+                                {sub.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      </AnimatePresence>
+                    )}
+                  </div>
+                ) : (
+                  <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      </AnimatePresence>
     </header>
   );
 };

@@ -11,6 +11,8 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  height: 100dvh;
 }
 body > * {
   @apply transition ease-in-out duration-150;
