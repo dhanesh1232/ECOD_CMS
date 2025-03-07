@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import Link from "next/link";
 import { MoveLeft, MoveRight, Search } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 const CategorySelector = dynamic(() => import("./components/CategorySelector"));
 import { blogs } from "@/Data/all-posts";
@@ -29,11 +28,11 @@ const BlogPosts = () => {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="flex items-center justify-between relative">
+    <div className="max-w-6xl mx-auto px-6 py-12 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:text-gray-900 transition"
+          className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition"
         >
           <MoveLeft size={20} />
           <span className="text-sm font-medium">Back to Home</span>
@@ -48,16 +47,17 @@ const BlogPosts = () => {
         </button>
       </div>
 
-      <hr className="my-4" />
+      <hr className="my-4 border-gray-300 dark:border-gray-700" />
+
       {/* Page Title */}
-      <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white text-center mb-8">
+      <h1 className="text-4xl font-extrabold text-center mb-8">
         Our Latest Blog Posts
       </h1>
 
       {/* Search Input */}
       <div className="flex justify-center mb-6">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-3 text-gray-500" />
+          <Search className="absolute left-3 top-3 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
             placeholder="Search blog posts..."
@@ -66,7 +66,7 @@ const BlogPosts = () => {
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border outline-none rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-800 dark:text-white"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 outline-none rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-900 dark:text-white transition-colors duration-300"
           />
         </div>
       </div>
@@ -88,16 +88,16 @@ const BlogPosts = () => {
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className={`px-2 sm:px-4 py-2 text-white text-[10px] sm:text-base rounded-md ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentPage === 1
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-500"
+                ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                : "bg-green-600 text-white hover:bg-green-500"
             }`}
           >
-            <MoveLeft className="inline-block w-3 sm:w-5 h-5" /> Prev
+            <MoveLeft className="w-4 h-4" /> Prev
           </button>
 
-          <span className="px-2 text-[10px] sm:text-base py-2 text-gray-800 dark:text-white font-semibold">
+          <span className="px-4 py-2 text-sm font-semibold dark:text-gray-200 text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
 
@@ -106,19 +106,20 @@ const BlogPosts = () => {
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages}
-            className={`px-2 sm:px-4 py-2 gap-2 text-white rounded-md text-[10px] sm:text-base ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentPage === totalPages
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-500"
+                ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                : "bg-green-600 text-white hover:bg-green-500"
             }`}
           >
-            Next <MoveRight className="inline-block w-3 sm:w-5 h-5" />
+            Next <MoveRight className="w-4 h-4" />
           </button>
         </div>
       )}
+
       {/* Bottom Navigation - Service Blogs */}
-      <div className="mt-16 border-t pt-8">
-        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">
+      <div className="mt-16 border-t border-gray-300 dark:border-gray-700 pt-8">
+        <h2 className="text-2xl font-bold text-center mb-6">
           Our All Service Blogs
         </h2>
         <CategorySelector />

@@ -88,7 +88,7 @@ const HomeBlog = () => {
           {blogs.map((blog, index) => (
             <SwiperSlide
               key={index}
-              className={`shadow-xl bg-white rounded-xl transition-all transform ${
+              className={`shadow-xl bg-white dark:bg-gray-800 rounded-xl transition-all transform ${
                 index === activeIndex
                   ? "scale-100 pointer-events-auto"
                   : "scale-90 opacity-50 pointer-events-none"
