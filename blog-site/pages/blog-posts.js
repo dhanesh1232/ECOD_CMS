@@ -28,11 +28,11 @@ const BlogPosts = () => {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div className="max-w-6xl mx-auto px-6 py-12 text-gray-900 dark:text-gray-800 transition-colors duration-300">
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 text-gray-700 dark:text-gray-100 hover:text-gray-900 dark:hover:text-white transition"
+          className="flex items-center gap-2 text-gray-700 dark:text-gray-800 hover:text-gray-900 dark:hover:text-white transition"
         >
           <MoveLeft size={20} />
           <span className="text-sm font-medium">Back to Home</span>
@@ -50,7 +50,7 @@ const BlogPosts = () => {
       <hr className="my-4 border-gray-300 dark:border-gray-700" />
 
       {/* Page Title */}
-      <h1 className="text-2xl dark:text-gray-50 md:text-4xl font-extrabold text-center mb-8">
+      <h1 className="text-2xl dark:text-gray-500 md:text-4xl font-extrabold text-center mb-8">
         Our Latest Blog Posts
       </h1>
 
