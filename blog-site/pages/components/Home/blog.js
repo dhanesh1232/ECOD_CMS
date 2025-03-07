@@ -13,16 +13,9 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
 
-import { blogs } from "../../../Temp_Data/blog-posts";
+import { blogs } from "@/data/blog-posts";
 import BlogCard from "../BlogCard";
 import { useRouter } from "next/router";
-
-const categories = [
-  "shopify",
-  "web-development",
-  "digital-marketing",
-  "google-meta-ads",
-];
 
 const HomeBlog = () => {
   const router = useRouter();

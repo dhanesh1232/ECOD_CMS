@@ -7,7 +7,7 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { testimonials } from "@/Temp_Data/testi";
+import { testimonials } from "@/data/testi";
 const Testimonials = () => {
   return (
     <section className="w-full py-20 px-8 bg-gradient-to-b from-gray-50 to-white text-center relative">

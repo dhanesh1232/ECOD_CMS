@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { eco_services } from "@/Temp_Data/ecod-services";
+import { eco_services } from "@/data/ecod-services";
 import Image from "next/image";
 import { MoveRight } from "lucide-react";
 const OurServices = () => {

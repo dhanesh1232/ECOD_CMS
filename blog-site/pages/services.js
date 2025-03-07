@@ -1,9 +1,9 @@
-import { eco_services } from "@/Temp_Data/ecod-services";
+import { eco_services } from "@/data/ecod-services";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import SearchComponent from "./components/Reusable/search";
-import { services_ecod } from "@/Temp_Data/service_ecod";
+import { services_ecod } from "@/data/service_ecod";
 import dynamic from "next/dynamic";
 const CategorySelector = dynamic(() =>
   import("./components/Reusable/CategorySelector")

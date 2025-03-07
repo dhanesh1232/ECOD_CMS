@@ -1,5 +1,6 @@
-import Image from "next/image";
-import BackAndForward from "./components/Reusable/back-forw";
+"use client";
+import dynamic from "next/dynamic";
+const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const About = () => {
   return (

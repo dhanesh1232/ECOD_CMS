@@ -1,5 +1,6 @@
 import Head from "next/head";
-import BackAndForward from "./components/Reusable/back-forw";
+import dynamic from "next/dynamic";
+const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const contact = {
   address: "Tirupati, Andhra Pradesh, India",

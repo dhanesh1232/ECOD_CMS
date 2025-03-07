@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   LineChart,
   Line,
@@ -111,12 +112,12 @@ const ShopifySection = () => {
         <p className="text-gray-600 dark:text-gray-400">
           Unlock unique designs and optimized performance for higher sales.
         </p>
-        <a
+        <Link
           href="/services/shopify-themes"
           className="mt-6 inline-block px-8 py-3 bg-blue-600 dark:bg-blue-500 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-blue-500 dark:hover:bg-blue-400 hover:scale-105 transition-transform duration-300"
         >
           Explore Solutions
-        </a>
+        </Link>
       </div>
     </section>
   );
