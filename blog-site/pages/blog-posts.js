@@ -1,9 +1,9 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { blogs } from "../data/blog-posts";
+import { blogs } from "../Temp_Data/blog-posts";
 import { MoveLeft, MoveRight } from "lucide-react";
-import { blog_services } from "../data/service_blogs";
+import { blog_services } from "../Temp_Data/service_blogs";
 
 const CategorySelector = dynamic(() =>
   import("./components/Reusable/CategorySelector")
