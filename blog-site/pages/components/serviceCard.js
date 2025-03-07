@@ -3,6 +3,9 @@ import Image from "next/image";
 import Link from "next/link"; // Use named import for Link
 
 const ServiceCard = ({ service }) => {
+  if (!service.href || !service.label || !service.image_url) {
+    return null;
+  }
   return (
     <Link href={service.href} className="group">
       <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-transform transform hover:scale-[1.02] duration-300 border border-gray-200 hover:border-blue-500">
@@ -10,10 +13,10 @@ const ServiceCard = ({ service }) => {
           <Image
             src={service.image_url}
             alt={service.label}
-            fill // Use `fill` instead of `layout="fill"`
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Add `sizes` for responsive images
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{
-              objectFit: "cover", // Use `style` for object-fit
+              objectFit: "cover",
             }}
             className="transition-transform duration-500 group-hover:scale-105"
           />
