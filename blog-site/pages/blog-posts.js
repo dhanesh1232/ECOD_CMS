@@ -1,10 +1,11 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { blogs } from "@/data/blog-posts";
 import { MoveLeft, MoveRight } from "lucide-react";
 import { blog_services } from "@/data/service_blogs";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 const CategorySelector = dynamic(() =>
   import("./components/Reusable/CategorySelector")
@@ -14,9 +15,14 @@ const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 const SearchComponent = dynamic(() => import("./components/Reusable/search"));
 
 const BlogPosts = () => {
+  const router = useRouter();
   const postsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
 
   const filteredBlogs = blogs.filter(
     (blog) =>

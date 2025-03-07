@@ -3,17 +3,22 @@
 // Import necessary components and hooks from Next.js
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { useEffect } from "react";
 
-const BlogPost = () => {
+const ServicePost = () => {
   const router = useRouter();
-  const { slug } = router.query;
+  const { href } = router.query;
 
-  if (!slug) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
+
+  if (!href) {
     return <p className="text-center text-gray-600">No blog post found.</p>;
   }
 
   // Format slug into a proper title
-  const formattedTitle = slug
+  const formattedTitle = href
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
@@ -37,4 +42,4 @@ const BlogPost = () => {
   );
 };
 
-export default BlogPost;
+export default ServicePost;

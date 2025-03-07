@@ -1,5 +1,7 @@
 import Head from "next/head";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const contact = {
@@ -9,6 +11,10 @@ const contact = {
 };
 
 const Disclaimer = () => {
+  const router = useRouter();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
   return (
     <>
       <Head>

@@ -3,10 +3,15 @@
 // Import necessary components and hooks from Next.js
 import { useRouter } from "next/router";
 import Head from "next/head";
+import { useEffect } from "react";
 
 const BlogPost = () => {
   const router = useRouter();
   const { slug } = router.query;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
 
   if (!slug) {
     return <p className="text-center text-gray-600">No blog post found.</p>;

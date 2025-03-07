@@ -58,9 +58,13 @@ const OurServices = () => {
         </p>
       </div>
       <div className="grid grid-cols-1 mt-10 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {displayedServices.map((service, index) => (
-          <ServiceCard key={index} service={service} />
-        ))}
+        {displayedServices?.length > 0 ? (
+          displayedServices.map((service, index) => (
+            <ServiceCard key={index} service={service} />
+          ))
+        ) : (
+          <p>Services Not Found 404</p>
+        )}
       </div>
       {/* Performance Charts */}
       <div className="mt-16 max-w-6xl mx-auto">

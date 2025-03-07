@@ -1,6 +1,8 @@
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 const HomeBlog = dynamic(() => import("./components/Home/blog"));
 const HeroSection = dynamic(() => import("./components/Home/hero"));
 const OurServices = dynamic(() => import("./components/Home/our-serve"));
@@ -17,6 +19,11 @@ const CallToAction = dynamic(() => import("./components/Home/cta"), {
 });
 
 export default function Home() {
+  const router = useRouter();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
+
   return (
     <>
       <Head>

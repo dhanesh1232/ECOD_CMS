@@ -1,9 +1,15 @@
 "use client";
 import dynamic from "next/dynamic";
 import Head from "next/head";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const About = () => {
+  const router = useRouter();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
   return (
     <>
       <Head>

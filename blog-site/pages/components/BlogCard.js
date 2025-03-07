@@ -19,6 +19,7 @@ const BlogCard = ({ blog }) => {
           alt={blog.title}
           width={400}
           height={200}
+          style={{ objectFit: "cover" }}
           className="w-full h-48 object-cover"
         />
       ) : (

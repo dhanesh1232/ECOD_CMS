@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const contact = {
@@ -12,6 +13,7 @@ const contact = {
 };
 
 const Contact = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,6 +23,10 @@ const Contact = () => {
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

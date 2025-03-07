@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 const products = [
   {
@@ -41,7 +42,11 @@ const products = [
 ];
 
 const Products = () => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
 
   // Filter products based on search query
   const filteredProducts = products.filter((product) =>

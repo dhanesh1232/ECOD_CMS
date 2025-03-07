@@ -1,9 +1,10 @@
 import { eco_services } from "@/data/ecod-services";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { services_ecod } from "@/data/service_ecod";
 import Head from "next/head";
+import { useRouter } from "next/router";
 // Dynamically importing components with error handling
 const CategorySelector = dynamic(() =>
   import("./components/Reusable/CategorySelector")
@@ -46,7 +47,12 @@ const CallToAction = () => (
 );
 
 export default function ServicesGrid() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
 
   const filteredServices = useMemo(() => {
     return eco_services.filter((service) =>
@@ -138,9 +144,13 @@ export default function ServicesGrid() {
 
         {filteredServices.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredServices.map((service, index) => (
-              <ServiceCard key={index} service={service} />
-            ))}
+            {filteredServices?.length > 0 ? (
+              filteredServices.map((service, index) => (
+                <ServiceCard key={index} service={service} />
+              ))
+            ) : (
+              <p>Services Not Found 404</p>
+            )}
           </div>
         ) : (
           <NoResults onClearSearch={() => setSearchQuery("")} />

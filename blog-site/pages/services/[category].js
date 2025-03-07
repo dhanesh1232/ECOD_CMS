@@ -21,10 +21,10 @@ import {
 } from "recharts";
 import { adPerformanceData } from "@/data/ad-performance";
 import { allCategories } from "@/data/all-services-cat";
+import ServiceCard from "../components/serviceCard";
 const CategorySelector = dynamic(() =>
   import("../components/Reusable/CategorySelector")
 );
-const BlogCard = dynamic(() => import("../components/BlogCard"));
 const SearchComponent = dynamic(() => import("../components/Reusable/search"));
 const BackAndForward = dynamic(() =>
   import("../components/Reusable/back-forw")
@@ -100,6 +100,10 @@ const CategoryServices = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [router.pathname]);
+
+  useEffect(() => {
     if (router.isReady) setIsLoading(false);
   }, [router.isReady]);
 
@@ -107,7 +111,7 @@ const CategoryServices = () => {
 
   const categoryBlogs = services_list_ecod[category] || [];
   const filteredBlogs = categoryBlogs.filter((blog) =>
-    blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+    blog.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
@@ -255,7 +259,7 @@ const CategoryServices = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {selectedBlogs.length ? (
             selectedBlogs.map((blog) => (
-              <BlogCard key={blog.slug} blog={blog} />
+              <ServiceCard key={blog.href} service={blog} />
             ))
           ) : (
             <p className="text-center text-gray-500">No blogs found.</p>
