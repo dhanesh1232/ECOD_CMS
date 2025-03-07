@@ -2,10 +2,10 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { blog_services } from "@/data/service_blogs";
-import { allBlogs } from "@/data/blogs-all";
+import { services_list_ecod } from "@/data/services_list";
+import { services_ecod } from "@/data/service_ecod";
 
 const CategorySelector = dynamic(() =>
   import("../components/Reusable/CategorySelector")
@@ -19,14 +19,29 @@ const PaginationComponent = dynamic(() =>
   import("../components/Reusable/pagination")
 );
 
-const CategoryBlogs = () => {
+const CategoryServices = () => {
   const router = useRouter();
   const postsPerPage = 6;
-  const { category } = router.query;
-  const categoryBlogs = allBlogs[category] || [];
+  const { category } = router.query; // Destructure category from router.query
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Add a loading state
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if router.query is populated
+    if (router.isReady) {
+      setIsLoading(false);
+    }
+  }, [router.isReady]);
+
+  // If router.query is not yet available, show a loading state
+  if (isLoading || !category) {
+    return <p>Loading...</p>;
+  }
+
+  const categoryBlogs = services_list_ecod[category] || [];
   const filteredBlogs = categoryBlogs.filter((blog) =>
     blog.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -58,12 +73,12 @@ const CategoryBlogs = () => {
       <Head>
         <title>
           ECOD Blog -{" "}
-          {blog_services.find((s) => s.slug === category)?.name || "Category"}
+          {services_ecod.find((s) => s.slug === category)?.name || "Category"}
         </title>
         <meta
           name="description"
           content={`Explore the latest blog posts on ${
-            blog_services.find((s) => s.slug === category)?.name
+            services_ecod.find((s) => s.slug === category)?.name
           } at ECOD Blog.`}
         />
         <meta property="og:type" content="website" />
@@ -76,22 +91,21 @@ const CategoryBlogs = () => {
         transition={{ duration: 0.5 }}
         className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
       >
-        <BackAndForward back="/blog-posts" forward="/contact" />
-
+        <BackAndForward back="/services" forward="/contact" />
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
 
         <div className="my-6 w-full">
-          <CategorySelector page="/blogs" services={blog_services} />
+          <CategorySelector page="/services" services={services_ecod} />
         </div>
 
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
 
         <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-200 text-center mb-8 transition-colors duration-300">
-          {blog_services.find((s) => s.slug === category)?.name || "Blogs"}
+          {services_ecod.find((s) => s.slug === category)?.name || "Blogs"}
         </h1>
-        {/* Search Bar */}
+
         <SearchComponent filterSearch={handleSearch} searchValue={searchTerm} />
-        {/* Blog List */}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {selectedBlogs.length > 0 ? (
             selectedBlogs.map((blog) => (
@@ -104,7 +118,6 @@ const CategoryBlogs = () => {
           )}
         </div>
 
-        {/* Pagination Controls */}
         {totalPages > 1 && (
           <PaginationComponent
             prev={handlePrevPage}
@@ -118,4 +131,4 @@ const CategoryBlogs = () => {
   );
 };
 
-export default CategoryBlogs;
+export default CategoryServices;

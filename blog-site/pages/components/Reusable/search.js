@@ -7,7 +7,7 @@ const SearchComponent = ({ searchValue, filterSearch }) => (
       <Search className="absolute left-3 top-3 text-gray-500 dark:text-gray-400" />
       <input
         type="text"
-        placeholder="Search blog posts..."
+        placeholder="Search blogs or services or Our Latest Updates..."
         value={searchValue}
         onChange={(e) => {
           filterSearch(e.target.value);

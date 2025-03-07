@@ -21,6 +21,10 @@ const BackAndForward = ({ back = "/", forward = "/about-us" }) => {
         setNavText("Blogs");
         setRouterPath("/blogs/digital-marketing");
         break;
+      case "/services/web-development":
+        setNavText("Services");
+        setRouterPath("/services/web-development");
+        break;
       default:
         setNavText("About Us");
         setRouterPath(forward);
@@ -31,6 +35,9 @@ const BackAndForward = ({ back = "/", forward = "/about-us" }) => {
     if (back === "/") {
       setNavBack("Home");
       setBackPath("/");
+    } else if (back === "/services") {
+      setNavBack("Back to Services");
+      setBackPath("/services");
     } else {
       setNavBack("Back to Latest");
       setBackPath("/blog-posts");

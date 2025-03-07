@@ -1,17 +1,18 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { blogs } from "@/Data/all-posts";
+import { blogs } from "@/data/blog-posts";
 import { MoveLeft, MoveRight } from "lucide-react";
-import { useRouter } from "next/router";
+import { blog_services } from "@/data/service_blogs";
 
-const CategorySelector = dynamic(() => import("./components/CategorySelector"));
+const CategorySelector = dynamic(() =>
+  import("./components/Reusable/CategorySelector")
+);
 const BlogCard = dynamic(() => import("./components/BlogCard"));
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 const SearchComponent = dynamic(() => import("./components/Reusable/search"));
 
 const BlogPosts = () => {
-  const router = useRouter();
   const postsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -107,7 +108,7 @@ const BlogPosts = () => {
         <h2 className="text-2xl font-bold text-center mb-6">
           Our All Service Blogs
         </h2>
-        <CategorySelector />
+        <CategorySelector page="/blogs" services={blog_services} />
       </div>
     </div>
   );

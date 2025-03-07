@@ -13,30 +13,17 @@ const nav_list = [
     label: "Services",
     href: "/services",
     subpages: [
-      { label: "All Services", href: "/services" },
-      { label: "Web Development", href: "/services/web-development" },
-      { label: "Logo Design", href: "/services/logo-design" },
-      { label: "Google Ads", href: "/services/google-ads" },
-      { label: "E-Commerce", href: "/services/e-commerce" },
-      { label: "SEO", href: "/services/seo" },
-      {
-        label: "Social Media Marketing",
-        href: "/services/social-media-marketing",
-      },
-      {
-        label: "Digital Transformation",
-        href: "/services/digital-transformation",
-      },
+      { label: "All Services", slug: "" },
+      { label: "Web Development", slug: "web-development" },
+      { label: "Google | Meta Ads", slug: "google-meta-ads" },
+      { label: "SEO", slug: "seo" },
+      { label: "Social Media Marketing", slug: "social-media-marketing" },
       {
         label: "Shopify Theme Development",
-        href: "/services/shopify-theme-development",
+        slug: "shopify-theme-development",
       },
-      {
-        label: "Custom Shopify Solutions",
-        href: "/services/custom-shopify-solutions",
-      },
-      { label: "Content Marketing", href: "/services/content-marketing" },
-      { label: "Email Marketing", href: "/services/email-marketing" },
+      { label: "Content Marketing", slug: "content-marketing" },
+      { label: "Email Marketing", slug: "email-marketing" },
     ],
   },
   { label: "Products", href: "/products" },
@@ -193,7 +180,7 @@ const HeaderSection = () => {
                               transition={{ duration: 0.4, ease: "easeInOut" }}
                             >
                               <Link
-                                href={sub.href}
+                                href={`/services/${sub.slug}`}
                                 className="block p-2 rounded transition-all transform ease-in-out duration-150 hover:bg-blue-100"
                                 onClick={() => setOpenDrop(null)}
                               >
@@ -261,7 +248,7 @@ const HeaderSection = () => {
                               className="text-base py-1 hover:bg-gray-100 hover:text-blue-900 text-gray-900 rounded ease-in-out transform transition-all duration-150"
                             >
                               <Link
-                                href={sub.href}
+                                href={`/services/${sub.slug}`}
                                 onClick={() => {
                                   setOpenDropMob(null); // Close dropdown when a link is clicked
                                   setIsMenuOpen(false); // Close mobile menu

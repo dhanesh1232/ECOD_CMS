@@ -27,7 +27,6 @@ const services = [
   "SEO Optimization",
   "Digital Marketing",
   "Shopify Solutions",
-  "Branding & Design",
 ];
 
 const testimonials = [
