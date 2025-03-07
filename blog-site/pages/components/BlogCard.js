@@ -10,7 +10,7 @@ const BlogCard = ({ blog }) => {
   return (
     <Link
       href={`/blog/${blog.category}${blog.slug}`}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105"
+      className="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105"
     >
       {/* Image or Placeholder */}
       {blog.image ? (
