@@ -101,7 +101,7 @@ const CategoryServices = () => {
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
 
         <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-200 text-center mb-8 transition-colors duration-300">
-          {services_ecod.find((s) => s.slug === category)?.name || "Blogs"}
+          {services_ecod.find((s) => s.slug === category)?.label || "Services"}
         </h1>
 
         <SearchComponent filterSearch={handleSearch} searchValue={searchTerm} />

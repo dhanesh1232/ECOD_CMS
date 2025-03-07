@@ -13,7 +13,7 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
 
-import { blogs } from "@/data/blog-posts";
+import { blogs } from "../../../data/blog-posts";
 import BlogCard from "../BlogCard";
 import { useRouter } from "next/router";
 
