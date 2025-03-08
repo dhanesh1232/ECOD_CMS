@@ -15,7 +15,6 @@ const ServiceCard = ({ service }) => {
     nav_link = service.href;
   }
 
-  console.log("Service data:", nav_link);
   return (
     <Link href={nav_link} className="group">
       <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-transform transform hover:scale-[1.02] duration-300 border border-gray-200 hover:border-blue-500">

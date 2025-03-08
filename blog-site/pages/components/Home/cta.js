@@ -94,12 +94,17 @@ const GrowYourBusiness = () => {
   return (
     <section className="w-full py-20 px-4 sm:px-8 bg-gradient-to-r from-blue-800 to-indigo-900 text-white text-center relative overflow-hidden">
       {/* Animated Glow Effect */}
-      <div className="absolute inset-0 bg-gradient-radial from-white/10 to-transparent opacity-20 pointer-events-none"></div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.2 }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="absolute inset-0 bg-gradient-radial from-white/10 to-transparent pointer-events-none"
+      />
 
       {/* Heading */}
       <motion.h2
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight"
       >
@@ -109,7 +114,7 @@ const GrowYourBusiness = () => {
       {/* Subtitle */}
       <motion.p
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         className="mt-4 text-base sm:text-lg text-gray-200 max-w-2xl mx-auto"
       >
@@ -120,7 +125,7 @@ const GrowYourBusiness = () => {
       {/* Graph */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
         className="mt-8 mx-auto w-full max-w-3xl h-64 sm:h-80"
       >
@@ -155,45 +160,58 @@ const GrowYourBusiness = () => {
       {/* Key Benefits */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
         className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
       >
-        <div className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center">
-          <SEOSVG />
-          <h3 className="text-lg font-semibold">SEO</h3>
-          <p className="text-sm text-gray-200">
-            Rank higher on search engines and drive organic traffic.
-          </p>
-        </div>
-        <div className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center">
-          <SocialMediaSVG />
-          <h3 className="text-lg font-semibold">Social Media</h3>
-          <p className="text-sm text-gray-200">
-            Engage your audience and build a loyal community.
-          </p>
-        </div>
-        <div className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center">
-          <PPCAdsSVG />
-          <h3 className="text-lg font-semibold">PPC Ads</h3>
-          <p className="text-sm text-gray-200">
-            Get instant results with targeted ad campaigns.
-          </p>
-        </div>
-        <div className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center">
-          <ContentMarketingSVG />
-          <h3 className="text-lg font-semibold">Content Marketing</h3>
-          <p className="text-sm text-gray-200">
-            Attract and convert customers with valuable content.
-          </p>
-        </div>
+        {[
+          {
+            icon: <SEOSVG />,
+            title: "SEO",
+            description:
+              "Rank higher on search engines and drive organic traffic.",
+          },
+          {
+            icon: <SocialMediaSVG />,
+            title: "Social Media",
+            description: "Engage your audience and build a loyal community.",
+          },
+          {
+            icon: <PPCAdsSVG />,
+            title: "PPC Ads",
+            description: "Get instant results with targeted ad campaigns.",
+          },
+          {
+            icon: <ContentMarketingSVG />,
+            title: "Content Marketing",
+            description: "Attract and convert customers with valuable content.",
+          },
+        ].map((item, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.6,
+              ease: "easeOut",
+              delay: 0.6 + index * 0.1,
+            }}
+            className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center hover:bg-white/20 transition-all duration-300"
+          >
+            {item.icon}
+            <h3 className="text-lg font-semibold">{item.title}</h3>
+            <p className="text-sm text-gray-200 text-center">
+              {item.description}
+            </p>
+          </motion.div>
+        ))}
       </motion.div>
 
       {/* Call to Action Button */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut", delay: 1.0 }}
         className="mt-8"
       >
         <Link
@@ -206,7 +224,12 @@ const GrowYourBusiness = () => {
       </motion.div>
 
       {/* Subtle Background Pattern */}
-      <div className="absolute top-0 left-0 w-full h-full bg-grid-white/5 opacity-10 pointer-events-none"></div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 0.1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="absolute top-0 left-0 w-full h-full bg-grid-white/5 pointer-events-none"
+      />
     </section>
   );
 };

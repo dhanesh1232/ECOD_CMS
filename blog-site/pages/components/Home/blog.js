@@ -12,10 +12,10 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
-
 import { blogs } from "@/data/blog-posts";
 import BlogCard from "../BlogCard";
 import { useRouter } from "next/router";
+import { motion } from "framer-motion";
 
 const HomeBlog = () => {
   const router = useRouter();
@@ -39,16 +39,28 @@ const HomeBlog = () => {
 
   return (
     <section className="w-full py-16 px-8 bg-gradient-to-b from-blue-200 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-center relative transition-colors duration-300">
-      {/* Section Title */}
-      <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
-        📝 Latest Blog Posts
-      </h2>
-      <p className="mt-4 text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
-        Stay updated with our latest insights and trends.
-      </p>
+      {/* Section Title with Motion Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="max-w-3xl mx-auto"
+      >
+        <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100">
+          📝 Latest Blog Posts
+        </h2>
+        <p className="mt-4 text-lg md:text-xl text-gray-700 dark:text-gray-300">
+          Stay updated with our latest insights and trends.
+        </p>
+      </motion.div>
 
-      {/* Swiper Container */}
-      <div className="relative w-full mt-10">
+      {/* Swiper Container with Motion Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+        className="relative w-full mt-10"
+      >
         <Swiper
           ref={swiperRef}
           modules={[Navigation, Pagination, Autoplay, EffectCoverflow]}
@@ -92,8 +104,13 @@ const HomeBlog = () => {
           ))}
         </Swiper>
 
-        {/* Pagination */}
-        <div className="mt-4 flex justify-center space-x-2 custom-pagination">
+        {/* Pagination with Motion Animation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+          className="mt-4 flex justify-center space-x-2 custom-pagination"
+        >
           {blogs.map((_, index) => (
             <div
               key={index}
@@ -111,16 +128,21 @@ const HomeBlog = () => {
               ></div>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         <div className="blog-pagination mt-4 flex justify-center space-x-2"></div>
-      </div>
+      </motion.div>
 
-      {/* Call-to-Action Buttons */}
-      <div className="w-full mt-10 flex justify-center space-x-4">
+      {/* Call-to-Action Buttons with Motion Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
+        className="w-full mt-10 flex justify-center space-x-4"
+      >
         <button
           onClick={() => router.push("/blog-posts")}
-          className="px-8 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-green-500 hover:scale-105 transition-transform duration-300"
+          className="px-8 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:from-green-500 hover:to-teal-500 hover:scale-105 transition-transform duration-300"
         >
           Latest
         </button>
@@ -130,7 +152,7 @@ const HomeBlog = () => {
         >
           Explore
         </button>
-      </div>
+      </motion.div>
     </section>
   );
 };
