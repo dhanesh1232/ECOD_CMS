@@ -1,5 +1,4 @@
 import dynamic from "next/dynamic";
-import Head from "next/head";
 
 const OfferButton = dynamic(() => import("./button-offer"));
 const Footer = dynamic(() => import("./footer"));
@@ -8,7 +7,7 @@ const LowerContent = dynamic(() => import("./lower-content"));
 const Layout = ({ children }) => {
   return (
     <>
-      <div className="h-screen w-full flex flex-col relative overflow-auto">
+      <div className="w-full flex flex-col relative">
         <HeaderSection />
         <div className="flex flex-col md:flex-row flex-1">
           <aside className="hidden md:block md:w-[12.5%] lg:w-[10%]"></aside>

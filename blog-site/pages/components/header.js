@@ -1,70 +1,36 @@
-import { Menu, X, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  ChevronLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const theme_id = process.env.NEXT_PUBLIC_THEME_ID;
-
-const nav_list = [
-  { label: "Home", href: "/" },
-  { label: "Blogs", href: "/blog-posts" },
-  {
-    label: "Services",
-    href: "/services",
-    subpages: [
-      { label: "All Services", slug: "" },
-      { label: "Web Development", slug: "web-development" },
-      { label: "Google | Meta Ads", slug: "google-meta-ads" },
-      { label: "SEO", slug: "seo" },
-      { label: "Social Media Marketing", slug: "social-media-marketing" },
-      {
-        label: "Shopify Theme Development",
-        slug: "shopify-theme-development",
-      },
-      { label: "Content Marketing", slug: "content-marketing" },
-      { label: "Email Marketing", slug: "email-marketing" },
-    ],
-  },
-  { label: "Products", href: "/products" },
-  { label: "Disclaimer", href: "/disclaimer" },
-  { label: "Contact", href: "/contact" },
-];
+import { nav_list } from "@/data/nav_link";
 
 const HeaderSection = () => {
   const router = useRouter();
+  const [isSticky, setIsSticky] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mobileSubPage, setMobileSubPage] = useState(null);
   const [openDrop, setOpenDrop] = useState(null);
-  const [openDropMob, setOpenDropMob] = useState(null);
-  const [headerStyle, setHeaderStyle] = useState({});
-  const dropdownMobRef = useRef(null);
   const openMenuRef = useRef(null);
   const dropDeskRef = useRef(null);
 
-  //Use Ref Functions Starting
   // Close Menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (openMenuRef.current && !openMenuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
+        setMobileSubPage(null);
       }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Close dropdown when clicking outside (mobile)
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownMobRef.current &&
-        !dropdownMobRef.current.contains(event.target)
-      ) {
-        setOpenDropMob(null);
-      }
-    };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -91,188 +57,218 @@ const HeaderSection = () => {
     };
   }, []);
 
-  //Use Ref Functions Ending
-
-  // Fetch header data from the API
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!theme_id) {
-        console.error("❌ Error: theme_id is not defined. Check .env.local");
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/gather_data?theme_id=${theme_id}`);
-        if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-        const data = await res.json();
-        setHeaderStyle(data?.data?.sections?.header || {});
-      } catch (error) {
-        console.error("❌ Error fetching JSON data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Close mobile menu on Escape key press
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") setIsMenuOpen(false);
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+        setMobileSubPage(null);
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        if (isMenuOpen) {
+          setIsMenuOpen(false);
+          setMobileSubPage(null);
+        }
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMenuOpen]);
   return (
-    <header className="w-full bg-white relative top-0 left-0 z-50">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 sm:px-12 xl:w-[80%]">
-        {/* Mobile Menu Button (Left) */}
-        <button
-          className="md:hidden p-2 absolute left-2 top-2"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+    <>
+      <header
+        className={`w-full bg-white ${isMenuOpen && "z-50"} ${
+          isSticky ? "fixed top-0 left-0 z-50 shadow-xl" : "relative"
+        } `}
+      >
+        <div
+          className={`container mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 sm:px-12 xl:w-[80%]`}
         >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+          {/* Mobile Menu Button (Left) */}
+          {!isMenuOpen && (
+            <button
+              className="md:hidden p-2 absolute left-2 top-2 outline-none"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+          )}
 
-        {/* Logo (Centered) */}
-        <Link
-          href="/"
-          className="text-lg md:text-2xl font-semibold text-center md:text-left"
-        >
-          ECOD
-        </Link>
+          {/* Logo (Centered) */}
+          <Link
+            href="/"
+            className="text-lg md:text-2xl font-semibold text-center md:text-left"
+          >
+            ECOD
+          </Link>
 
-        {/* Desktop Navigation (Hidden on Mobile) */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {nav_list.map((item, index) => (
-            <div key={index} className="relative">
-              {item.subpages ? (
-                <div className="flex items-center cursor-pointer">
-                  <button
-                    type="button"
-                    className="flex items-center justify-center w-full"
-                    onClick={() =>
-                      setOpenDrop(openDrop === item.label ? null : item.label)
-                    }
-                  >
-                    {item.label}
-                    <ChevronDown
-                      className={`ml-1 transition-transform ${
-                        openDrop === item.label ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {openDrop === item.label && (
-                    <AnimatePresence>
-                      <motion.ul
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        ref={dropDeskRef}
-                        transition={{ duration: 0.4, ease: "easeInOut" }}
-                        className="absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150"
-                      >
-                        <AnimatePresence>
-                          {item.subpages.map((sub) => (
-                            <motion.li
-                              key={sub.label}
-                              initial={{ opacity: 0, rotateX: -90 }}
-                              animate={{ opacity: 1, rotateX: 0 }}
-                              transition={{ duration: 0.4, ease: "easeInOut" }}
-                            >
-                              <Link
-                                href={`/services/${sub.slug}`}
-                                className="block p-2 rounded transition-all transform ease-in-out duration-150 hover:bg-blue-100"
-                                onClick={() => setOpenDrop(null)}
-                              >
-                                {sub.label}
-                              </Link>
-                            </motion.li>
-                          ))}
-                        </AnimatePresence>
-                      </motion.ul>
-                    </AnimatePresence>
-                  )}
-                </div>
-              ) : (
-                <Link href={item.href} className="hover:text-blue-500">
-                  {item.label}
-                </Link>
-              )}
-            </div>
-          ))}
-        </nav>
-      </div>
-
-      {/* Mobile Navigation (Centered Above Logo) */}
-      <AnimatePresence>
-        <motion.div
-          initial={{ height: 0 }}
-          animate={{ height: isMenuOpen ? "auto" : 0 }}
-          ref={openMenuRef}
-          className="absolute w-full h-full bg-gray-50 left-0 overflow-hidden md:hidden shadow"
-        >
-          <ul className="py-4 text-center">
+          {/* Desktop Navigation (Hidden on Mobile) */}
+          <nav className="hidden md:flex items-center space-x-6">
             {nav_list.map((item, index) => (
-              <li key={index} className="px-6 py-2 text-black">
+              <div key={index} className="relative">
                 {item.subpages ? (
-                  <div className="relative">
+                  <div className="flex items-center cursor-pointer">
                     <button
+                      type="button"
                       className="flex items-center justify-center w-full"
                       onClick={() =>
-                        setOpenDropMob(
-                          openDropMob === item.label ? null : item.label
-                        )
+                        setOpenDrop(openDrop === item.label ? null : item.label)
                       }
                     >
                       {item.label}
                       <ChevronDown
-                        className={`ml-2 transition-transform ${
-                          openDropMob === item.label ? "rotate-180" : ""
+                        className={`ml-1 transition-transform ${
+                          openDrop === item.label ? "rotate-180" : ""
                         }`}
                       />
                     </button>
-                    {openDropMob === item.label && (
+                    {openDrop === item.label && (
                       <AnimatePresence>
                         <motion.ul
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{
-                            opacity: 1,
-                            height: "auto",
-                          }}
-                          ref={dropdownMobRef}
-                          className="px-4 py-2 mt-1 space-y-1 overflow-hidden bg-white bg-opacity-80 rounded shadow-xl"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          ref={dropDeskRef}
+                          transition={{ duration: 0.4, ease: "easeInOut" }}
+                          className="absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150"
                         >
-                          {item.subpages.map((sub) => (
-                            <li
-                              key={sub.label}
-                              className="text-base py-1 hover:bg-gray-100 hover:text-blue-900 text-gray-900 rounded ease-in-out transform transition-all duration-150"
-                            >
-                              <Link
-                                href={`/services/${sub.slug}`}
-                                onClick={() => {
-                                  setOpenDropMob(null); // Close dropdown when a link is clicked
-                                  setIsMenuOpen(false); // Close mobile menu
+                          <AnimatePresence>
+                            {item.subpages.map((sub) => (
+                              <motion.li
+                                key={sub.label}
+                                initial={{ opacity: 0, rotateX: -90 }}
+                                animate={{ opacity: 1, rotateX: 0 }}
+                                transition={{
+                                  duration: 0.4,
+                                  ease: "easeInOut",
+                                  delay: 0.5,
                                 }}
                               >
-                                {sub.label}
-                              </Link>
-                            </li>
-                          ))}
+                                <Link
+                                  href={`/services/${sub.slug}`}
+                                  className="block p-2 rounded transition-all transform ease-in-out duration-150 hover:bg-blue-100"
+                                  onClick={() => setOpenDrop(null)}
+                                >
+                                  {sub.label}
+                                </Link>
+                              </motion.li>
+                            ))}
+                          </AnimatePresence>
                         </motion.ul>
                       </AnimatePresence>
                     )}
                   </div>
                 ) : (
-                  <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
+                  <Link href={item.href} className="hover:text-blue-500">
                     {item.label}
                   </Link>
                 )}
-              </li>
+              </div>
             ))}
-          </ul>
-        </motion.div>
-      </AnimatePresence>
-    </header>
+          </nav>
+        </div>
+
+        {/* Mobile Navigation (Centered Above Logo) */}
+        <AnimatePresence>
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: isMenuOpen ? "auto" : 0, opacity: 1 }}
+            ref={openMenuRef}
+            className="absolute w-full flex flex-col h-full bg-gray-200 left-0 overflow-hidden md:hidden shadow"
+          >
+            <motion.ul className="flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300">
+              {nav_list.map((nav, ind) =>
+                nav.subpages ? (
+                  <motion.li
+                    initial={{ opacity: 0, rotateX: -90 }}
+                    animate={{ opacity: 1, rotateX: 0 }}
+                    exit={{ opacity: 0, rotateX: -90 }}
+                    transition={{ duration: 0.4 }}
+                    key={ind}
+                    className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 text-gray-900 hover:text-white rounded-md p-2 transition-all ease-in-out duration-150"
+                  >
+                    <button
+                      type="button"
+                      className="flex items-center justify-start"
+                      onClick={() => {
+                        console.log(nav.label);
+                        setMobileSubPage(
+                          mobileSubPage === nav.label ? null : nav.label
+                        );
+                      }}
+                    >
+                      <motion.span>{nav.label}</motion.span>
+                      <ChevronRight className="h-5 w-5 ml-6" />
+                    </button>
+                    {mobileSubPage === nav.label && (
+                      <motion.div
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: "100%", opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                        className="absolute w-full right-0 flex justify-between left-0 bottom-0 top-0 h-full bg-white shadow-xl"
+                      >
+                        <motion.ul className="flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300">
+                          {nav.subpages.map((sub, index) => (
+                            <motion.li
+                              key={index}
+                              className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 text-gray-900 hover:text-white rounded-md p-2 transition-all ease-in-out duration-150"
+                            >
+                              <Link href={`/services/${sub.slug}`}>
+                                {sub.label}
+                              </Link>
+                            </motion.li>
+                          ))}
+                        </motion.ul>
+                        <motion.button
+                          type="button"
+                          className="px-2 rounded-l-xl py-6 border border-r-0 self-center hover:text-gray-900 text-gray-900 bg-gray-200"
+                          onClick={() => setMobileSubPage(null)}
+                        >
+                          <ChevronLeft />
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </motion.li>
+                ) : (
+                  <motion.li
+                    initial={{ opacity: 0, rotateX: -90 }}
+                    animate={{ opacity: 1, rotateX: 0 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    key={ind}
+                    className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 text-gray-900 hover:text-white rounded-md p-2 transition-all ease-in-out duration-150"
+                  >
+                    <Link href={nav.href}>{nav.label}</Link>
+                  </motion.li>
+                )
+              )}
+            </motion.ul>
+            <motion.button
+              type="button"
+              className="py-1 px-6 self-center bg-white inset-10 rounded-t-lg border border-b-0 border-gray-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <ChevronUp />
+            </motion.button>
+          </motion.div>
+        </AnimatePresence>
+      </header>
+      {/* Mobile Menu opned then show overlay entire page */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-10"
+          onClick={() => setIsMenuOpen(false)}
+        ></div>
+      )}
+    </>
   );
 };
 
