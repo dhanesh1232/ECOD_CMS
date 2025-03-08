@@ -10,16 +10,19 @@
 }
 
 body {
+  position: fixed;
   font-family: Arial, Helvetica, sans-serif;
   overflow: hidden;
   height: 100dvh;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  margin: 0;
+  -ms-overflow-style: none;
 }
 body > * {
   @apply transition ease-in-out duration-150;
-}
-.layout-main {
-  @apply h-screen;
-  background: linear-gradient(45deg, #00c6ff, #98c0f0);
 }
 /* Hide Scrollbar for Webkit Browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
@@ -31,9 +34,4 @@ body > * {
 /* Hide Scrollbar for Firefox */
 html {
   scrollbar-width: none;
-}
-
-/* Hide Scrollbar for Edge */
-body {
-  -ms-overflow-style: none;
 }

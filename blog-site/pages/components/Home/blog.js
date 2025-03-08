@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   Navigation,
@@ -12,7 +12,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
-import { blogs } from "@/data/blog-posts";
+import { blogs } from "@/data/blog_data";
 import BlogCard from "../BlogCard";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
@@ -20,16 +20,7 @@ import { motion } from "framer-motion";
 const HomeBlog = () => {
   const router = useRouter();
   const swiperRef = useRef(null);
-  const [progress, setProgress] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress((prev) => (prev < 100 ? prev + 2 : 100));
-    }, 70);
-    return () => clearInterval(interval);
-  }, [activeIndex]);
 
   if (!blogs || !Array.isArray(blogs) || blogs.length === 0) {
     return (
@@ -103,34 +94,6 @@ const HomeBlog = () => {
             </SwiperSlide>
           ))}
         </Swiper>
-
-        {/* Pagination with Motion Animation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
-          className="mt-4 flex justify-center space-x-2 custom-pagination"
-        >
-          {blogs.map((_, index) => (
-            <div
-              key={index}
-              onClick={() => {
-                setActiveIndex(index);
-                swiperRef.current?.swiper.slideTo(index);
-              }}
-              className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer overflow-hidden"
-            >
-              <div
-                className="h-1 bg-green-500 transition-all"
-                style={{
-                  width: index === activeIndex ? `${progress}%` : "0%",
-                }}
-              ></div>
-            </div>
-          ))}
-        </motion.div>
-
-        <div className="blog-pagination mt-4 flex justify-center space-x-2"></div>
       </motion.div>
 
       {/* Call-to-Action Buttons with Motion Animation */}

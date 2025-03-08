@@ -3,6 +3,8 @@ import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+
+// Import custom components and hooks
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const About = () => {

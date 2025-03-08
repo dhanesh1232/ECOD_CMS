@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { blog_services } from "@/data/service_blogs";
-import { allBlogs } from "@/data/blogs-all";
+import { blog_services } from "@/data/blog_data";
+import { allBlogs } from "@/data/blog_data";
 
 const CategorySelector = dynamic(() =>
   import("../components/Reusable/CategorySelector")

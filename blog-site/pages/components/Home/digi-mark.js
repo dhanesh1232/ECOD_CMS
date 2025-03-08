@@ -12,16 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Data for the line chart
-const data = [
-  { month: "Jun", SEO: 60, PPC: 70, SMM: 50 },
-  { month: "Jul", SEO: 75, PPC: 85, SMM: 65 },
-  { month: "Aug", SEO: 90, PPC: 100, SMM: 80 },
-  { month: "Sep", SEO: 105, PPC: 120, SMM: 95 },
-  { month: "Oct", SEO: 120, PPC: 140, SMM: 110 },
-  { month: "Nov", SEO: 135, PPC: 160, SMM: 125 },
-  { month: "Dec", SEO: 150, PPC: 180, SMM: 140 },
-];
+import { data } from "@/data/service_data";
 
 const DigitalMarketing = () => {
   return (

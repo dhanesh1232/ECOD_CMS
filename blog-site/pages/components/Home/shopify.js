@@ -1,5 +1,10 @@
 "use client";
 
+import { pieData } from "@/data/shopify";
+import { radarData } from "@/data/shopify";
+import { salesData } from "@/data/shopify";
+import { conversionData } from "@/data/shopify";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -22,11 +27,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-import { pieData } from "@/data/shopify";
-import { radarData } from "@/data/shopify";
-import { salesData } from "@/data/shopify";
-import { conversionData } from "@/data/shopify";
 
 // Colors for the Pie Chart
 const COLORS = ["#2563eb", "#10b981", "#f97316"];

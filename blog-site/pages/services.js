@@ -1,10 +1,12 @@
-import { eco_services } from "@/data/ecod-services";
+import { eco_services } from "@/data/service_data";
+import { services_ecod } from "@/data/service_data";
+
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { services_ecod } from "@/data/service_ecod";
 import Head from "next/head";
 import { useRouter } from "next/router";
+
 // Dynamically importing components with error handling
 const CategorySelector = dynamic(() =>
   import("./components/Reusable/CategorySelector")

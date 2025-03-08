@@ -1,5 +1,7 @@
 "use client";
 
+import { data_traffic as data } from "@/data/service_data";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -10,17 +12,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-// Sample data for the graph
-const data = [
-  { name: "Jan", traffic: 5000, revenue: 10000 },
-  { name: "Feb", traffic: 8000, revenue: 15000 },
-  { name: "Mar", traffic: 12000, revenue: 25000 },
-  { name: "Apr", traffic: 10000, revenue: 22000 },
-  { name: "May", traffic: 15000, revenue: 35000 },
-  { name: "Jun", traffic: 20000, revenue: 50000 },
-];
-
 // SVG Icons
 const SEOSVG = () => (
   <svg

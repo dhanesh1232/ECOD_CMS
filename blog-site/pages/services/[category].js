@@ -1,12 +1,16 @@
 "use client";
 
+import { services_list_ecod } from "@/data/service_data";
+import { services_ecod } from "@/data/service_data";
+import { adPerformanceData } from "@/data/service_data";
+import { allCategories } from "@/data/service_data";
+
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { services_list_ecod } from "@/data/services_list";
-import { services_ecod } from "@/data/service_ecod";
+
 import {
   LineChart,
   Line,
@@ -19,9 +23,9 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { adPerformanceData } from "@/data/ad-performance";
-import { allCategories } from "@/data/all-services-cat";
-import ServiceCard from "../components/serviceCard";
+
+//Components imported using dynamic
+const ServiceCard = dynamic(() => import("../components/serviceCard"));
 const CategorySelector = dynamic(() =>
   import("../components/Reusable/CategorySelector")
 );

@@ -1,9 +1,11 @@
 "use client";
+
+import { blog_services } from "@/data/blog_data";
+import { blogs } from "@/data/blog_data";
+
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { blogs } from "@/data/blog-posts";
 import { MoveLeft, MoveRight } from "lucide-react";
-import { blog_services } from "@/data/service_blogs";
 import Head from "next/head";
 import { useRouter } from "next/router";
 

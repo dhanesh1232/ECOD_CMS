@@ -1,9 +1,10 @@
 "use client";
 
+import { adPerformanceData } from "@/data/service_data";
+import { eco_services } from "@/data/service_data";
+
 import Link from "next/link";
-import { eco_services } from "@/data/ecod-services";
 import { MoveRight } from "lucide-react";
-import { adPerformanceData } from "@/data/ad-performance";
 import {
   LineChart,
   Line,
@@ -16,7 +17,9 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import ServiceCard from "../serviceCard";
+import dynamic from "next/dynamic";
+
+const ServiceCard = dynamic(() => import("../serviceCard"));
 import { motion } from "framer-motion";
 
 // Function to calculate growth percentage
