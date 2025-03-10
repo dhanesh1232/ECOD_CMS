@@ -95,3 +95,19 @@ export const TrustSVG = () => (
     />
   </svg>
 );
+export const CheckSVG = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-8 w-8 mb-2"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 12L13 20L21 12M5 4v20M5 16h20M5 20v2M5 6h20"
+    />
+  </svg>
+);
