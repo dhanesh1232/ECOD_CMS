@@ -50,11 +50,12 @@ const ECODFaqs = () => {
               <h3 className="text-xl font-semibold text-gray-800">
                 {faq.question}
               </h3>
-              {openIndex === index ? (
-                <ChevronUp size={24} className="text-gray-600" />
-              ) : (
-                <ChevronDown size={24} className="text-gray-600" />
-              )}
+              <ChevronDown
+                size={24}
+                className={`text-gray-600 transition-transform transform ease-in-out duration-200 ${
+                  openIndex === index ? "rotate-180" : "rotate-0"
+                }`}
+              />
             </div>
 
             {/* Animate the FAQ answer */}

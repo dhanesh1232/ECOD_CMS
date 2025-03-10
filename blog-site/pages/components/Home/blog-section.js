@@ -16,6 +16,7 @@ import { blogs } from "@/data/blog_data";
 import BlogCard from "../BlogCard";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
+import Buttons from "../Reusable/buttons";
 
 const HomeBlog = () => {
   const router = useRouter();
@@ -103,18 +104,19 @@ const HomeBlog = () => {
         transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
         className="w-full mt-10 flex justify-center space-x-4"
       >
-        <button
-          onClick={() => router.push("/blog-posts")}
-          className="px-8 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:from-green-500 hover:to-teal-500 hover:scale-105 transition-transform duration-300"
-        >
-          Latest
-        </button>
-        <button
-          onClick={() => router.push("/blogs/shopify")}
-          className="px-8 py-3 border border-green-600 text-green-600 dark:text-green-400 dark:border-green-400 text-lg font-semibold rounded-lg hover:bg-green-600 hover:text-white dark:hover:bg-green-400 dark:hover:text-gray-900 hover:scale-105 transition-transform duration-300"
-        >
-          Explore
-        </button>
+        <Buttons
+          first_label={"Latest"}
+          first_nav={"/blog-posts"}
+          second_label={"Explore"}
+          second_nav={"/blogs/shopify"}
+          icon={true}
+          first_styles={
+            "inline-flex gap-2 items-center px-8 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:from-green-500 hover:to-teal-500 hover:scale-105 transition-transform duration-300"
+          }
+          second_styles={
+            "px-8 py-3 border border-green-600 text-green-600 dark:text-green-400 dark:border-green-400 text-lg font-semibold rounded-lg hover:bg-green-600 hover:text-white dark:hover:bg-green-400 dark:hover:text-gray-900 hover:scale-105 transition-transform duration-300"
+          }
+        />
       </motion.div>
     </section>
   );

@@ -16,6 +16,7 @@ export const nav_list = [
       },
       { label: "Content Marketing", slug: "content-marketing" },
       { label: "Email Marketing", slug: "email-marketing" },
+      { label: "Graphic | Logo Design", slug: "graphic-logo-design" },
     ],
   },
   { label: "Disclaimer", href: "/disclaimer" },

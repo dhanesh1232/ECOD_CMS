@@ -3,12 +3,12 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-const HomeBlog = dynamic(() => import("./components/Home/blog"));
-const HeroSection = dynamic(() => import("./components/Home/hero"));
-const OurServices = dynamic(() => import("./components/Home/our-serve"));
-const ShopifySection = dynamic(() => import("./components/Home/shopify"));
-const DigitalMarketing = dynamic(() => import("./components/Home/digi-mark"));
-const Testimonials = dynamic(() => import("./components/Home/client-testi"), {
+const HomeBlog = dynamic(() => import("./components/Home/blog-section"));
+const HeroSection = dynamic(() => import("./components/Home/hero-section"));
+const OurServices = dynamic(() => import("./components/Home/services-section"));
+const ShopifySection = dynamic(() => import("./components/Home/shopify-section"));
+const DigitalMarketing = dynamic(() => import("./components/Home/digi-mark-section"));
+const Testimonials = dynamic(() => import("./components/Home/client-testi-section"), {
   ssr: false,
 });
 const ECODFaqs = dynamic(() => import("./components/Home/faq-ecod"), {

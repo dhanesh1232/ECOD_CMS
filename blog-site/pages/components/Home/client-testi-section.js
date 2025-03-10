@@ -8,49 +8,62 @@ import "swiper/css/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { testimonials } from "@/data/testi";
+import Buttons from "../Reusable/buttons";
+import ClientPop from "../client-pop";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
 
 const Testimonials = () => {
+  const [activePop, setActivePop] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = activePop ? "hidden" : "auto";
+    return () => (document.body.style.overflow = "auto");
+  }, [activePop]);
+
   return (
-    <section className="w-full py-20 px-8 bg-gradient-to-b from-gray-50 to-white text-center relative">
-      {/* Heading with Motion Animation */}
+    <section className="w-full py-20 px-6 sm:px-8 bg-gradient-to-b from-gray-50 to-white text-center relative">
+      {/* Section Heading */}
       <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="text-2xl md:text-4xl font-extrabold text-gray-900"
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        className="text-3xl md:text-4xl font-extrabold text-gray-900"
       >
         🌟 What Our Clients Say
       </motion.h2>
-
-      {/* Subtitle with Motion Animation */}
       <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ delay: 0.2 }}
         className="mt-4 text-base md:text-lg text-gray-700"
       >
         Hear from businesses that trust our expertise.
       </motion.p>
 
-      {/* Swiper Container */}
+      {/* Testimonials Swiper */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ delay: 0.4 }}
         className="mt-12 max-w-5xl mx-auto relative"
       >
-        {/* Left Arrow */}
-        <button className="swiper-button-prev absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-gray-800 p-3 transition hover:bg-gray-100 rounded-full">
+        {/* Navigation Buttons */}
+        <button className="swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 text-gray-700 p-3 bg-white shadow-md rounded-full hover:bg-gray-100 transition">
           <ChevronLeft size={20} />
         </button>
-
-        {/* Right Arrow */}
-        <button className="swiper-button-next absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-gray-800 p-3 transition hover:bg-gray-100 rounded-full">
+        <button className="swiper-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 text-gray-700 p-3 bg-white shadow-md rounded-full hover:bg-gray-100 transition">
           <ChevronRight size={20} />
         </button>
 
-        {/* Swiper Slider */}
+        {/* Swiper Component */}
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           slidesPerView={1}
@@ -62,7 +75,6 @@ const Testimonials = () => {
           }}
           autoplay={{ delay: 3500 }}
           breakpoints={{
-            640: { slidesPerView: 1 },
             768: { slidesPerView: 2 },
             1024: { slidesPerView: 3 },
           }}
@@ -70,16 +82,13 @@ const Testimonials = () => {
           {testimonials.map((testimonial, index) => (
             <SwiperSlide key={index}>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.6,
-                  ease: "easeOut",
-                  delay: index * 0.1,
-                }}
-                className="p-6 bg-white rounded-lg shadow-lg text-center border border-gray-200 transition hover:shadow-xl"
+                variants={fadeInUp}
+                initial="hidden"
+                whileInView="visible"
+                transition={{ delay: index * 0.1 }}
+                className="p-6 bg-white rounded-lg shadow-lg text-center border border-gray-200 hover:shadow-xl transition"
               >
-                {/* Testimonial Image or Initial */}
+                {/* Avatar */}
                 {testimonial.image ? (
                   <Image
                     src={testimonial.image}
@@ -94,16 +103,14 @@ const Testimonials = () => {
                   </div>
                 )}
 
-                {/* Testimonial Name and Role */}
+                {/* Name & Role */}
                 <h3 className="mt-4 text-xl font-semibold text-gray-800">
                   {testimonial.name}
                 </h3>
                 <p className="text-gray-600">{testimonial.role}</p>
 
                 {/* Testimonial Quote */}
-                <p className="mt-4 text-gray-700 italic">
-                  {`"${testimonial.quote}"`}
-                </p>
+                <p className="mt-4 text-gray-700 italic">{`"${testimonial.quote}"`}</p>
               </motion.div>
             </SwiperSlide>
           ))}
@@ -112,9 +119,10 @@ const Testimonials = () => {
 
       {/* Additional Content */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ delay: 0.6 }}
         className="mt-12 max-w-4xl mx-auto"
       >
         <h3 className="text-xl font-semibold text-gray-800">
@@ -129,15 +137,22 @@ const Testimonials = () => {
 
       {/* Call to Action */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut", delay: 0.8 }}
+        variants={fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        transition={{ delay: 0.8 }}
         className="mt-8"
       >
-        <button className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition transform hover:scale-105">
-          Join Our Happy Clients
-        </button>
+        <Buttons
+          first_label="Join Our Happy Clients"
+          icon={true}
+          buttonAction={() => setActivePop(true)}
+          first_styles="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white text-base sm:text-lg font-semibold rounded-lg shadow-lg hover:bg-blue-500 hover:scale-105 transition-transform duration-300"
+        />
       </motion.div>
+
+      {/* Feedback Form Popup */}
+      {activePop && <ClientPop closePop={() => setActivePop(false)} />}
     </section>
   );
 };

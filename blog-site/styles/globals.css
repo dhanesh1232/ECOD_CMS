@@ -23,14 +23,23 @@ body {
 body > * {
   @apply transition-all ease-in-out duration-150;
 }
-/* Hide Scrollbar for Webkit Browsers (Chrome, Safari) */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
+
+/*Header Mobile Menu Scrollbar */
+/* Custom scrollbar styles */
+.scrollbar::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
 }
 
-/* Hide Scrollbar for Firefox */
-html {
-  scrollbar-width: none;
+.scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color of the track */
+  border-radius: 4px; /* Rounded corners for the track */
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the thumb */
+  border-radius: 4px; /* Rounded corners for the thumb */
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color of the thumb on hover */
 }

@@ -1,6 +1,5 @@
 import {
   Menu,
-  X,
   ChevronDown,
   ChevronRight,
   ChevronUp,
@@ -15,7 +14,6 @@ const theme_id = process.env.NEXT_PUBLIC_THEME_ID;
 import { nav_list } from "@/data/nav_link";
 
 const HeaderSection = () => {
-  const router = useRouter();
   const [isSticky, setIsSticky] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mobileSubPage, setMobileSubPage] = useState(null);
@@ -184,7 +182,7 @@ const HeaderSection = () => {
             ref={openMenuRef}
             className="absolute w-full flex flex-col h-full bg-gray-200 left-0 overflow-hidden md:hidden shadow"
           >
-            <motion.ul className="flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300">
+            <motion.ul className="flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300 overflow-auto">
               {nav_list.map((nav, ind) =>
                 nav.subpages ? (
                   <motion.li
@@ -216,7 +214,11 @@ const HeaderSection = () => {
                         transition={{ duration: 0.8, ease: "easeInOut" }}
                         className="absolute w-full right-0 flex justify-between left-0 bottom-0 top-0 h-full bg-white shadow-xl"
                       >
-                        <motion.ul className="flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300">
+                        {/* Scrollable Subpages List */}
+                        <motion.ul
+                          className="scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200 overflow-y-auto flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300 bg-gray-100"
+                          style={{ maxHeight: "100%" }} // Ensure the list doesn't exceed the parent height
+                        >
                           {nav.subpages.map((sub, index) => (
                             <motion.li
                               key={index}
@@ -228,6 +230,8 @@ const HeaderSection = () => {
                             </motion.li>
                           ))}
                         </motion.ul>
+
+                        {/* Back Button */}
                         <motion.button
                           type="button"
                           className="px-2 rounded-l-xl py-6 border border-r-0 self-center hover:text-gray-900 text-gray-900 bg-gray-200"
