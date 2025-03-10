@@ -89,12 +89,7 @@ const HeroSection = () => {
           Transform Your Vision into Reality 🚀
         </h1>
         <p className="text-lg sm:text-xl text-center md:text-2xl max-w-2xl mb-8 drop-shadow-md">
-          {`We build high-performance, scalable websites and web apps that drive
-          results. Whether it's a sleek business site, a powerful eCommerce
-          platform, or a cutting-edge SaaS solution, we craft modern digital
-          experiences using the latest technologies like React, Next.js, and
-          Tailwind CSS. Let’s turn your ideas into stunning, fast, and
-          user-friendly web solutions!`}
+          {`We create fast, scalable websites and web apps that deliver results. From sleek business sites to powerful eCommerce platforms and modern SaaS solutions, we use the latest tech like React, Next.js, and Tailwind CSS to build stunning, user-friendly digital experiences. Let’s bring your ideas to life!`}
         </p>
       </motion.div>
 
