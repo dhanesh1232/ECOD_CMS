@@ -123,7 +123,7 @@ const HeroSection = () => {
       </div>
 
       {/* Trust Badge or Testimonial */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-2">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-2 top-2">
         <span className="text-sm text-white opacity-80">Trusted by</span>
 
         <TrustSVG />
