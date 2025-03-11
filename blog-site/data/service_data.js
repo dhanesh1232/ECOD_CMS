@@ -1,3 +1,10 @@
+import {
+  ContentMarketingSVG,
+  PPCAdsSVG,
+  SEOSVG,
+  SocialMediaSVG,
+} from "@/public/Assets/svg";
+
 export const services_ecod = [
   { label: "Web Development", slug: "web-development" },
   { label: "Google | Meta Ads", slug: "google-meta-ads" },
@@ -661,3 +668,38 @@ export const growth_traffic_data = {
     { month: "Mar", value: 130 },
   ],
 };
+
+export const benefits_data = [
+  {
+    icon: <SEOSVG height={36} width={36} color="#FFFFFF" />,
+    title: "SEO",
+    description:
+      "Rank higher on search engines and drive organic traffic. Our SEO strategies ensure your website is optimized for visibility and performance.",
+    svgTips:
+      "Ensure the SVG is lightweight and uses semantic tags for better SEO. Add a `<title>` and `<desc>` for accessibility.",
+  },
+  {
+    icon: <SocialMediaSVG height={36} width={36} color="#FFFFFF" />,
+    title: "Social Media",
+    description:
+      "Engage your audience and build a loyal community. We create compelling social media strategies to boost your brand presence.",
+    svgTips:
+      "Use vibrant colors and scalable designs for social media platforms. Add hover effects for interactivity.",
+  },
+  {
+    icon: <PPCAdsSVG height={36} width={36} color="#FFFFFF" />,
+    title: "PPC Ads",
+    description:
+      "Get instant results with targeted ad campaigns. Our PPC experts maximize ROI through data-driven ad strategies.",
+    svgTips:
+      "Keep the design simple and focused. Use dynamic colors to match branding and ad themes.",
+  },
+  {
+    icon: <ContentMarketingSVG height={36} width={36} color="#FFFFFF" />,
+    title: "Content Marketing",
+    description:
+      "Attract and convert customers with valuable content. We craft content that resonates with your audience and drives conversions.",
+    svgTips:
+      "Use icons that represent content types (e.g., blogs, videos). Ensure the SVG is responsive for all devices.",
+  },
+];

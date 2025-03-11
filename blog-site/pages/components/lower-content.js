@@ -1,6 +1,6 @@
-import Link from "next/link";
 import Image from "next/image";
-
+import dynamic from "next/dynamic";
+const Buttons = dynamic(() => import("./Reusable/buttons"));
 const LowerContent = () => {
   return (
     <div className="w-full mt-6 p-8 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg text-center transition-colors duration-300">
@@ -59,18 +59,14 @@ const LowerContent = () => {
 
       {/* Call-to-Action Buttons */}
       <div className="mt-8 flex justify-center gap-4">
-        <Link
-          href="/services"
-          className="px-5 py-3 bg-green-500 text-white font-medium rounded-lg shadow-md hover:bg-green-600 dark:hover:bg-green-400 dark:hover:text-gray-900 transition-all duration-300 transform hover:scale-105"
-        >
-          Explore Services
-        </Link>
-        <Link
-          href="/contact"
-          className="px-5 py-3 border border-green-500 text-green-600 dark:text-green-400 dark:border-green-400 font-medium rounded-lg shadow-md hover:bg-green-600 hover:text-white dark:hover:bg-green-400 dark:hover:text-gray-900 transition-all duration-300 transform hover:scale-105"
-        >
-          Contact Us
-        </Link>
+        <Buttons
+          first_label={"Explore"}
+          second_label={"Contact"}
+          first_nav="/services"
+          first_styles="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+          second_nav="/contact"
+          second_styles="px-8 py-3 border-2 border-green-500 text-green-600 dark:text-green-400 dark:border-green-400 text-lg font-semibold rounded-lg hover:bg-green-600 hover:text-white dark:hover:bg-green-400 dark:hover:text-gray-900 hover:scale-105 transition-transform"
+        />
       </div>
     </div>
   );

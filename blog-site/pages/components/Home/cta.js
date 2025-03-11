@@ -1,6 +1,7 @@
 "use client";
-
+import dynamic from "next/dynamic";
 import { useState } from "react";
+import { benefits_data as benefits } from "@/data/service_data";
 import { data_traffic as data } from "@/data/service_data";
 import { motion } from "framer-motion";
 import {
@@ -11,83 +12,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import Buttons from "../Reusable/buttons";
-import Popup from "./pop";
-import { SEOSVG } from "@/public/Assets/svg";
-
-const SocialMediaSVG = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 mb-2"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-    />
-  </svg>
-);
-
-const PPCAdsSVG = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 mb-2"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
-
-const ContentMarketingSVG = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-8 w-8 mb-2"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-    />
-  </svg>
-);
-
-const benefits = [
-  {
-    icon: <SEOSVG height={36} width={36} color="#FFFFFF" />,
-    title: "SEO",
-    description: "Rank higher on search engines and drive organic traffic.",
-  },
-  {
-    icon: <SocialMediaSVG />,
-    title: "Social Media",
-    description: "Engage your audience and build a loyal community.",
-  },
-  {
-    icon: <PPCAdsSVG />,
-    title: "PPC Ads",
-    description: "Get instant results with targeted ad campaigns.",
-  },
-  {
-    icon: <ContentMarketingSVG />,
-    title: "Content Marketing",
-    description: "Attract and convert customers with valuable content.",
-  },
-];
+const Buttons = dynamic(() => import("../Reusable/buttons"));
+const Popup = dynamic(() => import("./pop"));
 
 const GrowYourBusiness = () => {
   const [selectedBenefit, setSelectedBenefit] = useState(null);
