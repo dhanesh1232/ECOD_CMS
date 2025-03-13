@@ -6,14 +6,13 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const theme_id = process.env.NEXT_PUBLIC_THEME_ID;
 import { nav_list } from "@/data/nav_link";
+import { useRouter } from "next/router";
 
 const HeaderSection = () => {
+  const router = useRouter();
   const [isSticky, setIsSticky] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mobileSubPage, setMobileSubPage] = useState(null);
@@ -136,23 +135,31 @@ const HeaderSection = () => {
                           animate={{ opacity: 1 }}
                           ref={dropDeskRef}
                           transition={{ duration: 0.4, ease: "easeInOut" }}
-                          className="absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150"
+                          className={`absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150 z-50`}
                         >
                           <AnimatePresence>
-                            {item.subpages.map((sub) => (
+                            {item.subpages.map((sub, ind) => (
                               <motion.li
                                 key={sub.label}
-                                initial={{ opacity: 0, rotateX: -90 }}
-                                animate={{ opacity: 1, rotateX: 0 }}
+                                initial={{
+                                  opacity: 0,
+                                  rotateY: -90,
+                                  scale: 0.5,
+                                }}
+                                animate={{ opacity: 1, rotateY: 0, scale: 1 }}
                                 transition={{
-                                  duration: 0.4,
+                                  duration: 0.3,
                                   ease: "easeInOut",
-                                  delay: 0.5,
+                                  delay: 0.1 + ind * 0.05,
                                 }}
                               >
                                 <Link
                                   href={`/services/${sub.slug}`}
-                                  className="block p-2 rounded transition-all transform ease-in-out duration-150 hover:bg-blue-100"
+                                  className={` text-gray-900  rounded-md p-2  block transition-all transform ease-in-out duration-150 ${
+                                    router.pathname === `/services/${sub.slug}`
+                                      ? "bg-gradient-to-r text-white to-purple-500 from-blue-500"
+                                      : "hover:bg-gradient-to-r hover:text-white hover:from-blue-500 hover:to-purple-500"
+                                  }`}
                                   onClick={() => setOpenDrop(null)}
                                 >
                                   {sub.label}
@@ -165,7 +172,14 @@ const HeaderSection = () => {
                     )}
                   </div>
                 ) : (
-                  <Link href={item.href} className="hover:text-blue-500">
+                  <Link
+                    href={item.href}
+                    className={`${
+                      router.pathname === item.href
+                        ? "text-blue-500"
+                        : " hover:text-white hover:bg-blue-500"
+                    } p-2 px-3 rounded transition transform ease-in-out duration-150`}
+                  >
                     {item.label}
                   </Link>
                 )}

@@ -1,17 +1,12 @@
+import { TrustSVG } from "@/public/Assets/svg";
 import Link from "next/link";
 import * as FaIcons from "react-icons/fa";
 
-const contact = {
-  address: "Tirupati, Andhra Pradesh, India",
-  phone: "+91 8143963821",
-  email: "support@ecod.com",
-};
-
 const socialLinks = [
-  { Icon: FaIcons.FaFacebookF, link: "#", followers: "10k+" },
-  { Icon: FaIcons.FaTwitter, link: "#", followers: "8.5k+" },
-  { Icon: FaIcons.FaLinkedinIn, link: "#", followers: "12k+" },
-  { Icon: FaIcons.FaInstagram, link: "#", followers: "15k+" },
+  { Icon: FaIcons.FaFacebookF, link: "#", followers: "1k+" },
+  { Icon: FaIcons.FaTwitter, link: "#", followers: "1k+" },
+  { Icon: FaIcons.FaLinkedinIn, link: "#", followers: "1k+" },
+  { Icon: FaIcons.FaInstagram, link: "#", followers: "1k+" },
 ];
 
 const quickLinks = [
@@ -188,8 +183,10 @@ const Footer = () => {
       </div>
 
       {/* Footer Bottom */}
-      <div className="mt-10 text-center border-t border-gray-700 pt-5 text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} ECOD. All Rights Reserved.
+      <div className="mt-10 text-center border-t border-gray-700 pt-5 text-gray-500 text-sm flex items-center justify-center gap-2">
+        &copy; {new Date().getFullYear()}{" "}
+        <TrustSVG width={50} height={60} color="#FFFFFF" />. All Rights
+        Reserved.
       </div>
     </footer>
   );

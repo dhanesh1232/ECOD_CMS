@@ -1,19 +1,20 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+const StarRating = dynamic(() => import("./Client-Section/star"));
 
 const ClientPop = ({ closePop }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    rating: "",
+    rating: 0,
     feedback: "",
   });
   const [errors, setErrors] = useState({});
   const [isFocused, setIsFocused] = useState({
     name: false,
     email: false,
-    rating: false,
     feedback: false,
   });
 
@@ -117,31 +118,23 @@ const ClientPop = ({ closePop }) => {
           <div className="flex flex-col items-start">
             <label
               htmlFor="rating"
-              className="block text-sm font-medium mb-1 text-gray-700"
+              className={`block text-sm font-medium mb-1 ${
+                errors.rating ? "text-red-500" : "text-gray-700"
+              }`}
             >
               Rating
             </label>
-            <select
-              id="rating"
-              name="rating"
-              value={formData.rating}
-              onChange={handleInputChange}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200"
-            >
-              <option value="" disabled>
-                Rate Our Service
-              </option>
-              {[5, 4, 3, 2, 1].map((num) => (
-                <option key={num} value={num}>
-                  {`⭐`.repeat(num)} - {num}
-                </option>
-              ))}
-            </select>
+            <StarRating
+              rating={formData.rating}
+              setRating={(rating) =>
+                setFormData({ ...formData, rating, feedback: "" })
+              }
+            />
             {errors.rating && (
               <p className="text-red-500 text-sm mt-1">{errors.rating}</p>
             )}
           </div>
-          {formData.rating && (
+          {formData.rating > 0 && (
             <div className="flex flex-col items-start">
               <label
                 htmlFor="feedback"

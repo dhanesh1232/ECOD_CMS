@@ -1,5 +1,6 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { CertifiedSVG, VerfiedSVG } from "@/public/Assets/svg";
 const Buttons = dynamic(() => import("./Reusable/buttons"));
 const LowerContent = () => {
   return (
@@ -20,37 +21,13 @@ const LowerContent = () => {
       {/* Trust Badge Section */}
       <div className="mt-8 flex flex-wrap justify-center gap-6">
         <div className="flex items-center gap-2">
-          <Image
-            src="/Images/trust-badge-1.svg" // Replace with your trust badge image
-            alt="Trust Badge 1"
-            width={40}
-            height={40}
-            className="w-10 h-10"
-          />
+          <VerfiedSVG width={24} height={24} color="#000000" />
           <span className="text-gray-700 dark:text-gray-300 font-medium">
             100% Satisfaction
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Image
-            src="/Images/trust-badge-2.svg" // Replace with your trust badge image
-            alt="Trust Badge 2"
-            width={40}
-            height={40}
-            className="w-10 h-10"
-          />
-          <span className="text-gray-700 dark:text-gray-300 font-medium">
-            Eco-Friendly Solutions
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Image
-            src="/Images/trust-badge-3.svg" // Replace with your trust badge image
-            alt="Trust Badge 3"
-            width={40}
-            height={40}
-            className="w-10 h-10"
-          />
+          <CertifiedSVG />
           <span className="text-gray-700 dark:text-gray-300 font-medium">
             Certified Experts
           </span>

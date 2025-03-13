@@ -88,25 +88,29 @@ const GrowYourBusiness = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
-        className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+        transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
+        className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
       >
         {benefits.map((item, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.6,
-              ease: "easeOut",
-              delay: 0.6 + index * 0.1,
+            whileHover={{
+              scale: 1.05,
+              shadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
             }}
-            className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center hover:bg-white/20 transition-all duration-300 cursor-pointer"
+            transition={{
+              duration: 0.1,
+              ease: "easeOut",
+              delay: 0.1 + index * 0.05,
+            }}
+            className="p-6 bg-white/10 rounded-lg backdrop-blur-sm flex flex-col items-center cursor-pointer transition-all duration-300 hover:bg-white/20 hover:shadow-lg hover:scale-105"
             onClick={() => setSelectedBenefit(item)}
           >
-            {item.icon}
-            <h3 className="text-lg font-semibold">{item.title}</h3>
-            <p className="text-sm text-gray-200 text-center">
+            <div className="mb-4 text-3xl text-white">{item.icon}</div>
+            <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+            <p className="text-sm text-gray-200 text-center mt-2">
               {item.description}
             </p>
           </motion.div>

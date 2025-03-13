@@ -14,7 +14,7 @@ const Testimonials = dynamic(() => import("./components/Home/client-testi-sectio
 const ECODFaqs = dynamic(() => import("./components/Home/faq-ecod"), {
   ssr: false,
 });
-const CallToAction = dynamic(() => import("./components/Home/cta"), {
+const CallToAction = dynamic(() => import("./components/Home/call-to-action"), {
   ssr: false,
 });
 

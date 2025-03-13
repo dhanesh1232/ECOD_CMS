@@ -126,7 +126,7 @@ const HeroSection = () => {
       <div className="absolute left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-2 bottom-0 sm:bottom-2">
         <span className="text-sm text-white opacity-80">Trusted by</span>
 
-        <TrustSVG />
+        <TrustSVG width={50} height={60} color="#026607" />
       </div>
     </section>
   );

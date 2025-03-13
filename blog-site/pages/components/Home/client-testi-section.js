@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { testimonials } from "@/data/testi";
 import Buttons from "../Reusable/buttons";
-import ClientPop from "../client-pop";
+import ClientPop from "./client-pop";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -28,7 +28,6 @@ const Testimonials = () => {
 
   return (
     <section className="w-full py-20 px-6 sm:px-8 bg-gradient-to-b from-gray-50 to-white text-center relative">
-      {/* Section Heading */}
       <motion.h2
         variants={fadeInUp}
         initial="hidden"
@@ -47,7 +46,6 @@ const Testimonials = () => {
         Hear from businesses that trust our expertise.
       </motion.p>
 
-      {/* Testimonials Swiper */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -55,7 +53,6 @@ const Testimonials = () => {
         transition={{ delay: 0.4 }}
         className="mt-12 max-w-5xl mx-auto relative"
       >
-        {/* Navigation Buttons */}
         <button className="swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 text-gray-700 p-3 bg-white shadow-md rounded-full hover:bg-gray-100 transition">
           <ChevronLeft size={20} />
         </button>
@@ -63,7 +60,6 @@ const Testimonials = () => {
           <ChevronRight size={20} />
         </button>
 
-        {/* Swiper Component */}
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
           slidesPerView={1}
@@ -88,7 +84,6 @@ const Testimonials = () => {
                 transition={{ delay: index * 0.1 }}
                 className="p-6 bg-white rounded-lg shadow-lg text-center border border-gray-200 hover:shadow-xl transition"
               >
-                {/* Avatar */}
                 {testimonial.image ? (
                   <Image
                     src={testimonial.image}
@@ -103,13 +98,10 @@ const Testimonials = () => {
                   </div>
                 )}
 
-                {/* Name & Role */}
                 <h3 className="mt-4 text-xl font-semibold text-gray-800">
                   {testimonial.name}
                 </h3>
                 <p className="text-gray-600">{testimonial.role}</p>
-
-                {/* Testimonial Quote */}
                 <p className="mt-4 text-gray-700 italic">{`"${testimonial.quote}"`}</p>
               </motion.div>
             </SwiperSlide>
@@ -117,7 +109,6 @@ const Testimonials = () => {
         </Swiper>
       </motion.div>
 
-      {/* Additional Content */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -133,9 +124,12 @@ const Testimonials = () => {
           Our clients love us for our transparency, expertise, and commitment to
           their success.
         </p>
+        <p className="mt-6 text-gray-700 italic">
+          Dear client, we’d love to hear about your experience with our service
+          and work. Your feedback helps us grow and serve you better!
+        </p>
       </motion.div>
 
-      {/* Call to Action */}
       <motion.div
         variants={fadeInUp}
         initial="hidden"
@@ -151,7 +145,6 @@ const Testimonials = () => {
         />
       </motion.div>
 
-      {/* Feedback Form Popup */}
       {activePop && <ClientPop closePop={() => setActivePop(false)} />}
     </section>
   );
