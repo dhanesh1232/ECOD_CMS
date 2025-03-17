@@ -41,7 +41,7 @@ const Footer = () => {
       <div className="container mx-auto justify-center flex-wrap px-4 md:px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
         {/* About ECOD */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">About ECOD</h2>
+          <h2 className="text-xl font-semibold mb-4 underline">About ECOD</h2>
           <p className="text-gray-300">
             ECOD provides top-notch services to enhance your digital presence.
             <span className="text-green-400 font-semibold">
@@ -54,7 +54,7 @@ const Footer = () => {
 
         {/* Services */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Our Services</h2>
+          <h2 className="text-xl font-semibold mb-4 underline">Our Services</h2>
           <ul className="space-y-2 flex flex-col items-center">
             {services.map((service, index) => (
               <li
@@ -76,7 +76,7 @@ const Footer = () => {
 
         {/* Quick Links */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
+          <h2 className="text-xl font-semibold mb-4 underline">Quick Links</h2>
           <ul className="space-y-2">
             {quickLinks.map((link, index) => (
               <li key={index}>
@@ -100,7 +100,9 @@ const Footer = () => {
         </div>
         {/* Testimonials */}
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4">What Our Clients Say</h2>
+          <h2 className="text-xl font-semibold mb-4 underline">
+            What Our Clients Say
+          </h2>
           <div className="space-y-4">
             {testimonials.map((testimonial, index) => (
               <blockquote key={index} className="text-gray-300 italic">
@@ -167,7 +169,7 @@ const Footer = () => {
 
       {/* Social Media Links */}
       <div className="mt-10 text-center">
-        <h2 className="text-xl font-semibold mb-3">Follow Us</h2>
+        <h2 className="text-xl font-semibold mb-3 underline">Follow Us</h2>
         <div className="flex justify-center flex-wrap gap-2">
           {socialLinks.map(({ Icon, link, followers }, index) => (
             <a

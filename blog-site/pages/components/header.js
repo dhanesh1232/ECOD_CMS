@@ -109,7 +109,7 @@ const HeaderSection = () => {
           </Link>
 
           {/* Desktop Navigation (Hidden on Mobile) */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-4">
             {nav_list.map((item, index) => (
               <div key={index} className="relative">
                 {item.subpages ? (

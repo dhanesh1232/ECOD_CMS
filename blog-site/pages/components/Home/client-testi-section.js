@@ -1,21 +1,21 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-import "swiper/css/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { testimonials } from "@/data/testi";
-import Buttons from "../Reusable/buttons";
-import ClientPop from "./client-pop";
+import dynamic from "next/dynamic";
+
+const ClientPop = dynamic(() => import("./client-pop"));
+const Buttons = dynamic(() => import("../Reusable/buttons"));
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
 const Testimonials = () => {
@@ -51,23 +51,18 @@ const Testimonials = () => {
         initial="hidden"
         whileInView="visible"
         transition={{ delay: 0.4 }}
-        className="mt-12 max-w-5xl mx-auto relative"
+        className="my-12 max-w-5xl mx-auto relative p-5"
       >
-        <button className="swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 text-gray-700 p-3 bg-white shadow-md rounded-full hover:bg-gray-100 transition">
-          <ChevronLeft size={20} />
-        </button>
-        <button className="swiper-button-next absolute right-4 top-1/2 -translate-y-1/2 z-10 text-gray-700 p-3 bg-white shadow-md rounded-full hover:bg-gray-100 transition">
-          <ChevronRight size={20} />
-        </button>
-
         <Swiper
-          modules={[Navigation, Pagination, Autoplay]}
+          modules={[Pagination, Autoplay]}
           slidesPerView={1}
           spaceBetween={20}
-          pagination={{ clickable: true, el: ".custom-pagination" }}
-          navigation={{
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
+          pagination={{
+            clickable: true,
+            el: ".custom-side-pagination",
+            renderBullet: (index, className) => {
+              return `<span class="${className} bg-blue-500 hover:bg-blue-600 transition-all duration-300"></span>`;
+            },
           }}
           autoplay={{ delay: 3500 }}
           breakpoints={{
@@ -82,7 +77,7 @@ const Testimonials = () => {
                 initial="hidden"
                 whileInView="visible"
                 transition={{ delay: index * 0.1 }}
-                className="p-6 bg-white rounded-lg shadow-lg text-center border border-gray-200 hover:shadow-xl transition"
+                className="p-4 bg-white rounded-lg shadow-lg text-center border border-gray-200 hover:shadow-xl transition z-50"
               >
                 {testimonial.image ? (
                   <Image
@@ -107,6 +102,14 @@ const Testimonials = () => {
             </SwiperSlide>
           ))}
         </Swiper>
+
+        {/* Custom Side Pagination Bar */}
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          className="custom-side-pagination absolute right-1/2 bottom-5 -translate-y-1/2 space-x-2 z-50 cursor-pointer"
+        ></motion.div>
       </motion.div>
 
       <motion.div

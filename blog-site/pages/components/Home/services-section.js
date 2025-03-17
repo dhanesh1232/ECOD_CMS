@@ -3,15 +3,15 @@
 import { adPerformanceData, eco_services } from "@/data/service_data";
 import {
   LineChart,
-  Line,
   BarChart,
+  Line,
   Bar,
   XAxis,
   YAxis,
-  Legend,
-  Tooltip,
-  ResponsiveContainer,
   CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
@@ -50,6 +50,7 @@ const OurServices = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
+          viewport={{ once: false }} // Reset animation on scroll
           className="text-3xl md:text-5xl font-bold text-gray-900"
         >
           🚀 Our Premium Services
@@ -58,6 +59,7 @@ const OurServices = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: false }} // Reset animation on scroll
           className="mt-4 text-lg md:text-xl text-gray-700 max-w-3xl mx-auto"
         >
           Elevate your business with cutting-edge digital solutions designed for
@@ -69,6 +71,7 @@ const OurServices = () => {
         initial="hidden"
         whileInView="visible"
         transition={{ staggerChildren: 0.2 }}
+        viewport={{ once: false }} // Reset animation on scroll
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-10"
       >
         {eco_services.slice(0, 4).map((service, index) => (
@@ -77,6 +80,7 @@ const OurServices = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            viewport={{ once: false }} // Reset animation on scroll
           >
             <ServiceCard service={service} />
           </motion.div>
@@ -87,6 +91,7 @@ const OurServices = () => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
+        viewport={{ once: false }} // Reset animation on scroll
         className="mt-16 max-w-6xl mx-auto"
       >
         <h3 className="text-xl font-semibold text-center text-gray-900">
@@ -97,7 +102,14 @@ const OurServices = () => {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white p-5 rounded-xl shadow-md border border-gray-200">
+          {/* Meta Ads & Google Ads Performance */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: false }} // Reset animation on scroll
+            className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
+          >
             <h4 className="text-lg font-semibold text-gray-900 mb-4">
               Meta Ads & Google Ads Performance
             </h4>
@@ -119,6 +131,8 @@ const OurServices = () => {
                   stroke="#1D4ED8"
                   strokeWidth={2}
                   name="Meta Ads"
+                  animationDuration={1000} // Line animation duration
+                  animationEasing="ease-in-out" // Smooth animation
                 />
                 <Line
                   type="monotone"
@@ -126,12 +140,22 @@ const OurServices = () => {
                   stroke="#F97316"
                   strokeWidth={2}
                   name="Google Ads"
+                  animationDuration={1000} // Line animation duration
+                  animationEasing="ease-in-out" // Smooth animation
                 />
                 <Legend />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="bg-white p-5 rounded-xl shadow-md border border-gray-200">
+          </motion.div>
+
+          {/* SEO Growth Over Time */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: false }} // Reset animation on scroll
+            className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
+          >
             <h4 className="text-lg font-semibold text-gray-900 mb-4">
               SEO Growth Over Time
             </h4>
@@ -152,11 +176,13 @@ const OurServices = () => {
                   fill="#10B981"
                   name="SEO Growth"
                   radius={[4, 4, 0, 0]}
+                  animationDuration={1000} // Bar animation duration
+                  animationEasing="ease-in-out" // Smooth animation
                 />
                 <Legend />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
 
@@ -164,6 +190,7 @@ const OurServices = () => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.6 }}
+        viewport={{ once: false }} // Reset animation on scroll
         className="mt-10 text-center"
       >
         <Buttons

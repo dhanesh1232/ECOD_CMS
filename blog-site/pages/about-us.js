@@ -1,43 +1,49 @@
 "use client";
+
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { motion } from "framer-motion";
+const TeamMemberCard = dynamic(() => import("./components/About/team"));
 
-// Import custom components and hooks
+import { experties_data } from "@/data/shopify";
+import Buttons from "./components/Reusable/buttons";
+import Intro from "./components/About/intro";
+import ServiceSection from "./components/About/about-services";
+
+// Dynamic imports for better performance
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const About = () => {
   const router = useRouter();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [router.pathname]);
+
   return (
     <>
       <Head>
-        {/* Page Title */}
-        <title>About Us - Your Website Name</title>
-
-        {/* Meta Description */}
+        <title>About Us - ECOD</title>
         <meta
           name="description"
           content="Learn more about our mission, vision, and the team behind Your Website Name."
         />
-
-        {/* Open Graph Meta Tags (for social media) */}
         <meta property="og:title" content="About Us - Your Website Name" />
         <meta
           property="og:description"
           content="Learn more about our mission, vision, and the team behind Your Website Name."
         />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourwebsite.com/about-us" />
+        <meta
+          property="og:url"
+          content={`${process.env.NEXT_PUBLIC_SITE_URL}/about-us`}
+        />
         <meta
           property="og:image"
-          content="https://yourwebsite.com/images/about-us-og-image.jpg"
+          content={`${process.env.NEXT_PUBLIC_SITE_URL}/images/about-us-og-image.jpg`}
         />
-
-        {/* Twitter Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="About Us - Your Website Name" />
         <meta
@@ -46,13 +52,12 @@ const About = () => {
         />
         <meta
           name="twitter:image"
-          content="https://yourwebsite.com/images/about-us-twitter-image.jpg"
+          content={`${process.env.NEXT_PUBLIC_SITE_URL}/images/about-us-twitter-image.jpg`}
         />
-
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://yourwebsite.com/about-us" />
-
-        {/* Schema Markup (JSON-LD) */}
+        <link
+          rel="canonical"
+          href={`${process.env.NEXT_PUBLIC_SITE_URL}/about-us`}
+        />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -60,60 +65,69 @@ const About = () => {
             name: "About Us",
             description:
               "Learn more about our mission, vision, and the team behind Your Website Name.",
-            url: "https://yourwebsite.com/about-us",
+            url: `${process.env.NEXT_PUBLIC_SITE_URL}/about-us`,
             publisher: {
               "@type": "Organization",
               name: "Your Website Name",
               logo: {
                 "@type": "ImageObject",
-                url: "https://yourwebsite.com/images/logo.png",
+                url: `${process.env.NEXT_PUBLIC_SITE_URL}/images/logo.png`,
               },
             },
           })}
         </script>
       </Head>
-      <section className="bg-gray-100 dark:bg-gray-900 py-12 px-6 md:px-12 lg:px-24">
-        <BackAndForward forward="/contact" />
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-            About ECOD
-          </h2>
-          <p className="text-base md:text-lg text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-8">
-            Welcome to{" "}
-            <span className="font-semibold text-blue-600 dark:text-blue-400">
-              ECOD
-            </span>
-            , your digital partner for cutting-edge web development, strategic
-            digital marketing, and seamless Shopify solutions. Our mission is to
-            empower businesses with innovative technology and marketing
-            strategies that drive growth and success.
-          </p>
-          <div className="grid md:grid-cols-2 gap-10 mt-10">
-            <div className="flex flex-col justify-center items-center">
-              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Our Expertise
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 mt-4">
-                We specialize in <strong>Next.js, React.js, MongoDB</strong>,
-                and full-stack web solutions, alongside expert digital marketing
-                strategies, including{" "}
-                <strong>Meta Ads, Google Ads, and SEO</strong> to maximize
-                online reach.
-              </p>
+      <section className="w-full py-20 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Introduction */}
+          <Intro />
+          {/* Services Section */}
+          <ServiceSection />
+
+          {/* Team Section */}
+          <div className="mt-20">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-3xl md:text-4xl font-bold text-gray-900 text-center"
+            >
+              Our Team
+            </motion.h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto text-center">
+              Meet the experts behind your Shopify success. Our team is
+              passionate about helping businesses grow online.
+            </p>
+
+            {/* Team Grid */}
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {experties_data.map((data, i) => (
+                <TeamMemberCard key={i} data={data} />
+              ))}
             </div>
           </div>
-          <div className="mt-10">
-            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Get in Touch
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mt-4">
-              Have a project in mind? {`Let's`} bring your vision to life. Reach
-              out to us at:
+
+          {/* Call-to-Action */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="mt-20 text-center"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Ready to Grow Your Business?
+            </h2>
+            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+              Let us handle your Shopify store setup and maintenance so you can
+              focus on what you do best.
             </p>
-            <p className="text-lg font-semibold text-blue-600 dark:text-blue-400 mt-2">
-              ecoddigital@ecod.com
-            </p>
-          </div>
+            <Buttons
+              first_styles="mt-6 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:scale-105 transition-transform duration-300"
+              first_label={"Get Started"}
+            />
+          </motion.div>
         </div>
       </section>
     </>
