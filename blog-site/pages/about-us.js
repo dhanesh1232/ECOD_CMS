@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
@@ -11,6 +10,7 @@ import { experties_data } from "@/data/shopify";
 import Buttons from "./components/Reusable/buttons";
 import Intro from "./components/About/intro";
 import ServiceSection from "./components/About/about-services";
+import HeadSEO from "./components/Reusable/seo_head";
 
 // Dynamic imports for better performance
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
@@ -24,59 +24,21 @@ const About = () => {
 
   return (
     <>
-      <Head>
-        <title>About Us - ECOD</title>
-        <meta
-          name="description"
-          content="Learn more about our mission, vision, and the team behind Your Website Name."
-        />
-        <meta property="og:title" content="About Us - Your Website Name" />
-        <meta
-          property="og:description"
-          content="Learn more about our mission, vision, and the team behind Your Website Name."
-        />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content={`${process.env.NEXT_PUBLIC_SITE_URL}/about-us`}
-        />
-        <meta
-          property="og:image"
-          content={`${process.env.NEXT_PUBLIC_SITE_URL}/images/about-us-og-image.jpg`}
-        />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="About Us - Your Website Name" />
-        <meta
-          name="twitter:description"
-          content="Learn more about our mission, vision, and the team behind Your Website Name."
-        />
-        <meta
-          name="twitter:image"
-          content={`${process.env.NEXT_PUBLIC_SITE_URL}/images/about-us-twitter-image.jpg`}
-        />
-        <link
-          rel="canonical"
-          href={`${process.env.NEXT_PUBLIC_SITE_URL}/about-us`}
-        />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "AboutPage",
-            name: "About Us",
-            description:
-              "Learn more about our mission, vision, and the team behind Your Website Name.",
-            url: `${process.env.NEXT_PUBLIC_SITE_URL}/about-us`,
-            publisher: {
-              "@type": "Organization",
-              name: "Your Website Name",
-              logo: {
-                "@type": "ImageObject",
-                url: `${process.env.NEXT_PUBLIC_SITE_URL}/images/logo.png`,
-              },
-            },
-          })}
-        </script>
-      </Head>
+      <HeadSEO
+        title="About Us - ECOD"
+        description="Learn more about ECOD, our mission, and our team. We are dedicated to helping businesses grow through innovative digital solutions."
+        canonicalUrl="https://ecoddigital.com/about"
+        ogImage="https://ecoddigital.com/images/about-og-image.jpg"
+        twitterImage="https://ecoddigital.com/images/about-twitter-image.jpg"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "About Us - ECOD",
+          description:
+            "Learn more about ECOD, our mission, and our team. We are dedicated to helping businesses grow through innovative digital solutions.",
+          url: "https://ecoddigital.com/about",
+        }}
+      />
       <section className="w-full py-20 bg-gradient-to-r from-blue-50 to-purple-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Introduction */}

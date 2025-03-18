@@ -6,8 +6,8 @@ import { blogs } from "@/data/blog_data";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { MoveLeft, MoveRight } from "lucide-react";
-import Head from "next/head";
 import { useRouter } from "next/router";
+import HeadSEO from "./components/Reusable/seo_head";
 
 const CategorySelector = dynamic(() =>
   import("./components/Reusable/CategorySelector")
@@ -56,68 +56,26 @@ const BlogPosts = () => {
 
   return (
     <>
-      <Head>
-        {/* Page Title */}
-        <title>Blog Posts - Blog Site</title>
-
-        {/* Meta Description */}
-        <meta
-          name="description"
-          content="Read our latest blog posts on various topics."
-        />
-
-        {/* Open Graph Meta Tags (for social media) */}
-        <meta property="og:title" content="Blog Posts - Blog Site" />
-        <meta
-          property="og:description"
-          content="Read our latest blog posts on various topics."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourwebsite.com/blog-posts" />
-        <meta
-          property="og:image"
-          content="https://yourwebsite.com/images/blog-posts-og-image.jpg"
-        />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Blog Posts - Blog Site" />
-        <meta
-          name="twitter:description"
-          content="Read our latest blog posts on various topics."
-        />
-        <meta
-          name="twitter:image"
-          content="https://yourwebsite.com/images/blog-posts-twitter-image.jpg"
-        />
-
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://yourwebsite.com/blog-posts" />
-
-        {/* Schema Markup (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Blog",
-            name: "Blog Site",
-            description: "Read our latest blog posts on various topics.",
-            url: "https://yourwebsite.com/blog-posts",
-            image: "https://yourwebsite.com/images/blog-posts-og-image.jpg",
-            mainEntityOfPage: {
-              "@type": "WebPage",
-              "@id": "https://yourwebsite.com/blog-posts",
-            },
-            publisher: {
-              "@type": "Organization",
-              name: "Blog Site",
-              logo: {
-                "@type": "ImageObject",
-                url: "https://yourwebsite.com/images/logo.png",
-              },
-            },
-          })}
-        </script>
-      </Head>
+      <HeadSEO
+        title="Blog - ECOD"
+        description="Stay updated with the latest trends in web development, SEO, and digital marketing. Explore our blog for expert insights and tips."
+        canonicalUrl="https://ecoddigital.com/blog"
+        ogImage="https://ecoddigital.com/images/blog-og-image.jpg"
+        twitterImage="https://ecoddigital.com/images/blog-twitter-image.jpg"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          name: "ECOD Blog",
+          description:
+            "Stay updated with the latest trends in web development, SEO, and digital marketing.",
+          url: "https://ecoddigital.com/blog",
+          publisher: {
+            "@type": "Organization",
+            name: "ECOD",
+            logo: "https://ecoddigital.com/images/logo.png",
+          },
+        }}
+      />
 
       <div className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-colors duration-300">
         <BackAndForward forward="/blogs" />

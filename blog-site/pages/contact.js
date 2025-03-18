@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Head from "next/head";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import HeadSEO from "./components/Reusable/seo_head";
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const contact = {
@@ -37,73 +37,22 @@ const Contact = () => {
 
   return (
     <>
-      <Head>
-        {/* Page Title */}
-        <title>Contact Us - ECOD</title>
-
-        {/* Meta Description */}
-        <meta
-          name="description"
-          content="Get in touch with us for inquiries, support, or collaborations. We're here to help!"
-        />
-
-        {/* Open Graph Meta Tags (for social media) */}
-        <meta property="og:title" content="Contact Us - ECOD" />
-        <meta
-          property="og:description"
-          content="Get in touch with us for inquiries, support, or collaborations. We're here to help!"
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourwebsite.com/contact" />
-        <meta
-          property="og:image"
-          content="https://yourwebsite.com/images/contact-og-image.jpg"
-        />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Contact Us - Your Website Name" />
-        <meta
-          name="twitter:description"
-          content="Get in touch with us for inquiries, support, or collaborations. We're here to help!"
-        />
-        <meta
-          name="twitter:image"
-          content="https://yourwebsite.com/images/contact-twitter-image.jpg"
-        />
-
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://yourwebsite.com/contact" />
-
-        {/* Schema Markup (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ContactPage",
-            name: "Contact Us",
-            description:
-              "Get in touch with us for inquiries, support, or collaborations. We're here to help!",
-            url: "https://yourwebsite.com/contact",
-            contactPoint: {
-              "@type": "ContactPoint",
-              telephone: "+1-123-456-7890",
-              contactType: "Customer Support",
-              email: "support@yourwebsite.com",
-              areaServed: "Worldwide",
-            },
-            publisher: {
-              "@type": "Organization",
-              name: "Your Website Name",
-              logo: {
-                "@type": "ImageObject",
-                url: "https://yourwebsite.com/images/logo.png",
-              },
-            },
-          })}
-        </script>
-      </Head>
-
-      <div className="max-w-6xl mx-auto px-6 py-12">
+      <HeadSEO
+        title="Contact Us - ECOD"
+        description="Get in touch with ECOD today! We're here to help you with your web development, SEO, and digital marketing needs."
+        canonicalUrl="https://ecoddigital.com/contact"
+        ogImage="https://ecoddigital.com/images/contact-og-image.jpg"
+        twitterImage="https://ecoddigital.com/images/contact-twitter-image.jpg"
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          name: "Contact Us - ECOD",
+          description:
+            "Get in touch with ECOD today! We're here to help you with your web development, SEO, and digital marketing needs.",
+          url: "https://ecoddigital.com/contact",
+        }}
+      />
+      <section className="max-w-6xl mx-auto px-6 py-12">
         <BackAndForward forward="/about-us" />
         <hr className="my-4" />
         <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
@@ -193,7 +142,7 @@ const Contact = () => {
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 };

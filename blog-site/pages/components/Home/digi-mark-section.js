@@ -1,5 +1,5 @@
 "use client";
-
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   LineChart,
@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import { data } from "@/data/service_data";
-import Buttons from "../Reusable/buttons";
+const Buttons = dynamic(() => import("../Reusable/buttons"));
 
 const DigitalMarketing = () => {
   return (
@@ -144,7 +144,7 @@ const DigitalMarketing = () => {
             second_label="Contact Us"
             second_nav="/contact"
             icon={true}
-            first_styles="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-blue-500 hover:scale-105 transition-transform duration-300"
+            first_styles="inline-flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-blue-500 hover:scale-105 transition-transform duration-300"
             second_styles="px-8 py-3 border-2 border-blue-600 text-blue-600 text-lg font-semibold rounded-lg hover:bg-blue-600 hover:text-white hover:scale-105 transition-transform duration-300"
           />
         </motion.div>

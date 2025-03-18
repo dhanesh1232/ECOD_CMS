@@ -2,6 +2,7 @@ import Head from "next/head";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import HeadSEO from "./components/Reusable/seo_head";
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const contact = {
@@ -17,64 +18,14 @@ const Disclaimer = () => {
   }, [router.pathname]);
   return (
     <>
-      <Head>
-        {/* Page Title */}
-        <title>Disclaimer - ECOD</title>
-
-        {/* Meta Description */}
-        <meta
-          name="description"
-          content="Read our disclaimer to understand the terms and conditions of using our website and services."
-        />
-
-        {/* Open Graph Meta Tags (for social media) */}
-        <meta property="og:title" content="Disclaimer - ECOD" />
-        <meta
-          property="og:description"
-          content="Read our disclaimer to understand the terms and conditions of using our website and services."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourwebsite.com/disclaimer" />
-        <meta
-          property="og:image"
-          content="https://yourwebsite.com/images/disclaimer-og-image.jpg"
-        />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Disclaimer - Your Website Name" />
-        <meta
-          name="twitter:description"
-          content="Read our disclaimer to understand the terms and conditions of using our website and services."
-        />
-        <meta
-          name="twitter:image"
-          content="https://yourwebsite.com/images/disclaimer-twitter-image.jpg"
-        />
-
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://yourwebsite.com/disclaimer" />
-
-        {/* Schema Markup (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            name: "Disclaimer",
-            description:
-              "Read our disclaimer to understand the terms and conditions of using our website and services.",
-            url: "https://yourwebsite.com/disclaimer",
-            publisher: {
-              "@type": "Organization",
-              name: "Your Website Name",
-              logo: {
-                "@type": "ImageObject",
-                url: "https://yourwebsite.com/images/logo.png",
-              },
-            },
-          })}
-        </script>
-      </Head>
+      <HeadSEO
+        title="Disclaimer - ECOD"
+        description="Read our Disclaimer to understand the limitations of liability and the terms of use for our website and services."
+        canonicalUrl="https://ecoddigital.com/disclaimer"
+        ogImage="https://ecoddigital.com/images/disclaimer-og-image.jpg"
+        twitterImage="https://ecoddigital.com/images/disclaimer-twitter-image.jpg"
+        noIndex={true}
+      />
 
       <div className="max-w-4xl mx-auto px-6 py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg">
         <BackAndForward forward="/contact" />

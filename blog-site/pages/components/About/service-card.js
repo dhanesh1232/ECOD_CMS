@@ -33,7 +33,7 @@ const ServiceCard = ({ service = {} }) => {
     description = "No Description",
     color = "text-gray-500",
   } = service;
-  const IconComponent = service_icon[icon] || FaTools; // Default to FaTools if icon is invalid
+  const IconComponent = service_icon[icon] || FaTools;
 
   return (
     <motion.div

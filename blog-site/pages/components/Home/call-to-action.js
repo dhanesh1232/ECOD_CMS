@@ -35,7 +35,7 @@ const GrowYourBusiness = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight"
       >
-        Grow Your Business with a Strong Online Presence 🌐
+        Elevate Your Brand with Powerful Digital Solutions 🚀
       </motion.h2>
 
       {/* Subtitle */}
@@ -45,8 +45,9 @@ const GrowYourBusiness = () => {
         transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
         className="mt-4 text-base sm:text-lg text-gray-200 max-w-2xl mx-auto"
       >
-        Boost your visibility, reach more customers, and increase revenue with
-        our proven digital strategies.
+        From stunning websites to result-driven marketing, we craft digital
+        experiences that attract, engage, and convert your audience. Let’s turn
+        your vision into success!
       </motion.p>
 
       {/* Graph */}

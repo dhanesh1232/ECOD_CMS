@@ -4,8 +4,8 @@ import { services_ecod } from "@/data/service_data";
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import Head from "next/head";
 import { useRouter } from "next/router";
+import HeadSEO from "./components/Reusable/seo_head";
 
 // Dynamically importing components with error handling
 const CategorySelector = dynamic(() =>
@@ -66,67 +66,83 @@ export default function ServicesGrid() {
 
   return (
     <>
-      <Head>
-        {/* Page Title */}
-        <title>Our Premium Services - ECOD</title>
-
-        {/* Meta Description */}
-        <meta
-          name="description"
-          content="Explore our premium digital services tailored to grow your business. From web development to SEO, we provide cutting-edge solutions for your success."
-        />
-
-        {/* Open Graph Meta Tags (for social media) */}
-        <meta property="og:title" content="Our Premium Services - ECOD" />
-        <meta
-          property="og:description"
-          content="Explore our premium digital services tailored to grow your business. From web development to SEO, we provide cutting-edge solutions for your success."
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://ecoddigital.com/services" />
-        <meta
-          property="og:image"
-          content="https://ecoddigital.com/images/services-og-image.jpg"
-        />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Our Premium Services - ECOD" />
-        <meta
-          name="twitter:description"
-          content="Explore our premium digital services tailored to grow your business. From web development to SEO, we provide cutting-edge solutions for your success."
-        />
-        <meta
-          name="twitter:image"
-          content="https://ecoddigital.com/images/services-twitter-image.jpg"
-        />
-
-        {/* Canonical URL */}
-        <link rel="canonical" href="https://ecoddigital.com/services" />
-
-        {/* Schema Markup (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Our Premium Services",
-            description:
-              "Explore our premium digital services tailored to grow your business. From web development to SEO, we provide cutting-edge solutions for your success.",
-            provider: {
-              "@type": "Organization",
-              name: "ECOD",
-              url: "https://ecoddigital.com",
-              logo: "https://yourwebsite.com/images/logo.png",
+      <HeadSEO
+        title="Expert Digital Services - Web Development, SEO & Marketing | ECOD"
+        description="Get expert digital services from ECOD! We specialize in web development, SEO, and digital marketing to grow your business. Contact us for tailored solutions."
+        canonicalUrl="https://ecoddigital.com/services"
+        ogImage="https://ecoddigital.com/images/services-og-image.jpg"
+        twitterImage="https://ecoddigital.com/images/services-twitter-image.jpg"
+        ogType="website"
+        twitterCard="summary_large_image"
+        noIndex={false}
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "ECOD Digital Services",
+          description:
+            "Get expert digital services from ECOD, including web development, SEO, and digital marketing. We help businesses scale with modern, results-driven strategies.",
+          url: "https://ecoddigital.com",
+          logo: "https://ecoddigital.com/images/logo.png",
+          sameAs: [
+            "https://www.facebook.com/ecoddigital",
+            "https://www.linkedin.com/company/ecoddigital",
+            "https://www.instagram.com/ecoddigital",
+            "https://twitter.com/ecoddigital",
+          ],
+          serviceType: [
+            "Web Development",
+            "SEO Optimization",
+            "Digital Marketing",
+            "Ecommerce Solutions",
+            "Shopify Development",
+          ],
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "Worldwide",
+          },
+          areaServed: {
+            "@type": "GeoShape",
+            addressCountry: ["US", "UK", "Canada", "Australia", "Worldwide"],
+          },
+          availableChannel: {
+            "@type": "ServiceChannel",
+            serviceUrl: "https://ecoddigital.com/contact",
+            availableLanguage: ["English", "Spanish", "French"],
+          },
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "USD",
+            priceSpecification: {
+              "@type": "PriceSpecification",
+              price: "Contact for pricing",
+              priceCurrency: "USD",
+              eligibleQuantity: {
+                "@type": "QuantitativeValue",
+                value: "Custom",
+              },
             },
-            serviceType: ["Web Development", "SEO", "Digital Marketing"],
-            areaServed: "Worldwide",
-            availableChannel: {
-              "@type": "ServiceChannel",
-              serviceUrl: "https://yourwebsite.com/contact",
+            availability: "https://schema.org/InStock",
+            validFrom: "2024-01-01",
+          },
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: "4.9",
+            reviewCount: "120",
+          },
+          review: {
+            "@type": "Review",
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: "5",
+              bestRating: "5",
             },
-          })}
-        </script>
-      </Head>
+            author: { "@type": "Person", name: "Dhanesh" },
+            reviewBody:
+              "ECOD's digital services helped my business scale exponentially!",
+          },
+        }}
+      />
+
       <div className="container mx-auto px-4 py-16 bg-white dark:bg-gray-900 transition-colors">
         <BackAndForward forward="/services/web-development" />
         <hr className="my-4 border-gray-300 dark:border-gray-700" />

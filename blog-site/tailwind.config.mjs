@@ -7,6 +7,18 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(10px)" }, // Moves up & down smoothly
+        },
+      },
+      animation: {
+        float: "float 2s ease-in-out infinite",
+      },
+      fontFamily: {
+        handwriting: ["Caveat", "cursive"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

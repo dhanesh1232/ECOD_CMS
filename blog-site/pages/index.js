@@ -3,14 +3,22 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import HeadSEO from "./components/Reusable/seo_head";
 const HomeBlog = dynamic(() => import("./components/Home/blog-section"));
 const HeroSection = dynamic(() => import("./components/Home/hero-section"));
 const OurServices = dynamic(() => import("./components/Home/services-section"));
-const ShopifySection = dynamic(() => import("./components/Home/shopify-section"));
-const DigitalMarketing = dynamic(() => import("./components/Home/digi-mark-section"));
-const Testimonials = dynamic(() => import("./components/Home/client-testi-section"), {
-  ssr: false,
-});
+const ShopifySection = dynamic(() =>
+  import("./components/Home/shopify-section")
+);
+const DigitalMarketing = dynamic(() =>
+  import("./components/Home/digi-mark-section")
+);
+const Testimonials = dynamic(
+  () => import("./components/Home/client-testi-section"),
+  {
+    ssr: false,
+  }
+);
 const ECODFaqs = dynamic(() => import("./components/Home/faq-ecod"), {
   ssr: false,
 });
@@ -26,38 +34,57 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>ECOD Services - Elevate Your Digital Presence</title>
-        <meta
-          name="description"
-          content="Empowering businesses with cutting-edge web development, e-commerce solutions, and digital marketing strategies to drive success online."
-        />
+      <HeadSEO
+        title="Home - ECOD | Web Development, SEO & Digital Marketing"
+        description="Welcome to ECOD! We provide expert web development, SEO, and digital marketing services to grow your business. Get tailored solutions from industry experts."
+        canonicalUrl="https://ecoddigital.com"
+        ogImage="https://ecoddigital.com/images/home-og-image.jpg"
+        twitterImage="https://ecoddigital.com/images/home-twitter-image.jpg"
+        ogType="website"
+        twitterCard="summary_large_image"
+        noIndex={false}
+        schemaData={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "ECOD",
+          url: "https://ecoddigital.com",
+          logo: "https://ecoddigital.com/images/logo.png",
+          description:
+            "ECOD provides cutting-edge solutions for web development, SEO, and digital marketing to help businesses grow.",
+          foundingDate: "2020-01-01",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "TIRUPATI",
+            addressLocality: "INDIA",
+            addressRegion: "IN",
+            postalCode: "517520",
+            addressCountry: "IN",
+          },
+          sameAs: [
+            "https://www.facebook.com/ecoddigital",
+            "https://www.linkedin.com/company/ecoddigital",
+            "https://www.instagram.com/ecoddigital",
+            "https://twitter.com/ecoddigital",
+          ],
+          contactPoint: [
+            {
+              "@type": "ContactPoint",
+              telephone: "+1-123-456-7890",
+              contactType: "customer service",
+              email: "support@ecoddigital.com",
+              availableLanguage: ["English"],
+            },
+            {
+              "@type": "ContactPoint",
+              telephone: "+1-987-654-3210",
+              contactType: "sales",
+              email: "sales@ecoddigital.com",
+              availableLanguage: ["English"],
+            },
+          ],
+        }}
+      />
 
-        {/* Open Graph for social media preview */}
-        <meta
-          property="og:title"
-          content="ECOD Services - Elevate Your Digital Presence"
-        />
-        <meta
-          property="og:description"
-          content="Boost your online business with expert web development, custom Shopify solutions, and results-driven digital marketing."
-        />
-        <meta property="og:image" content="/assets/og-image.jpg" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://yourwebsite.com/" />
-
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="ECOD Services - Elevate Your Digital Presence"
-        />
-        <meta
-          name="twitter:description"
-          content="Web development, Shopify solutions, and digital marketing strategies tailored to grow your business online."
-        />
-        <meta name="twitter:image" content="/assets/twitter-image.jpg" />
-      </Head>
       {/* Hero Section */}
       <HeroSection />
       {/* Services Overview */}

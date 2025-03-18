@@ -110,7 +110,7 @@ const OurServices = () => {
             viewport={{ once: false }} // Reset animation on scroll
             className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
           >
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+            <h4 className="mb-4 bg-gradient-to-r md:text-2xl text-lg to-[#F97316] from-[#1D4ED8] bg-clip-text text-transparent font-bold">
               Meta Ads & Google Ads Performance
             </h4>
             <ResponsiveContainer width="100%" height={250}>
@@ -156,7 +156,7 @@ const OurServices = () => {
             viewport={{ once: false }} // Reset animation on scroll
             className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
           >
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+            <h4 className="bg-gradient-to-r from-[#10B981] to-[#e2e8f0] bg-clip-text text-transparent md:text-2xl text-lg font-bold mb-4">
               SEO Growth Over Time
             </h4>
             <ResponsiveContainer width="100%" height={250}>
