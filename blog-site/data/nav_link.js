@@ -20,6 +20,6 @@ export const nav_list = [
     ],
   },
   { label: "Disclaimer", href: "/disclaimer" },
-  { label: "About Us", href: "/about-us" },
+  { label: "About", href: "/about-us" },
   { label: "Contact", href: "/contact" },
 ];
