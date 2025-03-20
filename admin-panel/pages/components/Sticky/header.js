@@ -53,7 +53,7 @@ const HeaderAdmin = () => {
   });
 
   return (
-    <header className="relative bg-transparent">
+    <header className="relative bg-transparent" aria-expanded={true}>
       <div className="bg-transparent py-2 text-white px-2 flex justify-between">
         <button
           type="button"
