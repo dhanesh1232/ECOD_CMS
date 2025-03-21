@@ -3,3 +3,4 @@ const SettingsComponent = () => {
 };
 
 export default SettingsComponent;
+SettingsComponent.auth = true;

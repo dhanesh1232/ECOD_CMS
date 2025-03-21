@@ -9,3 +9,4 @@ const BlogsComponent = () => {
 };
 
 export default BlogsComponent;
+BlogsComponent.auth = true;

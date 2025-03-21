@@ -9,3 +9,4 @@ const PolicyComponent = () => {
 };
 
 export default PolicyComponent;
+PolicyComponent.auth = true;

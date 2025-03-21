@@ -3,9 +3,16 @@
 import { nav_links } from "@/data/nav_data";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronRight, Menu, Search, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import AccountInfo from "../account_info";
 
 const HeaderAdmin = () => {
+  const { data: session } = useSession();
+  const [showUserInfo, setShowUserInfo] = useState(false);
+
+  //Initial State
   const [showMenu, setShowMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -52,12 +59,16 @@ const HeaderAdmin = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   });
 
+  const handleSlide = () => {
+    setShowUserInfo(false);
+  };
   return (
     <header className="relative bg-transparent" aria-expanded={true}>
       <div className="bg-transparent py-2 text-white px-2 flex justify-between">
         <button
           type="button"
           className="md:hidden"
+          aria-label="Menu"
           onClick={() => setShowMenu(!showMenu)}
         >
           <Menu />
@@ -86,18 +97,40 @@ const HeaderAdmin = () => {
         </div>
 
         {/* Mobile Search Toggle Button */}
-        <button
-          type="button"
-          onClick={() => {
-            setShowSearch(true);
-            setTimeout(() => searchInputRef.current?.focus(), 50);
-          }}
-          className="p-2 md:hidden rounded-md bg-blue-800 shadow-2xl ring-0 outline-none border-0"
-        >
-          <Search />
-        </button>
-      </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowUserInfo(!showUserInfo)}
+            className="bg-blue-600 relative p-2 rounded-full w-10 h-10 flex items-center justify-center group"
+          >
+            <p className="font-bold text-white">
+              {session.user.name.includes(" ")
+                ? session?.user?.name
+                    .split(" ")
+                    .map((word) => word[0])
+                    .slice(0, 2)
+                    .join("")
+                : session.user.name[0]}
+            </p>
 
+            {/* Tooltip (hidden by default, visible on hover) */}
+            <span className="absolute -left-24 bg-gray-800 text-white px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              {session?.user?.name}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowSearch(true);
+              setTimeout(() => searchInputRef.current?.focus(), 50);
+            }}
+            className="p-1 transform transition ease-in-out duration-150 text-base sm:text-lg sm:p-2 md:hidden rounded-md bg-blue-800 shadow-2xl ring-0 outline-none border-0"
+          >
+            <Search />
+          </button>
+        </div>
+      </div>
       {/* Mobile Search Box */}
       {showSearch && (
         <motion.div
@@ -106,7 +139,7 @@ const HeaderAdmin = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -50, opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="bg-gray-200 md:hidden absolute top-0 w-full bg-opacity-50 py-2 flex items-center justify-between px-4"
+          className="transform transition ease-in-out duration-300 bg-gray-200 md:hidden absolute top-0 w-full bg-opacity-50 py-1 sm:py-2 flex items-center justify-between px-4"
         >
           <div className="w-[90%] h-10 bg-gray-50 flex items-center rounded">
             <input
@@ -226,6 +259,8 @@ const HeaderAdmin = () => {
           </ul>
         </motion.div>
       )}
+      {/*Account Info */}
+      {showUserInfo && <AccountInfo slideClose={handleSlide} />}
     </header>
   );
 };
