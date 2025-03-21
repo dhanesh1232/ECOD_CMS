@@ -37,7 +37,7 @@ export const nav_links = [
       { label: "Graphic | Logo Design", href: "/services/graphic-logo-design" },
     ],
   },
-  { label: "Policy", href: "/policy" },
+  { label: "Policy", href: "/policies" },
   { label: "Pages", href: "/pages" },
   { label: "Settings", href: "/settings" },
 ];

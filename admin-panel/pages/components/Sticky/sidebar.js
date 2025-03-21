@@ -15,7 +15,7 @@ const SidebarAdmin = () => {
     setShowUserInfo(false);
   };
   return (
-    <div className="md:flex flex-col hidden md:w-1/4 lg:w-1/5 h-full px-2 py-2 bg-gray-200 shadow-xl border-r">
+    <div className="md:flex flex-col hidden md:w-1/5 xl:w-[15%] h-full px-2 py-2 bg-gray-200 shadow-xl border-r">
       <ul className="space-y-2">
         {nav_links.map((link, ind) => (
           <li key={ind}>

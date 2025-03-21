@@ -18,7 +18,7 @@ export default function Layout({ children }) {
       <HeaderAdmin />
       <div className="flex items-center bg-gray-200 rounded-t-lg h-full">
         <SidebarAdmin />
-        <main className="bg-gray-50 rounded-t-lg h-full w-full md:w-3/4 lg:w-4/5">
+        <main className="bg-gray-50 rounded-t-lg h-full w-full md:w-4/5 xl:w-[85%]">
           {children}
         </main>
       </div>
