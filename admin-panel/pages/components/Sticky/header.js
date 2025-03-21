@@ -110,12 +110,12 @@ const HeaderAdmin = () => {
                     .map((word) => word[0])
                     .slice(0, 2)
                     .join("")
-                : session.user.name[0]}
+                : session.user.name[0].toLocaleUpperCase()}
             </p>
 
             {/* Tooltip (hidden by default, visible on hover) */}
             <span className="absolute -left-24 bg-gray-800 text-white px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {session?.user?.name}
+              {session?.user?.name.replace(/[0-9]/g, "").split("")}
             </span>
           </button>
 
