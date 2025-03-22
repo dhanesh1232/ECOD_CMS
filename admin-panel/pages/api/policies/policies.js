@@ -14,6 +14,7 @@ export default async function handler(req, res) {
         seo_description,
         seo_keywords,
         slug,
+        updated_date,
       } = req.body;
 
       // Create a new policy document
@@ -25,7 +26,9 @@ export default async function handler(req, res) {
         seo_description,
         seo_keywords,
         slug,
+        updated_date: updated_date || new Date(),
       });
+      console.log(newPolicy.updated_date);
 
       await newPolicy.save();
 

@@ -30,8 +30,9 @@ const policySchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      unique: true, // Ensure slug is unique
+      unique: true,
     },
+    updated_date: { type: Date, default: Date.now },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt fields

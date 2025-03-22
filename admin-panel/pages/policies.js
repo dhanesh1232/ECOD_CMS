@@ -3,10 +3,14 @@
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { MoveRight } from "lucide-react";
 
 const SectionHeader = dynamic(() => import("./components/header-section"));
 
 const PolicyComponent = () => {
+  const router = useRouter();
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,6 +42,15 @@ const PolicyComponent = () => {
     return <p>Error: {error}</p>;
   }
 
+  const formatedDate = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <>
       <Head>
@@ -60,20 +73,54 @@ const PolicyComponent = () => {
       <div className="flex items-center justify-center pt-1 flex-col">
         <SectionHeader text={"Policies"} add="policies" />
         <hr className="border w-full" />
-        <div className="w-full flex items-center justify-center mt-2 flex-col">
+        <div className="w-full flex items-center justify-center flex-col">
           {policies.length > 0 ? (
-            <ul className="w-full">
-              {policies.map((policy) => (
-                <li
-                  key={policy.template_id}
-                  className="w-full flex items-center justify-between border-b py-2 px-2"
-                >
-                  <h2>{policy.title}</h2>
-                  <p>{policy.seo_description.slice(0, 15)}</p>
-                  <a href={`/policies/${policy.template_id}`}>Read More</a>
-                </li>
-              ))}
-            </ul>
+            <table className="w-full border-collapse border border-gray-200 shadow-md">
+              <thead>
+                <tr className="bg-blue-100">
+                  <th className="border border-gray-300 px-4 py-2 text-left">
+                    Title
+                  </th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">
+                    Updated Date
+                  </th>
+                  <th className="border border-gray-300 px-4 py-2 text-center">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {policies.map((policy) => (
+                  <tr
+                    key={policy.template_id}
+                    className="hover:bg-blue-50 transition"
+                  >
+                    <td className="border border-gray-300 px-4 py-2">
+                      <Link
+                        href={`/policies/${policy.template_id}`}
+                        className="text-blue-600"
+                      >
+                        {policy.title}
+                      </Link>
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {formatedDate(policy.updated_date)}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          router.push(`/policies/${policy.template_id}`)
+                        }
+                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                      >
+                        <MoveRight size={17} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           ) : (
             <p>No policies found.</p>
           )}
