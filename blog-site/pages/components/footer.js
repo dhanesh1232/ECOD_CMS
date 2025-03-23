@@ -10,8 +10,9 @@ const socialLinks = [
 ];
 import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
-const quickLinks = ["About Us", "Services", "Blog Posts", "Contact"];
+const quickLinks = ["About Us", "Services", "Blog Posts", "Contact", "Faqs"];
 
 const services = [
   "Web Development",
@@ -33,6 +34,17 @@ const testimonials = [
 
 const Footer = () => {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e) => {
+    e.preventDefault();
+    if (!email.includes("@") || !email.includes(".")) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+    setSubscribed(true);
+  };
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-6">
       <div className="container mx-auto justify-center flex-wrap px-4 md:px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
@@ -89,19 +101,11 @@ const Footer = () => {
                 </li>
               );
             })}
-            <li>
-              <Link
-                href="/faq"
-                className="hover:text-green-400 transition duration-300"
-              >
-                FAQs
-              </Link>
-            </li>
           </ul>
         </div>
         {/* Policies */}
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4 underline">Policies</h2>
+          <h2 className="text-xl font-semibold mb-4 underline">Legal</h2>
           <ul className="space-y-2">
             {policy_data.policy_links.map((link, index) => {
               const href_link = link
@@ -157,20 +161,35 @@ const Footer = () => {
               Join 2,000+ business owners getting exclusive marketing tips.
             </p>
           </div>
-
-          <form className="flex w-full max-w-lg bg-gray-800 p-1 rounded-lg">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="bg-transparent outline-none flex-grow text-white px-2 placeholder-gray-500 focus:outline-none focus:ring-0 sm:text-base text-sm"
-            />
-            <button
-              type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-4 py-2 rounded-lg transition duration-300 sm:text-base text-sm"
+          {subscribed ? (
+            <p className="text-green-400 text-sm md:text-base text-center">
+              {`Thanks You for subscribing`}
+              <br />
+              <span className="text-gray-300">{email}</span>
+            </p>
+          ) : (
+            <form
+              onSubmit={handleSubscribe}
+              className="flex w-full max-w-lg bg-gray-800 p-1 rounded-lg"
             >
-              Subscribe Now 🚀
-            </button>
-          </form>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+                className="bg-transparent outline-none flex-grow text-white px-2 placeholder-gray-500 focus:outline-none focus:ring-0 sm:text-base text-sm"
+              />
+              <button
+                type="submit"
+                className="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-4 py-2 rounded-lg transition duration-300 sm:text-base text-sm"
+              >
+                Subscribe Now 🚀
+              </button>
+            </form>
+          )}
         </div>
 
         {/* Call to Action */}

@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import HeadSEO from "./components/Reusable/seo_head";
+const HeadSEO = dynamic(() => import("./components/Reusable/seo_head"));
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const contact = {
@@ -29,7 +29,7 @@ const Disclaimer = () => {
       <div className="max-w-6xl mx-auto px-6 py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg">
         <BackAndForward forward="/contact" />
         <hr className="my-4" />
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
+        <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
           Disclaimer
         </h1>
 
@@ -46,7 +46,12 @@ const Disclaimer = () => {
           {
             title: "Professional Disclaimer",
             content:
-              "ECOD specializes in web development, digital marketing, and Shopify solutions. While we strive to provide up-to-date and valuable insights, our content should not be considered professional advice for legal, financial, or business decisions. Always consult with a qualified professional before taking action based on the information found on this website.",
+              "ECOD provides online presence services, including Google Ads, Meta Ads, Shopify management, content creation, and email marketing. While we strive to deliver accurate and up-to-date information, our content should not be considered professional advice for legal, financial, or business decisions. Always consult with a qualified professional before taking action based on the information found on this website.",
+          },
+          {
+            title: "Service Performance Disclaimer",
+            content:
+              "The results of our services, such as Google Ads, Meta Ads, Shopify management, and email marketing campaigns, may vary depending on market conditions, industry trends, and client-specific factors. We do not guarantee specific outcomes, including sales, leads, or engagement metrics, as these are influenced by external variables beyond our control.",
           },
           {
             title: "External Links Disclaimer",
@@ -56,12 +61,12 @@ const Disclaimer = () => {
           {
             title: "Affiliate Disclaimer",
             content:
-              "Some of the links on this site are affiliate links from services like Amazon, eBay, and other online marketplaces. As an affiliate partner, we may earn a commission from purchases made through these links. This helps support our website and allows us to continue providing high-quality content.",
+              "Some of the links on this site are affiliate links from services like Google Ads, Shopify, and other platforms. As an affiliate partner, we may earn a commission from purchases or subscriptions made through these links. This helps support our website and allows us to continue providing high-quality services.",
           },
           {
             title: "Limitation of Liability",
             content:
-              "Under no circumstances shall ECOD be held liable for any direct, indirect, incidental, consequential, or punitive damages arising from your use of our website, services, or reliance on any information provided. You use this website at your own risk.",
+              "Under no circumstances shall ECOD be held liable for any direct, indirect, incidental, consequential, or punitive damages arising from your use of our website, services, or reliance on any information provided. This includes but is not limited to losses related to Google Ads, Meta Ads, Shopify management, content creation, or email marketing campaigns. You use this website and our services at your own risk.",
           },
           {
             title: "Updates and Contact Information",
@@ -71,7 +76,7 @@ const Disclaimer = () => {
           },
         ].map((section, index) => (
           <div key={index} className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-6 mb-3">
+            <h2 className="md:text-2xl text-xl font-semibold text-gray-900 dark:text-white mt-6 mb-3">
               {section.title}
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
