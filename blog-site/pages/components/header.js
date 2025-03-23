@@ -83,8 +83,8 @@ const HeaderSection = () => {
   return (
     <>
       <header
-        className={`w-full bg-transparent ${isMenuOpen && "z-50 bg-slate-50"} ${
-          isSticky ? "fixed top-0 left-0 z-50 shadow-xl" : "relative"
+        className={`w-full bg-transparent bg-white ${isMenuOpen && "z-50 border-black"} ${
+          isSticky ? "fixed top-0 left-0 z-50 shadow" : "relative"
         } `}
       >
         <div
