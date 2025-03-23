@@ -8,14 +8,10 @@ const socialLinks = [
   { Icon: FaIcons.FaLinkedinIn, link: "#", followers: "1k+" },
   { Icon: FaIcons.FaInstagram, link: "#", followers: "1k+" },
 ];
+import { policy_data } from "@/data/policies_data";
+import { useRouter } from "next/router";
 
-const quickLinks = [
-  "About Us",
-  "Services",
-  "Blog",
-  "Contact",
-  "Privacy Policy",
-];
+const quickLinks = ["About Us", "Services", "Blog Posts", "Contact"];
 
 const services = [
   "Web Development",
@@ -36,6 +32,7 @@ const testimonials = [
 ];
 
 const Footer = () => {
+  const router = useRouter();
   return (
     <footer className="bg-gray-900 text-white pt-12 pb-6">
       <div className="container mx-auto justify-center flex-wrap px-4 md:px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
@@ -78,16 +75,20 @@ const Footer = () => {
         <div>
           <h2 className="text-xl font-semibold mb-4 underline">Quick Links</h2>
           <ul className="space-y-2">
-            {quickLinks.map((link, index) => (
-              <li key={index}>
-                <Link
-                  href={`/${link.toLowerCase().replace(/\s/g, "-")}`}
-                  className="hover:text-green-400 transition duration-300"
-                >
-                  {link}
-                </Link>
-              </li>
-            ))}
+            {quickLinks.map((link, index) => {
+              const href_link = link.toLowerCase().replace(/\s/g, "-");
+
+              return (
+                <li key={index}>
+                  <Link
+                    href={`/${href_link}`}
+                    className={`${router.pathname.replace("/", "") === href_link ? "text-green-600" : "hover:text-green-400"}  transition duration-300`}
+                  >
+                    {link}
+                  </Link>
+                </li>
+              );
+            })}
             <li>
               <Link
                 href="/faq"
@@ -96,6 +97,28 @@ const Footer = () => {
                 FAQs
               </Link>
             </li>
+          </ul>
+        </div>
+        {/* Policies */}
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-4 underline">Policies</h2>
+          <ul className="space-y-2">
+            {policy_data.policy_links.map((link, index) => {
+              const href_link = link
+                .toLowerCase()
+                .replace(/[^a-z\s-]/g, "")
+                .replace(/\s+/g, "-");
+              return (
+                <li key={index}>
+                  <Link
+                    href={`/${href_link}`}
+                    className={`${router.query.policy_id === href_link ? "text-green-500" : "hover:text-green-400"} transition duration-300`}
+                  >
+                    {link}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
         {/* Testimonials */}

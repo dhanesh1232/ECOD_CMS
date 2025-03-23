@@ -26,7 +26,7 @@ const Disclaimer = () => {
         noIndex={true}
       />
 
-      <div className="max-w-4xl mx-auto px-6 py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg">
+      <div className="max-w-6xl mx-auto px-6 py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg">
         <BackAndForward forward="/contact" />
         <hr className="my-4" />
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">

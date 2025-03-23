@@ -3,7 +3,7 @@ import Head from "next/head";
 const HeadSEO = ({
   title = "ECOD - Your Digital Growth Partner",
   description = "ECOD provides cutting-edge solutions for web development, SEO, and digital marketing to grow your business.",
-  canonicalUrl = "https://ecoddigital.com",
+  canonicalUrl = "https://ecoddigi.com",
   ogImage = "https://ecoddigital.com/images/default-og-image.jpg",
   twitterImage = "https://ecoddigital.com/images/default-twitter-image.jpg",
   schemaData = null,

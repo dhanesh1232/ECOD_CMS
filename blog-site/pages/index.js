@@ -7,11 +7,11 @@ import HeadSEO from "./components/Reusable/seo_head";
 const HomeBlog = dynamic(() => import("./components/Home/blog-section"));
 const HeroSection = dynamic(() => import("./components/Home/hero-section"));
 const OurServices = dynamic(() => import("./components/Home/services-section"));
-const ShopifySection = dynamic(() =>
-  import("./components/Home/shopify-section")
+const ShopifySection = dynamic(
+  () => import("./components/Home/shopify-section")
 );
-const DigitalMarketing = dynamic(() =>
-  import("./components/Home/digi-mark-section")
+const DigitalMarketing = dynamic(
+  () => import("./components/Home/digi-mark-section")
 );
 const Testimonials = dynamic(
   () => import("./components/Home/client-testi-section"),
