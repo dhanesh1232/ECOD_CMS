@@ -4,13 +4,13 @@ import { CertifiedSVG, VerfiedSVG } from "@/public/Assets/svg";
 const Buttons = dynamic(() => import("./Reusable/buttons"));
 const LowerContent = () => {
   return (
-    <div className="w-full mt-6 p-8 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg text-center transition-colors duration-300">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+    <div className="w-full mt-6 p-8 dark:bg-gray-100 bg-gray-700 rounded-t-lg shadow-lg text-center transition-colors duration-300">
+      <h2 className="text-2xl font-bold text-gray-50 dark:text-black mb-4">
         Discover Our Cutting-Edge Solutions
       </h2>
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
+      <p className="text-gray-100 dark:text-gray-800 leading-relaxed max-w-2xl mx-auto">
         At{" "}
-        <span className="font-semibold text-green-600 dark:text-green-400">
+        <span className="font-semibold text-green-500 dark:text-green-400">
           ECOD
         </span>
         , we specialize in innovative and eco-friendly digital solutions
@@ -22,13 +22,13 @@ const LowerContent = () => {
       <div className="mt-8 flex flex-wrap justify-center gap-6">
         <div className="flex items-center gap-2">
           <VerfiedSVG width={24} height={24} color="#000000" />
-          <span className="text-gray-700 dark:text-gray-300 font-medium">
+          <span className="text-gray-200 dark:text-gray-700 font-medium">
             100% Satisfaction
           </span>
         </div>
         <div className="flex items-center gap-2">
           <CertifiedSVG />
-          <span className="text-gray-700 dark:text-gray-300 font-medium">
+          <span className="text-gray-200 dark:text-gray-700 font-medium">
             Certified Experts
           </span>
         </div>

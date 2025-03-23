@@ -138,7 +138,7 @@ export default function PrivacyPolicy() {
           <link
             rel="alternate"
             href="https://ecoddigital.com/privacy-policy"
-            hreflang="en"
+            hrefLang="en"
             key="hreflang-en"
           />,
           <link
