@@ -101,13 +101,6 @@ export default function Home() {
       <ECODFaqs />
       {/* Call to Action */}
       <CallToAction />
-
-      <Link
-        href="/contact"
-        className="fixed bottom-5 right-5 bg-indigo-600 text-white py-3 px-6 rounded-full shadow-lg hover:bg-indigo-500 transition z-50"
-      >
-        Contact Us
-      </Link>
     </>
   );
 }

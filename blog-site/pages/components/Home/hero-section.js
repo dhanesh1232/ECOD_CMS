@@ -79,16 +79,24 @@ const HeroSection = () => {
         className="z-10 text-center flex flex-col items-center justify-center"
         role="banner"
       >
-        <h1 className="text-2xl md:text-4xl italic xl:text-6xl font-extrabold mb-4 drop-shadow-lg font-handwriting">
+        <h1 className="text-4xl md:text-4xl italic xl:text-6xl font-extrabold mb-4 drop-shadow-lg font-handwriting">
           Transform Your Vision into Reality 🚀
         </h1>
 
         <p className="text-lg sm:text-xl font-sans md:text-2xl max-w-2xl mb-8 drop-shadow-md">
-          {`We create fast, scalable websites and web apps that deliver results.
-          From sleek business sites to powerful eCommerce platforms and modern
-          SaaS solutions, we use the latest tech like React, Next.js, and
-          Tailwind CSS to build stunning, user-friendly digital experiences.
-          Let’s bring your ideas to life!`}
+          <span className="sm:hidden">
+            We create fast, scalable websites and web apps that deliver results.
+            From sleek business sites to powerful eCommerce platforms and modern
+            SaaS solutions...
+          </span>
+          <span className="hidden sm:inline">
+            {`We create fast, scalable websites and web apps that deliver results.
+            From sleek business sites to powerful eCommerce platforms and modern
+            SaaS solutions, we use the latest tech like React, Next.js, and
+            Tailwind CSS to build stunning, user-friendly digital experiences.
+            Let's bring your ideas to life!`}
+            `
+          </span>
         </p>
       </motion.div>
 

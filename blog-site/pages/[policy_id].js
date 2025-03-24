@@ -73,7 +73,6 @@ export default function PrivacyPolicy() {
     const header = document.querySelector("header");
     const headerHeight = header ? header.offsetHeight : 0;
 
-    // Set yOffset based on whether it's a page load or a click
     const yOffset = isPageLoad
       ? window.innerHeight * 0.1 + headerHeight // 10% of viewport height for page load
       : window.innerHeight * 0.02 + headerHeight; // 2% of viewport height for click

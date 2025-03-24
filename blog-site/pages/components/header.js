@@ -1,293 +1,612 @@
-import {
-  Menu,
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  ChevronLeft,
-} from "lucide-react";
-import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { nav_list } from "@/data/nav_link";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MenuIcon,
+  Moon,
+  Search,
+  Sun,
+  X,
+} from "lucide-react";
+import PropTypes from "prop-types";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
+import { searchData } from "@/data/search-data";
 
-const HeaderSection = () => {
+const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
-  const [isSticky, setIsSticky] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mobileSubPage, setMobileSubPage] = useState(null);
-  const [openDrop, setOpenDrop] = useState(null);
-  const openMenuRef = useRef(null);
-  const dropDeskRef = useRef(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [instantResults, setInstantResults] = useState([]);
+  const [openDropDesk, setOpenDropDesk] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const searchInputRef = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const headerRef = useRef(null);
 
-  // Close Menu when clicking outside
+  // Search function
+  const searchContent = (query, content) => {
+    if (!query) return [];
+    const lowerCaseQuery = query.toLowerCase();
+    return content
+      .filter(
+        (item) =>
+          item.title.toLowerCase().includes(lowerCaseQuery) ||
+          (item.description &&
+            item.description.toLowerCase().includes(lowerCaseQuery))
+      )
+      .slice(0, 5); // Limit to 5 results for instant search
+  };
+
+  // Debounce search input
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (openMenuRef.current && !openMenuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
-        setMobileSubPage(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
+  // Update instant results when debounced query changes
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropDeskRef.current && !dropDeskRef.current.contains(event.target)) {
-        setOpenDrop(null);
-      }
-    };
+    if (debouncedQuery.trim()) {
+      const results = searchContent(debouncedQuery, searchData);
+      setInstantResults(results);
+    } else {
+      setInstantResults([]);
+    }
+  }, [debouncedQuery]);
 
+  // Focus search input when search is shown
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
+  // Close all dropdowns when route changes
+  useEffect(() => {
+    setOpenDropDesk(null);
+    setIsMobileMenuOpen(false);
+    setShowSearch(false);
+    document.body.style.overflow = "";
+  }, [router.asPath]);
+
+  // Handle scroll effect for header background
+  useEffect(() => {
     const handleScroll = () => {
-      setOpenDrop(null); // Close dropdown on scroll
+      setIsScrolled(window.scrollY > 0);
     };
-
-    // Add event listeners
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("scroll", handleScroll);
-
-    // Cleanup event listeners
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setIsMenuOpen(false);
-        setMobileSubPage(null);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 0) {
-        if (isMenuOpen) {
-          setIsMenuOpen(false);
-          setMobileSubPage(null);
-        }
-        setIsSticky(true);
-      } else {
-        setIsSticky(false);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMenuOpen]);
+  }, []);
+
+  // Close search when pressing Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (showSearch) {
+          setShowSearch(false);
+        }
+        if (isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showSearch, isMobileMenuOpen]);
+
+  // Update header height
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.offsetHeight;
+        document.documentElement.style.setProperty(
+          "--header-height",
+          `${height}px`
+        );
+      }
+    };
+    updateHeaderHeight();
+    window.addEventListener("resize", updateHeaderHeight);
+    return () => window.removeEventListener("resize", updateHeaderHeight);
+  }, []);
+
+  // Handle body overflow when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
+  const handleSearchToggle = useCallback(() => {
+    setShowSearch((prev) => !prev);
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen((prev) => !prev);
+    setShowSearch(false);
+  }, []);
+
+  const handleDropdownToggle = useCallback((label) => {
+    setOpenDropDesk((prev) => (prev === label ? null : label));
+  }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (query) {
+      router.push({
+        pathname: "/search",
+        query: { q: query },
+      });
+      setShowSearch(false);
+      setSearchQuery("");
+      setInstantResults([]);
+    }
+  };
+
+  // Enhanced keyboard navigation for search results
+  const handleKeyDown = (e) => {
+    if (instantResults.length > 0) {
+      const currentFocused = document.activeElement;
+      const results = Array.from(
+        document.querySelectorAll('[id^="search-result-"]')
+      );
+      const mobileResults = Array.from(
+        document.querySelectorAll('[id^="mobile-search-result-"]')
+      );
+      const allResults = [...results, ...mobileResults];
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (currentFocused === searchInputRef.current) {
+          // Focus first result when coming from input
+          allResults[0]?.focus();
+        } else if (
+          currentFocused.id?.startsWith("search-result-") ||
+          currentFocused.id?.startsWith("mobile-search-result-")
+        ) {
+          // Move to next result
+          const currentIndex = allResults.findIndex(
+            (el) => el === currentFocused
+          );
+          if (currentIndex < allResults.length - 1) {
+            allResults[currentIndex + 1]?.focus();
+          }
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (
+          currentFocused.id?.startsWith("search-result-") ||
+          currentFocused.id?.startsWith("mobile-search-result-")
+        ) {
+          const currentIndex = allResults.findIndex(
+            (el) => el === currentFocused
+          );
+          if (currentIndex > 0) {
+            // Move to previous result
+            allResults[currentIndex - 1]?.focus();
+          } else {
+            // Return to input
+            searchInputRef.current?.focus();
+          }
+        }
+      } else if (e.key === "Enter") {
+        if (
+          currentFocused.id?.startsWith("search-result-") ||
+          currentFocused.id?.startsWith("mobile-search-result-")
+        ) {
+          // Trigger click on the focused result
+          currentFocused.click();
+        }
+      }
+    }
+  };
+
   return (
     <>
       <header
-        className={`w-full bg-transparent bg-white ${isMenuOpen && "z-50 border-black"} ${
-          isSticky ? "fixed top-0 left-0 z-50 shadow" : "relative"
-        } `}
+        ref={headerRef}
+        className={`w-full top-0 z-40 py-2 px-4 transition-all duration-300 fixed ${
+          isScrolled
+            ? "bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm shadow-sm"
+            : "bg-white/20 dark:bg-gray-900/20"
+        }`}
       >
-        <div
-          className={`container mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 sm:px-12 xl:w-[80%]`}
-        >
-          {/* Mobile Menu Button (Left) */}
-          {!isMenuOpen && (
-            <button
-              className="md:hidden p-2 absolute left-2 top-2 outline-none"
-              onClick={() => setIsMenuOpen(true)}
-            >
-              <Menu size={24} />
-            </button>
-          )}
-
-          {/* Logo (Centered) */}
-          <Link
-            href="/"
-            className="text-lg md:text-2xl font-semibold text-center md:text-left"
+        <div className={`max-w-6xl mx-auto flex items-center justify-between`}>
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            onClick={handleMobileMenuToggle}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
           >
-            ECOD
-          </Link>
+            {isMobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <MenuIcon className="h-5 w-5" />
+            )}
+          </button>
 
-          {/* Desktop Navigation (Hidden on Mobile) */}
-          <nav className="hidden md:flex items-center space-x-4">
-            {nav_list.map((item, index) => (
-              <div key={index} className="relative">
-                {item.subpages ? (
-                  <div className="flex items-center cursor-pointer">
-                    <button
-                      type="button"
-                      className="flex items-center justify-center w-full"
-                      onClick={() =>
-                        setOpenDrop(openDrop === item.label ? null : item.label)
-                      }
-                    >
-                      {item.label}
-                      <ChevronDown
-                        className={`ml-1 transition-transform ${
-                          openDrop === item.label ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-                    {openDrop === item.label && (
-                      <AnimatePresence>
-                        <motion.ul
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          ref={dropDeskRef}
-                          transition={{ duration: 0.4, ease: "easeInOut" }}
-                          className={`absolute top-6 px-4 left-0 bg-white shadow-lg rounded-lg py-2 mt-2 space-y-1 w-64 transition-all ease-in-out duration-150 z-50`}
+          {/* Logo and Navigation */}
+          <div className="flex items-center justify-start gap-2 md:space-x-4 lg:gap-6 mr-2">
+            <h1 className="text-xl font-bold">
+              <Link href="/" className="hover:opacity-80 transition-opacity">
+                ECOD
+              </Link>
+            </h1>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:block" aria-label="Main navigation">
+              <ul className="flex items-center space-x-2 md:space-x-2 lg:space-x-4">
+                {nav_list.map((item) => (
+                  <li key={item.label} className="relative group">
+                    {item.subpages ? (
+                      <div
+                        className="p-1.5 lg:px-4 hover:bg-blue-400 hover:text-white rounded-lg transition-all ease-in-out duration-100"
+                        onMouseEnter={() => handleDropdownToggle(item.label)}
+                        onMouseLeave={() => setOpenDropDesk(null)}
+                      >
+                        <button
+                          type="button"
+                          className="flex items-center justify-center w-full"
+                          aria-expanded={openDropDesk === item.label}
+                          aria-haspopup="true"
                         >
-                          <AnimatePresence>
-                            {item.subpages.map((sub, ind) => (
-                              <motion.li
-                                key={sub.label}
-                                initial={{
-                                  opacity: 0,
-                                  rotateY: -90,
-                                  scale: 0.5,
-                                }}
-                                animate={{ opacity: 1, rotateY: 0, scale: 1 }}
-                                transition={{
-                                  duration: 0.3,
-                                  ease: "easeInOut",
-                                  delay: 0.1 + ind * 0.05,
-                                }}
-                              >
-                                <Link
-                                  href={`/services/${sub.slug}`}
-                                  className={` text-gray-900  rounded-md p-2  block transition-all transform ease-in-out duration-150 ${
-                                    router.pathname === `/services/${sub.slug}`
-                                      ? "bg-gradient-to-r text-white to-purple-500 from-blue-500"
-                                      : "hover:bg-gradient-to-r hover:text-white hover:from-blue-500 hover:to-purple-500"
-                                  }`}
-                                  onClick={() => setOpenDrop(null)}
-                                >
-                                  {sub.label}
-                                </Link>
-                              </motion.li>
-                            ))}
-                          </AnimatePresence>
-                        </motion.ul>
-                      </AnimatePresence>
+                          {item.label}
+                          <ChevronDown
+                            className={`ml-1 transition-transform ${
+                              openDropDesk === item.label ? "rotate-180" : ""
+                            }`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        <AnimatePresence>
+                          {openDropDesk === item.label && (
+                            <motion.ul
+                              className="absolute left-0 px-1 mt-2 min-w-[280px] bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-10 border border-gray-200 dark:border-gray-700"
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {item.subpages.map((subpage) => (
+                                <li key={subpage.label}>
+                                  <Link
+                                    href={`/services/${subpage.slug}`}
+                                    className="block px-3 rounded-md py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                  >
+                                    {subpage.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </motion.ul>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ) : (
+                      <Link
+                        href={`${item.href}`}
+                        className="p-1.5 lg:px-4 hover:bg-blue-400 hover:text-white rounded-lg transition-all ease-in-out duration-100 block"
+                      >
+                        {item.label}
+                      </Link>
                     )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Search and Theme Toggle */}
+          <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
+            {/* Enhanced Desktop Search */}
+            <div className="hidden md:flex items-center relative">
+              <form
+                className="relative flex items-center"
+                onSubmit={handleSearchSubmit}
+                role="search"
+              >
+                <Search
+                  className="absolute left-3 h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  name="search"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 w-48 rounded-full border border-gray-300 dark:border-gray-600 bg-white/20 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  aria-label="Search"
+                  required
+                  ref={searchInputRef}
+                  aria-haspopup="listbox"
+                  aria-expanded={instantResults.length > 0}
+                />
+              </form>
+
+              {/* Instant Results Dropdown */}
+              {instantResults.length > 0 && (
+                <motion.div
+                  className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 border border-gray-200 dark:border-gray-700"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  role="listbox"
+                  aria-label="Search results"
+                >
+                  <div className="max-h-60 overflow-y-auto">
+                    {instantResults.map((result, index) => (
+                      <Link
+                        key={index}
+                        id={`search-result-${index}`}
+                        href={result.url}
+                        className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm border-b border-gray-100 dark:border-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setInstantResults([]);
+                        }}
+                        tabIndex={0}
+                        role="option"
+                        aria-selected="false"
+                      >
+                        <div className="font-medium">{result.title}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {result.description}
+                        </div>
+                      </Link>
+                    ))}
+                    <Link
+                      href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                      className="block px-4 py-2 text-sm text-center font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-b-lg focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setInstantResults([]);
+                      }}
+                      tabIndex={0}
+                      role="option"
+                    >
+                      Show more results
+                    </Link>
                   </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Mobile Search Button */}
+            <button
+              className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              onClick={handleSearchToggle}
+              aria-label="Search"
+              aria-expanded={showSearch}
+            >
+              <Search className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              type="button"
+              className="relative w-14 h-7 flex items-center bg-gray-200 dark:bg-gray-700 rounded-full focus:outline-none transition-colors duration-300 ease-in-out"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              <div
+                className={`absolute flex items-center justify-center w-5 h-5 rounded-full shadow-md transition-all duration-300 ease-in-out transform ${
+                  theme === "dark"
+                    ? "translate-x-8 bg-gray-900"
+                    : "translate-x-1 bg-white"
+                }`}
+              >
+                {theme === "dark" ? (
+                  <Moon className="h-4 w-4 text-gray-50" />
                 ) : (
-                  <Link
-                    href={item.href}
-                    className={`${
-                      router.pathname === item.href
-                        ? "text-blue-500"
-                        : " hover:text-white hover:bg-blue-500"
-                    } p-2 px-3 rounded transition transform ease-in-out duration-150`}
-                  >
-                    {item.label}
-                  </Link>
+                  <Sun className="h-4 w-4 text-yellow-500" />
                 )}
               </div>
-            ))}
-          </nav>
+            </button>
+          </div>
         </div>
-
-        {/* Mobile Navigation (Centered Above Logo) */}
-        <AnimatePresence>
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: isMenuOpen ? "auto" : 0, opacity: 1 }}
-            ref={openMenuRef}
-            className="absolute w-full flex flex-col h-full bg-gray-200 left-0 overflow-hidden md:hidden shadow"
-          >
-            <motion.ul className="flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300 overflow-auto">
-              {nav_list.map((nav, ind) =>
-                nav.subpages ? (
-                  <motion.li
-                    initial={{ opacity: 0, rotateX: -90 }}
-                    animate={{ opacity: 1, rotateX: 0 }}
-                    exit={{ opacity: 0, rotateX: -90 }}
-                    transition={{ duration: 0.4 }}
-                    key={ind}
-                    className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 text-gray-900 hover:text-white rounded-md p-2 transition-all ease-in-out duration-150"
-                  >
-                    <button
-                      type="button"
-                      className="flex items-center justify-start"
-                      onClick={() => {
-                        console.log(nav.label);
-                        setMobileSubPage(
-                          mobileSubPage === nav.label ? null : nav.label
-                        );
-                      }}
-                    >
-                      <motion.span>{nav.label}</motion.span>
-                      <ChevronRight className="h-5 w-5 ml-6" />
-                    </button>
-                    {mobileSubPage === nav.label && (
-                      <motion.div
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: "100%", opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                        className="absolute w-full right-0 flex justify-between left-0 bottom-0 top-0 h-full bg-white shadow-xl"
-                      >
-                        {/* Scrollable Subpages List */}
-                        <motion.ul
-                          className="scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200 overflow-y-auto flex flex-col px-4 space-y-1 py-4 transition-all ease-in-out duration-300 bg-gray-100"
-                          style={{ maxHeight: "100%" }} // Ensure the list doesn't exceed the parent height
-                        >
-                          {nav.subpages.map((sub, index) => (
-                            <motion.li
-                              key={index}
-                              className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 text-gray-900 hover:text-white rounded-md p-2 transition-all ease-in-out duration-150"
-                            >
-                              <Link href={`/services/${sub.slug}`}>
-                                {sub.label}
-                              </Link>
-                            </motion.li>
-                          ))}
-                        </motion.ul>
-
-                        {/* Back Button */}
-                        <motion.button
-                          type="button"
-                          className="px-2 rounded-l-xl py-6 border border-r-0 self-center hover:text-gray-900 text-gray-900 bg-gray-200"
-                          onClick={() => setMobileSubPage(null)}
-                        >
-                          <ChevronLeft />
-                        </motion.button>
-                      </motion.div>
-                    )}
-                  </motion.li>
-                ) : (
-                  <motion.li
-                    initial={{ opacity: 0, rotateX: -90 }}
-                    animate={{ opacity: 1, rotateX: 0 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    key={ind}
-                    className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 text-gray-900 hover:text-white rounded-md p-2 transition-all ease-in-out duration-150"
-                  >
-                    <Link href={nav.href}>{nav.label}</Link>
-                  </motion.li>
-                )
-              )}
-            </motion.ul>
-            <motion.button
-              type="button"
-              className="py-1 px-6 self-center bg-white inset-10 rounded-t-lg border border-b-0 border-gray-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <ChevronUp />
-            </motion.button>
-          </motion.div>
-        </AnimatePresence>
       </header>
-      {/* Mobile Menu opned then show overlay entire page */}
-      {isMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-10"
-          onClick={() => setIsMenuOpen(false)}
-        ></div>
-      )}
+
+      {/* Enhanced Mobile Search Overlay */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            className="fixed inset-0 md:hidden z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-20 px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="relative w-full max-w-md"
+              initial={{ y: -20 }}
+              animate={{ y: 0 }}
+              exit={{ y: -20 }}
+            >
+              <form
+                className="relative flex items-center"
+                onSubmit={handleSearchSubmit}
+                role="search"
+              >
+                <Search
+                  className="absolute left-4 h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  name="search"
+                  placeholder="Search..."
+                  className="w-full pl-12 pr-12 py-3 rounded-lg border-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-lg"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  aria-label="Search"
+                  required
+                  aria-haspopup="listbox"
+                  aria-expanded={instantResults.length > 0}
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  onClick={handleSearchToggle}
+                  aria-label="Close search"
+                >
+                  <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                </button>
+              </form>
+
+              {/* Mobile Instant Results */}
+              {instantResults.length > 0 && (
+                <motion.div
+                  className="mt-2 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-50 border border-gray-200 dark:border-gray-700"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  role="listbox"
+                  aria-label="Search results"
+                >
+                  <div className="max-h-60 overflow-y-auto">
+                    {instantResults.map((result, index) => (
+                      <Link
+                        key={index}
+                        id={`mobile-search-result-${index}`}
+                        href={result.url}
+                        className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm border-b border-gray-100 dark:border-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 focus:outline-none"
+                        onClick={() => {
+                          setShowSearch(false);
+                          setSearchQuery("");
+                          setInstantResults([]);
+                        }}
+                        tabIndex={0}
+                        role="option"
+                        aria-selected="false"
+                      >
+                        <div className="font-medium">{result.title}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {result.description}
+                        </div>
+                      </Link>
+                    ))}
+                    <Link
+                      href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                      className="block px-4 py-3 text-sm text-center font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-b-lg focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700"
+                      onClick={() => {
+                        setShowSearch(false);
+                        setSearchQuery("");
+                        setInstantResults([]);
+                      }}
+                      tabIndex={0}
+                      role="option"
+                    >
+                      Show all results
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            ref={mobileMenuRef}
+            className="fixed inset-0 top-[calc(var(--header-height)+1px)] z-[9999] bg-white dark:bg-gray-900 md:hidden flex flex-col"
+            initial={{ opacity: 0, x: -300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -300 }}
+            transition={{ duration: 0.2 }}
+          >
+            <nav
+              className="flex-1 overflow-y-auto p-4"
+              aria-label="Mobile navigation"
+            >
+              <ul className="space-y-2">
+                {nav_list.map((item) => (
+                  <li key={item.label}>
+                    {item.subpages ? (
+                      <div className="border-b border-gray-700 dark:border-gray-200 relative rounded-b-lg">
+                        <button
+                          type="button"
+                          className="transition ease-in-out transform duration-300 flex items-center justify-between w-full p-3 text-left hover:bg-blue-300 dark:hover:bg-blue-600 rounded-lg text-gray-800 dark:text-gray-200"
+                          onClick={() => handleDropdownToggle(item.label)}
+                          aria-expanded={openDropDesk === item.label}
+                        >
+                          {item.label}
+                          <ChevronRight />
+                        </button>
+                        {openDropDesk === item.label && (
+                          <motion.div
+                            className="absolute z-50 -top-32 left-0 bg-white dark:bg-gray-900 right-0 flex items-center justify-between"
+                            initial={{ opacity: 0, x: -300 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -300 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <ul className="mt-2 space-y-2 overflow-y-auto">
+                              {item.subpages.map((subpage) => (
+                                <li key={subpage.label}>
+                                  <Link
+                                    href={`/services/${subpage.slug}`}
+                                    className="block p-2 hover:bg-blue-300 dark:hover:bg-blue-600 dark:border-gray-200 border-gray-700 text-gray-800 dark:text-gray-200 border-b rounded-lg"
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                  >
+                                    {subpage.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                            <button
+                              className="relative right-0 sm:px-2 px-1 py-4 text-sm rounded-l-lg hover:bg-gray-500 hover:text-white bg-gray-400 sm:py-6"
+                              type="button"
+                              onClick={() => setOpenDropDesk(null)}
+                            >
+                              <ChevronLeft />
+                            </button>
+                          </motion.div>
+                        )}
+                      </div>
+                    ) : (
+                      <Link
+                        href={`${item.href}`}
+                        className="transition ease-in-out transform duration-300 block p-3 hover:bg-blue-300 dark:hover:bg-blue-600 rounded-lg border-b border-gray-700 dark:border-gray-200 text-gray-800 dark:text-gray-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
+};
+
+HeaderSection.propTypes = {
+  theme: PropTypes.oneOf(["light", "dark"]).isRequired,
+  toggleTheme: PropTypes.func.isRequired,
 };
 
 export default HeaderSection;

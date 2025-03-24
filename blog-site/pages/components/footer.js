@@ -180,7 +180,7 @@ const Footer = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
                 required
-                className="bg-transparent outline-none flex-grow text-white px-2 placeholder-gray-500 focus:outline-none focus:ring-0 sm:text-base text-sm"
+                className="bg-transparent border-0 outline-none flex-grow text-white px-2 placeholder-gray-500 focus:outline-none focus:ring-0 sm:text-base text-sm"
               />
               <button
                 type="submit"

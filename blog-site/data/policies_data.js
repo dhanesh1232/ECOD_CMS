@@ -9,6 +9,7 @@ export const policy_data = {
     "Service Level Agreement",
   ],
   "privacy-policy": {
+    url: "/privacy-policy",
     title: "Privacy Policy",
     effective_date: "March 1, 2024",
     meta_description:
@@ -143,6 +144,7 @@ export const policy_data = {
     ],
   },
   "terms-of-service": {
+    url: "/terms-of-service",
     title: "Terms of Service",
     meta_description:
       "Understand the terms and conditions for using ECOD's services. Read our Terms of Service to know your rights, responsibilities, and obligations.",
@@ -236,6 +238,7 @@ export const policy_data = {
     ],
   },
   "refund-and-cancellation-policy": {
+    url: "/refund-and-cancellation-policy",
     title: "Refund & Cancellation Policy",
     meta_description:
       "Understand ECOD's refund and cancellation policy. Learn how to request a refund, eligibility criteria, and the refund process.",
@@ -308,6 +311,7 @@ export const policy_data = {
     ],
   },
   "cookie-policy": {
+    url: "/cookie-policy",
     title: "Cookie Policy",
     meta_description:
       "Learn how ECOD uses cookies to enhance your website experience. Understand the types of cookies we use, their purpose, and how to manage your preferences.",
@@ -387,6 +391,7 @@ export const policy_data = {
     ],
   },
   "service-level-agreement": {
+    url: "/service-level-agreement",
     title: "Service Level Agreement (SLA)",
     effective_date: "March 1, 2024",
     meta_description:
@@ -411,6 +416,7 @@ export const policy_data = {
     ],
   },
   "payment-and-subscription-terms": {
+    url: "/payment-and-subscription-terms",
     title: "Payment & Subscription Terms",
     meta_description:
       "Learn about ECOD's payment methods, subscription terms, and billing policies. Read our Payment & Subscription Terms for detailed information.",
@@ -457,6 +463,7 @@ export const policy_data = {
     ],
   },
   "general-website-disclaimer": {
+    url: "/general-website-disclaimer",
     title: "General Website Disclaimer",
     meta_description:
       "Understand the limitations of liability for using ECOD's website and services. Read our General Website Disclaimer for legal terms and conditions.",

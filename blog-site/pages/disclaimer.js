@@ -26,15 +26,16 @@ const Disclaimer = () => {
         noIndex={true}
       />
 
-      <div className="max-w-6xl mx-auto px-6 py-12 bg-gray-100 dark:bg-gray-900 rounded-lg shadow-lg">
+      <section className="max-w-6xl mx-auto px-6 py-6 bg-card text-card-foreground rounded-lg shadow-lg transition-colors duration-300">
         <BackAndForward forward="/contact" />
-        <hr className="my-4" />
-        <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-6">
+        <hr className="my-4 border-border" />
+        <h1 className="text-2xl md:text-4xl font-bold text-center mb-6">
           Disclaimer
         </h1>
 
-        <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-          The information provided by <strong>ECOD</strong>
+        <p className="text-muted-foreground mb-4 leading-relaxed">
+          The information provided by{" "}
+          <strong className="text-primary">ECOD</strong>
           {`("we," "us," or "our")`} on this website is for general
           informational purposes only. All information on this site is provided
           in good faith; however, we make no representation or warranty of any
@@ -70,21 +71,48 @@ const Disclaimer = () => {
           },
           {
             title: "Updates and Contact Information",
-            content: `This disclaimer is subject to updates and changes. If you have any questions regarding this disclaimer, please contact us at:
-            📧 Email: ${contact.email}
-            📍 Address: ${contact.address}`,
+            content: (
+              <>
+                This disclaimer is subject to updates and changes. If you have
+                any questions regarding this disclaimer, please contact us at:
+                <div className="mt-3 space-y-2">
+                  <p className="flex items-center gap-2">
+                    <span className="text-primary">📧</span> Email:{" "}
+                    <a
+                      href={`mailto:${contact.email}`}
+                      className="text-primary hover:underline"
+                    >
+                      {contact.email}
+                    </a>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="text-primary">📞</span> Phone:{" "}
+                    <a
+                      href={`tel:${contact.phone.replace(/\s+/g, "")}`}
+                      className="text-primary hover:underline"
+                    >
+                      {contact.phone}
+                    </a>
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <span className="text-primary">📍</span> Address:{" "}
+                    {contact.address}
+                  </p>
+                </div>
+              </>
+            ),
           },
         ].map((section, index) => (
           <div key={index} className="mb-6">
-            <h2 className="md:text-2xl text-xl font-semibold text-gray-900 dark:text-white mt-6 mb-3">
+            <h2 className="md:text-2xl text-xl font-semibold text-primary mt-6 mb-3">
               {section.title}
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               {section.content}
             </p>
           </div>
         ))}
-      </div>
+      </section>
     </>
   );
 };

@@ -26,15 +26,15 @@ import {
 
 //Components imported using dynamic
 const ServiceCard = dynamic(() => import("../components/serviceCard"));
-const CategorySelector = dynamic(() =>
-  import("../components/Reusable/CategorySelector")
+const CategorySelector = dynamic(
+  () => import("../components/Reusable/CategorySelector")
 );
 const SearchComponent = dynamic(() => import("../components/Reusable/search"));
-const BackAndForward = dynamic(() =>
-  import("../components/Reusable/back-forw")
+const BackAndForward = dynamic(
+  () => import("../components/Reusable/back-forw")
 );
-const PaginationComponent = dynamic(() =>
-  import("../components/Reusable/pagination")
+const PaginationComponent = dynamic(
+  () => import("../components/Reusable/pagination")
 );
 
 const getGrowthTrend = (current, previous) => {
@@ -249,13 +249,13 @@ const CategoryServices = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-gray-900"
+        className="max-w-6xl mx-auto px-6 py-6 bg-gray-50 dark:bg-gray-900"
       >
         <BackAndForward back="/services" forward="/contact" />
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
         <CategorySelector page="/services" services={services_ecod} />
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
-        <h1 className="text-2xl md:text-4xl font-extrabold text-center my-8">
+        <h1 className="text-2xl md:text-4xl text-black font-extrabold text-center my-8">
           {services_ecod.find((s) => s.slug === category)?.label || "Services"}
         </h1>
         <SearchComponent filterSearch={handleSearch} searchValue={searchTerm} />

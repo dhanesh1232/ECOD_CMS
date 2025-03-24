@@ -39,8 +39,10 @@ const About = () => {
           url: "https://ecoddigital.com/about",
         }}
       />
-      <section className="w-full py-20 bg-gradient-to-r from-blue-50 to-purple-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-6xl mx-auto px-6 py-6 bg-gradient-to-r from-blue-50 to-purple-50">
+        <BackAndForward forward="/contact" />
+        <hr className="my-4" />
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           {/* Introduction */}
           <Intro />
           {/* Services Section */}

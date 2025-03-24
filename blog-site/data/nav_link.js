@@ -19,7 +19,6 @@ export const nav_list = [
       { label: "Graphic | Logo Design", slug: "graphic-logo-design" },
     ],
   },
-  { label: "Disclaimer", href: "/disclaimer" },
   { label: "About", href: "/about-us" },
   { label: "Contact", href: "/contact" },
 ];

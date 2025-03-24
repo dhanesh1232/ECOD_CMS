@@ -53,7 +53,9 @@ const BackAndForward = ({ back = "/", forward = "/about-us" }) => {
         aria-label={`Go back to ${navBack}`}
       >
         <MoveLeft size={20} />
-        <span className="text-sm font-medium">{navBack}</span>
+        <span className="text-sm sm:text-base md:text-xl font-medium">
+          {navBack}
+        </span>
       </Link>
 
       {/* Forward Button */}

@@ -9,8 +9,8 @@ import { MoveLeft, MoveRight } from "lucide-react";
 import { useRouter } from "next/router";
 import HeadSEO from "./components/Reusable/seo_head";
 
-const CategorySelector = dynamic(() =>
-  import("./components/Reusable/CategorySelector")
+const CategorySelector = dynamic(
+  () => import("./components/Reusable/CategorySelector")
 );
 const BlogCard = dynamic(() => import("./components/BlogCard"));
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
@@ -77,7 +77,7 @@ const BlogPosts = () => {
         }}
       />
 
-      <div className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-6 py-6 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-colors duration-300">
         <BackAndForward forward="/blogs" />
 
         <hr className="my-4 border-gray-300 dark:border-gray-600" />

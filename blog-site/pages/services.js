@@ -1,6 +1,5 @@
 import { eco_services } from "@/data/service_data";
 import { services_ecod } from "@/data/service_data";
-
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -8,8 +7,8 @@ import { useRouter } from "next/router";
 import HeadSEO from "./components/Reusable/seo_head";
 
 // Dynamically importing components with error handling
-const CategorySelector = dynamic(() =>
-  import("./components/Reusable/CategorySelector")
+const CategorySelector = dynamic(
+  () => import("./components/Reusable/CategorySelector")
 );
 const SearchComponent = dynamic(() => import("./components/Reusable/search"));
 const ServiceCard = dynamic(() => import("./components/serviceCard"));
@@ -17,12 +16,12 @@ const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 const NoResults = ({ onClearSearch }) => (
   <div className="text-center py-10">
-    <p className="text-gray-600 dark:text-gray-300 text-lg">
+    <p className="text-muted-foreground text-lg">
       No services found matching your search.
     </p>
     <button
       onClick={onClearSearch}
-      className="mt-4 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+      className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
       aria-label="Clear search"
     >
       Clear Search
@@ -32,16 +31,16 @@ const NoResults = ({ onClearSearch }) => (
 
 const CallToAction = () => (
   <div className="mt-16 text-center">
-    <h3 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white mb-4">
+    <h3 className="text-xl md:text-2xl font-bold text-card-foreground mb-4">
       Ready to Transform Your Business?
     </h3>
-    <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-6">
-      Let’s work together to create innovative solutions that drive growth and
-      success.
+    <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+      {`Let's work together to create innovative solutions that drive growth and
+      success.`}
     </p>
     <Link
       href="/contact"
-      className="inline-flex items-center justify-center px-8 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-green-500 hover:scale-105 transition-transform duration-300"
+      className="inline-flex items-center justify-center px-8 py-3 bg-primary text-primary-foreground text-lg font-semibold rounded-lg shadow-lg hover:bg-primary/90 hover:scale-105 transition-all duration-300"
     >
       Get Started
     </Link>
@@ -143,19 +142,19 @@ export default function ServicesGrid() {
         }}
       />
 
-      <div className="container mx-auto px-4 py-16 bg-white dark:bg-gray-900 transition-colors">
+      <div className="container mx-auto px-4 py-8 bg-background text-foreground transition-colors duration-300">
         <BackAndForward forward="/services/web-development" />
-        <hr className="my-4 border-gray-300 dark:border-gray-700" />
+        <hr className="my-4 border-border" />
 
         <SearchComponent
           searchValue={searchQuery}
           filterSearch={handleSearch}
         />
 
-        <h2 className="text-2xl md:text-4xl font-bold text-center my-6 text-gray-800 dark:text-white">
+        <h2 className="text-2xl md:text-4xl font-bold text-center my-6 text-card-foreground">
           Our Premium Services
         </h2>
-        <p className="text-center text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10">
+        <p className="text-center text-base md:text-lg text-muted-foreground max-w-3xl mx-auto mb-10">
           We provide cutting-edge digital solutions to help your business grow.
           Choose from a variety of services tailored to your needs.
         </p>
@@ -167,7 +166,7 @@ export default function ServicesGrid() {
                 <ServiceCard key={index} service={service} />
               ))
             ) : (
-              <p>Services Not Found 404</p>
+              <p className="text-destructive">Services Not Found 404</p>
             )}
           </div>
         ) : (
@@ -176,7 +175,7 @@ export default function ServicesGrid() {
 
         <CallToAction />
 
-        <hr className="my-4 border-gray-300 dark:border-gray-700" />
+        <hr className="my-4 border-border" />
         <CategorySelector services={services_ecod} page={"/services"} />
       </div>
     </>
