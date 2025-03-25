@@ -77,7 +77,7 @@ const BlogPosts = () => {
         }}
       />
 
-      <div className="max-w-6xl mx-auto px-6 py-6 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-6 py-6 bg-gray-50/80 transform dark:bg-gray-900/50 text-gray-900 dark:text-gray-200 transition-colors ease-in-out duration-300">
         <BackAndForward forward="/blogs" />
 
         <hr className="my-4 border-gray-300 dark:border-gray-600" />

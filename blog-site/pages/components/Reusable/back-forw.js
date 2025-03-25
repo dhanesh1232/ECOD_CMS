@@ -4,7 +4,12 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const BackAndForward = ({ back = "/", forward = "/about-us" }) => {
+const BackAndForward = ({
+  back = "/",
+  forward = "/about-us",
+  backClassName = "text-gray-900 dark:text-gray-200 flex items-center gap-2 hover:text-gray-600 dark:hover:text-gray-400",
+  className = "px-6 py-1 sm:py-2 border border-green-500 text-green-500 font-medium rounded-lg shadow-md hover:bg-green-500 hover:text-white transition-all duration-300 transform hover:scale-110 focus:ring-2 focus:ring-green-400",
+}) => {
   const router = useRouter();
   const [routerPath, setRouterPath] = useState(forward);
   const [navText, setNavText] = useState("About Us");
@@ -49,7 +54,7 @@ const BackAndForward = ({ back = "/", forward = "/about-us" }) => {
       {/* Back Button */}
       <Link
         href={backPath}
-        className="text-gray-900 dark:text-gray-200 flex items-center gap-2 hover:text-gray-600 dark:hover:text-gray-400 transition-all duration-300"
+        className={`transition-all transform ease-in-out duration-300 ${backClassName}`}
         aria-label={`Go back to ${navBack}`}
       >
         <MoveLeft size={20} />
@@ -61,7 +66,7 @@ const BackAndForward = ({ back = "/", forward = "/about-us" }) => {
       {/* Forward Button */}
       <button
         type="button"
-        className="px-6 py-1 sm:py-2 border border-green-500 text-green-500 font-medium rounded-lg shadow-md hover:bg-green-500 hover:text-white transition-all duration-300 transform hover:scale-110 focus:ring-2 focus:ring-green-400"
+        className={`transition-all transform ease-in-out duration-300 ${className}`}
         onClick={() => router.push(routerPath)}
         aria-label={`Navigate to ${navText}`}
       >

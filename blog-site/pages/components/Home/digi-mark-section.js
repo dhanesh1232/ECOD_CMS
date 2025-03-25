@@ -16,14 +16,14 @@ const Buttons = dynamic(() => import("../Reusable/buttons"));
 
 const DigitalMarketing = () => {
   return (
-    <section className="w-full py-20 px-4 sm:px-8 bg-gradient-to-r from-blue-50 to-white text-center">
+    <section className="w-full py-20 px-4 sm:px-8 bg-gradient-to-r from-blue-50 to-white text-center dark:to-gray-700 dark:from-gray-900">
       <div className="max-w-4xl mx-auto">
         {/* Section Heading */}
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-3xl sm:text-4xl font-extrabold text-gray-900"
+          className="text-3xl sm:text-4xl font-extrabold dark:text-gray-100 text-gray-900"
         >
           🚀 Digital Marketing & Branding
         </motion.h2>
@@ -33,7 +33,7 @@ const DigitalMarketing = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-4 text-lg text-gray-700"
+          className="mt-4 text-lg dark:text-slate-100 text-slate-700"
         >
           Amplify your online presence with{" "}
           <span className="font-semibold text-blue-600">SEO</span>,
@@ -49,7 +49,7 @@ const DigitalMarketing = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-2 text-gray-600"
+          className="mt-2 text-gray-600 dark:text-slate-50"
         >
           Let’s take your brand to the next level with data-driven strategies.
         </motion.p>
@@ -102,7 +102,7 @@ const DigitalMarketing = () => {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="mt-8 text-left max-w-3xl mx-auto"
         >
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-xl font-semibold dark:text-slate-100 text-gray-900">
             Understanding Digital Marketing Tools
           </h3>
           {[
@@ -125,7 +125,7 @@ const DigitalMarketing = () => {
                 "Engages audiences through platforms like Facebook, Instagram, and LinkedIn for brand awareness and sales growth.",
             },
           ].map(({ title, color, description }) => (
-            <p key={title} className="mt-2 text-gray-700">
+            <p key={title} className="mt-2 text-gray-700 dark:text-slate-50">
               <strong className={color}>{title}</strong>: {description}
             </p>
           ))}

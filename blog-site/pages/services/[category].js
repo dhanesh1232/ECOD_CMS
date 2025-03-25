@@ -249,16 +249,16 @@ const CategoryServices = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto px-6 py-6 bg-gray-50 dark:bg-gray-900"
+        className="max-w-6xl mx-auto px-6 py-6 bg-gray-50 dark:bg-gray-900/50"
       >
         <BackAndForward back="/services" forward="/contact" />
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
         <CategorySelector page="/services" services={services_ecod} />
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
-        <h1 className="text-2xl md:text-4xl text-black font-extrabold text-center my-8">
+        <SearchComponent filterSearch={handleSearch} searchValue={searchTerm} />
+        <h1 className="text-2xl md:text-4xl text-black dark:text-gray-50 font-extrabold text-center my-8">
           {services_ecod.find((s) => s.slug === category)?.label || "Services"}
         </h1>
-        <SearchComponent filterSearch={handleSearch} searchValue={searchTerm} />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {selectedBlogs.length ? (
@@ -316,19 +316,19 @@ const CategoryServices = () => {
               </ResponsiveContainer>
 
               {/* Attractive Content for Each Category */}
-              <div className="mt-8 text-left bg-white p-6 rounded-xl shadow-md">
+              <div className="mt-8 text-left bg-white dark:bg-gray-700/70 p-6 rounded-xl shadow-md">
                 {cat.key === "MetaAds" && (
                   <>
                     <h4 className="text-xl font-semibold text-blue-600 mb-4">
                       Why Meta Ads Are Essential for Your Business
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       Meta Ads (formerly Facebook Ads) are a powerful tool for
                       reaching a highly targeted audience. With over{" "}
                       <strong>2.9 billion active users</strong>, Meta platforms
                       like Facebook and Instagram allow businesses to:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>
                         Reach specific demographics based on age, location,
                         interests, and behavior.
@@ -339,7 +339,7 @@ const CategoryServices = () => {
                       </li>
                       <li>Increase conversions with retargeting strategies.</li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       In 2024, businesses leveraging Meta Ads have seen an
                       average growth of <strong>25% in ROI</strong>.
                     </p>
@@ -351,13 +351,13 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-orange-600 mb-4">
                       Maximize Your Reach with Google Ads
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       Google Ads is the go-to platform for businesses looking to
                       capture high-intent customers. With{" "}
                       <strong>over 5.6 billion searches per day</strong>, Google
                       Ads helps you:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>
                         Appear at the top of search results for relevant
                         keywords.
@@ -370,7 +370,7 @@ const CategoryServices = () => {
                         Track performance with detailed analytics and insights.
                       </li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       Businesses using Google Ads in 2024 have reported a{" "}
                       <strong>30% increase in website traffic</strong> and a{" "}
                       <strong>20% boost in sales</strong>.
@@ -383,12 +383,12 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-green-600 mb-4">
                       Unlock Long-Term Growth with SEO
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       Search Engine Optimization (SEO) is the backbone of
                       sustainable online growth. By optimizing your website, you
                       can:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>
                         Rank higher on search engines like Google, Bing, and
                         Yahoo.
@@ -396,7 +396,7 @@ const CategoryServices = () => {
                       <li>Attract organic traffic without paying for ads.</li>
                       <li>Build trust and authority with your audience.</li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       In 2024, businesses investing in SEO have experienced a{" "}
                       <strong>40% increase in organic traffic</strong> and a{" "}
                       <strong>15% rise in conversions</strong>.
@@ -409,12 +409,12 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-purple-600 mb-4">
                       Drive Engagement with Content Marketing
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       Content Marketing is all about creating valuable, relevant
                       content to attract and engage your audience. Benefits
                       include:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>
                         Establishing your brand as an industry thought leader.
                       </li>
@@ -424,7 +424,7 @@ const CategoryServices = () => {
                       </li>
                       <li>Improving SEO rankings with high-quality content.</li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       Businesses focusing on content marketing in 2024 have seen
                       a <strong>35% increase in customer engagement</strong>.
                     </p>
@@ -436,16 +436,16 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-red-600 mb-4">
                       Boost Conversions with Email Marketing
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       Email Marketing remains one of the most effective ways to
                       nurture leads and drive sales. Key advantages include:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>Personalized communication with your audience.</li>
                       <li>High ROI with minimal investment.</li>
                       <li>Automated campaigns for better efficiency.</li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       In 2024, businesses using email marketing have achieved a{" "}
                       <strong>50% higher open rate</strong> and a{" "}
                       <strong>25% increase in click-through rates</strong>.
@@ -458,17 +458,17 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-blue-600 mb-4">
                       Build a Strong Online Presence with Web Development
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       A well-designed website is the foundation of your online
                       presence. Benefits of professional web development
                       include:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>Improved user experience and navigation.</li>
                       <li>Faster loading times and better performance.</li>
                       <li>Mobile-friendly designs for wider reach.</li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       Businesses with optimized websites in 2024 have seen a{" "}
                       <strong>30% increase in user retention</strong>.
                     </p>
@@ -480,19 +480,19 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-yellow-600 mb-4">
                       Grow Your Brand with Social Media Marketing
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       Social Media Marketing helps you connect with your
                       audience on platforms like Instagram, Facebook, and
                       LinkedIn. Key benefits include:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>Increased brand awareness and visibility.</li>
                       <li>Direct engagement with your audience.</li>
                       <li>
                         Higher conversion rates through targeted campaigns.
                       </li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       Businesses leveraging social media in 2024 have
                       experienced a{" "}
                       <strong>40% increase in brand engagement</strong>.
@@ -505,19 +505,19 @@ const CategoryServices = () => {
                     <h4 className="text-xl font-semibold text-indigo-600 mb-4">
                       Scale Your Business with E-commerce Solutions
                     </h4>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 dark:text-gray-200">
                       E-commerce solutions like Shopify and WooCommerce help
                       businesses streamline their online stores. Benefits
                       include:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700">
+                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
                       <li>Seamless integration with payment gateways.</li>
                       <li>Customizable store designs for better branding.</li>
                       <li>
                         Advanced analytics to track sales and performance.
                       </li>
                     </ul>
-                    <p className="mt-4 text-gray-700">
+                    <p className="mt-4 text-gray-700 dark:text-gray-200">
                       Businesses using e-commerce solutions in 2024 have
                       reported a <strong>35% increase in online sales</strong>.
                     </p>

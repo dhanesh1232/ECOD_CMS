@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { faqs } from "@/data/faq";
 
@@ -13,13 +13,13 @@ const ECODFaqs = () => {
   };
 
   return (
-    <section className="w-full py-20 px-8 bg-gradient-to-b from-gray-50 to-white text-center">
+    <section className="w-full py-20 px-8 bg-gradient-to-b transition ease-in-out duration-150 transform from-gray-50 to-white text-center dark:from-slate-500 dark:to-slate-950">
       {/* Animated Heading */}
       <motion.h2
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="text-2xl md:text-4xl font-extrabold text-gray-900"
+        className="text-2xl md:text-4xl font-extrabold dark:text-gray-100 text-gray-900"
       >
         💡 FAQs About ECOD Web Services
       </motion.h2>
@@ -29,7 +29,7 @@ const ECODFaqs = () => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="mt-4 text-base md:text-lg text-gray-700"
+        className="mt-4 text-base md:text-lg text-gray-700 dark:text-gray-200"
       >
         Find answers to common questions about our web development and digital
         solutions.
@@ -43,11 +43,11 @@ const ECODFaqs = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: index * 0.1 }}
-            className="p-6 bg-white rounded-lg shadow-md border border-gray-200 transition hover:shadow-lg cursor-pointer"
+            className="p-6 bg-white dark:bg-slate-400 rounded-lg shadow-md border dark:border-0 border-gray-200 transition hover:shadow-lg cursor-pointer"
             onClick={() => toggleFaq(index)}
           >
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-semibold text-gray-800">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
                 {faq.question}
               </h3>
               <ChevronDown
@@ -65,8 +65,8 @@ const ECODFaqs = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-3 text-gray-700 text-left"
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="mt-3 text-gray-700 text-left dark:text-gray-200"
                 >
                   {faq.answer}
                 </motion.p>

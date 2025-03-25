@@ -29,6 +29,26 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   const mobileMenuRef = useRef(null);
   const headerRef = useRef(null);
 
+  const searchContainerRef = useRef(null);
+
+  // Add this useEffect hook to detect clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showSearch &&
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target) &&
+        !searchInputRef.current.contains(event.target)
+      ) {
+        setShowSearch(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSearch]);
   // Search function
   const searchContent = (query, content) => {
     if (!query) return [];
@@ -321,7 +341,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                 role="search"
               >
                 <Search
-                  className="absolute left-3 h-5 w-5 text-gray-400"
+                  className="absolute left-3 h-5 w-5 dark:text-gray-200 text-gray-800"
                   aria-hidden="true"
                 />
                 <input
@@ -401,7 +421,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             {/* Theme Toggle */}
             <button
               type="button"
-              className="relative w-14 h-7 flex items-center bg-gray-200 dark:bg-gray-700 rounded-full focus:outline-none transition-colors duration-300 ease-in-out"
+              className="relative w-14 h-7 flex items-center bg-gray-700 dark:bg-gray-200 rounded-full focus:outline-none transition-colors duration-300 ease-in-out"
               onClick={toggleTheme}
               aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             >
@@ -427,20 +447,21 @@ const HeaderSection = ({ theme, toggleTheme }) => {
       <AnimatePresence>
         {showSearch && (
           <motion.div
-            className="fixed inset-0 md:hidden z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-20 px-4"
+            className="fixed inset-0 md:hidden z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center pt-6 px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
             <motion.div
-              className="relative w-full max-w-md"
+              ref={searchContainerRef}
+              className="relative w-full max-w-md rounded-3xl"
               initial={{ y: -20 }}
               animate={{ y: 0 }}
               exit={{ y: -20 }}
             >
               <form
-                className="relative flex items-center"
+                className="relative flex items-center rounded-3xl"
                 onSubmit={handleSearchSubmit}
                 role="search"
               >
@@ -453,7 +474,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                   type="search"
                   name="search"
                   placeholder="Search..."
-                  className="w-full pl-12 pr-12 py-3 rounded-lg border-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-lg"
+                  className="w-full pl-12 pr-12 py-3 rounded-3xl border-0 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-lg"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}

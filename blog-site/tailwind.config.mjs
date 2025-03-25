@@ -13,9 +13,14 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(10px)" },
         },
+        shine: {
+          "0%": { "background-position": "100%" },
+          "100%": { "background-position": "-100%" },
+        },
       },
       animation: {
         float: "float 2s ease-in-out infinite",
+        shine: "shine 5s linear infinite",
       },
       fontFamily: {
         handwriting: ["Caveat", "cursive"],

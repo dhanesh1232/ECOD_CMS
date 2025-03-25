@@ -27,12 +27,12 @@ const Testimonials = () => {
   }, [activePop]);
 
   return (
-    <section className="w-full py-20 px-6 sm:px-8 bg-gradient-to-b from-gray-50 to-white text-center relative">
+    <section className="w-full py-20 px-6 sm:px-8 bg-gradient-to-l from-gray-50 to-white text-center relative dark:from-gray-900 dark:to-gray-700">
       <motion.h2
         variants={fadeInUp}
         initial="hidden"
         whileInView="visible"
-        className="text-3xl md:text-4xl font-extrabold text-gray-900"
+        className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-slate-100"
       >
         🌟 What Our Clients Say
       </motion.h2>
@@ -41,7 +41,7 @@ const Testimonials = () => {
         initial="hidden"
         whileInView="visible"
         transition={{ delay: 0.2 }}
-        className="mt-4 text-base md:text-lg text-gray-700"
+        className="mt-4 text-base md:text-lg text-gray-700 dark:text-slate-100"
       >
         Hear from businesses that trust our expertise.
       </motion.p>
@@ -88,7 +88,7 @@ const Testimonials = () => {
                     className="w-20 h-20 mx-auto rounded-full object-cover border-4 border-blue-500"
                   />
                 ) : (
-                  <div className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-200 text-xl font-semibold mx-auto">
+                  <div className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-200 dark:bg-blue-500 text-xl font-semibold mx-auto">
                     {testimonial.name.charAt(0)}
                   </div>
                 )}
@@ -119,15 +119,15 @@ const Testimonials = () => {
         transition={{ delay: 0.6 }}
         className="mt-12 max-w-4xl mx-auto"
       >
-        <h3 className="text-xl font-semibold text-gray-800">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-slate-100">
           Why Businesses Trust Us
         </h3>
-        <p className="mt-4 text-gray-700">
+        <p className="mt-4 text-gray-700 dark:text-slate-100">
           We deliver results-driven strategies tailored to your business goals.
           Our clients love us for our transparency, expertise, and commitment to
           their success.
         </p>
-        <p className="mt-6 text-gray-700 italic">
+        <p className="mt-6 text-gray-700 italic dark:text-slate-100">
           Dear client, we’d love to hear about your experience with our service
           and work. Your feedback helps us grow and serve you better!
         </p>

@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
+import RotatingText from "../Reusable/rotating-text";
 
 const ServiceCard = dynamic(() => import("../serviceCard"));
 const Buttons = dynamic(() => import("../Reusable/buttons"));
@@ -44,23 +45,42 @@ const enhancedAdPerformanceData = adPerformanceData.map((data, index) => ({
 
 const OurServices = () => {
   return (
-    <section className="w-full py-20 px-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    <section className="w-full py-20 px-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-500 dark:to-gray-700">
       <div className="max-w-6xl mx-auto text-center">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: false }} // Reset animation on scroll
-          className="text-3xl md:text-5xl font-bold text-gray-900"
+          viewport={{ once: false }}
+          className="trnsition transform duration-150 ease-in-out text-xl sm:text-2xl flex items-center justify-center flex-wrap md:text-3xl font-bold"
         >
-          🚀 Our Premium Services
+          <span className="inline text-black dark:text-white">
+            Our Premium Services
+          </span>
+          <RotatingText
+            texts={[
+              "Web Development",
+              "Shopify Management",
+              "Meta Ads",
+              "Google Ads",
+            ]}
+            mainClassName="ml-2 text-lg md:text-xl px-2 flex items-center px-auto dark:bg-blue-400 bg-cyan-300 dark:text-white overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
+            staggerFrom={"last"}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-120%" }}
+            staggerDuration={0.025}
+            splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+            transition={{ type: "spring", damping: 30, stiffness: 400 }}
+            rotationInterval={2000}
+          />
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: false }} // Reset animation on scroll
-          className="mt-4 text-lg md:text-xl text-gray-700 max-w-3xl mx-auto"
+          viewport={{ once: false }}
+          className="mt-4 text-lg md:text-xl text-gray-700 dark:text-gray-50 max-w-3xl mx-auto"
         >
           Elevate your business with cutting-edge digital solutions designed for
           success.
@@ -94,10 +114,10 @@ const OurServices = () => {
         viewport={{ once: false }} // Reset animation on scroll
         className="mt-16 max-w-6xl mx-auto"
       >
-        <h3 className="text-xl font-semibold text-center text-gray-900">
+        <h3 className="text-xl font-semibold text-center text-gray-900 dark:text-gray-100">
           📊 Business Growth Trends In 2024
         </h3>
-        <p className="text-center text-gray-600 mb-6">
+        <p className="text-center text-gray-600 mb-6 dark:text-gray-50">
           Explore business growth insights powered by online presence.
         </p>
 
@@ -108,7 +128,7 @@ const OurServices = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: false }} // Reset animation on scroll
-            className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
+            className="bg-white dark:bg-gray-100 p-5 rounded-xl shadow-md border border-gray-200"
           >
             <h4 className="mb-4 bg-gradient-to-r md:text-2xl text-lg to-[#F97316] from-[#1D4ED8] bg-clip-text text-transparent font-bold">
               Meta Ads & Google Ads Performance
@@ -154,7 +174,7 @@ const OurServices = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             viewport={{ once: false }} // Reset animation on scroll
-            className="bg-white p-5 rounded-xl shadow-md border border-gray-200"
+            className="bg-white dark:bg-gray-100 p-5 rounded-xl shadow-md border border-gray-200"
           >
             <h4 className="bg-gradient-to-r from-[#10B981] to-[#e2e8f0] bg-clip-text text-transparent md:text-2xl text-lg font-bold mb-4">
               SEO Growth Over Time
@@ -196,7 +216,7 @@ const OurServices = () => {
         <Buttons
           first_label="Explore More Services"
           first_nav="/services"
-          first_styles="inline-flex items-center gap-4 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+          first_styles="inline-flex items-center gap-4 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-200 dark:to-purple-200 dark:text-gray-800 text-white font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
         />
       </motion.div>
     </section>

@@ -39,7 +39,7 @@ const About = () => {
           url: "https://ecoddigital.com/about",
         }}
       />
-      <section className="max-w-6xl mx-auto px-6 py-6 bg-gradient-to-r from-blue-50 to-purple-50">
+      <section className="max-w-6xl mx-auto px-6 py-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-400 dark:to-purple-200">
         <BackAndForward forward="/contact" />
         <hr className="my-4" />
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
