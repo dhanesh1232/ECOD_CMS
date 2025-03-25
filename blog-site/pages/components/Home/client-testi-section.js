@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { testimonials } from "@/data/testi";
 import dynamic from "next/dynamic";
-import Carousel from "./Client-Section/slide";
 
 const ClientPop = dynamic(() => import("./client-pop"));
 const Buttons = dynamic(() => import("../Reusable/buttons"));
@@ -52,19 +51,65 @@ const Testimonials = () => {
         initial="hidden"
         whileInView="visible"
         transition={{ delay: 0.4 }}
-        style={{
-          height: "350px",
-        }}
-        className="my-12 max-w-5xl flex items-center justify-center mx-auto relative p-5"
+        className="my-12 max-w-5xl mx-auto relative p-5"
       >
-        <Carousel
-          baseWidth={500}
-          autoplay={true}
-          autoplayDelay={3000}
-          pauseOnHover={true}
-          loop={true}
-          round={false}
-        />
+        <Swiper
+          modules={[Pagination, Autoplay]}
+          slidesPerView={1}
+          spaceBetween={20}
+          pagination={{
+            clickable: true,
+            el: ".custom-side-pagination",
+            renderBullet: (index, className) => {
+              return `<span class="${className} bg-blue-500 hover:bg-blue-600 transition-all duration-300"></span>`;
+            },
+          }}
+          autoplay={{ delay: 3500 }}
+          breakpoints={{
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          }}
+        >
+          {testimonials.map((testimonial, index) => (
+            <SwiperSlide key={index}>
+              <motion.div
+                variants={fadeInUp}
+                initial="hidden"
+                whileInView="visible"
+                transition={{ delay: index * 0.1 }}
+                className="p-4 bg-white rounded-lg shadow-lg text-center border border-gray-200 hover:shadow-xl transition z-50"
+              >
+                {testimonial.image ? (
+                  <Image
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 mx-auto rounded-full object-cover border-4 border-blue-500"
+                  />
+                ) : (
+                  <div className="w-20 h-20 flex items-center justify-center rounded-full bg-blue-200 dark:bg-blue-500 text-xl font-semibold mx-auto">
+                    {testimonial.name.charAt(0)}
+                  </div>
+                )}
+
+                <h3 className="mt-4 text-xl font-semibold text-gray-800">
+                  {testimonial.name}
+                </h3>
+                <p className="text-gray-600">{testimonial.role}</p>
+                <p className="mt-4 text-gray-700 italic">{`"${testimonial.quote}"`}</p>
+              </motion.div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+
+        {/* Custom Side Pagination Bar */}
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          className="custom-side-pagination absolute right-1/2 bottom-5 -translate-y-1/2 space-x-2 z-50 cursor-pointer"
+        ></motion.div>
       </motion.div>
 
       <motion.div
