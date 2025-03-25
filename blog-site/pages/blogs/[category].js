@@ -7,16 +7,16 @@ import { motion } from "framer-motion";
 import { blog_services } from "@/data/blog_data";
 import { allBlogs } from "@/data/blog_data";
 
-const CategorySelector = dynamic(() =>
-  import("../components/Reusable/CategorySelector")
+const CategorySelector = dynamic(
+  () => import("../components/Reusable/CategorySelector")
 );
 const BlogCard = dynamic(() => import("../components/BlogCard"));
 const SearchComponent = dynamic(() => import("../components/Reusable/search"));
-const BackAndForward = dynamic(() =>
-  import("../components/Reusable/back-forw")
+const BackAndForward = dynamic(
+  () => import("../components/Reusable/back-forw")
 );
-const PaginationComponent = dynamic(() =>
-  import("../components/Reusable/pagination")
+const PaginationComponent = dynamic(
+  () => import("../components/Reusable/pagination")
 );
 
 const CategoryBlogs = () => {
@@ -132,7 +132,7 @@ const CategoryBlogs = () => {
         transition={{ duration: 0.5 }}
         className="max-w-6xl mx-auto px-6 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300"
       >
-        <BackAndForward back="/blog-posts" forward="/contact" />
+        <BackAndForward back="/blogs" forward="/contact" />
         <hr className="my-4 border-gray-300 dark:border-gray-600" />
 
         <div className="my-6 w-full">

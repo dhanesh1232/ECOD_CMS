@@ -4,6 +4,7 @@ import { searchData } from "@/data/search-data";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import Image from "next/image";
+import BackAndForward from "../components/Reusable/back-forw";
 
 const SearchPage = () => {
   const router = useRouter();
@@ -114,6 +115,8 @@ const SearchPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4 min-h-screen">
+      <BackAndForward forward="/contact" />
+      <hr className="my-2 border-b" />
       <div className="mb-8">
         <h1 className="text-2xl font-bold flex items-center">
           <Search className="mr-2 h-6 w-6" />

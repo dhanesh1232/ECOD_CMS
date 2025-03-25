@@ -103,8 +103,16 @@ export const searchData = [
     ?.subpages?.map((service) => ({
       title: service.label,
       description: `${service.label} services`,
-      url: `/services/${service.slug}`,
+      url: `${service.slug}`,
       type: "service",
+    })) || []),
+  ...(nav_list
+    .find((item) => item.label === "Blogs")
+    ?.subpages?.map((blog) => ({
+      title: blog.label,
+      description: `${blog.label} blogs`,
+      url: `${blog.slug}`,
+      type: "blog",
     })) || []),
   {
     title: "Disclaimer",

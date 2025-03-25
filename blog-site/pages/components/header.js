@@ -249,22 +249,25 @@ const HeaderSection = ({ theme, toggleTheme }) => {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            className="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             onClick={handleMobileMenuToggle}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
           >
             {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             ) : (
-              <MenuIcon className="h-5 w-5" />
+              <MenuIcon className="h-6 w-6" />
             )}
           </button>
 
           {/* Logo and Navigation */}
           <div className="flex items-center justify-start gap-2 md:space-x-4 lg:gap-6 mr-2">
             <h1 className="text-xl font-bold">
-              <Link href="/" className="hover:opacity-80 transition-opacity">
+              <Link
+                href="/"
+                className="hover:opacity-80 text-blue-800 dark:text-blue-400 transition ease-in-out transform duration-100"
+              >
                 ECOD
               </Link>
             </h1>
@@ -273,7 +276,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             <nav className="hidden md:block" aria-label="Main navigation">
               <ul className="flex items-center space-x-2 md:space-x-2 lg:space-x-4">
                 {nav_list.map((item) => (
-                  <li key={item.label} className="relative group">
+                  <motion.li
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    key={item.label}
+                    className="relative group"
+                  >
                     {item.subpages ? (
                       <div
                         className="p-1.5 lg:px-4 hover:bg-blue-400 hover:text-white rounded-lg transition-all ease-in-out duration-100"
@@ -303,15 +313,26 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ duration: 0.2 }}
                             >
-                              {item.subpages.map((subpage) => (
-                                <li key={subpage.label}>
+                              {item.subpages.map((subpage, index) => (
+                                <motion.li
+                                  initial={{ opacity: 0, y: -20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -20 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: 0.1 * index + 0.05,
+                                    opacity: 1,
+                                    ease: "easeInOut",
+                                  }}
+                                  key={subpage.label}
+                                >
                                   <Link
-                                    href={`/services/${subpage.slug}`}
-                                    className="block px-3 rounded-md py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    href={`${subpage.slug}`}
+                                    className="block px-3 rounded-md py-2 text-gray-800 dark:text-gray-200 hover:bg-blue-300 dark:hover:bg-blue-700 transition-colors"
                                   >
                                     {subpage.label}
                                   </Link>
-                                </li>
+                                </motion.li>
                               ))}
                             </motion.ul>
                           )}
@@ -325,7 +346,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                         {item.label}
                       </Link>
                     )}
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </nav>
@@ -348,7 +369,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                   type="search"
                   name="search"
                   placeholder="Search..."
-                  className="pl-10 pr-4 py-2 w-48 rounded-full border border-gray-300 dark:border-gray-600 bg-white/20 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="pl-10 pr-4 py-2 w-48 lg:w-64 rounded-full border border-gray-300 dark:border-gray-600 bg-white/20 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -586,7 +607,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                               {item.subpages.map((subpage) => (
                                 <li key={subpage.label}>
                                   <Link
-                                    href={`/services/${subpage.slug}`}
+                                    href={`${subpage.slug}`}
                                     className="block p-2 hover:bg-blue-300 dark:hover:bg-blue-600 dark:border-gray-200 border-gray-700 text-gray-800 dark:text-gray-200 border-b rounded-lg"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                   >

@@ -7,6 +7,7 @@ const StickyContactButton = ({
   label = "Contact",
   href = "/contact",
   className = "",
+  icon = true,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -50,9 +51,11 @@ const StickyContactButton = ({
             transition={{ duration: 0.2 }}
           />
 
-          <MessageCircle
-            className={`w-4 h-4 transition-transform ${isHovered ? "scale-110" : "scale-100"}`}
-          />
+          {icon && (
+            <MessageCircle
+              className={`w-4 h-4 transition-transform ${isHovered ? "scale-110" : "scale-100"}`}
+            />
+          )}
           <span>{label}</span>
 
           {/* Optional shimmer effect on hover */}
