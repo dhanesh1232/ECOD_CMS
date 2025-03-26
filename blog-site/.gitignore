@@ -10,15 +10,15 @@
 !.yarn/releases
 !.yarn/versions
 
-# Testing files to exclude
-/coverage
-__snapshots__/
+# Test files
 __tests__/
+__snapshots__/
 *.test.js
 *.test.jsx
 *.spec.js
 *.spec.jsx
 jest.config.js
+jest.setup.js
 jest.setup.js
 
 # Next.js
