@@ -5,6 +5,7 @@ export const testimonials = [
     quote:
       "Their team transformed our website into a high-performing platform. Highly recommended!",
     image: "",
+    rating: 4,
   },
   {
     name: "Jane Smith",
@@ -12,6 +13,7 @@ export const testimonials = [
     quote:
       "The Shopify solutions they provided helped us double our sales in just 3 months.",
     image: "",
+    rating: 5,
   },
   {
     name: "Alex Johnson",
@@ -19,6 +21,7 @@ export const testimonials = [
     quote:
       "Their SEO strategies brought us to the top of Google rankings. Amazing results!",
     image: "",
+    rating: 4.5,
   },
   {
     name: "Michael Brown",
@@ -26,6 +29,7 @@ export const testimonials = [
     quote:
       "Their social media marketing campaign skyrocketed our brand awareness!",
     image: "",
+    rating: 4.7,
   },
   {
     name: "Emma Wilson",
@@ -33,5 +37,6 @@ export const testimonials = [
     quote:
       "Best Shopify theme customization service! Our conversions improved significantly.",
     image: "",
+    rating: 4.8,
   },
 ];

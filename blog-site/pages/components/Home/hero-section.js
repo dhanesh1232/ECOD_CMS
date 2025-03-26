@@ -4,6 +4,8 @@ import { TrustSVG } from "@/public/Assets/svg";
 import ClickSpark from "../Reusable/sparkle";
 import ShinyText from "../Reusable/shinny-text";
 import LoaderSpinner from "../Reusable/Spinner/spinner";
+import Threads from "../Reusable/thread";
+import { ChevronsDown, Rocket } from "lucide-react";
 
 // Dynamically import Buttons with loading fallback
 const Buttons = dynamic(() => import("../Reusable/buttons"), {
@@ -40,6 +42,18 @@ const HeroSection = () => {
     visible: { opacity: 1, scale: 1 },
   };
 
+  const childVariants = {
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  };
+
   return (
     <section
       className="w-full h-[500px] md:h-[700px] flex flex-col items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-500 text-white px-4 sm:px-6 relative overflow-hidden transition-all ease-in-out duration-150"
@@ -54,7 +68,9 @@ const HeroSection = () => {
           easing="ease-in-out"
         />
       )}
-
+      <div className="absolute w-full h-full">
+        <Threads amplitude={1} distance={0} enableMouseInteraction={true} />
+      </div>
       {/* Hero Content */}
       <motion.div
         initial="hidden"
@@ -64,32 +80,50 @@ const HeroSection = () => {
         className="z-10 text-center flex flex-col items-center justify-center max-w-6xl mx-auto"
         role="banner"
       >
-        <ShinyText
-          className="text-4xl md:text-6xl font-handwriting mb-4 text-white"
-          text={"Transform Your Vision Into Reality 🚀"}
-          speed={5}
-          shineColor="#000"
-          baseColor="gray"
-          highlightColor="blue"
-        />
+        <motion.div variants={childVariants} className="mb-1 md:mb-4">
+          <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white/90 text-sm font-medium">
+            <Rocket className="w-4 h-4 mr-2" /> Digital Transformation
+          </span>
+        </motion.div>
+        <motion.h1 variants={childVariants} className="mb-1 md:mb-6">
+          <ShinyText
+            className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100"
+            text="Transform Your Vision Into Reality"
+            speed={4}
+            shineColor="#ffffff"
+            baseColor="#e0e7ff"
+            highlightColor="#ffffff"
+            disableReducedMotion={shouldReduceMotion}
+          />
+          <motion.span
+            initial={{ scale: 0, rotate: -30 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{
+              delay: 0.8,
+              type: "spring",
+              stiffness: 300,
+              damping: 10,
+            }}
+            className="inline-block ml-3"
+            aria-hidden="true"
+          >
+            🚀
+          </motion.span>
+        </motion.h1>
 
         <motion.p
-          className="text-lg sm:text-xl md:text-2xl max-w-3xl mb-6 drop-shadow-md text-serif leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
+          variants={childVariants}
+          transition={{ delay: 0.2 }}
+          className="text-lg sm:text-xl md:text-2xl max-w-3xl mb-2 md:mb-8 leading-relaxed text-blue-100/90"
         >
-          <span className="sm:hidden">
-            We create fast, scalable websites and web apps that deliver results.
-            From sleek business sites to powerful eCommerce platforms and modern
-            SaaS solutions...
+          <span className="block sm:hidden">
+            We create blazing-fast, scalable websites and web apps that deliver
+            real results.
           </span>
-          <span className="hidden sm:inline">
-            {`We create fast, scalable websites and web apps that deliver results.
-            From sleek business sites to powerful eCommerce platforms and modern
-            SaaS solutions, we use the latest tech like React, Next.js, and
-            Tailwind CSS to build stunning, user-friendly digital experiences.
-            Let's bring your ideas to life!`}
+          <span className="sm:block hidden">
+            We create blazing-fast, scalable websites and web apps that deliver
+            real results. From sleek business sites to powerful eCommerce
+            platforms and modern SaaS solutions.
           </span>
         </motion.p>
       </motion.div>
@@ -110,7 +144,7 @@ const HeroSection = () => {
           first_nav={"/services"}
           second_nav={"/contact"}
           first_styles={
-            "px-8 py-3.5 bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-300 hover:to-indigo-400 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.7)] transition-all duration-300 hover:scale-105"
+            "px-8 py-3.5 bg-gradient-to-r flex-inline items-center from-blue-400 to-indigo-500 hover:from-blue-300 hover:to-indigo-400 text-white font-semibold rounded-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.7)] transition-all duration-300 hover:scale-105"
           }
           second_styles={
             "px-8 py-3.5 border-2 border-white hover:border-blue-200 text-white font-semibold rounded-lg hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] transition-all duration-300 hover:scale-105"
@@ -118,27 +152,20 @@ const HeroSection = () => {
         />
       </motion.div>
 
-      {/* Wave Animation */}
+      {/* Scroll Indicator */}
       {!shouldReduceMotion && (
-        <div
-          className="absolute bottom-0 left-0 w-full overflow-hidden leading-none"
-          aria-hidden="true"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="absolute bottom-10 transform -translate-x-1/2 z-10 flex flex-col items-center"
         >
-          <svg
-            className="relative block w-full h-[100px] animate-float"
-            viewBox="0 0 1200 100"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0,50 C150,100 350,0 500,50 C650,100 850,0 1000,50 C1150,100 1350,0 1500,50 L1500,100 L0,100 Z"
-              fill="rgba(255,255,255,0.3)"
-            />
-          </svg>
-        </div>
+          <ChevronsDown className="w-6 h-6 text-white/60 animate-bounce" />
+        </motion.div>
       )}
 
       {/* Trust Badge */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-2 bottom-0 sm:bottom-2">
+      <div className="absolute transform right-4 z-10 flex items-center bottom-0 sm:bottom-2">
         <span className="text-sm text-white/80">Trusted by</span>
         <TrustSVG
           width={50}

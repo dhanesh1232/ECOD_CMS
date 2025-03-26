@@ -140,7 +140,7 @@ const ClickSpark = ({
   };
 
   return (
-    <div className="absolute w-full h-full z-40">
+    <div className="absolute w-full h-full z-20">
       <div className="relative w-full h-full" onClick={handleClick}>
         <canvas
           ref={canvasRef}

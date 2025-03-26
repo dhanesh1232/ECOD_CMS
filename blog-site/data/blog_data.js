@@ -600,7 +600,7 @@ export const allBlogs = {
       category: "email-marketing",
     },
   ],
-  "graphic-design": [
+  "graphic-logo-design": [
     {
       id: 1,
       title: "Logo Design Principles",

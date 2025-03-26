@@ -45,7 +45,7 @@ const BackAndForward = ({
       setBackPath("/services");
     } else {
       setNavBack("Back to Latest");
-      setBackPath("/blog-posts");
+      setBackPath("/blogs");
     }
   }, [back]);
 

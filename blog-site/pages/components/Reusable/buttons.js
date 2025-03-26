@@ -1,4 +1,4 @@
-import { MoveRight } from "lucide-react";
+import { MoveRight, Rocket } from "lucide-react";
 import Link from "next/link";
 
 const Buttons = ({
@@ -11,6 +11,16 @@ const Buttons = ({
   icon,
   buttonAction = () => {},
 }) => {
+  const icons = () => {
+    switch (icon) {
+      case "right-arrow":
+        return <MoveRight size={16} />;
+      case "rocket":
+        return <Rocket size={16} />;
+      default:
+        return null;
+    }
+  };
   return (
     <>
       {first_label &&
@@ -20,7 +30,7 @@ const Buttons = ({
             className={first_styles}
             aria-label={first_label}
           >
-            {first_label} {icon && <MoveRight />}
+            {first_label} {icons(icon)}
           </Link>
         ) : (
           <button type="button" onClick={buttonAction} className={first_styles}>

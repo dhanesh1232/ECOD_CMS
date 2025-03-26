@@ -8,9 +8,9 @@ import { allCategories } from "@/data/service_data";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-
+import { Search, ChevronRight, ChevronLeft } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -24,7 +24,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-//Components imported using dynamic
+// Components
 const ServiceCard = dynamic(() => import("../components/serviceCard"));
 const CategorySelector = dynamic(
   () => import("../components/Reusable/CategorySelector")
@@ -33,66 +33,70 @@ const SearchComponent = dynamic(() => import("../components/Reusable/search"));
 const BackAndForward = dynamic(
   () => import("../components/Reusable/back-forw")
 );
-const PaginationComponent = dynamic(
-  () => import("../components/Reusable/pagination")
-);
 
 const getGrowthTrend = (current, previous) => {
-  if (!previous) return "📊 No Previous Data";
+  if (!previous)
+    return { text: "No Previous Data", icon: "📊", positive: null };
   const diff = current - previous;
   const percentage = ((diff / previous) * 100).toFixed(2);
-  return diff > 0 ? `📈 +${percentage}%` : `📉 ${percentage}%`;
+  return {
+    text: `${Math.abs(percentage)}%`,
+    icon: diff > 0 ? "📈" : "📉",
+    positive: diff > 0,
+  };
 };
 
 const enhancedAdPerformanceData = adPerformanceData.map((data, index) => ({
   ...data,
-  MetaTrend:
-    index > 0
-      ? getGrowthTrend(data.MetaAds, adPerformanceData[index - 1].MetaAds)
-      : "📊 No Data",
-  GoogleTrend:
-    index > 0
-      ? getGrowthTrend(data.GoogleAds, adPerformanceData[index - 1].GoogleAds)
-      : "📊 No Data",
-  SEOTrend:
-    index > 0
-      ? getGrowthTrend(data.SEO, adPerformanceData[index - 1].SEO)
-      : "📊 No Data",
-  ContentTrend:
-    index > 0
-      ? getGrowthTrend(
-          data.ContentMarketing,
-          adPerformanceData[index - 1].ContentMarketing
-        )
-      : "📊 No Data",
-  EmailTrend:
-    index > 0
-      ? getGrowthTrend(
-          data.EmailMarketing,
-          adPerformanceData[index - 1].EmailMarketing
-        )
-      : "📊 No Data",
-  WebDevTrend:
-    index > 0
-      ? getGrowthTrend(
-          data.WebDevelopment,
-          adPerformanceData[index - 1].WebDevelopment
-        )
-      : "📊 No Data",
-  SocialTrend:
-    index > 0
-      ? getGrowthTrend(
-          data.SocialMedia,
-          adPerformanceData[index - 1].SocialMedia
-        )
-      : "📊 No Data",
-  EcomTrend:
-    index > 0
-      ? getGrowthTrend(
-          data.EcomSolutions,
-          adPerformanceData[index - 1].EcomSolutions
-        )
-      : "📊 No Data",
+  trends: {
+    MetaAds:
+      index > 0
+        ? getGrowthTrend(data.MetaAds, adPerformanceData[index - 1].MetaAds)
+        : null,
+    GoogleAds:
+      index > 0
+        ? getGrowthTrend(data.GoogleAds, adPerformanceData[index - 1].GoogleAds)
+        : null,
+    SEO:
+      index > 0
+        ? getGrowthTrend(data.SEO, adPerformanceData[index - 1].SEO)
+        : null,
+    ContentMarketing:
+      index > 0
+        ? getGrowthTrend(
+            data.ContentMarketing,
+            adPerformanceData[index - 1].ContentMarketing
+          )
+        : null,
+    EmailMarketing:
+      index > 0
+        ? getGrowthTrend(
+            data.EmailMarketing,
+            adPerformanceData[index - 1].EmailMarketing
+          )
+        : null,
+    WebDevelopment:
+      index > 0
+        ? getGrowthTrend(
+            data.WebDevelopment,
+            adPerformanceData[index - 1].WebDevelopment
+          )
+        : null,
+    SocialMedia:
+      index > 0
+        ? getGrowthTrend(
+            data.SocialMedia,
+            adPerformanceData[index - 1].SocialMedia
+          )
+        : null,
+    EcomSolutions:
+      index > 0
+        ? getGrowthTrend(
+            data.EcomSolutions,
+            adPerformanceData[index - 1].EcomSolutions
+          )
+        : null,
+  },
 }));
 
 const CategoryServices = () => {
@@ -111,11 +115,16 @@ const CategoryServices = () => {
     if (router.isReady) setIsLoading(false);
   }, [router.isReady]);
 
-  if (isLoading || !category) return <p>Loading...</p>;
-
-  const categoryBlogs = services_list_ecod[category] || [];
-  const filteredBlogs = categoryBlogs.filter((blog) =>
-    blog.label.toLowerCase().includes(searchTerm.toLowerCase())
+  const categoryBlogs = useMemo(
+    () => services_list_ecod[category] || [],
+    [category]
+  );
+  const filteredBlogs = useMemo(
+    () =>
+      categoryBlogs.filter((blog) =>
+        blog.label.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [categoryBlogs, searchTerm]
   );
 
   const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
@@ -137,41 +146,39 @@ const CategoryServices = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Filter categories based on the selected category
-  const selectedCategories = allCategories.filter(
-    (cat) => cat.category === category
+  const selectedCategories = useMemo(
+    () => allCategories.filter((cat) => cat.category === category),
+    [category]
   );
+
+  const currentService = useMemo(
+    () => services_ecod.find((s) => s.slug === category),
+    [category]
+  );
+
+  if (isLoading || !category) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <>
       <Head>
-        {/* Page Title */}
-        <title>{`ECOD Services - ${
-          services_ecod.find((s) => s.slug === category)?.name || "Category"
-        }`}</title>
-
-        {/* Meta Description */}
+        <title>{`ECOD Services - ${currentService?.name || "Category"}`}</title>
         <meta
           name="description"
-          content={`Explore the services on ${
-            services_ecod.find((s) => s.slug === category)?.name ||
-            "various topics"
-          } at ECOD.`}
+          content={`Explore ${currentService?.name || "our"} services at ECOD.`}
         />
-
-        {/* Open Graph Meta Tags (for social media) */}
         <meta
           property="og:title"
-          content={`ECOD Services - ${
-            services_ecod.find((s) => s.slug === category)?.name || "Category"
-          }`}
+          content={`ECOD Services - ${currentService?.name || "Category"}`}
         />
         <meta
           property="og:description"
-          content={`Explore the services on ${
-            services_ecod.find((s) => s.slug === category)?.name ||
-            "various topics"
-          } at ECOD.`}
+          content={`Explore ${currentService?.name || "our"} services at ECOD.`}
         />
         <meta property="og:type" content="website" />
         <meta
@@ -180,349 +187,300 @@ const CategoryServices = () => {
         />
         <meta
           property="og:image"
-          content={`https://ecod-blog.vercel.app/images/${
-            services_ecod.find((s) => s.slug === category)?.slug || "default"
-          }-og-image.jpg`}
+          content={`https://ecod-blog.vercel.app/images/${currentService?.slug || "default"}-og-image.jpg`}
         />
-
-        {/* Twitter Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content={`ECOD Services - ${
-            services_ecod.find((s) => s.slug === category)?.name || "Category"
-          }`}
-        />
-        <meta
-          name="twitter:description"
-          content={`Explore the services on ${
-            services_ecod.find((s) => s.slug === category)?.name ||
-            "various topics"
-          } at ECOD.`}
-        />
-        <meta
-          name="twitter:image"
-          content={`https://ecod-blog.vercel.app/images/${
-            services_ecod.find((s) => s.slug === category)?.slug || "default"
-          }-twitter-image.jpg`}
-        />
-
-        {/* Canonical URL */}
         <link
           rel="canonical"
           href={`https://ecod-blog.vercel.app/services/${category}`}
         />
-
-        {/* Schema Markup (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            name: `ECOD Services - ${
-              services_ecod.find((s) => s.slug === category)?.name || "Category"
-            }`,
-            description: `Explore the services on ${
-              services_ecod.find((s) => s.slug === category)?.name ||
-              "various topics"
-            } at ECOD.`,
-            url: `https://ecod-blog.vercel.app/services/${category}`,
-            image: `https://ecod-blog.vercel.app/images/${
-              services_ecod.find((s) => s.slug === category)?.slug || "default"
-            }-og-image.jpg`,
-            mainEntityOfPage: {
-              "@type": "WebPage",
-              "@id": `https://ecod-blog.vercel.app/services/${category}`,
-            },
-            publisher: {
-              "@type": "Organization",
-              name: "ECOD",
-              logo: {
-                "@type": "ImageObject",
-                url: "https://ecod-blog.vercel.app/images/logo.png",
-              },
-            },
-          })}
-        </script>
       </Head>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto px-6 py-6 bg-gray-50 dark:bg-gray-900/50"
+        className="max-w-7xl mx-auto px-4 sm:px-6 py-8 bg-white dark:bg-gray-900 transition-colors duration-200"
       >
         <BackAndForward back="/services" forward="/contact" />
-        <hr className="my-4 border-gray-300 dark:border-gray-600" />
-        <CategorySelector page="/services" services={services_ecod} />
-        <hr className="my-4 border-gray-300 dark:border-gray-600" />
-        <SearchComponent filterSearch={handleSearch} searchValue={searchTerm} />
-        <h1 className="text-2xl md:text-4xl text-black dark:text-gray-50 font-extrabold text-center my-8">
-          {services_ecod.find((s) => s.slug === category)?.label || "Services"}
-        </h1>
+        <hr className="my-6 border-gray-200 dark:border-gray-700" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {selectedBlogs.length ? (
-            selectedBlogs.map((blog) => (
-              <ServiceCard key={blog.href} service={blog} />
-            ))
-          ) : (
-            <p className="text-center text-gray-500">No blogs found.</p>
-          )}
+        <div className="mb-10">
+          <CategorySelector page="/services" services={services_ecod} />
+          <SearchComponent
+            filterSearch={handleSearch}
+            searchValue={searchTerm}
+          />
+
+          <motion.h1
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-3xl md:text-4xl font-bold text-center my-8 text-gray-900 dark:text-white"
+          >
+            {currentService?.label || "Services"}
+          </motion.h1>
         </div>
 
-        {totalPages > 1 && (
-          <PaginationComponent
-            prev={() => handlePageChange(-1)}
-            next={() => handlePageChange(1)}
-            currentPage={currentPage}
-            totalPages={totalPages}
-          />
+        {selectedBlogs.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {selectedBlogs.map((blog) => (
+                <ServiceCard key={blog.href} service={blog} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-10">
+                <nav className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(-1)}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  <span className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                    Page {currentPage} of {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </nav>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="mx-auto w-20 h-20 text-gray-400 dark:text-gray-500 mb-6">
+              <Search className="w-full h-full" />
+            </div>
+            <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300">
+              No results found for {`"${searchTerm}"`}
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mt-3">
+              Try different keywords or check your spelling
+            </p>
+          </div>
         )}
 
-        <div className="mt-16 max-w-6xl mx-auto text-center">
-          <h3 className="text-2xl md:text-3xl font-semibold my-5">
-            📊 Business Growth Trends In 2024
+        <div className="mt-16">
+          <h3 className="text-2xl md:text-3xl font-bold text-center mb-10 text-gray-900 dark:text-white">
+            Performance Insights
           </h3>
+
           {selectedCategories.map((cat) => (
             <div key={cat.key} className="mb-16">
-              <h4 className="text-lg font-semibold mb-4">
-                {cat.name} Performance
-              </h4>
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={enhancedAdPerformanceData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <Line
-                    type="monotone"
-                    dataKey={cat.key}
-                    stroke={cat.color}
-                    strokeWidth={2}
-                  />
-                  <Legend />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl mb-8">
+                <h4 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                  {cat.name} Trends
+                </h4>
 
-              <ResponsiveContainer width="100%" height={250} className="mt-8">
-                <BarChart data={enhancedAdPerformanceData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <Bar dataKey={cat.key} fill={cat.color} />
-                  <Legend />
-                </BarChart>
-              </ResponsiveContainer>
+                <div className="space-y-8">
+                  <div className="h-64">
+                    <h5 className="text-lg font-medium mb-2">Line Chart</h5>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={enhancedAdPerformanceData}>
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Line
+                          type="monotone"
+                          dataKey={cat.key}
+                          stroke={cat.color}
+                          strokeWidth={2}
+                          name={cat.name}
+                        />
+                        <Legend />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
 
-              {/* Attractive Content for Each Category */}
-              <div className="mt-8 text-left bg-white dark:bg-gray-700/70 p-6 rounded-xl shadow-md">
-                {cat.key === "MetaAds" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-blue-600 mb-4">
-                      Why Meta Ads Are Essential for Your Business
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      Meta Ads (formerly Facebook Ads) are a powerful tool for
-                      reaching a highly targeted audience. With over{" "}
-                      <strong>2.9 billion active users</strong>, Meta platforms
-                      like Facebook and Instagram allow businesses to:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>
-                        Reach specific demographics based on age, location,
-                        interests, and behavior.
-                      </li>
-                      <li>
-                        Drive engagement through visually appealing ads and
-                        stories.
-                      </li>
-                      <li>Increase conversions with retargeting strategies.</li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      In 2024, businesses leveraging Meta Ads have seen an
-                      average growth of <strong>25% in ROI</strong>.
-                    </p>
-                  </>
-                )}
+                  <div className="h-64 mt-8">
+                    <h5 className="text-lg font-medium mb-2">Bar Chart</h5>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={enhancedAdPerformanceData}>
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Bar
+                          dataKey={cat.key}
+                          fill={cat.color}
+                          name={cat.name}
+                        />
+                        <Legend />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
 
-                {cat.key === "GoogleAds" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-orange-600 mb-4">
-                      Maximize Your Reach with Google Ads
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      Google Ads is the go-to platform for businesses looking to
-                      capture high-intent customers. With{" "}
-                      <strong>over 5.6 billion searches per day</strong>, Google
-                      Ads helps you:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>
-                        Appear at the top of search results for relevant
-                        keywords.
-                      </li>
-                      <li>
-                        Target users actively searching for your products or
-                        services.
-                      </li>
-                      <li>
-                        Track performance with detailed analytics and insights.
-                      </li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      Businesses using Google Ads in 2024 have reported a{" "}
-                      <strong>30% increase in website traffic</strong> and a{" "}
-                      <strong>20% boost in sales</strong>.
-                    </p>
-                  </>
-                )}
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {enhancedAdPerformanceData.slice(-3).map((data, i) => (
+                    <div
+                      key={i}
+                      className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-sm"
+                    >
+                      <h5 className="font-medium text-gray-900 dark:text-white">
+                        {data.name}
+                      </h5>
+                      <p
+                        className="text-2xl font-bold mt-2"
+                        style={{ color: cat.color }}
+                      >
+                        {data[cat.key]}
+                      </p>
+                      {data.trends[cat.key] && (
+                        <div className="mt-2 flex items-center">
+                          <span className="mr-2">
+                            {data.trends[cat.key].icon}
+                          </span>
+                          <span
+                            className={
+                              data.trends[cat.key].positive
+                                ? "text-green-600 dark:text-green-400"
+                                : "text-red-600 dark:text-red-400"
+                            }
+                          >
+                            {data.trends[cat.key].text}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                {cat.key === "SEO" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-green-600 mb-4">
-                      Unlock Long-Term Growth with SEO
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      Search Engine Optimization (SEO) is the backbone of
-                      sustainable online growth. By optimizing your website, you
-                      can:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>
-                        Rank higher on search engines like Google, Bing, and
-                        Yahoo.
-                      </li>
-                      <li>Attract organic traffic without paying for ads.</li>
-                      <li>Build trust and authority with your audience.</li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      In 2024, businesses investing in SEO have experienced a{" "}
-                      <strong>40% increase in organic traffic</strong> and a{" "}
-                      <strong>15% rise in conversions</strong>.
-                    </p>
-                  </>
-                )}
-
-                {cat.key === "ContentMarketing" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-purple-600 mb-4">
-                      Drive Engagement with Content Marketing
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      Content Marketing is all about creating valuable, relevant
-                      content to attract and engage your audience. Benefits
-                      include:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>
-                        Establishing your brand as an industry thought leader.
-                      </li>
-                      <li>
-                        Generating leads through blogs, videos, and
-                        infographics.
-                      </li>
-                      <li>Improving SEO rankings with high-quality content.</li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      Businesses focusing on content marketing in 2024 have seen
-                      a <strong>35% increase in customer engagement</strong>.
-                    </p>
-                  </>
-                )}
-
-                {cat.key === "EmailMarketing" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-red-600 mb-4">
-                      Boost Conversions with Email Marketing
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      Email Marketing remains one of the most effective ways to
-                      nurture leads and drive sales. Key advantages include:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>Personalized communication with your audience.</li>
-                      <li>High ROI with minimal investment.</li>
-                      <li>Automated campaigns for better efficiency.</li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      In 2024, businesses using email marketing have achieved a{" "}
-                      <strong>50% higher open rate</strong> and a{" "}
-                      <strong>25% increase in click-through rates</strong>.
-                    </p>
-                  </>
-                )}
-
-                {cat.key === "WebDevelopment" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-blue-600 mb-4">
-                      Build a Strong Online Presence with Web Development
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      A well-designed website is the foundation of your online
-                      presence. Benefits of professional web development
-                      include:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>Improved user experience and navigation.</li>
-                      <li>Faster loading times and better performance.</li>
-                      <li>Mobile-friendly designs for wider reach.</li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      Businesses with optimized websites in 2024 have seen a{" "}
-                      <strong>30% increase in user retention</strong>.
-                    </p>
-                  </>
-                )}
-
-                {cat.key === "SocialMedia" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-yellow-600 mb-4">
-                      Grow Your Brand with Social Media Marketing
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      Social Media Marketing helps you connect with your
-                      audience on platforms like Instagram, Facebook, and
-                      LinkedIn. Key benefits include:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>Increased brand awareness and visibility.</li>
-                      <li>Direct engagement with your audience.</li>
-                      <li>
-                        Higher conversion rates through targeted campaigns.
-                      </li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      Businesses leveraging social media in 2024 have
-                      experienced a{" "}
-                      <strong>40% increase in brand engagement</strong>.
-                    </p>
-                  </>
-                )}
-
-                {cat.key === "EcomSolutions" && (
-                  <>
-                    <h4 className="text-xl font-semibold text-indigo-600 mb-4">
-                      Scale Your Business with E-commerce Solutions
-                    </h4>
-                    <p className="text-gray-700 dark:text-gray-200">
-                      E-commerce solutions like Shopify and WooCommerce help
-                      businesses streamline their online stores. Benefits
-                      include:
-                    </p>
-                    <ul className="list-disc list-inside mt-2 text-gray-700 dark:text-gray-200">
-                      <li>Seamless integration with payment gateways.</li>
-                      <li>Customizable store designs for better branding.</li>
-                      <li>
-                        Advanced analytics to track sales and performance.
-                      </li>
-                    </ul>
-                    <p className="mt-4 text-gray-700 dark:text-gray-200">
-                      Businesses using e-commerce solutions in 2024 have
-                      reported a <strong>35% increase in online sales</strong>.
-                    </p>
-                  </>
-                )}
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                <h4
+                  className="text-xl font-semibold mb-4"
+                  style={{ color: cat.color }}
+                >
+                  Why {cat.name} Matters
+                </h4>
+                <div className="prose dark:prose-invert max-w-none">
+                  {cat.key === "MetaAds" && (
+                    <>
+                      <p>
+                        Meta Ads (formerly Facebook Ads) are a powerful tool for
+                        reaching a highly targeted audience. With over{" "}
+                        <strong>2.9 billion active users</strong>, Meta
+                        platforms allow businesses to:
+                      </p>
+                      <ul>
+                        <li>
+                          Reach specific demographics based on detailed
+                          targeting
+                        </li>
+                        <li>Drive engagement through visually appealing ads</li>
+                        <li>
+                          Increase conversions with retargeting strategies
+                        </li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "GoogleAds" && (
+                    <>
+                      <p>
+                        {`Google Ads helps you reach customers when they're
+                        actively searching for products or services like yours.
+                        With Google's vast network, you can:`}
+                      </p>
+                      <ul>
+                        <li>Appear in search results for relevant keywords</li>
+                        <li>Display ads on relevant websites</li>
+                        <li>Show product listings to interested shoppers</li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "SEO" && (
+                    <>
+                      <p>
+                        {`Search Engine Optimization improves your website's
+                        visibility in organic search results. Effective SEO can:`}
+                      </p>
+                      <ul>
+                        <li>Increase qualified traffic to your website</li>
+                        <li>Build credibility and trust with your audience</li>
+                        <li>Deliver long-term, sustainable results</li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "ContentMarketing" && (
+                    <>
+                      <p>
+                        Content Marketing attracts and retains customers by
+                        creating valuable content. Benefits include:
+                      </p>
+                      <ul>
+                        <li>
+                          Establishing your brand as an industry authority
+                        </li>
+                        <li>Generating leads through valuable resources</li>
+                        <li>Supporting SEO efforts with quality content</li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "EmailMarketing" && (
+                    <>
+                      <p>
+                        {`Email Marketing delivers personalized messages directly
+                        to your audience's inbox. It enables you to:`}
+                      </p>
+                      <ul>
+                        <li>Nurture leads through the sales funnel</li>
+                        <li>Maintain relationships with existing customers</li>
+                        <li>Drive repeat business with targeted offers</li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "WebDevelopment" && (
+                    <>
+                      <p>
+                        Professional Web Development creates a strong foundation
+                        for your online presence. A well-built website can:
+                      </p>
+                      <ul>
+                        <li>Provide an excellent user experience</li>
+                        <li>Convert visitors into customers</li>
+                        <li>Showcase your products and services effectively</li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "SocialMedia" && (
+                    <>
+                      <p>
+                        Social Media Marketing helps you connect with your
+                        audience where they spend their time. It allows you to:
+                      </p>
+                      <ul>
+                        <li>Build brand awareness and loyalty</li>
+                        <li>Engage directly with customers</li>
+                        <li>Drive traffic to your website</li>
+                      </ul>
+                    </>
+                  )}
+                  {cat.key === "EcomSolutions" && (
+                    <>
+                      <p>
+                        E-commerce Solutions optimize your online store for
+                        maximum sales. They help you:
+                      </p>
+                      <ul>
+                        <li>Streamline the checkout process</li>
+                        <li>Manage inventory and orders efficiently</li>
+                        <li>Provide a seamless shopping experience</li>
+                      </ul>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}

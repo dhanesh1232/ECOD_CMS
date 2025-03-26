@@ -1,239 +1,207 @@
+"use client";
+
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { searchData } from "@/data/search-data";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import Image from "next/image";
 import BackAndForward from "../components/Reusable/back-forw";
 
 const SearchPage = () => {
   const router = useRouter();
   const { q } = router.query;
-  const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const searchContent = (query, content) => {
-    if (!query) return [];
+  // Memoized search function for performance
+  const searchContent = useMemo(() => {
+    return (query, content) => {
+      if (!query) return [];
 
-    const lowerCaseQuery = query.toLowerCase();
-    return content
-      .filter((item) => {
-        // Basic search in title and description
-        const titleMatch = item.title.toLowerCase().includes(lowerCaseQuery);
-        const descMatch = item.description
-          .toLowerCase()
-          .includes(lowerCaseQuery);
+      const lowerCaseQuery = query.toLowerCase();
+      return content
+        .filter((item) => {
+          // Combine all searchable fields
+          const searchFields = [
+            item.title,
+            item.description,
+            item.content || "",
+            item.keywords || "",
+            item.category || "",
+            item.parent_service || "",
+          ]
+            .join(" ")
+            .toLowerCase();
 
-        // Search in content if available
-        const contentMatch = item.content
-          ? item.content.toLowerCase().includes(lowerCaseQuery)
-          : false;
+          return searchFields.includes(lowerCaseQuery);
+        })
+        .sort((a, b) => {
+          // Prioritization logic
+          const aTitleExact = a.title.toLowerCase() === lowerCaseQuery;
+          const bTitleExact = b.title.toLowerCase() === lowerCaseQuery;
+          if (aTitleExact !== bTitleExact) return aTitleExact ? -1 : 1;
 
-        // Search in keywords if available
-        const keywordMatch = item.keywords
-          ? item.keywords.toLowerCase().includes(lowerCaseQuery)
-          : false;
+          const aTitleMatch = a.title.toLowerCase().includes(lowerCaseQuery);
+          const bTitleMatch = b.title.toLowerCase().includes(lowerCaseQuery);
+          if (aTitleMatch !== bTitleMatch) return aTitleMatch ? -1 : 1;
 
-        // Search in category if available
-        const categoryMatch = item.category
-          ? item.category.toLowerCase().includes(lowerCaseQuery)
-          : false;
+          const typePriority = { service: 0, blog: 1, "sub-service": 2 };
+          return typePriority[a.type] - typePriority[b.type];
+        });
+    };
+  }, []);
 
-        // Search in parent service if available
-        const parentMatch = item.parent_service
-          ? item.parent_service.toLowerCase().includes(lowerCaseQuery)
-          : false;
+  // Memoized results to prevent unnecessary re-renders
+  const results = useMemo(() => {
+    return q ? searchContent(q, searchData) : [];
+  }, [q, searchContent]);
 
-        return (
-          titleMatch ||
-          descMatch ||
-          contentMatch ||
-          keywordMatch ||
-          categoryMatch ||
-          parentMatch
-        );
-      })
-      .sort((a, b) => {
-        // Prioritize exact matches in title
-        const aTitleExact = a.title.toLowerCase() === lowerCaseQuery;
-        const bTitleExact = b.title.toLowerCase() === lowerCaseQuery;
-        if (aTitleExact && !bTitleExact) return -1;
-        if (!aTitleExact && bTitleExact) return 1;
-
-        // Then prioritize title matches
-        const aTitleMatch = a.title.toLowerCase().includes(lowerCaseQuery);
-        const bTitleMatch = b.title.toLowerCase().includes(lowerCaseQuery);
-        if (aTitleMatch && !bTitleMatch) return -1;
-        if (!aTitleMatch && bTitleMatch) return 1;
-
-        // Then prioritize service matches over sub-services and blogs
-        const aIsService = a.type === "service";
-        const bIsService = b.type === "service";
-        if (aIsService && !bIsService) return -1;
-        if (!aIsService && bIsService) return 1;
-
-        // Then prioritize blogs over sub-services
-        const aIsBlog = a.type === "blog";
-        const bIsBlog = b.type === "blog";
-        if (aIsBlog && !bIsBlog) return -1;
-        if (!aIsBlog && bIsBlog) return 1;
-
-        // Then prioritize description matches
-        const aDescMatch = a.description.toLowerCase().includes(lowerCaseQuery);
-        const bDescMatch = b.description.toLowerCase().includes(lowerCaseQuery);
-        if (aDescMatch && !bDescMatch) return -1;
-        if (!aDescMatch && bDescMatch) return 1;
-
-        return 0;
-      });
-  };
+  // Group results by type
+  const groupedResults = useMemo(() => {
+    return results.reduce((acc, result) => {
+      const type = result.type === "sub-service" ? "service" : result.type;
+      if (!acc[type]) acc[type] = [];
+      acc[type].push(result);
+      return acc;
+    }, {});
+  }, [results]);
 
   useEffect(() => {
     if (q) {
       setIsLoading(true);
-      const timer = setTimeout(() => {
-        const searchResults = searchContent(q, searchData);
-        setResults(searchResults);
-        setIsLoading(false);
-      }, 300);
-
+      const timer = setTimeout(() => setIsLoading(false), 300);
       return () => clearTimeout(timer);
-    } else {
-      setResults([]);
     }
   }, [q]);
 
-  // Group results by type for better organization
-  const groupedResults = results.reduce((acc, result) => {
-    const type = result.type === "sub-service" ? "service" : result.type;
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(result);
-    return acc;
-  }, {});
-
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 min-h-screen">
+    <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
       <BackAndForward forward="/contact" />
-      <hr className="my-2 border-b" />
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold flex items-center">
-          <Search className="mr-2 h-6 w-6" />
-          Search Results for {`"${q}"`}
+      <hr className="my-4 border-gray-200 dark:border-gray-700" />
+
+      <div className="mb-10">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center text-gray-900 dark:text-white">
+          <Search className="mr-3 h-6 w-6 text-blue-600 dark:text-blue-400" />
+          {q ? `Search Results for "${q}"` : "Search Our Content"}
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          {results.length} {results.length === 1 ? "result" : "results"} found
-        </p>
+        {q && (
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Found {results.length} {results.length === 1 ? "result" : "results"}
+          </p>
+        )}
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="flex justify-center items-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
         </div>
       ) : results.length > 0 ? (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {Object.entries(groupedResults).map(([type, items]) => (
-            <div key={type} className="space-y-4">
-              <h2 className="text-xl font-semibold capitalize">
-                {type === "sub-service"
-                  ? "Services"
-                  : type === "blog"
-                    ? "Blog Posts"
-                    : `${type}s`}
+            <div key={type} className="space-y-6">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 capitalize">
+                {type === "blog"
+                  ? "Blog Posts"
+                  : `${type.charAt(0).toUpperCase() + type.slice(1)}s`}
               </h2>
               <div
-                className={`grid gap-4 ${type === "blog" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}
+                className={`grid gap-6 ${type === "blog" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"}`}
               >
                 {items.map((result, index) => (
-                  <div
+                  <Link
                     key={index}
-                    className={`p-4 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors ${type === "blog" ? "flex flex-col md:flex-row gap-4" : ""}`}
+                    href={result.url}
+                    className="group block rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500"
                   >
-                    <Link href={result.url} className="block">
-                      <div
-                        className={`flex ${type === "blog" ? "items-start" : "items-start"}`}
-                      >
-                        {/* Blog image */}
-                        {type === "blog" && result.image && (
-                          <div className="w-full md:w-48 h-32 relative mb-4 md:mb-0">
-                            <Image
-                              src={result.image || "/images/default-blog.jpg"}
-                              alt={result.title}
-                              fill
-                              className="rounded-lg object-cover"
-                            />
-                          </div>
-                        )}
+                    <div
+                      className={`h-full flex ${type === "blog" ? "flex-col" : "flex-col"}`}
+                    >
+                      {/* Image for blog posts */}
+                      {type === "blog" && (
+                        <div className="relative h-48 w-full">
+                          <Image
+                            src={result.image || "/images/default-blog.jpg"}
+                            alt={result.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            priority={index < 3}
+                          />
+                        </div>
+                      )}
 
-                        {/* Icon for services */}
-                        {result.icon && !result.image && (
+                      {/* Icon for services */}
+                      {!type.includes("blog") && result.icon && (
+                        <div className="p-4 pb-0">
                           <div
-                            className={`mr-3 p-2 rounded-full bg-${result.color?.replace("text-", "bg-")}/10`}
+                            className={`inline-flex p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30`}
                           >
-                            <span className={`text-xl ${result.color}`}>
+                            <span
+                              className={`text-2xl ${result.color || "text-blue-600 dark:text-blue-400"}`}
+                            >
                               {result.icon}
                             </span>
                           </div>
-                        )}
+                        </div>
+                      )}
 
-                        <div className={type === "blog" ? "flex-1" : ""}>
-                          <h3 className="text-lg font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                            {result.title}
-                          </h3>
-                          {result.description && (
-                            <p
-                              className={`text-gray-600 dark:text-gray-400 ${type === "blog" ? "mt-2" : "mt-1"}`}
-                            >
-                              {result.description}
-                            </p>
-                          )}
-                          {result.parent_service && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                              Part of: {result.parent_service}
-                            </p>
-                          )}
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <span className="inline-block px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-md text-gray-600 dark:text-gray-300">
-                              {type === "sub-service" ? "Service" : type}
+                      <div className="p-5 flex-1">
+                        <h3 className="text-lg capitalize font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {result.title}
+                        </h3>
+                        {result.description && (
+                          <p className="mt-2 text-gray-600 dark:text-gray-300 line-clamp-2">
+                            {result.description}
+                          </p>
+                        )}
+                        {result.parent_service && (
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            Part of: {result.parent_service}
+                          </p>
+                        )}
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
+                            {type === "sub-service" ? "Service" : type}
+                          </span>
+                          {result.category && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                              {result.category}
                             </span>
-                            {result.category && (
-                              <span className="inline-block px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded-md text-gray-600 dark:text-gray-300">
-                                {result.category}
-                              </span>
-                            )}
-                          </div>
+                          )}
                         </div>
                       </div>
-                    </Link>
-                  </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
           ))}
         </div>
       ) : q ? (
-        <div className="text-center py-12">
-          <div className="mx-auto w-24 h-24 text-gray-400 mb-4">
+        <div className="text-center py-16">
+          <div className="mx-auto w-20 h-20 text-gray-400 dark:text-gray-500 mb-6">
             <Search className="w-full h-full" />
           </div>
-          <h3 className="text-xl font-medium text-gray-600 dark:text-gray-300">
-            No results found for {`"${q}"`}
+          <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300">
+            No results found for{" "}
+            <span className="font-semibold">{`"${q}"`}</span>
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Try different keywords or check for typos
+          <p className="text-gray-500 dark:text-gray-400 mt-3 max-w-md mx-auto">
+            Try different keywords or check your spelling. You can search for
+            services, blog posts, or documentation.
           </p>
         </div>
       ) : (
-        <div className="text-center py-12">
-          <div className="mx-auto w-24 h-24 text-gray-400 mb-4">
+        <div className="text-center py-16">
+          <div className="mx-auto w-20 h-20 text-gray-400 dark:text-gray-500 mb-6">
             <Search className="w-full h-full" />
           </div>
-          <h3 className="text-xl font-medium text-gray-600 dark:text-gray-300">
-            Enter a search term to find content
+          <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300">
+            What are you looking for?
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">
-            Search for pages, services, policies, or blog posts
+          <p className="text-gray-500 dark:text-gray-400 mt-3 max-w-md mx-auto">
+            Search our services, blog posts, and documentation to find what you
+            need.
           </p>
         </div>
       )}

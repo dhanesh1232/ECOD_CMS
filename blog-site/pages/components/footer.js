@@ -1,34 +1,49 @@
 import { TrustSVG } from "@/public/Assets/svg";
 import Link from "next/link";
 import * as FaIcons from "react-icons/fa";
-
-const socialLinks = [
-  { Icon: FaIcons.FaFacebookF, link: "#", followers: "1k+" },
-  { Icon: FaIcons.FaTwitter, link: "#", followers: "1k+" },
-  { Icon: FaIcons.FaLinkedinIn, link: "#", followers: "1k+" },
-  { Icon: FaIcons.FaInstagram, link: "#", followers: "1k+" },
-];
 import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const quickLinks = ["About Us", "Services", "Blog Posts", "Contact", "Faqs"];
+const socialLinks = [
+  { Icon: FaIcons.FaFacebookF, link: "#", name: "Facebook", color: "#1877F2" },
+  { Icon: FaIcons.FaTwitter, link: "#", name: "Twitter", color: "#1DA1F2" },
+  { Icon: FaIcons.FaLinkedinIn, link: "#", name: "LinkedIn", color: "#0077B5" },
+  { Icon: FaIcons.FaInstagram, link: "#", name: "Instagram", color: "#E4405F" },
+  { Icon: FaIcons.FaYoutube, link: "#", name: "YouTube", color: "#FF0000" },
+];
+
+const quickLinks = [
+  { name: "About Us", path: "about" },
+  { name: "Services", path: "services" },
+  { name: "Blog", path: "blog" },
+  { name: "Contact", path: "contact" },
+  { name: "FAQs", path: "faqs" },
+  { name: "Disclaimer", path: "disclaimer" },
+];
 
 const services = [
   "Web Development",
   "SEO Optimization",
   "Digital Marketing",
   "Shopify Solutions",
+  "UI/UX Design",
+  "App Development",
 ];
 
 const testimonials = [
   {
     quote: "ECOD transformed our online presence. Highly recommended!",
     name: "John Doe",
+    company: "Tech Solutions Inc.",
+    rating: 5,
   },
   {
     quote: "Their SEO services helped our business rank higher in weeks!",
     name: "Jane Smith",
+    company: "Ecommerce Store",
+    rating: 4,
   },
 ];
 
@@ -36,201 +51,368 @@ const Footer = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email.includes("@") || !email.includes(".")) {
       alert("Please enter a valid email address.");
       return;
     }
-    setSubscribed(true);
+
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      setSubscribed(true);
+      setEmail("");
+    } catch (error) {
+      console.error("Subscription error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
-    <footer className="bg-gray-900 text-white pt-12 pb-6">
-      <div className="container mx-auto justify-center flex-wrap px-4 md:px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
-        {/* About ECOD */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 underline">About ECOD</h2>
-          <p className="text-gray-300">
-            ECOD provides top-notch services to enhance your digital presence.
-            <span className="text-green-400 font-semibold">
-              {" "}
-              Our tailored strategies ensure maximum ROI and long-term business
-              growth.
-            </span>
-          </p>
-        </div>
+    <footer className="bg-gray-900 text-white pt-16 pb-8">
+      <div className="container mx-auto px-4 md:px-6">
+        {/* Main Footer Content */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12"
+          initial="hidden"
+          whileInView="visible"
+          variants={containerVariants}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {/* About ECOD */}
+          <motion.div variants={itemVariants}>
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+              About ECOD
+            </h3>
+            <p className="text-gray-400 mb-4">
+              We create digital experiences that transform businesses and drive
+              growth through innovative solutions.
+            </p>
+            <div className="flex items-center gap-2">
+              <TrustSVG width={40} height={48} color="#10B981" />
+              <span className="text-sm text-gray-400">
+                Trusted by 500+ businesses worldwide
+              </span>
+            </div>
+          </motion.div>
 
-        {/* Services */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 underline">Our Services</h2>
-          <ul className="space-y-2 flex flex-col items-center">
-            {services.map((service, index) => (
-              <li
-                key={index}
-                className="flex items-center space-x-2 text-gray-300 hover:text-blue-500 cursor-pointer"
-              >
-                <FaIcons.FaCheckCircle className="text-green-400" />
-                <Link
-                  href={`/services/${service
-                    .toLowerCase()
-                    .replace(/\s/g, "-")}`}
+          {/* Services */}
+          <motion.div variants={itemVariants}>
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+              Our Services
+            </h3>
+            <ul className="space-y-3">
+              {services.map((service, index) => (
+                <motion.li
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
-                  {service}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Quick Links */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4 underline">Quick Links</h2>
-          <ul className="space-y-2">
-            {quickLinks.map((link, index) => {
-              const href_link = link.toLowerCase().replace(/\s/g, "-");
-
-              return (
-                <li key={index}>
                   <Link
-                    href={`/${href_link}`}
-                    className={`${router.pathname.replace("/", "") === href_link ? "text-green-600" : "hover:text-green-400"}  transition duration-300`}
+                    href={`/services/${service.toLowerCase().replace(/\s/g, "-")}`}
+                    className="flex items-center text-gray-400 hover:text-green-400 transition-colors group"
+                    aria-label={`Learn more about ${service}`}
                   >
-                    {link}
+                    <motion.span
+                      className="inline-block mr-2 group-hover:translate-x-1 transition-transform"
+                      whileHover={{ x: 3 }}
+                    >
+                      <FaIcons.FaArrowRight className="text-xs text-green-400" />
+                    </motion.span>
+                    {service}
                   </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        {/* Policies */}
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4 underline">Legal</h2>
-          <ul className="space-y-2">
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Quick Links */}
+          <motion.div variants={itemVariants}>
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {quickLinks.map((link, index) => (
+                <motion.li
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Link
+                    href={`/${link.path}`}
+                    className={`${
+                      router.pathname === `/${link.path}`
+                        ? "text-green-400"
+                        : "text-gray-400 hover:text-green-400"
+                    } transition-colors flex items-center`}
+                    aria-label={`Go to ${link.name}`}
+                  >
+                    <motion.span
+                      className="inline-block mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      animate={{
+                        opacity: router.pathname === `/${link.path}` ? 1 : 0,
+                      }}
+                    >
+                      <FaIcons.FaArrowRight className="text-xs text-green-400" />
+                    </motion.span>
+                    {link.name}
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Testimonials */}
+          <motion.div variants={itemVariants}>
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+              Client Testimonials
+            </h3>
+            <div className="space-y-4">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={index}
+                  variants={itemVariants}
+                  className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-800/70 transition-colors"
+                  whileHover={{ y: -3 }}
+                >
+                  <div className="flex mb-2">
+                    {Array(5)
+                      .fill(0)
+                      .map((_, i) => (
+                        <FaIcons.FaStar
+                          key={i}
+                          className={`w-4 h-4 ${i < testimonial.rating ? "text-yellow-400" : "text-gray-600"}`}
+                        />
+                      ))}
+                  </div>
+                  <p className="text-gray-300 italic mb-2">
+                    {`"${testimonial.quote}"`}
+                  </p>
+                  <div className="text-green-400 font-medium">
+                    {testimonial.name}
+                  </div>
+                  <div className="text-gray-500 text-sm">
+                    {testimonial.company}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Newsletter & CTA */}
+        <motion.div
+          className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          viewport={{ once: true }}
+        >
+          {/* Newsletter */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500/30 transition-colors">
+            <div className="flex items-center gap-3 mb-4">
+              <FaIcons.FaEnvelope className="text-green-400 text-xl" />
+              <h3 className="text-xl font-bold">Newsletter</h3>
+            </div>
+            <p className="text-gray-400 mb-4">
+              Get the latest digital insights and exclusive offers straight to
+              your inbox.
+            </p>
+            <AnimatePresence mode="wait">
+              {subscribed ? (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-green-900/30 border border-green-800 text-green-400 p-4 rounded-lg"
+                >
+                  Thank you for subscribing! Check your email for confirmation.
+                </motion.div>
+              ) : (
+                <motion.form
+                  key="form"
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onSubmit={handleSubscribe}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
+                  <input
+                    type="email"
+                    placeholder="Your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-grow bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-500 transition-colors"
+                    required
+                    aria-label="Email address for newsletter subscription"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`relative bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-all font-medium ${
+                      isLoading ? "opacity-80 cursor-not-allowed" : ""
+                    }`}
+                    aria-label="Subscribe to newsletter"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Processing...
+                      </span>
+                    ) : (
+                      "Subscribe"
+                    )}
+                  </button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Contact CTA */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-blue-500/30 transition-colors flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <FaIcons.FaHeadset className="text-green-400 text-xl" />
+                <h3 className="text-xl font-bold">Need Help?</h3>
+              </div>
+              <p className="text-gray-400 mb-6">
+                Our experts are ready to discuss your project and answer any
+                questions.
+              </p>
+            </div>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium group"
+              aria-label="Contact us"
+            >
+              <FaIcons.FaPhoneAlt className="group-hover:animate-pulse" />
+              <span>Contact Us</span>
+              <FaIcons.FaArrowRight className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Social & Legal */}
+        <div className="pt-8 border-t border-gray-800">
+          {/* Social Links */}
+          <motion.div
+            className="flex justify-center gap-4 mb-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            {socialLinks.map(({ Icon, link, name, color }, index) => (
+              <motion.a
+                key={index}
+                href={link}
+                aria-label={`Follow us on ${name}`}
+                className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition-colors relative overflow-hidden group"
+                whileHover={{ y: -3 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ color }}
+              >
+                <Icon className="w-5 h-5 z-10" />
+                <span
+                  className="absolute inset-0 bg-current opacity-0 group-hover:opacity-10 transition-opacity"
+                  aria-hidden="true"
+                />
+              </motion.a>
+            ))}
+          </motion.div>
+
+          {/* Legal Links */}
+          <motion.div
+            className="flex flex-wrap justify-center gap-4 mb-8 text-sm"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            viewport={{ once: true }}
+          >
             {policy_data.policy_links.map((link, index) => {
               const href_link = link
                 .toLowerCase()
                 .replace(/[^a-z\s-]/g, "")
                 .replace(/\s+/g, "-");
               return (
-                <li key={index}>
-                  <Link
-                    href={`/${href_link}`}
-                    className={`${router.query.policy_id === href_link ? "text-green-500" : "hover:text-green-400"} transition duration-300`}
-                  >
-                    {link}
-                  </Link>
-                </li>
+                <Link
+                  key={index}
+                  href={`/${href_link}`}
+                  className="text-gray-500 hover:text-gray-300 transition-colors"
+                  aria-label={`View our ${link}`}
+                >
+                  {link}
+                </Link>
               );
             })}
-          </ul>
-        </div>
-        {/* Testimonials */}
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-4 underline">
-            What Our Clients Say
-          </h2>
-          <div className="space-y-4">
-            {testimonials.map((testimonial, index) => (
-              <blockquote key={index} className="text-gray-300 italic">
-                {`" ${testimonial.quote} "`} <br />
-                <span className="font-semibold text-green-400">
-                  - {testimonial.name}
-                </span>
-                <div className="flex justify-center mt-2 text-yellow-400">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, i) => (
-                      <FaIcons.FaStar key={i} />
-                    ))}
-                </div>
-              </blockquote>
-            ))}
-          </div>
-        </div>
-      </div>
+          </motion.div>
 
-      <div className="grid mx-auto grid-cols-1 lg:grid-cols-2 mt-5">
-        {/* Newsletter Signup */}
-        <div className="mt-10 flex flex-col w-full justify-center items-center gap-6 px-2 sm:px-4">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">
-              📩 Stay Ahead of the Competition
-            </h2>
-            <p className="text-gray-300">
-              Join 2,000+ business owners getting exclusive marketing tips.
-            </p>
-          </div>
-          {subscribed ? (
-            <p className="text-green-400 text-sm md:text-base text-center">
-              {`Thanks You for subscribing`}
-              <br />
-              <span className="text-gray-300">{email}</span>
-            </p>
-          ) : (
-            <form
-              onSubmit={handleSubscribe}
-              className="flex w-full max-w-lg bg-gray-800 p-1 rounded-lg"
-            >
-              <input
-                type="email"
-                placeholder="Enter your email"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-                className="bg-transparent border-0 outline-none flex-grow text-white px-2 placeholder-gray-500 focus:outline-none focus:ring-0 sm:text-base text-sm"
-              />
-              <button
-                type="submit"
-                className="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-4 py-2 rounded-lg transition duration-300 sm:text-base text-sm"
-              >
-                Subscribe Now 🚀
-              </button>
-            </form>
-          )}
-        </div>
-
-        {/* Call to Action */}
-        <div className="mt-10 text-center">
-          <h2 className="text-xl font-semibold mb-3">
-            🚀 Ready to Scale Your Business?
-          </h2>
-          <p className="text-gray-300 mb-4">
-            Book a free strategy call with our experts today!
-          </p>
-          <Link
-            href="/contact"
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition duration-300"
+          {/* Copyright */}
+          <motion.div
+            className="text-center text-gray-600 text-sm"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            viewport={{ once: true }}
           >
-            Get a Free Strategy Session 💡
-          </Link>
+            <div className="flex items-center justify-center gap-2">
+              <TrustSVG width={30} height={36} color="#6B7280" />
+              <span>
+                &copy; {new Date().getFullYear()} ECOD Digital. All rights
+                reserved.
+              </span>
+            </div>
+          </motion.div>
         </div>
-      </div>
-
-      {/* Social Media Links */}
-      <div className="mt-10 text-center">
-        <h2 className="text-xl font-semibold mb-3 underline">Follow Us</h2>
-        <div className="flex justify-center flex-wrap gap-2">
-          {socialLinks.map(({ Icon, link, followers }, index) => (
-            <a
-              key={index}
-              href={link}
-              className="flex items-center text-gray-300 hover:text-green-400 transition duration-300 px-3 py-2 border border-gray-700 rounded-full"
-            >
-              <Icon size={16} />
-              <span className="ml-2 text-sm">{followers}</span>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer Bottom */}
-      <div className="mt-10 text-center border-t border-gray-700 pt-5 text-gray-500 text-sm flex items-center justify-center gap-2">
-        &copy; {new Date().getFullYear()}{" "}
-        <TrustSVG width={50} height={60} color="#FFFFFF" />. All Rights
-        Reserved.
       </div>
     </footer>
   );

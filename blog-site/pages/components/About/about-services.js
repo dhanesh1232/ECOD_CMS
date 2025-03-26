@@ -91,7 +91,7 @@ const ServiceSection = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         viewport={{ once: true }}
-        className="text-3xl md:text-4xl font-bold text-gray-900 text-center"
+        className="text-3xl md:text-4xl font-bold dark:text-gray-200 text-gray-900 text-center"
       >
         🌍 Our Services
       </motion.h2>

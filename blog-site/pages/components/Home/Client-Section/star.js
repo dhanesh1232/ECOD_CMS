@@ -1,39 +1,112 @@
 import { useState, useMemo } from "react";
-import { StarRatingSVG } from "@/public/Assets/svg"; // ✅ Use ES6 import
+import { motion } from "framer-motion";
 
-const StarRating = ({ rating, setRating }) => {
+const StarRating = ({
+  rating = 0,
+  setRating,
+  starCount = 5,
+  size = 24,
+  activeColor = "#FFD700",
+  inactiveColor = "#CCCCCC",
+  readOnly = false,
+  className = "",
+}) => {
   const [hoverRating, setHoverRating] = useState(0);
-  const stars = useMemo(() => [1, 2, 3, 4, 5], []); // ✅ Prevent re-creation on every render
+  const stars = useMemo(
+    () => Array.from({ length: starCount }, (_, i) => i + 1),
+    [starCount]
+  );
 
-  // ✅ Event Handlers
+  // Event Handlers
   const handleClick = (star) => {
-    if (rating !== star) setRating(star);
+    if (!readOnly && rating !== star) {
+      setRating(star);
+    }
   };
 
-  const handleMouseEnter = (star) => setHoverRating(star);
-  const handleMouseLeave = () => setHoverRating(0);
+  const handleMouseEnter = (star) => {
+    if (!readOnly) setHoverRating(star);
+  };
+
+  const handleMouseLeave = () => {
+    if (!readOnly) setHoverRating(0);
+  };
+
+  // Calculate fill percentage for partial stars
+  const getFillPercentage = (star) => {
+    if (hoverRating) return star <= hoverRating ? 100 : 0;
+    if (star <= Math.floor(rating)) return 100;
+    if (star === Math.ceil(rating) && rating % 1 > 0) return (rating % 1) * 100;
+    return 0;
+  };
 
   return (
-    <div className="flex space-x-1">
+    <div
+      className={`flex items-center ${className}`}
+      role="radiogroup"
+      aria-label="Star rating"
+    >
       {stars.map((star) => {
+        const fillPercentage = getFillPercentage(star);
+        const isInteractive = !readOnly;
         const isHighlighted = star <= (hoverRating || rating);
+
         return (
-          <button
+          <motion.button
             key={star}
             type="button"
             onClick={() => handleClick(star)}
             onMouseEnter={() => handleMouseEnter(star)}
             onMouseLeave={handleMouseLeave}
-            className="focus:outline-none"
+            className={`focus:outline-none ${isInteractive ? "cursor-pointer" : "cursor-default"}`}
+            whileHover={isInteractive ? { scale: 1.1 } : {}}
+            whileTap={isInteractive ? { scale: 0.9 } : {}}
+            role="radio"
+            aria-checked={isHighlighted}
+            aria-label={`Rate ${star} out of ${starCount}`}
+            tabIndex={isInteractive ? 0 : -1}
           >
-            <StarRatingSVG
-              width={24}
-              height={24}
-              fill={isHighlighted ? "#FFD700" : "#CCCCCC"}
-            />
-          </button>
+            <svg
+              width={size}
+              height={size}
+              viewBox="0 0 24 24"
+              className="transition-colors duration-150"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient
+                  id={`partialFill-${star}`}
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop offset={`${fillPercentage}%`} stopColor={activeColor} />
+                  <stop
+                    offset={`${fillPercentage}%`}
+                    stopColor={inactiveColor}
+                  />
+                </linearGradient>
+              </defs>
+              <path
+                d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+                fill={
+                  fillPercentage === 100
+                    ? activeColor
+                    : fillPercentage === 0
+                      ? inactiveColor
+                      : `url(#partialFill-${star})`
+                }
+              />
+            </svg>
+          </motion.button>
         );
       })}
+      {!readOnly && (
+        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+          {hoverRating || rating || 0}/{starCount}
+        </span>
+      )}
     </div>
   );
 };
