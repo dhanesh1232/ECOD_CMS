@@ -97,8 +97,15 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8">
-      <div className="container mx-auto px-4 md:px-6">
+    <footer className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 text-white pt-16 pb-8 backdrop-blur-lg relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/5 via-transparent to-transparent opacity-20"></div>
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-purple-500/5 blur-3xl"></div>
+        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl"></div>
+      </div>
+
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Main Footer Content */}
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12"
@@ -109,14 +116,14 @@ const Footer = () => {
         >
           {/* About ECOD */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
               About ECOD
             </h3>
             <p className="text-gray-400 mb-4">
               We create digital experiences that transform businesses and drive
               growth through innovative solutions.
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-gray-700/30 max-w-fit">
               <TrustSVG width={40} height={48} color="#10B981" />
               <span className="text-sm text-gray-400">
                 Trusted by 500+ businesses worldwide
@@ -126,7 +133,7 @@ const Footer = () => {
 
           {/* Services */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
               Our Services
             </h3>
             <ul className="space-y-3">
@@ -157,7 +164,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
               Quick Links
             </h3>
             <ul className="space-y-3">
@@ -194,7 +201,7 @@ const Footer = () => {
 
           {/* Testimonials */}
           <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700 inline-block">
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
               Client Testimonials
             </h3>
             <div className="space-y-4">
@@ -202,7 +209,7 @@ const Footer = () => {
                 <motion.div
                   key={index}
                   variants={itemVariants}
-                  className="bg-gray-800/50 p-4 rounded-lg hover:bg-gray-800/70 transition-colors"
+                  className="bg-gray-800/30 backdrop-blur-sm p-4 rounded-lg hover:bg-gray-800/50 transition-colors border border-gray-700/30"
                   whileHover={{ y: -3 }}
                 >
                   <div className="flex mb-2">
@@ -239,9 +246,11 @@ const Footer = () => {
           viewport={{ once: true }}
         >
           {/* Newsletter */}
-          <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500/30 transition-colors">
+          <div className="bg-gray-800/40 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50 hover:border-green-500/30 transition-colors shadow-lg">
             <div className="flex items-center gap-3 mb-4">
-              <FaIcons.FaEnvelope className="text-green-400 text-xl" />
+              <div className="p-2 rounded-lg bg-green-500/10 backdrop-blur-sm border border-green-500/20">
+                <FaIcons.FaEnvelope className="text-green-400 text-xl" />
+              </div>
               <h3 className="text-xl font-bold">Newsletter</h3>
             </div>
             <p className="text-gray-400 mb-4">
@@ -255,7 +264,7 @@ const Footer = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="bg-green-900/30 border border-green-800 text-green-400 p-4 rounded-lg"
+                  className="bg-green-900/30 border border-green-800/50 text-green-400 p-4 rounded-lg backdrop-blur-sm"
                 >
                   Thank you for subscribing! Check your email for confirmation.
                 </motion.div>
@@ -272,14 +281,14 @@ const Footer = () => {
                     placeholder="Your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="flex-grow bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 hover:border-gray-500 transition-colors"
+                    className="flex-grow bg-gray-700/50 backdrop-blur-sm border border-gray-600/50 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 hover:border-gray-500/50 transition-colors"
                     required
                     aria-label="Email address for newsletter subscription"
                   />
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className={`relative bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-all font-medium ${
+                    className={`relative bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white px-6 py-3 rounded-lg transition-all font-medium backdrop-blur-sm ${
                       isLoading ? "opacity-80 cursor-not-allowed" : ""
                     }`}
                     aria-label="Subscribe to newsletter"
@@ -318,10 +327,12 @@ const Footer = () => {
           </div>
 
           {/* Contact CTA */}
-          <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-xl border border-gray-700 hover:border-blue-500/30 transition-colors flex flex-col justify-between">
+          <div className="bg-gray-800/40 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50 hover:border-blue-500/30 transition-colors shadow-lg flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <FaIcons.FaHeadset className="text-green-400 text-xl" />
+                <div className="p-2 rounded-lg bg-blue-500/10 backdrop-blur-sm border border-blue-500/20">
+                  <FaIcons.FaHeadset className="text-blue-400 text-xl" />
+                </div>
                 <h3 className="text-xl font-bold">Need Help?</h3>
               </div>
               <p className="text-gray-400 mb-6">
@@ -331,7 +342,7 @@ const Footer = () => {
             </div>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium group"
+              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-6 py-3 rounded-lg transition-colors font-medium group backdrop-blur-sm"
               aria-label="Contact us"
             >
               <FaIcons.FaPhoneAlt className="group-hover:animate-pulse" />
@@ -342,7 +353,7 @@ const Footer = () => {
         </motion.div>
 
         {/* Social & Legal */}
-        <div className="pt-8 border-t border-gray-800">
+        <div className="pt-8 border-t border-gray-800/50">
           {/* Social Links */}
           <motion.div
             className="flex justify-center gap-4 mb-8"
@@ -356,7 +367,7 @@ const Footer = () => {
                 key={index}
                 href={link}
                 aria-label={`Follow us on ${name}`}
-                className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 text-white flex items-center justify-center transition-colors relative overflow-hidden group"
+                className="w-10 h-10 rounded-full bg-gray-800/50 hover:bg-gray-700/50 text-white flex items-center justify-center transition-colors relative overflow-hidden group backdrop-blur-sm border border-gray-700/50 hover:border-gray-600/50"
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.95 }}
                 style={{ color }}
@@ -387,7 +398,7 @@ const Footer = () => {
                 <Link
                   key={index}
                   href={`/${href_link}`}
-                  className="text-gray-500 hover:text-gray-300 transition-colors"
+                  className="text-gray-500 hover:text-gray-300 transition-colors hover:bg-gray-800/50 px-3 py-1 rounded backdrop-blur-sm"
                   aria-label={`View our ${link}`}
                 >
                   {link}
@@ -398,13 +409,13 @@ const Footer = () => {
 
           {/* Copyright */}
           <motion.div
-            className="text-center text-gray-600 text-sm"
+            className="text-center text-gray-500 text-sm"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             viewport={{ once: true }}
           >
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 max-w-fit mx-auto border border-gray-700/30">
               <TrustSVG width={30} height={36} color="#6B7280" />
               <span>
                 &copy; {new Date().getFullYear()} ECOD Digital. All rights

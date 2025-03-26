@@ -16,7 +16,6 @@ import {
   Clock,
   Calendar,
 } from "lucide-react";
-
 import { blogs } from "@/data/blog_data";
 import { useRouter } from "next/router";
 
@@ -57,12 +56,12 @@ const HomeBlog = () => {
   }
 
   return (
-    <section className="w-full py-20 px-6 sm:px-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-center relative">
+    <section className="w-full py-20 px-6 sm:px-8 bg-gradient-to-r from-gray-50/50 via-white/50 to-gray-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50 backdrop-blur-sm text-center relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden -z-10">
-        <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/10"></div>
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-100/50 blur-3xl dark:bg-blue-900/20"></div>
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-purple-100/50 blur-3xl dark:bg-purple-900/20"></div>
+        <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-50/30 to-transparent dark:from-blue-900/10 backdrop-blur-sm"></div>
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-100/30 blur-3xl dark:bg-blue-900/20"></div>
+        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-purple-100/30 blur-3xl dark:bg-purple-900/20"></div>
       </div>
 
       {/* Section Header */}
@@ -73,7 +72,7 @@ const HomeBlog = () => {
         className="max-w-4xl mx-auto mb-16 px-4"
       >
         <motion.span
-          className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-600 dark:text-blue-300 rounded-full text-sm font-medium mb-4 shadow-sm"
+          className="inline-block px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md text-blue-600 dark:text-blue-300 rounded-full text-sm font-medium border border-blue-200/30 dark:border-blue-700/30 shadow-inner"
           whileHover={{ scale: 1.05 }}
         >
           Latest Insights
@@ -83,7 +82,7 @@ const HomeBlog = () => {
           initial="hidden"
           whileInView="visible"
           transition={{ delay: 0.2 }}
-          className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4"
+          className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white/90 mb-4"
         >
           Discover Our{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
@@ -95,7 +94,7 @@ const HomeBlog = () => {
           initial="hidden"
           whileInView="visible"
           transition={{ delay: 0.4 }}
-          className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+          className="text-xl text-gray-600/90 dark:text-gray-300/90 max-w-2xl mx-auto backdrop-blur-sm"
         >
           Expert articles to help you grow your business
         </motion.p>
@@ -114,19 +113,20 @@ const HomeBlog = () => {
         {/* Navigation Arrows */}
         <button
           onClick={() => swiperRef.current?.swiper.slidePrev()}
-          className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-300 ${isHovered ? "opacity-100" : "opacity-0"} group`}
+          className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-white/90 dark:hover:bg-gray-700/80 transition-all duration-300 border border-gray-200/30 dark:border-gray-700/30 ${isHovered ? "opacity-100" : "opacity-0"} group`}
         >
           <ChevronLeft className="w-6 h-6 group-hover:scale-110 transition-transform" />
         </button>
 
         <button
           onClick={() => swiperRef.current?.swiper.slideNext()}
-          className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-300 ${isHovered ? "opacity-100" : "opacity-0"} group`}
+          className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-white/90 dark:hover:bg-gray-700/80 transition-all duration-300 border border-gray-200/30 dark:border-gray-700/30 ${isHovered ? "opacity-100" : "opacity-0"} group`}
         >
           <ChevronRight className="w-6 h-6 group-hover:scale-110 transition-transform" />
         </button>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl -rotate-1 -z-10"></div>
+        {/* Glass background for swiper */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 rounded-3xl -rotate-1 -z-10 backdrop-blur-sm"></div>
 
         <Swiper
           ref={swiperRef}
@@ -140,7 +140,7 @@ const HomeBlog = () => {
             clickable: true,
             el: ".blog-pagination",
             renderBullet: (index, className) => {
-              return `<span class="${className} bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 w-3 h-3"></span>`;
+              return `<span class="${className} bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-300 w-3 h-3 backdrop-blur-sm"></span>`;
             },
           }}
           autoplay={{
@@ -193,26 +193,32 @@ const HomeBlog = () => {
                 initial="hidden"
                 whileInView="visible"
                 transition={{ delay: index * 0.1, duration: 0.3 }}
-                className="h-full rounded-xl overflow-hidden bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border-gray-700 transition-all duration-300"
+                className="h-full rounded-xl overflow-hidden bg-white/80 dark:bg-gray-800/70 backdrop-blur-md shadow-lg border border-gray-200/50 dark:border-gray-700/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group"
               >
+                {/* Inner shadow */}
+                <div className="absolute inset-0 rounded-xl shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.15)] pointer-events-none"></div>
+
                 {/* Blog Image */}
                 <div className="relative h-48 w-full overflow-hidden group">
                   {blog.image === "" ? (
-                    <div className="h-full bg-blue-400 text-white flex items-center justify-center text-3xl">
+                    <div className="h-full bg-gradient-to-r from-blue-400/80 to-purple-400/80 text-white flex items-center justify-center text-3xl backdrop-blur-sm">
                       {blog.title.charAt(0)}
                     </div>
                   ) : (
-                    <Image
-                      src={blog.image}
-                      alt={blog.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <>
+                      <Image
+                        src={blog.image}
+                        alt={blog.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    </>
                   )}
                   {/* Category Tag */}
-                  <div className="absolute dark:bg-white bg-black shadow-xl bottom-4 flex items-center justify-center rounded-3xl left-4">
+                  <div className="absolute bottom-4 left-4">
                     <span
-                      className={`px-3 py-1 text-xs font-semibold text-white dark:text-gray-900 rounded-full`}
+                      className={`px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full backdrop-blur-sm border border-white/20`}
                     >
                       {blog.category}
                     </span>
@@ -221,7 +227,7 @@ const HomeBlog = () => {
 
                 {/* Blog Content */}
                 <div className="p-6">
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  <div className="flex items-center text-sm text-gray-500/90 dark:text-gray-400/90 mb-4">
                     <div className="flex items-center mr-4">
                       <Calendar className="w-4 h-4 mr-1" />
                       <span>{blog.date}</span>
@@ -232,17 +238,17 @@ const HomeBlog = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-3 line-clamp-2">
+                  <h3 className="text-xl font-bold text-gray-800/90 dark:text-white/90 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-300">
                     {blog.title}
                   </h3>
 
-                  <p className="text-gray-600 dark:text-gray-300 mb-5 line-clamp-2">
+                  <p className="text-gray-600/90 dark:text-gray-300/90 mb-5 line-clamp-2">
                     {blog.description}
                   </p>
 
                   <div className="flex justify-between items-center">
                     <button
-                      className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium group"
+                      className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium group hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                       onClick={() => {
                         router.push(`/blog/${blog.category}${blog.slug}`);
                       }}
@@ -251,9 +257,8 @@ const HomeBlog = () => {
                       <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </button>
                     <div className="flex -space-x-2">
-                      {/* Author avatars would go here */}
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 border-2 border-white dark:border-gray-800"></div>
-                      <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 border-2 border-white dark:border-gray-800"></div>
+                      <div className="w-8 h-8 rounded-full bg-blue-100/80 dark:bg-blue-900/50 border-2 border-white/80 dark:border-gray-800/80 backdrop-blur-sm"></div>
+                      <div className="w-8 h-8 rounded-full bg-purple-100/80 dark:bg-purple-900/50 border-2 border-white/80 dark:border-gray-800/80 backdrop-blur-sm"></div>
                     </div>
                   </div>
                 </div>
@@ -263,7 +268,7 @@ const HomeBlog = () => {
         </Swiper>
 
         {/* Custom Pagination */}
-        <div className="blog-pagination mt-8 flex justify-center gap-2"></div>
+        <div className="blog-pagination mt-8 flex justify-center gap-2 backdrop-blur-sm"></div>
       </motion.div>
 
       {/* Call to Action */}
@@ -275,14 +280,17 @@ const HomeBlog = () => {
         className="mt-16"
       >
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)",
+          }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm"
         >
           Explore All Articles
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
         </motion.button>
-        <p className="mt-6 text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+        <p className="mt-6 text-gray-500/90 dark:text-gray-400/90 flex items-center justify-center gap-2 backdrop-blur-sm">
           <BookOpen className="w-5 h-5" />
           <span>{blogs.length}+ articles and growing</span>
         </p>
