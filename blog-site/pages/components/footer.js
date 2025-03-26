@@ -15,7 +15,7 @@ const socialLinks = [
 ];
 
 const quickLinks = [
-  { name: "About Us", path: "about" },
+  { name: "About Us", path: "about-us" },
   { name: "Services", path: "services" },
   { name: "Blog", path: "blog" },
   { name: "Contact", path: "contact" },

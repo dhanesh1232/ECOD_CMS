@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
-import { Dialog } from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -140,130 +140,135 @@ const TeamMemberCard = ({ data }) => {
 
       {/* Popup Modal */}
       <AnimatePresence>
-        {isOpen && (
+        <Transition appear show={isOpen} as={Fragment}>
           <Dialog
             as="div"
             className="relative z-50"
-            open={isOpen}
             onClose={() => setIsOpen(false)}
             static
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            />
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+            </Transition.Child>
 
             <div className="fixed inset-0 overflow-y-auto">
               <div className="flex min-h-full items-center justify-center p-4">
-                <Dialog.Panel
-                  as={motion.div}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                  className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-xl"
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
                 >
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                    aria-label="Close"
-                  >
-                    <FaX className="w-5 h-5 text-gray-500" />
-                  </button>
+                  <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-xl">
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition transform"
+                      aria-label="Close"
+                    >
+                      <FaX className="w-5 h-5 text-gray-500 " />
+                    </button>
 
-                  <div className="p-8 text-center">
-                    {/* Profile Image with Expertise Ring */}
-                    <div className="relative mx-auto mb-6">
-                      <div
-                        className="absolute inset-0 rounded-full"
-                        style={{
-                          background: `conic-gradient(#3b82f6 ${data.expertise_percentage}%, #e5e7eb ${data.expertise_percentage}%)`,
-                          padding: "6px",
-                        }}
-                      >
-                        <div className="relative h-full w-full rounded-full bg-white p-1">
-                          {data.image_url ? (
-                            <Image
-                              src={data.image_url}
-                              alt={data.name}
-                              width={128}
-                              height={128}
-                              className="rounded-full object-cover aspect-square"
-                            />
-                          ) : (
-                            <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-4xl font-bold">
-                              {data.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                    <div className="p-8 text-center">
+                      {/* Profile Image with Expertise Ring */}
+                      <div className="relative w-full mx-auto mb-6 flex items-center justify-center">
+                        <div
+                          className="w-20 h-20 inset-0 rounded-full flex items-center justify-center"
+                          style={{
+                            background: `conic-gradient(#3b82f6 ${data.expertise_percentage}%, #e5e7eb ${data.expertise_percentage}%)`,
+                          }}
+                        >
+                          <div className="relative h-[4.8rem] w-[4.8rem] rounded-full bg-white p-1">
+                            {data.image_url ? (
+                              <Image
+                                src={data.image_url}
+                                alt={data.name}
+                                width={128}
+                                height={128}
+                                className="rounded-full object-cover aspect-square"
+                              />
+                            ) : (
+                              <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-4xl font-bold">
+                                {data.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="h-32 w-32"></div> {/* Spacer */}
-                    </div>
 
-                    <Dialog.Title className="text-2xl font-bold text-gray-900">
-                      {data.name}
-                    </Dialog.Title>
-                    <Dialog.Description className="text-gray-600 text-lg mt-1">
-                      {data.role}
-                    </Dialog.Description>
+                      <Dialog.Title className="text-2xl font-bold text-gray-900">
+                        {data.name}
+                      </Dialog.Title>
+                      <Dialog.Description className="text-gray-600 text-lg mt-1">
+                        {data.role}
+                      </Dialog.Description>
 
-                    {/* Expertise Meter */}
-                    <div className="mt-4">
-                      <div className="flex justify-between text-sm text-gray-600 mb-1">
-                        <span>Expertise Level</span>
-                        <span className="font-semibold text-blue-600">
-                          {data.expertise_percentage}%
-                        </span>
+                      {/* Expertise Meter */}
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm text-gray-600 mb-1">
+                          <span>Expertise Level</span>
+                          <span className="font-semibold text-blue-600">
+                            {data.expertise_percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className="bg-blue-600 h-2.5 rounded-full"
+                            style={{ width: `${data.expertise_percentage}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className="bg-blue-600 h-2.5 rounded-full"
-                          style={{ width: `${data.expertise_percentage}%` }}
-                        ></div>
+
+                      {/* Star Rating */}
+                      <div className="flex justify-center mt-4 space-x-1">
+                        {renderStars(data.rating)}
                       </div>
+
+                      {/* Description */}
+                      <p className="mt-4 text-gray-700 text-left">
+                        {data.description}
+                      </p>
+
+                      {/* Social Links */}
+                      {data.social?.length > 0 && (
+                        <div className="flex justify-center gap-4 mt-6">
+                          {data.social.map((each, ind) => {
+                            const IconComponent =
+                              socialIcons[each.icon.toLowerCase()];
+                            return (
+                              <Link
+                                key={ind}
+                                href={each.slug}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+                                aria-label={`${data.name}'s ${each.icon}`}
+                              >
+                                {IconComponent && (
+                                  <IconComponent className="w-5 h-5" />
+                                )}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-
-                    {/* Star Rating */}
-                    <div className="flex justify-center mt-4 space-x-1">
-                      {renderStars(data.rating)}
-                    </div>
-
-                    {/* Description */}
-                    <p className="mt-4 text-gray-700 text-left">
-                      {data.description}
-                    </p>
-
-                    {/* Social Links */}
-                    {data.social?.length > 0 && (
-                      <div className="flex justify-center gap-4 mt-6">
-                        {data.social.map((each, ind) => {
-                          const IconComponent =
-                            socialIcons[each.icon.toLowerCase()];
-                          return (
-                            <Link
-                              key={ind}
-                              href={each.slug}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100"
-                              aria-label={`${data.name}'s ${each.icon}`}
-                            >
-                              {IconComponent && (
-                                <IconComponent className="w-5 h-5" />
-                              )}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </Dialog.Panel>
+                  </Dialog.Panel>
+                </Transition.Child>
               </div>
             </div>
           </Dialog>
-        )}
+        </Transition>
       </AnimatePresence>
     </>
   );

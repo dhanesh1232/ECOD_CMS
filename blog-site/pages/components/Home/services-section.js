@@ -247,11 +247,11 @@ const OurServices = () => {
               className="bg-gray-50 dark:bg-gray-700/30 p-5 rounded-xl border border-gray-200 dark:border-gray-700"
             >
               <div className="flex justify-between items-center mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h4 className="sm:text-base md:text-lg text-sm flex flex-wrap font-semibold text-gray-900 dark:text-white">
                   Paid Advertising Performance
                 </h4>
-                <div className="flex gap-2">
-                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">
+                <div className="flex gap-1 sm:gap-2">
+                  <span className="py-1 px-2 text-xs rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200">
                     Meta Ads
                   </span>
                   <span className="px-2 py-1 text-xs rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200">

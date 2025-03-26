@@ -169,8 +169,8 @@ const HeaderSection = ({ theme, toggleTheme }) => {
         ref={headerRef}
         className={`fixed top-0 w-full z-50 py-3 px-4 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/20 dark:bg-gray-900/20 backdrop-blur-md shadow-sm"
-            : "bg-white/10 dark:bg-gray-900/10"
+            ? "bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm shadow-sm"
+            : ""
         }`}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -187,7 +187,10 @@ const HeaderSection = ({ theme, toggleTheme }) => {
           {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-6 md:gap-8">
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span
+                className="text-2xl font-bold bg-clip-text text-transparent 
+  bg-gradient-to-r from-blue-200 to-purple-200 dark:from-green-400 dark:to-yellow-400"
+              >
                 ECOD
               </span>
             </Link>
