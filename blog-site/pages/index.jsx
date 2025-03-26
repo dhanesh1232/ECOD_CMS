@@ -88,23 +88,24 @@ export default function Home() {
           ],
         }}
       />
-
-      {/* Hero Section */}
-      <HeroSection />
-      {/* Services Overview */}
-      <OurServices />
-      {/* Shopify & E-commerce Solutions */}
-      <ShopifySection />
-      {/*Blog Section */}
-      <HomeBlog />
-      {/* Digital Marketing Solutions */}
-      <DigitalMarketing />
-      {/* Client Testimonials */}
-      <Testimonials />
-      {/* FAQs Section */}
-      <ECODFaqs />
-      {/* Call to Action */}
-      <CallToAction />
+      <div className="w-full" data-testid="home-container">
+        {/* Hero Section */}
+        <HeroSection />
+        {/* Services Overview */}
+        <OurServices />
+        {/* Shopify & E-commerce Solutions */}
+        <ShopifySection />
+        {/*Blog Section */}
+        <HomeBlog />
+        {/* Digital Marketing Solutions */}
+        <DigitalMarketing />
+        {/* Client Testimonials */}
+        <Testimonials />
+        {/* FAQs Section */}
+        <ECODFaqs />
+        {/* Call to Action */}
+        <CallToAction />
+      </div>
     </>
   );
 }

@@ -58,6 +58,7 @@ const HeroSection = () => {
     <section
       className="w-full h-[500px] md:h-[700px] flex flex-col items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-500 text-white px-4 sm:px-6 relative overflow-hidden transition-all ease-in-out duration-150"
       aria-label="Hero Section"
+      data-testid="hero-section"
     >
       {!shouldReduceMotion && (
         <ClickSpark

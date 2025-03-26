@@ -10,6 +10,7 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
 
   return (
     <motion.div
+      data-testid="faq-container"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -39,6 +40,9 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
         role="button"
         aria-expanded={isOpen}
         aria-controls={`faq-content-${index}`}
+        aria-label={`Expand FAQ ${index + 1}`}
+        aria-describedby={`faq-content-${index}`}
+        aria-haspopup="true"
       >
         <div className="flex justify-between items-center gap-4">
           <h3 className="text-lg md:text-xl font-semibold text-gray-800 dark:text-gray-100 text-left">
@@ -156,6 +160,7 @@ const FAQList = ({
             index={index}
             isOpen={openIndex === index}
             onClick={toggleItem}
+            data-testid="faq-question"
             animationDelay={index * itemAnimationDelay}
           />
         ))}

@@ -31,7 +31,7 @@ const ShinyText = ({
         animationTimingFunction: "ease-in-out",
       }}
     >
-      {text}
+      <h1 className="">{text}</h1>
     </div>
   );
 };
