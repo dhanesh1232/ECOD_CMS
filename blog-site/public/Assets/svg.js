@@ -1,5 +1,3 @@
-import { color } from "framer-motion";
-
 export const SEOSVG = ({
   height = 24,
   width = 24,

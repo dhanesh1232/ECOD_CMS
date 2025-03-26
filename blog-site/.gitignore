@@ -59,6 +59,6 @@ next-env.d.ts
 *.swo
 
 # Test-related files from your specific structure
-/_mocks_
+/__mocks__
 /index.test.jsx.snap
 /index.test.jsx
