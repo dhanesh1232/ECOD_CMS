@@ -8,7 +8,7 @@ import "swiper/css/effect-coverflow";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { testimonials } from "@/data/testi";
+import { testimonials } from "@/data/web_data";
 import dynamic from "next/dynamic";
 import { Quote, Star } from "lucide-react";
 

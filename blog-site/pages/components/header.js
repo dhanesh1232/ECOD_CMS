@@ -1,14 +1,5 @@
 import { nav_list } from "@/data/nav_link";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  Moon,
-  Search,
-  Sun,
-  X,
-} from "lucide-react";
+import { ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +8,7 @@ import { searchData } from "@/data/search_data";
 
 const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
+  const [navScrolled, setNavScrolled] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,11 +16,43 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   const [instantResults, setInstantResults] = useState([]);
   const [openDropDesk, setOpenDropDesk] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isHomePage, setIsHomePage] = useState(null);
 
   const searchInputRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.getElementById("hero-section");
+      if (heroSection) {
+        const heroHeight = heroSection?.clientHeight;
+        const scrollPosition = window.scrollY;
+
+        console.log("Hero Height:", heroHeight);
+        console.log("Scroll Position:", scrollPosition);
+        console.log("Should change color:", scrollPosition > heroHeight);
+
+        // Change nav color when scrolled past 80% of hero section
+        setNavScrolled(scrollPosition > heroHeight);
+      }
+    };
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Initial check
+    handleScroll();
+
+    // Clean up
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []); // Removed navScrolled from dependencies
+
+  useEffect(() => {
+    setIsHomePage(router.pathname === "/");
+  }, [setIsHomePage]);
 
   // Debounce search input
   useEffect(() => {
@@ -185,9 +209,15 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             className="md:hidden p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800/50 transition-colors"
           >
             {isMobileMenuOpen ? (
-              <X size={24} className="text-white dark:text-gray-200" />
+              <X
+                size={24}
+                className={`${isHomePage ? "text-white" : "text-gray-800"} dark:text-gray-200`}
+              />
             ) : (
-              <Menu size={24} className="text-white dark:text-gray-200" />
+              <Menu
+                size={24}
+                className={`${isHomePage ? "text-white" : "text-gray-800"} dark:text-gray-200`}
+              />
             )}
           </button>
 
@@ -195,8 +225,8 @@ const HeaderSection = ({ theme, toggleTheme }) => {
           <div className="flex items-center gap-6 md:gap-8">
             <Link href="/" className="flex items-center gap-2">
               <motion.span
-                className="text-2xl font-bold bg-clip-text text-transparent 
-                bg-gradient-to-r from-blue-200 to-purple-200 dark:from-green-400 dark:to-yellow-400"
+                className={`text-2xl font-bold bg-clip-text text-transparent 
+                bg-gradient-to-r ${isHomePage ? "from-blue-200 to-purple-200" : "from-blue-500 to-purple-400"} dark:from-green-400 dark:to-yellow-400`}
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
@@ -222,7 +252,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                       >
                         <button
                           type="button"
-                          className={`flex items-center gap-1 font-medium text-white/90 dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors`}
+                          className={`flex items-center gap-1 font-medium ${navScrolled && "text-gray-800 dark:text-gray-200"} ${isHomePage ? "text-white/90" : "text-gray-800"} dark:text-gray-200 hover:text-blue-300 dark:hover:text-blue-400 transition-colors`}
                           aria-expanded={openDropDesk === item.label}
                         >
                           {item.label}
@@ -266,7 +296,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     ) : (
                       <Link
                         href={item.href}
-                        className="px-3 py-2 font-medium text-white/90 dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors rounded-lg block"
+                        className={`px-3 py-2 font-medium ${navScrolled && "text-gray-800 dark:text-gray-200"} ${isHomePage ? "text-white/90" : "text-gray-800"} dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors rounded-lg block`}
                       >
                         {item.label}
                       </Link>
@@ -283,14 +313,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             <div className="hidden md:block relative">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70 dark:text-gray-400"
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isHomePage ? "text-white/70" : "text-gray-800"} dark:text-gray-400`}
                   aria-hidden="true"
                 />
                 <input
                   ref={searchInputRef}
                   type="search"
                   placeholder="Search..."
-                  className="pl-10 pr-4 py-2 w-48 lg:w-56 rounded-full border border-white/30 dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 text-white dark:text-gray-200 placeholder-white/60 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all backdrop-blur-sm"
+                  className={`pl-10 pr-4 py-2 w-48 lg:w-56 rounded-full border ${isHomePage ? "border-white/30 placeholder-white/60" : "border-gray-600 placeholder-gray-700/60"} dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 text-white dark:text-gray-200 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all backdrop-blur-sm`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -358,7 +388,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
               {theme === "dark" ? (
                 <Sun className="w-5 h-5 text-yellow-400" />
               ) : (
-                <Moon className="w-5 h-5 text-white/90" />
+                <Moon
+                  className={`w-5 h-5 ${isHomePage ? "text-white/90" : "text-gray-800/90"}`}
+                />
               )}
             </button>
           </div>

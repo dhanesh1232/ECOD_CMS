@@ -89,6 +89,7 @@ const HeroSection = () => {
       className="w-full h-[500px] md:h-[700px] flex flex-col items-center justify-center px-4 sm:px-6 relative overflow-hidden transition-all ease-in-out duration-150"
       aria-label="Hero Section"
       data-testid="hero-section"
+      id="hero-section"
     >
       {/* Glass Morphism Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-indigo-600/80 to-purple-600/80 backdrop-blur-md z-0" />
@@ -147,14 +148,14 @@ const HeroSection = () => {
                 2000,
                 "Create Powerful Web Experiences 🚀",
                 2000,
-                "Grow Your Online Presence 🚀",
+                `Grow Your Online Presence 🚀`,
                 2000,
               ]}
               wrapper="span"
               speed={50}
               deletionSpeed={70}
               repeat={Infinity}
-              className="text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100"
+              className="text-4xl font-bold bg-gradient-to-r from-yellow-500 to-purple-600 bg-clip-text text-transparent"
               cursor={!shouldReduceMotion}
             />
           </div>
@@ -216,7 +217,7 @@ const HeroSection = () => {
       )}
 
       {/* Trust Badge with Glass Effect */}
-      <div className="absolute transform right-4 z-10 flex items-center bottom-0 sm:bottom-2 gap-2 p-2 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10">
+      <div className="absolute transform right-2 md:right-4 z-10 flex items-center bottom-0 sm:bottom-2 gap-2 p-2 rounded-lg sm:bg-white/5 sm:backdrop-blur-sm sm:border border-white/10">
         <span className="text-sm text-white/80">Trusted by</span>
         <TrustSVG
           width={50}

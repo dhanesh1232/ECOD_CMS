@@ -2,9 +2,19 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import HeadSEO from "./components/Reusable/seo_head";
-const HomeBlog = dynamic(() => import("./components/Home/blog-section"));
-const HeroSection = dynamic(() => import("./components/Home/hero-section"));
-const OurServices = dynamic(() => import("./components/Home/services-section"));
+import AboutSection from "./components/Home/about-section";
+const HomeBlog = dynamic(() => import("./components/Home/blog-section"), {
+  ssr: false,
+});
+const HeroSection = dynamic(() => import("./components/Home/hero-section"), {
+  ssr: false,
+});
+const OurServices = dynamic(
+  () => import("./components/Home/services-section"),
+  {
+    ssr: false,
+  }
+);
 const ShopifySection = dynamic(
   () => import("./components/Home/shopify-section"),
   {
@@ -39,7 +49,7 @@ export default function Home() {
   return (
     <>
       <HeadSEO
-        title="Home - ECOD | Web Development, SEO & Digital Marketing"
+        title="Home - ECOD"
         description="Welcome to ECOD! We provide expert web development, SEO, and digital marketing services to grow your business. Get tailored solutions from industry experts."
         canonicalUrl="https://ecoddigital.com"
         ogImage="https://ecoddigital.com/images/home-og-image.jpg"
@@ -91,6 +101,8 @@ export default function Home() {
       <div className="w-full" data-testid="home-container">
         {/* Hero Section */}
         <HeroSection />
+        {/*About Section*/}
+        <AboutSection />
         {/* Services Overview */}
         <OurServices />
         {/* Shopify & E-commerce Solutions */}
