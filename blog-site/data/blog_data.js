@@ -6,8 +6,8 @@ export const blog_services = [
   { label: "Social Media Marketing", slug: "social-media-marketing" },
   { label: "Content Marketing", slug: "content-marketing" },
   { label: "Email Marketing", slug: "email-marketing" },
-  { label: "Graphic & Logo Design", slug: "graphic-logo-design" },
-  { label: "Shopify Theme Development", slug: "shopify-theme-development" },
+  { label: "Graphic & Logo Design", slug: "graphic-design" },
+  { label: "Shopify Optimization", slug: "shopify-optimization" },
 ];
 export const blogs = [
   {
@@ -5270,7 +5270,7 @@ export const allBlogs = {
       ],
     },
   ],
-  "graphic-logo-design": [
+  "graphic-design": [
     {
       id: 1,
       title: "Logo Design Mastery (2024 Edition)",
@@ -5794,7 +5794,7 @@ export const allBlogs = {
       ],
     },
   ],
-  "shopify-theme-development": [
+  "shopify-optimization": [
     {
       id: 1,
       title: "Shopify Theme Customization 2024",
@@ -5802,7 +5802,7 @@ export const allBlogs = {
         "Advanced techniques to customize Shopify themes without breaking functionality",
       imageSrc: "",
       slug: "/theme-customization",
-      category: "shopify-theme-development",
+      category: "shopify-optimization",
       author: {
         name: "David Chen",
         avatar: "",
@@ -5898,7 +5898,7 @@ export const allBlogs = {
         "Advanced Liquid techniques for dynamic, efficient Shopify themes",
       imageSrc: "",
       slug: "/liquid-templates",
-      category: "shopify-theme-development",
+      category: "shopify-optimization",
       author: {
         name: "Sophia Williams",
         avatar: "",
@@ -6002,7 +6002,7 @@ export const allBlogs = {
         "Designing Shopify stores that excel on mobile devices first",
       imageSrc: "",
       slug: "/responsive-themes",
-      category: "shopify-theme-development",
+      category: "shopify-optimization",
       author: {
         name: "Michael Johnson",
         avatar: "",
@@ -6102,7 +6102,7 @@ export const allBlogs = {
         "Mastering sections to create merchant-friendly, flexible themes",
       imageSrc: "",
       slug: "/theme-sections",
-      category: "shopify-theme-development",
+      category: "shopify-optimization",
       author: {
         name: "Emma Davis",
         avatar: "",
@@ -6200,7 +6200,7 @@ export const allBlogs = {
         "Cutting-edge techniques to make your Shopify themes blazing fast",
       imageSrc: "",
       slug: "/theme-performance",
-      category: "shopify-theme-development",
+      category: "shopify-optimization",
       author: {
         name: "Daniel Wilson",
         avatar: "",

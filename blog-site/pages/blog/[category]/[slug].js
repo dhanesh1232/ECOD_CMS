@@ -50,6 +50,7 @@ const BlogPost = () => {
 
   useEffect(() => {
     if (category && slug) {
+      console.log(category, slug);
       const foundBlog = allBlogs[category]?.find(
         (post) => post.slug.replace("/", "") === slug
       );
