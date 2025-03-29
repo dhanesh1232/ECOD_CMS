@@ -202,3 +202,37 @@ export const CertifiedSVG = ({
     <path d="M9 12l2 2 4-4" />
   </svg>
 );
+
+export const ECODTAG = ({}) => {
+  <svg
+    width="200"
+    height="100"
+    viewBox="0 0 200 100"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="100%" height="100%" fill="white" />
+
+    <path d="M20,30 H50 V40 H30 V50 H50 V60 H20 Z" fill="#2D89EF" />
+
+    <path
+      d="M70,30 A15,15 0 0,1 85,45 A15,15 0 0,1 70,60 H55 V50 H70 A5,5 0 0,0 75,45 A5,5 0 0,0 70,40 H55 V30 H70 Z"
+      fill="#2D89EF"
+    />
+
+    <circle
+      cx="115"
+      cy="45"
+      r="15"
+      fill="none"
+      stroke="#2D89EF"
+      stroke-width="6"
+    />
+
+    <path
+      d="M140,30 H150 A15,15 0 0,1 165,45 A15,15 0 0,1 150,60 H140 Z"
+      fill="none"
+      stroke="#2D89EF"
+      stroke-width="6"
+    />
+  </svg>;
+};

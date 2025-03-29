@@ -1,3 +1,4 @@
+"use client";
 import { nav_list } from "@/data/nav_link";
 import { ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -5,7 +6,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { searchData } from "@/data/search_data";
-
+import Image from "next/image";
+const image_ = true;
 const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
   const [navScrolled, setNavScrolled] = useState(false);
@@ -29,30 +31,22 @@ const HeaderSection = ({ theme, toggleTheme }) => {
       if (heroSection) {
         const heroHeight = heroSection?.clientHeight;
         const scrollPosition = window.scrollY;
-
-        console.log("Hero Height:", heroHeight);
-        console.log("Scroll Position:", scrollPosition);
-        console.log("Should change color:", scrollPosition > heroHeight);
-
-        // Change nav color when scrolled past 80% of hero section
         setNavScrolled(scrollPosition > heroHeight);
       }
     };
     // Add scroll event listener
     window.addEventListener("scroll", handleScroll);
-
     // Initial check
     handleScroll();
-
     // Clean up
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []); // Removed navScrolled from dependencies
+  }, []);
 
   useEffect(() => {
     setIsHomePage(router.pathname === "/");
-  }, [setIsHomePage]);
+  }, []);
 
   // Debounce search input
   useEffect(() => {
@@ -211,12 +205,12 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             {isMobileMenuOpen ? (
               <X
                 size={24}
-                className={`${isHomePage ? "text-white" : "text-gray-800"} dark:text-gray-200`}
+                className={`${isHomePage ? (navScrolled ? "text-black/80" : "text-white") : "text-gray-800"} dark:text-gray-200`}
               />
             ) : (
               <Menu
                 size={24}
-                className={`${isHomePage ? "text-white" : "text-gray-800"} dark:text-gray-200`}
+                className={`${isHomePage ? (navScrolled ? "text-black/80" : "text-white") : "text-gray-800"} dark:text-gray-200`}
               />
             )}
           </button>
@@ -224,14 +218,29 @@ const HeaderSection = ({ theme, toggleTheme }) => {
           {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-6 md:gap-8">
             <Link href="/" className="flex items-center gap-2">
-              <motion.span
-                className={`text-2xl font-bold bg-clip-text text-transparent 
-                bg-gradient-to-r ${isHomePage ? "from-blue-200 to-purple-200" : "from-blue-500 to-purple-400"} dark:from-green-400 dark:to-yellow-400`}
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                ECOD
-              </motion.span>
+              {image_ ? (
+                <Image
+                  key={theme}
+                  src={
+                    theme === "light"
+                      ? `/Images/ECOD_.png`
+                      : "/Images/ECOD_dark.png"
+                  }
+                  width={100}
+                  height={100}
+                  className="h-10 w-10 transition ease-in-out duration-300 transform"
+                  alt="ECOD_Alt"
+                />
+              ) : (
+                <motion.span
+                  className={`text-2xl font-bold bg-clip-text text-transparent 
+                bg-gradient-to-r ${isHomePage ? (navScrolled ? "from-blue-600 to-pink-600" : "from-blue-200 to-purple-200") : "from-blue-500 to-purple-400"} dark:from-green-400 dark:to-yellow-400`}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  ECOD
+                </motion.span>
+              )}
             </Link>
 
             <nav className="hidden md:block">
@@ -252,7 +261,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                       >
                         <button
                           type="button"
-                          className={`flex items-center gap-1 font-medium ${navScrolled && "text-gray-800 dark:text-gray-200"} ${isHomePage ? "text-white/90" : "text-gray-800"} dark:text-gray-200 hover:text-blue-300 dark:hover:text-blue-400 transition-colors`}
+                          className={`flex items-center gap-1 font-medium ${isHomePage ? (navScrolled ? "text-gray-800 dark:text-gray-200" : "text-white/90") : "text-gray-800"} dark:text-gray-200 hover:text-blue-300 dark:hover:text-blue-400 transition-colors`}
                           aria-expanded={openDropDesk === item.label}
                         >
                           {item.label}
@@ -296,7 +305,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     ) : (
                       <Link
                         href={item.href}
-                        className={`px-3 py-2 font-medium ${navScrolled && "text-gray-800 dark:text-gray-200"} ${isHomePage ? "text-white/90" : "text-gray-800"} dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors rounded-lg block`}
+                        className={`px-3 py-2 font-medium ${isHomePage ? (navScrolled ? "text-gray-800 dark:text-gray-200" : "text-white/90") : "text-gray-800"} dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors rounded-lg block`}
                       >
                         {item.label}
                       </Link>
@@ -313,14 +322,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             <div className="hidden md:block relative">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <Search
-                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isHomePage ? "text-white/70" : "text-gray-800"} dark:text-gray-400`}
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 transition ease-in-out transform duration-300 h-5 ${isHomePage ? (navScrolled ? "text-gray-700/50" : "text-white/70") : "text-gray-800"} dark:text-gray-400`}
                   aria-hidden="true"
                 />
                 <input
                   ref={searchInputRef}
                   type="search"
                   placeholder="Search..."
-                  className={`pl-10 pr-4 py-2 w-48 lg:w-56 rounded-full border ${isHomePage ? "border-white/30 placeholder-white/60" : "border-gray-600 placeholder-gray-700/60"} dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 text-white dark:text-gray-200 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all backdrop-blur-sm`}
+                  className={`pl-10 pr-4 py-2 w-48 lg:w-56 rounded-full border ${isHomePage ? (navScrolled ? "border-gray-800/50" : "border-white/30 placeholder-white/60") : "border-gray-600 placeholder-gray-700/60"} dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 text-white dark:text-gray-200 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all backdrop-blur-sm`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -376,7 +385,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
               aria-label="Search"
               className="md:hidden p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-800/50 transition-colors"
             >
-              <Search className="w-5 h-5 text-white dark:text-gray-200" />
+              <Search
+                className={`w-5 h-5 ${isHomePage ? (navScrolled ? "text-gray-800/50" : "text-white") : "text-gray-800/50"} dark:text-gray-200`}
+              />
             </button>
 
             {/* Theme Toggle */}
@@ -389,7 +400,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                 <Sun className="w-5 h-5 text-yellow-400" />
               ) : (
                 <Moon
-                  className={`w-5 h-5 ${isHomePage ? "text-white/90" : "text-gray-800/90"}`}
+                  className={`w-5 h-5 ${isHomePage ? (navScrolled ? "text-gray-800/50" : "text-white/90") : "text-gray-800/90"}`}
                 />
               )}
             </button>
@@ -490,27 +501,36 @@ const HeaderSection = ({ theme, toggleTheme }) => {
         {isMobileMenuOpen && (
           <motion.div
             ref={mobileMenuRef}
-            className="fixed inset-0 top-[var(--header-height)] z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl md:hidden overflow-y-auto"
+            className="fixed inset-0 top-[var(--header-height)] z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg md:hidden overflow-y-auto"
+            style={{
+              // Better glass effect with subtle border
+              boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
+              WebkitBackdropFilter: "blur(16px)", // Safari fallback
+            }}
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="p-4">
-              <ul className="space-y-2">
+            {/* Container with edge padding for curved screens */}
+            <div className="p-5 safe-area-padding">
+              <ul className="space-y-3">
                 {nav_list.map((item) => (
                   <motion.li
                     key={item.label}
-                    className="border-b border-white/20 dark:border-gray-700 rounded-lg"
+                    className="rounded-xl overflow-hidden"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.3, delay: 0.05 }}
                   >
                     {item.subpages ? (
                       <>
                         <button
                           onClick={() => handleDropdownToggle(item.label)}
-                          className="w-full flex items-center justify-between p-3 text-gray-800 dark:text-gray-200 hover:bg-white/20 dark:hover:bg-gray-800/50 rounded-lg"
+                          className="w-full flex items-center justify-between p-4 text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-xl transition-colors"
+                          style={{
+                            backdropFilter: "blur(10px)",
+                          }}
                           aria-expanded={openDropDesk === item.label}
                         >
                           <span className="font-medium">{item.label}</span>
@@ -524,11 +544,11 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                         <AnimatePresence>
                           {openDropDesk === item.label && (
                             <motion.ul
-                              className="pl-4 py-2 space-y-1 px-2"
+                              className="pl-4 space-y-2 mt-1"
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.3 }}
+                              transition={{ duration: 0.2 }}
                             >
                               {item.subpages.map((subpage) => (
                                 <motion.li
@@ -538,10 +558,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                                     type: "spring",
                                     stiffness: 300,
                                   }}
+                                  className="rounded-lg overflow-hidden"
                                 >
                                   <Link
                                     href={subpage.slug}
-                                    className="block p-2 text-gray-700 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-gray-800/50 rounded-lg"
+                                    className="block p-3 pl-6 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-lg transition-colors"
+                                    style={{
+                                      backdropFilter: "blur(10px)",
+                                    }}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                   >
                                     {subpage.label}
@@ -555,7 +579,10 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     ) : (
                       <Link
                         href={item.href}
-                        className="block p-3 text-gray-800 dark:text-gray-200 hover:bg-white/20 dark:hover:bg-gray-800/50 rounded-lg font-medium"
+                        className="block p-4 text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-xl transition-colors font-medium"
+                        style={{
+                          backdropFilter: "blur(10px)",
+                        }}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.label}

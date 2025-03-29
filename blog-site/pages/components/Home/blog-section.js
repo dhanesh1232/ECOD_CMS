@@ -15,6 +15,8 @@ import {
   ChevronRight,
   Clock,
   Calendar,
+  User,
+  Tag,
 } from "lucide-react";
 import { blogs } from "@/data/blog_data";
 import { useRouter } from "next/router";
@@ -215,6 +217,14 @@ const HomeBlog = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                     </>
                   )}
+                  {/* Featured Badge */}
+                  {blog.featured && (
+                    <div className="absolute top-4 right-4">
+                      <span className="px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full backdrop-blur-sm border border-white/20">
+                        Featured
+                      </span>
+                    </div>
+                  )}
                   {/* Category Tag */}
                   <div className="absolute bottom-4 left-4">
                     <span
@@ -227,8 +237,12 @@ const HomeBlog = () => {
 
                 {/* Blog Content */}
                 <div className="p-6">
-                  <div className="flex items-center text-sm text-gray-500/90 dark:text-gray-400/90 mb-4">
-                    <div className="flex items-center mr-4">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500/90 dark:text-gray-400/90 mb-4">
+                    <div className="flex items-center">
+                      <User className="w-4 h-4 mr-1" />
+                      <span>{blog.author.name}</span>
+                    </div>
+                    <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-1" />
                       <span>{blog.date}</span>
                     </div>
@@ -243,8 +257,23 @@ const HomeBlog = () => {
                   </h3>
 
                   <p className="text-gray-600/90 dark:text-gray-300/90 mb-5 line-clamp-2">
-                    {blog.description}
+                    {blog.excerpt || blog.description}
                   </p>
+
+                  {/* Tags */}
+                  {blog.tags && blog.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      {blog.tags.slice(0, 3).map((tag, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center px-3 py-1 text-xs font-medium bg-gray-100/70 dark:bg-gray-700/50 rounded-full backdrop-blur-sm"
+                        >
+                          <Tag className="w-3 h-3 mr-1" />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center">
                     <button

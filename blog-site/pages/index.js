@@ -2,7 +2,10 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import HeadSEO from "./components/Reusable/seo_head";
-import AboutSection from "./components/Home/about-section";
+
+const AboutSection = dynamic(() => import("./components/Home/about-section"), {
+  srr: false,
+});
 const HomeBlog = dynamic(() => import("./components/Home/blog-section"), {
   ssr: false,
 });
@@ -33,7 +36,7 @@ const Testimonials = dynamic(
     ssr: false,
   }
 );
-const ECODFaqs = dynamic(() => import("./components/Home/faq-ecod"), {
+const ECODFaqs = dynamic(() => import("./components/Home/faq-section"), {
   ssr: false,
 });
 const CallToAction = dynamic(() => import("./components/Home/call-to-action"), {

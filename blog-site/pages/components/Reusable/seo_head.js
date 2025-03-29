@@ -41,7 +41,7 @@ const HeadSEO = ({
       <link rel="canonical" href={canonicalUrl} />
 
       {/* Favicon */}
-      <link rel="icon" href="/favicon.ico" />
+      <link rel="icon" type="image/svg+xml" href="/Images/ECOD_.png" />
       <link
         rel="apple-touch-icon"
         sizes="180x180"

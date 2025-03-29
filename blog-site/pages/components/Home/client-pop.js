@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
-const StarRating = dynamic(() => import("./Client-Section/star"), {
+const StarRating = dynamic(() => import("./Sections/star"), {
   loading: () => <div className="h-8 bg-gray-200 rounded animate-pulse" />,
 });
 

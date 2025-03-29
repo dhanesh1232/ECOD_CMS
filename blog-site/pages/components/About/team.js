@@ -36,7 +36,7 @@ const TeamMemberCard = ({ data }) => {
 
   if (!data)
     return (
-      <div className="bg-white p-6 rounded-xl shadow-lg animate-pulse h-[300px] w-full"></div>
+      <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-lg animate-pulse h-80 w-full"></div>
     );
 
   const renderStars = (rating) => {
@@ -68,7 +68,7 @@ const TeamMemberCard = ({ data }) => {
         transition={{ duration: 0.4 }}
         viewport={{ once: true, margin: "0px 0px -100px 0px" }}
         whileHover={{ y: -5 }}
-        className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group h-full flex flex-col"
+        className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group h-full flex flex-col border border-gray-100 dark:border-gray-700"
         onClick={() => setIsOpen(true)}
       >
         <div className="text-center flex flex-col items-center flex-grow">
@@ -81,7 +81,7 @@ const TeamMemberCard = ({ data }) => {
                 padding: "4px",
               }}
             >
-              <div className="relative h-full w-full rounded-full bg-white p-1">
+              <div className="relative h-full w-full rounded-full bg-white dark:bg-gray-800 p-1">
                 {data.image_url ? (
                   <Image
                     src={data.image_url}
@@ -93,7 +93,7 @@ const TeamMemberCard = ({ data }) => {
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-2xl font-bold">
+                  <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-2xl font-bold">
                     {data.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -103,15 +103,19 @@ const TeamMemberCard = ({ data }) => {
           </div>
 
           {/* Name & Role */}
-          <h3 className="mt-2 text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+          <h3 className="mt-2 text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {data.name}
           </h3>
-          <p className="mt-1 text-gray-600 text-sm font-medium">{data.role}</p>
+          <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm font-medium">
+            {data.role}
+          </p>
 
           {/* Star Rating */}
           <div className="flex mt-2 space-x-0.5">
             {renderStars(data.rating)}
-            <span className="text-xs text-gray-500 ml-1">({data.rating})</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+              ({data.rating})
+            </span>
           </div>
 
           {/* Social Links */}
@@ -126,7 +130,7 @@ const TeamMemberCard = ({ data }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="text-gray-500 hover:text-blue-600 transition-colors p-1"
+                    className="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1"
                     aria-label={`${data.name}'s ${each.icon}`}
                   >
                     {IconComponent && <IconComponent className="w-4 h-4" />}
@@ -170,13 +174,13 @@ const TeamMemberCard = ({ data }) => {
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
                 >
-                  <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-xl">
+                  <Dialog.Panel className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-xl">
                     <button
                       onClick={() => setIsOpen(false)}
-                      className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition transform"
+                      className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition transform"
                       aria-label="Close"
                     >
-                      <FaX className="w-5 h-5 text-gray-500 " />
+                      <FaX className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
 
                     <div className="p-8 text-center">
@@ -188,7 +192,7 @@ const TeamMemberCard = ({ data }) => {
                             background: `conic-gradient(#3b82f6 ${data.expertise_percentage}%, #e5e7eb ${data.expertise_percentage}%)`,
                           }}
                         >
-                          <div className="relative h-[4.8rem] w-[4.8rem] rounded-full bg-white p-1">
+                          <div className="relative h-[4.8rem] w-[4.8rem] rounded-full bg-white dark:bg-gray-800 p-1">
                             {data.image_url ? (
                               <Image
                                 src={data.image_url}
@@ -198,7 +202,7 @@ const TeamMemberCard = ({ data }) => {
                                 className="rounded-full object-cover aspect-square"
                               />
                             ) : (
-                              <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-gray-700 text-4xl font-bold">
+                              <div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 text-4xl font-bold">
                                 {data.name.charAt(0).toUpperCase()}
                               </div>
                             )}
@@ -206,22 +210,22 @@ const TeamMemberCard = ({ data }) => {
                         </div>
                       </div>
 
-                      <Dialog.Title className="text-2xl font-bold text-gray-900">
+                      <Dialog.Title className="text-2xl font-bold text-gray-900 dark:text-white">
                         {data.name}
                       </Dialog.Title>
-                      <Dialog.Description className="text-gray-600 text-lg mt-1">
+                      <Dialog.Description className="text-gray-600 dark:text-gray-400 text-lg mt-1">
                         {data.role}
                       </Dialog.Description>
 
                       {/* Expertise Meter */}
                       <div className="mt-4">
-                        <div className="flex justify-between text-sm text-gray-600 mb-1">
+                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
                           <span>Expertise Level</span>
-                          <span className="font-semibold text-blue-600">
+                          <span className="font-semibold text-blue-600 dark:text-blue-400">
                             {data.expertise_percentage}%
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                           <div
                             className="bg-blue-600 h-2.5 rounded-full"
                             style={{ width: `${data.expertise_percentage}%` }}
@@ -235,7 +239,7 @@ const TeamMemberCard = ({ data }) => {
                       </div>
 
                       {/* Description */}
-                      <p className="mt-4 text-gray-700 text-left">
+                      <p className="mt-4 text-gray-700 dark:text-gray-300 text-left">
                         {data.description}
                       </p>
 
@@ -251,7 +255,7 @@ const TeamMemberCard = ({ data }) => {
                                 href={each.slug}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-gray-500 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-gray-100"
+                                className="text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                                 aria-label={`${data.name}'s ${each.icon}`}
                               >
                                 {IconComponent && (

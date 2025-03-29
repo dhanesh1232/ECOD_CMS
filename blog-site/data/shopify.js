@@ -141,3 +141,375 @@ export const experties_data = [
     ],
   },
 ];
+
+export const shopifyServicesContent = {
+  "custom-themes": {
+    title: "Custom Shopify Theme Development",
+    seoTitle: "Bespoke Shopify Themes | Mobile-Optimized & Conversion-Focused",
+    description: "Tailored store designs that convert visitors into customers",
+    seoDescription:
+      "Professional custom Shopify themes with strategic UX, mobile optimization, and 90+ Lighthouse scores. 30-day support included.",
+    keywords: [
+      "custom shopify themes",
+      "shopify design",
+      "conversion-focused themes",
+    ],
+    icon: "/icons/theme-design.svg",
+    heroImage: "/images/custom-themes-hero.jpg",
+    content: [
+      {
+        sectionTitle: "Why Custom Themes Outperform Templates",
+        sectionContent: {
+          introduction:
+            "While Shopify offers quality pre-built themes, they often lack the strategic design elements that drive conversions.",
+          features: [
+            {
+              title: "Psychological Triggers",
+              description:
+                "Color psychology and visual hierarchy optimized for conversions",
+              icon: "/icons/psychology.svg",
+            },
+            {
+              title: "Mobile-First Design",
+              description:
+                "Responsive designs that adapt perfectly to all devices",
+              icon: "/icons/mobile.svg",
+            },
+            {
+              title: "Strategic Placement",
+              description:
+                "Optimized positioning of trust signals and conversion elements",
+              icon: "/icons/placement.svg",
+            },
+          ],
+        },
+        stats: [
+          { value: "47%", label: "Average increase in mobile conversions" },
+          { value: "1.8s", label: "Average load time (vs 3.5s for templates)" },
+          { value: "22%", label: "Higher average order value" },
+        ],
+        caseStudy: {
+          client: "Fashion Retailer",
+          results: [
+            "47% increase in mobile conversions",
+            "Bounce rate reduced by 32%",
+          ],
+          solution: "Thumb-friendly navigation + quick-view functionality",
+          image: "/images/case-study-fashion.jpg",
+        },
+      },
+      {
+        sectionTitle: "Our Theme Development Process",
+        processSteps: [
+          {
+            name: "Discovery",
+            icon: "/icons/discovery.svg",
+            details: "2-hour workshop to map your customer journey",
+            duration: "1-2 days",
+          },
+          {
+            name: "Prototyping",
+            icon: "/icons/prototype.svg",
+            details: "Interactive Figma mockups with real content",
+            duration: "3-5 days",
+          },
+        ],
+        technicalSpecs: {
+          foundation: "Shopify's Dawn theme",
+          components: [
+            "Custom Liquid templates",
+            "WebP image optimization",
+            "Dynamic AJAX cart",
+          ],
+          performance: {
+            target: "<2s load time",
+            metrics: ["90+ Lighthouse score", "Core Web Vitals optimized"],
+          },
+        },
+      },
+    ],
+    pricing: {
+      packages: [
+        {
+          name: "Starter",
+          price: "$4,500",
+          includes: [
+            "5 template pages",
+            "Basic customization",
+            "Mobile-responsive design",
+          ],
+          bestFor: "New stores with standard needs",
+        },
+      ],
+    },
+  },
+  "store-setup": {
+    title: "Complete Shopify Store Setup",
+    seoTitle: "Professional Shopify Store Setup | Done in 72 Hours",
+    description: "Launch-ready Shopify stores in 72 hours or less",
+    seoDescription:
+      "End-to-end Shopify configuration with product imports, payment gateways, and migration services. 100% satisfaction guarantee.",
+    keywords: ["shopify setup", "store migration", "ecommerce launch"],
+    icon: "/icons/store-setup.svg",
+    heroImage: "/images/store-setup-hero.jpg",
+    content: [
+      {
+        sectionTitle: "End-to-End Store Configuration",
+        checklist: [
+          {
+            category: "Products",
+            items: [
+              {
+                name: "Product catalog setup",
+                details: "Collections, tags, variants with inventory tracking",
+                icon: "/icons/products.svg",
+              },
+            ],
+          },
+          {
+            category: "Payments",
+            items: [
+              {
+                name: "Payment gateways",
+                details: "Shopify Payments, Stripe, PayPal configuration",
+                icon: "/icons/payment.svg",
+              },
+            ],
+          },
+        ],
+        timeline: {
+          phases: [
+            {
+              name: "Phase 1: Core Setup",
+              duration: "24 hours",
+              tasks: ["Basic configuration", "Theme installation"],
+            },
+            {
+              name: "Phase 2: Testing",
+              duration: "48 hours",
+              tasks: ["Functionality checks", "Payment testing"],
+            },
+          ],
+          guarantee: "72-hour completion guarantee",
+        },
+      },
+      {
+        sectionTitle: "Migration Services",
+        migrationOptions: [
+          {
+            platform: "WooCommerce",
+            icon: "/icons/woocommerce.svg",
+            preserved: [
+              { item: "Products", icon: "/icons/product.svg" },
+              { item: "Customers", icon: "/icons/customer.svg" },
+              { item: "SEO URLs", icon: "/icons/seo.svg" },
+            ],
+          },
+        ],
+        warning: {
+          text: "DIY migrations risk data loss",
+          solution: "We use Shopify's API with validation checks",
+          icon: "/icons/warning.svg",
+        },
+      },
+    ],
+  },
+  "one-click-checkout": {
+    title: "Checkout Optimization",
+    seoTitle: "Shopify Checkout Optimization | Reduce Abandonment by 40%",
+    description: "Reduce cart abandonment and increase conversions",
+    seoDescription:
+      "Professional checkout optimization with Shop Pay, address autocomplete and trust signals. 30-day performance guarantee.",
+    keywords: ["shopify checkout", "cart abandonment", "conversion rate"],
+    icon: "/icons/checkout.svg",
+    heroImage: "/images/checkout-hero.jpg",
+    content: [
+      {
+        sectionTitle: "The Psychology of Streamlined Checkout",
+        optimizationStats: [
+          { value: "25-40%", label: "Reduction in abandonment" },
+          { value: "20%", label: "Faster checkout time" },
+          { value: "15-30%", label: "Higher completion rate" },
+        ],
+        techniques: [
+          {
+            name: "Shop Pay",
+            impact: "1.2s average load time",
+            icon: "/icons/shop-pay.svg",
+          },
+          {
+            name: "Address autocomplete",
+            impact: "Reduces errors by 62%",
+            icon: "/icons/address.svg",
+          },
+        ],
+      },
+    ],
+  },
+  "mobile-optimization": {
+    title: "Mobile Commerce Optimization",
+    seoTitle: "Mobile Shopify Optimization | Dominate Mobile Traffic",
+    description: "Dominate the 68% of traffic coming from mobile devices",
+    seoDescription:
+      "Thumb-friendly mobile optimization with AMP support and device-specific loading. 45-day performance guarantee.",
+    keywords: ["mobile shopify", "responsive design", "mobile conversions"],
+    icon: "/icons/mobile.svg",
+    heroImage: "/images/mobile-hero.jpg",
+    content: [
+      {
+        sectionTitle: "Mobile-First Design Principles",
+        caseStudy: {
+          client: "Beauty Brand",
+          results: [
+            { metric: "Bounce rate", before: "72%", after: "41%" },
+            { metric: "Pages/session", before: "2.1", after: "3.8" },
+            { metric: "Conversions", change: "+89%" },
+          ],
+          techniques: [
+            {
+              name: "Floating action buttons",
+              icon: "/icons/tap.svg",
+            },
+            {
+              name: "Swipeable galleries",
+              icon: "/icons/swipe.svg",
+            },
+          ],
+        },
+      },
+    ],
+  },
+  "performance-optimization": {
+    title: "Store Performance Tuning",
+    seoTitle: "Shopify Speed Optimization | 90+ Lighthouse Scores",
+    description: "Lightning-fast loading speeds for higher conversions",
+    seoDescription:
+      "Professional Shopify performance optimization with WebP, CDN and critical CSS. 60-day performance guarantee.",
+    keywords: ["shopify speed", "page load time", "core web vitals"],
+    icon: "/icons/performance.svg",
+    heroImage: "/images/performance-hero.jpg",
+    content: [
+      {
+        sectionTitle: "Why Speed Matters",
+        speedImpact: [
+          { stat: "53%", description: "of visitors abandon sites loading >3s" },
+          {
+            stat: "+1.2%",
+            description: "conversion increase per 0.1s improvement",
+          },
+        ],
+        techniques: [
+          {
+            name: "Critical CSS inlining",
+            icon: "/icons/css.svg",
+          },
+          {
+            name: "JavaScript bundle splitting",
+            icon: "/icons/js.svg",
+          },
+        ],
+      },
+    ],
+  },
+  security: {
+    title: "Ecommerce Security",
+    seoTitle: "Shopify Security | PCI Compliance & Fraud Prevention",
+    description: "Protect your store and customer data",
+    seoDescription:
+      "Complete Shopify security with SSL, 2FA, and fraud prevention systems. Ongoing monitoring included.",
+    keywords: ["shopify security", "pci compliance", "fraud prevention"],
+    icon: "/icons/security.svg",
+    heroImage: "/images/security-hero.jpg",
+    content: [
+      {
+        sectionTitle: "Comprehensive Security Framework",
+        features: [
+          {
+            name: "SSL configuration",
+            detail: "256-bit encryption",
+            icon: "/icons/ssl.svg",
+          },
+          {
+            name: "Fraud analysis",
+            detail: "Real-time order scoring",
+            icon: "/icons/fraud.svg",
+          },
+        ],
+      },
+    ],
+  },
+  seo: {
+    title: "Shopify SEO",
+    seoTitle: "Shopify SEO Services | Rank Higher in Search",
+    description: "Rank higher and attract organic traffic",
+    seoDescription:
+      "Professional Shopify SEO with technical audits, content optimization and schema markup. Monthly reporting included.",
+    keywords: ["shopify seo", "product schema", "ecommerce seo"],
+    icon: "/icons/seo.svg",
+    heroImage: "/images/seo-hero.jpg",
+    content: [
+      {
+        sectionTitle: "Technical SEO Foundation",
+        quickWins: [
+          {
+            name: "Fix duplicate meta tags",
+            impact: "High",
+            icon: "/icons/tag.svg",
+          },
+          {
+            name: "Add alt text to images",
+            impact: "Medium",
+            icon: "/icons/image.svg",
+          },
+        ],
+        tools: [
+          {
+            name: "Google Search Console",
+            icon: "/icons/google.svg",
+          },
+          {
+            name: "Ahrefs",
+            icon: "/icons/ahrefs.svg",
+          },
+        ],
+      },
+    ],
+  },
+  "email-marketing": {
+    title: "Email Marketing Automation",
+    seoTitle: "Shopify Email Marketing | Automated Revenue Streams",
+    description: "Convert visitors into repeat customers",
+    seoDescription:
+      "Automated Shopify email flows for welcome series, abandoned carts and win-back campaigns. Performance tracking included.",
+    keywords: ["shopify email", "abandoned cart", "email automation"],
+    icon: "/icons/email.svg",
+    heroImage: "/images/email-hero.jpg",
+    content: [
+      {
+        sectionTitle: "Revenue-Generating Email Flows",
+        flows: [
+          {
+            type: "Welcome series",
+            roi: "5-8x",
+            icon: "/icons/welcome.svg",
+          },
+          {
+            type: "Abandoned cart",
+            recovery: "25-40%",
+            icon: "/icons/cart.svg",
+          },
+        ],
+        features: [
+          {
+            name: "Purchase behavior segmentation",
+            icon: "/icons/segmentation.svg",
+          },
+          {
+            name: "Dynamic product recommendations",
+            icon: "/icons/recommendations.svg",
+          },
+        ],
+      },
+    ],
+  },
+};

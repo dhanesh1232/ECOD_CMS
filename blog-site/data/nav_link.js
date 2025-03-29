@@ -13,8 +13,8 @@ export const nav_list = [
         slug: "/services/social-media-marketing",
       },
       {
-        label: "Shopify Theme Development",
-        slug: "/services/shopify-theme-development",
+        label: "Shopify Optimization",
+        slug: "/services/shopify-optimization",
       },
       { label: "Content Marketing", slug: "/services/content-marketing" },
       { label: "Email Marketing", slug: "/services/email-marketing" },
@@ -34,8 +34,8 @@ export const nav_list = [
         slug: "/blogs/social-media-marketing",
       },
       {
-        label: "Shopify Theme Development",
-        slug: "/blogs/shopify-theme-development",
+        label: "Shopify Optimization",
+        slug: "/blogs/shopify-optimization",
       },
       { label: "Content Marketing", slug: "/blogs/content-marketing" },
       { label: "Email Marketing", slug: "/blogs/email-marketing" },

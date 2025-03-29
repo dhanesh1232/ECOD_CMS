@@ -230,7 +230,7 @@ const OurServices = () => {
                       {/* Hover shine effect */}
                       <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                         <div className="absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                          <div className="absolute top-0 left-0 w-1/2 h-full transform -skew-x-12 bg-gradient-to-r from-white/10 via-white/30 to-white/10 animate-shine" />
+                          <div className="absolute top-0 left-0 w-1/2 h-full transform -skew-x-12 bg-gradient-to-r dark:from-white/10 dark:via-white/30 dark:to-white/10 from-gray-500/30 to-gray-200/80 via-blue-400/50 animate-shine" />
                         </div>
                       </div>
                     </div>

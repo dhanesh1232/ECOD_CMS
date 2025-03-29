@@ -3,6 +3,7 @@ import { useInView } from "react-intersection-observer";
 import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
 import { home_about } from "@/data/web_data";
+import Stepper, { Step } from "./Sections/stepper";
 
 // Dynamically import CountUp for better performance
 const CountUp = dynamic(() => import("react-countup"), {
@@ -214,7 +215,7 @@ const AboutSection = () => {
                 key={index}
                 variants={itemVariants}
                 whileHover={{
-                  y: -10,
+                  scale: 1.05,
                   boxShadow:
                     "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                 }}
@@ -312,7 +313,7 @@ const AboutSection = () => {
                 key={index}
                 variants={itemVariants}
                 whileHover={{
-                  y: -10,
+                  scale: 1.05,
                   boxShadow:
                     "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                 }}
@@ -333,32 +334,34 @@ const AboutSection = () => {
           </div>
         </motion.div>
 
-        {/* Process Section */}
+        {/* Stepper Section - Replacing the old Process Section */}
         <motion.div
           variants={itemVariants}
-          className="glass-card p-8 rounded-3xl mb-20"
+          className="glass-card py-4 sm:p-8 rounded-3xl mb-20"
         >
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-12 text-center">
-            Our Process
+          <h2 className="text-xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 text-center">
+            Our Step-by-Step Process
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Stepper
+            initialStep={1}
+            onStepChange={(step) => console.log(`Step changed to ${step}`)}
+            onFinalStepCompleted={() => console.log("All steps completed!")}
+            backButtonText="Previous"
+            nextButtonText="Next"
+            stepContainerClassName="justify-center"
+            contentClassName="py-6 px-2 sm:px-4"
+          >
             {home_about.process.map((step, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="glass-inner p-6 rounded-xl"
-              >
-                <div className="md:text-2xl text-xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
+              <Step key={index}>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
                   {step.step}
-                </div>
-                <p className="text-gray-600 text-sm sm:text-base md:text-lg dark:text-gray-300">
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
                   {step.description}
                 </p>
-              </motion.div>
+              </Step>
             ))}
-          </div>
+          </Stepper>
         </motion.div>
 
         {/* CTA Section */}

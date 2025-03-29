@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { testimonials } from "@/data/web_data";
 import dynamic from "next/dynamic";
 import { Quote, Star } from "lucide-react";
+import { useRouter } from "next/router";
 
 const ClientPop = dynamic(() => import("./client-pop"));
 const Buttons = dynamic(() => import("../Reusable/buttons"));
@@ -41,12 +42,7 @@ const fadeInUp = {
 };
 
 const Testimonials = () => {
-  const [activePop, setActivePop] = useState(false);
-
-  useEffect(() => {
-    document.body.style.overflow = activePop ? "hidden" : "auto";
-    return () => (document.body.style.overflow = "auto");
-  }, [activePop]);
+  const router = useRouter();
 
   return (
     <>
@@ -317,7 +313,9 @@ const Testimonials = () => {
             <Buttons
               first_label="Share Your Experience"
               icon={true}
-              buttonAction={() => setActivePop(true)}
+              buttonAction={() => {
+                router.push("/feedback");
+              }}
               first_styles="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm hover:from-blue-500 hover:to-purple-500"
             />
             <p className="mt-4 text-gray-500/90 dark:text-gray-400/90 text-sm backdrop-blur-sm">
@@ -326,7 +324,6 @@ const Testimonials = () => {
           </motion.div>
         </motion.div>
       </section>
-      {activePop && <ClientPop closePop={() => setActivePop(false)} />}
     </>
   );
 };

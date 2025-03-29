@@ -221,7 +221,7 @@ const HeroSection = () => {
         <span className="text-sm text-white/80">Trusted by</span>
         <TrustSVG
           width={50}
-          height={60}
+          height={40}
           color="#026607"
           aria-label="Trust Badge"
           className="hover:scale-105 transition-transform duration-200"

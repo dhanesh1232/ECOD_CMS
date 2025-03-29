@@ -6,22 +6,12 @@ import LoaderSpinner from "./Reusable/Spinner/spinner";
 import PropTypes from "prop-types";
 import StickyContactButton from "./contact-button";
 
-// Dynamic imports with custom loading components
-const OfferButton = dynamic(() => import("./button-offer"), {
-  loading: () => null,
-  ssr: false,
-});
-const Footer = dynamic(() => import("./footer"), {
-  loading: () => <div className="h-20 bg-gray-100 dark:bg-gray-900 w-full" />,
-});
-const HeaderSection = dynamic(() => import("./header"), {
-  ssr: false,
-  loading: () => <div className="h-16 bg-white dark:bg-gray-800 w-full" />,
-});
-const LowerContent = dynamic(() => import("./lower-content"), {
-  ssr: false,
-  loading: () => <LoaderSpinner />,
-});
+const OfferButton = dynamic(() => import("./button-offer"), { ssr: false });
+const Footer = dynamic(() => import("./footer"), { ssr: false });
+const HeaderSection = dynamic(() => import("./header"), { ssr: false });
+const LowerContent = dynamic(() => import("./lower-content"), { ssr: false });
+
+const loadingFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 const Layout = ({ children }) => {
   const router = useRouter();
@@ -29,8 +19,8 @@ const Layout = ({ children }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [routeChanging, setRouteChanging] = useState(false);
+  const [titleFrame, setTitleFrame] = useState(0);
 
-  // Memoize route-based layout values
   const { isHomePage, layoutClasses } = useMemo(() => {
     const isHome = router.pathname === "/";
     return {
@@ -39,7 +29,6 @@ const Layout = ({ children }) => {
     };
   }, [router.pathname]);
 
-  // Handle route changes
   useEffect(() => {
     const handleStart = () => {
       setRouteChanging(true);
@@ -60,7 +49,6 @@ const Layout = ({ children }) => {
     };
   }, [router]);
 
-  // Initialize theme and mounted state
   useEffect(() => {
     setIsMounted(true);
     const savedTheme =
@@ -73,12 +61,10 @@ const Layout = ({ children }) => {
 
     const handleLoad = () => setIsLoading(false);
 
-    // Check if page is already loaded
     if (document.readyState === "complete") {
       handleLoad();
     } else {
       window.addEventListener("load", handleLoad);
-      // Fallback timeout
       const timer = setTimeout(handleLoad, 1000);
       return () => {
         window.removeEventListener("load", handleLoad);
@@ -87,7 +73,6 @@ const Layout = ({ children }) => {
     }
   }, []);
 
-  // Update theme when it changes
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem("theme", theme);
@@ -95,19 +80,33 @@ const Layout = ({ children }) => {
     }
   }, [theme, isMounted]);
 
+  useEffect(() => {
+    if (!isMounted || isLoading || routeChanging) {
+      const interval = setInterval(() => {
+        setTitleFrame((prev) => (prev + 1) % loadingFrames.length);
+      }, 200);
+
+      return () => clearInterval(interval);
+    } else {
+      document.title = "My Website";
+    }
+  }, [isMounted, isLoading, routeChanging]);
+
+  useEffect(() => {
+    if (!isMounted || isLoading || routeChanging) {
+      document.title = `Loading ${loadingFrames[titleFrame]}`;
+    }
+  }, [titleFrame, isMounted, isLoading, routeChanging]);
+
   const toggleTheme = useCallback(() => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
   }, []);
 
-  // Show loader if:
-  // 1. The app isn't mounted yet
-  // 2. Initial loading is in progress
-  // 3. Route is changing
   if (!isMounted || isLoading || routeChanging) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <Head>
-          <title>Loading...</title>
+          <title>Loading {loadingFrames[titleFrame]}</title>
         </Head>
         <LoaderSpinner size="lg" />
       </div>

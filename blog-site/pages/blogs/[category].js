@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { blog_services } from "@/data/blog_data";
 import { allBlogs } from "@/data/blog_data";
+import { PaginationControls } from "../../hooks/pagination-control";
 
 // Dynamic imports with loading states
 const CategorySelector = dynamic(
@@ -31,14 +32,6 @@ const BackAndForward = dynamic(
   {
     loading: () => (
       <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-    ),
-  }
-);
-const PaginationComponent = dynamic(
-  () => import("../components/Reusable/pagination"),
-  {
-    loading: () => (
-      <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
     ),
   }
 );
@@ -221,7 +214,7 @@ const CategoryBlogs = () => {
                 transition={{ delay: 0.4 }}
                 className="mt-12"
               >
-                <PaginationComponent
+                <PaginationControls
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}

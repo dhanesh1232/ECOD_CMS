@@ -1,6 +1,7 @@
 "use client";
 
 import { pieData, radarData } from "@/data/shopify";
+import { shopify_services_data } from "@/data/service_data";
 import { motion } from "framer-motion";
 import {
   PieChart,
@@ -16,7 +17,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Buttons from "../Reusable/buttons";
-import { Rocket, Palette, ShoppingCart, Zap } from "lucide-react";
+import Link from "next/link";
 
 const COLORS = ["#3b82f6", "#10b981", "#f97316", "#8b5cf6"];
 
@@ -84,38 +85,7 @@ const ShopifySection = () => {
           transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
           className="mt-16 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {[
-            {
-              icon: (
-                <Palette className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              ),
-              title: "Custom Themes",
-              description:
-                "Stand out with unique, visually stunning themes tailored to your brand.",
-              color: "from-blue-500 to-blue-600",
-              darkColor: "from-blue-400 to-blue-500",
-            },
-            {
-              icon: (
-                <ShoppingCart className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-              ),
-              title: "Store Setup",
-              description:
-                "From product uploads to payment gateways, we handle every detail of your Shopify store setup.",
-              color: "from-purple-500 to-purple-600",
-              darkColor: "from-purple-400 to-purple-500",
-            },
-            {
-              icon: (
-                <Zap className="w-8 h-8 text-green-600 dark:text-green-400" />
-              ),
-              title: "One-Click Checkout",
-              description:
-                "Reduce cart abandonment and boost conversions with a seamless, one-click checkout experience.",
-              color: "from-green-500 to-green-600",
-              darkColor: "from-green-400 to-green-500",
-            },
-          ].map((service, index) => (
+          {shopify_services_data.map((service, index) => (
             <motion.div
               key={index}
               whileHover={{ y: -8 }}
@@ -123,33 +93,35 @@ const ShopifySection = () => {
               transition={{ duration: 0.3, type: "spring" }}
               className="group relative"
             >
-              {/* Glass card with inner shadow */}
-              <div className="relative bg-white/70 dark:bg-gray-800/60 backdrop-blur-md rounded-xl p-8 text-center h-full border border-gray-200/50 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                {/* Gradient overlay */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 -z-10`}
-                ></div>
+              <Link href={`${service.link}`}>
+                {/* Glass card with inner shadow */}
+                <div className="relative bg-white/70 dark:bg-gray-800/60 backdrop-blur-md rounded-xl p-8 text-center h-full border border-gray-200/50 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                  {/* Gradient overlay */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 -z-10`}
+                  ></div>
 
-                {/* Inner shadow effect */}
-                <div className="absolute inset-0 rounded-xl shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.2)] pointer-events-none"></div>
+                  {/* Inner shadow effect */}
+                  <div className="absolute inset-0 rounded-xl shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.2)] pointer-events-none"></div>
 
-                {/* Icon container */}
-                <div className="inline-flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 shadow-inner group-hover:bg-white/90 dark:group-hover:bg-gray-600/50 transition-colors">
-                  {service.icon}
+                  {/* Icon container */}
+                  <div className="inline-flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 shadow-inner group-hover:bg-white/90 dark:group-hover:bg-gray-600/50 transition-colors">
+                    {service.icon}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white/90 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-300">
+                    {service.title}
+                  </h3>
+                  <p className="mt-4 text-gray-600/90 dark:text-gray-400/90">
+                    {service.description}
+                  </p>
+                  <div className="mt-6">
+                    <span className="inline-block px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-white/70 dark:bg-gray-700/50 backdrop-blur-sm rounded-full border border-gray-200/30 dark:border-gray-600/30 shadow-inner hover:shadow-sm transition-all">
+                      Learn more →
+                    </span>
+                  </div>
                 </div>
-
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white/90 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-300">
-                  {service.title}
-                </h3>
-                <p className="mt-4 text-gray-600/90 dark:text-gray-400/90">
-                  {service.description}
-                </p>
-                <div className="mt-6">
-                  <span className="inline-block px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-white/70 dark:bg-gray-700/50 backdrop-blur-sm rounded-full border border-gray-200/30 dark:border-gray-600/30 shadow-inner hover:shadow-sm transition-all">
-                    Learn more →
-                  </span>
-                </div>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </motion.div>

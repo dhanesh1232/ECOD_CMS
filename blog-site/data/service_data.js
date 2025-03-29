@@ -5,6 +5,17 @@ import {
   SocialMediaSVG,
 } from "@/public/Assets/svg";
 
+import {
+  Palette,
+  ShoppingCart,
+  Zap,
+  Smartphone,
+  Mail,
+  Rocket,
+  Shield,
+  BarChart2,
+} from "lucide-react";
+
 export const about_service = [
   {
     icon: "shopify",
@@ -84,15 +95,14 @@ export const about_service = [
     color: "text-blue-600",
   },
 ];
-
 export const services_ecod = [
   { label: "Web Development", slug: "web-development" },
   { label: "Google | Meta Ads", slug: "google-meta-ads" },
   { label: "SEO", slug: "seo" },
   { label: "Social Media Marketing", slug: "social-media-marketing" },
   {
-    label: "Shopify Theme Development",
-    slug: "shopify-theme-development",
+    label: "Shopify Optimization",
+    slug: "shopify-optimization",
   },
   { label: "Content Marketing", slug: "content-marketing" },
   { label: "Email Marketing", slug: "email-marketing" },
@@ -101,7 +111,7 @@ export const eco_services = [
   {
     label: "Web Development",
     href: "/services/web-development",
-    image_url: "/Images/web-development.png",
+    image_url: "/Images/web-development.jpg",
     description:
       "Build modern, responsive websites with the latest technologies.",
     icon: "💻",
@@ -116,7 +126,7 @@ export const eco_services = [
   {
     label: "Google | Meta Ads",
     href: "/services/google-meta-ads",
-    image_url: "/Images/google-ads.png",
+    image_url: "/Images/google-meta-ads.png",
     description: "Maximize your ROI with targeted PPC campaigns.",
     icon: "📢",
     cta: "Run Ads",
@@ -130,7 +140,7 @@ export const eco_services = [
   {
     label: "SEO Optimization",
     href: "/services/seo",
-    image_url: "/Images/seo.png",
+    image_url: "/Images/seo.jpg",
     description: "Boost your website's rankings and drive organic traffic.",
     icon: "🚀",
     cta: "Optimize Now",
@@ -144,7 +154,7 @@ export const eco_services = [
   {
     label: "Social Media Marketing",
     href: "/services/social-media-marketing",
-    image_url: "/Images/social-media-marketing.png",
+    image_url: "/Images/social-media-marketing.jpg",
     description: "Grow your brand presence with engaging social campaigns.",
     icon: "📱",
     cta: "Get Social",
@@ -156,9 +166,9 @@ export const eco_services = [
     badge: "Engaging",
   },
   {
-    label: "Shopify Development",
-    href: "/services/shopify-theme-development",
-    image_url: "/Images/shopify-theme-development.png",
+    label: "Shopify Optimization",
+    href: "/services/shopify-optimization",
+    image_url: "/Images/shopify.jpg",
     description: "Custom Shopify themes for high-converting stores.",
     icon: "🛍️",
     cta: "Build Store",
@@ -172,7 +182,7 @@ export const eco_services = [
   {
     label: "Content Marketing",
     href: "/services/content-marketing",
-    image_url: "/Images/content-marketing.png",
+    image_url: "/Images/content-marketing.jpg",
     description: "Engage and convert customers with high-quality content.",
     icon: "✍️",
     cta: "Create Content",
@@ -186,63 +196,180 @@ export const eco_services = [
   {
     label: "Email Marketing",
     href: "/services/email-marketing",
-    image_url: "/Images/email-marketing.png",
+    image_url: "/Images/email-marketing.jpg",
     description: "Increase conversions with strategic email campaigns.",
     icon: "📧",
     cta: "Start Emailing",
-    color: "from-red-500 to-red-600",
-    darkColor: "from-red-400 to-red-500",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
+    color: "from-purple-500 to-purple-600",
+    darkColor: "from-purple-400 to-purple-500",
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
     emoji: "✉️",
     stats: "30% Open Rate",
     badge: "Effective",
   },
-];
+]; //
+export const shopify_services_data = [
+  {
+    icon: <Palette className="w-8 h-8 text-blue-600 dark:text-blue-400" />,
+    title: "Custom Themes",
+    link: "/shopify/custom-themes",
+    description:
+      "Stand out with unique, visually stunning themes tailored to your brand.",
+    color: "from-blue-500 to-blue-600",
+    darkColor: "from-blue-400 to-blue-500",
+  },
+  {
+    icon: (
+      <ShoppingCart className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+    ),
+    title: "Store Setup",
+    link: "/shopify/store-setup",
+    description:
+      "From product uploads to payment gateways, we handle every detail of your Shopify store setup.",
+    color: "from-purple-500 to-purple-600",
+    darkColor: "from-purple-400 to-purple-500",
+  },
+  {
+    icon: <Zap className="w-8 h-8 text-green-600 dark:text-green-400" />,
+    title: "One-Click Checkout",
+    link: "/shopify/one-click-checkout",
+    description:
+      "Reduce cart abandonment and boost conversions with a seamless, one-click checkout experience.",
+    color: "from-green-500 to-green-600",
+    darkColor: "from-green-400 to-green-500",
+  },
+  {
+    icon: <Smartphone className="w-8 h-8 text-red-600 dark:text-red-400" />,
+    title: "Mobile Optimization",
+    link: "/shopify/mobile-optimization",
+    description:
+      "Ensure flawless performance and user experience on all mobile devices.",
+    color: "from-red-500 to-red-600",
+    darkColor: "from-red-400 to-red-500",
+  },
+  {
+    icon: <Rocket className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />,
+    title: "Performance Boost",
+    link: "/shopify/performance-optimization",
+    description:
+      "Speed up your store with advanced optimization techniques for better conversions.",
+    color: "from-yellow-500 to-yellow-600",
+    darkColor: "from-yellow-400 to-yellow-500",
+  },
+  {
+    icon: <Shield className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />,
+    title: "Security Enhancements",
+    link: "/shopify/security",
+    description:
+      "Protect your store with advanced security measures and fraud prevention.",
+    color: "from-indigo-500 to-indigo-600",
+    darkColor: "from-indigo-400 to-indigo-500",
+  },
+  {
+    icon: <BarChart2 className="w-8 h-8 text-pink-600 dark:text-pink-400" />,
+    title: "SEO Optimization",
+    link: "/shopify/seo",
+    description:
+      "Improve your search rankings and drive organic traffic to your store.",
+    color: "from-pink-500 to-pink-600",
+    darkColor: "from-pink-400 to-pink-500",
+  },
+  {
+    icon: <Mail className="w-8 h-8 text-teal-600 dark:text-teal-400" />,
+    title: "Email Marketing",
+    link: "/shopify/email-marketing",
+    description:
+      "Convert visitors into customers with automated email campaigns and flows.",
+    color: "from-teal-500 to-teal-600",
+    darkColor: "from-teal-400 to-teal-500",
+  },
+]; //
 export const services_list_ecod = {
   "web-development": [
     {
       id: 1,
-      label: "Custom Website Development",
+      label: "Single-Page Applications (SPA)",
       description:
-        "Tailored website solutions designed to meet your unique business needs.",
+        "Fast, dynamic web apps built with React, Angular, or Vue.js for seamless user experiences.",
+      deliverables: [
+        "Production-ready frontend code (optimized JS/CSS)",
+        "API integration (REST/GraphQL)",
+        "Responsive UI components",
+        "State management (Redux/Pinia)",
+        "Lighthouse performance audit",
+        "Git repository access + deployment guide",
+      ],
       image_url: "",
-      href: "custom-website-development",
-      category: "web-development",
+      href: "single-page-applications",
+      category: "web-apps",
     },
     {
       id: 2,
-      label: "Landing Page Design",
+      label: "Progressive Web Apps (PWA)",
       description:
-        "High-converting landing pages crafted to drive leads and sales.",
+        "Offline-capable, installable web applications with native app features.",
+      deliverables: [
+        "Service worker setup (caching/offline mode)",
+        "Web App Manifest (splash screen, icons)",
+        "Push notification integration",
+        "PWA optimization audit",
+        "Cross-device testing report",
+        "App store submission guidance (optional)",
+      ],
       image_url: "",
-      href: "landing-page-design",
-      category: "web-development",
+      href: "progressive-web-apps",
+      category: "web-apps",
     },
     {
       id: 3,
-      label: "E-commerce Development",
+      label: "Real-Time Web Apps",
       description:
-        "Build scalable and user-friendly e-commerce platforms for your business.",
+        "Interactive applications with live updates using WebSockets (e.g., chat, dashboards).",
+      deliverables: [
+        "WebSocket/SSE implementation",
+        "Real-time database (Firebase/Supabase)",
+        "Connection fallback handling",
+        "Load stress testing report",
+        "Data synchronization docs",
+        "Scalability recommendations",
+      ],
       image_url: "",
-      href: "ecommerce-development",
-      category: "e-commerce",
+      href: "real-time-web-apps",
+      category: "web-apps",
     },
     {
       id: 4,
-      label: "CMS Development",
-      description: "Custom CMS solutions to manage your content efficiently.",
+      label: "Enterprise Web Applications",
+      description:
+        "Scalable, secure business solutions with complex workflows and integrations.",
+      deliverables: [
+        "Role-based access control (RBAC)",
+        "Audit logging system",
+        "API gateway setup",
+        "Database schema + migration scripts",
+        "CI/CD pipeline (AWS/Azure)",
+        "Disaster recovery plan",
+      ],
       image_url: "",
-      href: "cms-development",
-      category: "web-development",
+      href: "enterprise-web-apps",
+      category: "web-apps",
     },
     {
       id: 5,
-      label: "Website Maintenance & Support",
+      label: "AI-Integrated Web Apps",
       description:
-        "Ongoing support and maintenance to keep your website running smoothly.",
+        "Applications enhanced with machine learning, chatbots, or computer vision APIs.",
+      deliverables: [
+        "Pre-trained model integration (TensorFlow.js)",
+        "Custom API endpoints for AI processing",
+        "Data annotation guidelines (if custom models)",
+        "Ethical AI compliance checklist",
+        "Model performance monitoring",
+        "User feedback loop setup",
+      ],
       image_url: "",
-      href: "website-maintenance-support",
-      category: "web-maintenance",
+      href: "ai-integrated-web-apps",
+      category: "web-apps",
     },
   ],
   "google-meta-ads": [
@@ -410,7 +537,7 @@ export const services_list_ecod = {
       category: "social-media-marketing",
     },
   ],
-  "shopify-theme-development": [
+  "shopify-optimization": [
     {
       id: 21,
       label: "Custom Shopify Theme Design",
@@ -539,7 +666,8 @@ export const services_list_ecod = {
       category: "email-marketing",
     },
   ],
-};
+}; //update inside content using this two "eco_services | shopify_services_data"
+
 export const allCategories = [
   {
     key: "MetaAds",
