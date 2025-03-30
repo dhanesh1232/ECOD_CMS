@@ -4,7 +4,7 @@ import { TrustSVG } from "@/public/Assets/svg";
 import ClickSpark from "../Reusable/sparkle";
 import LoaderSpinner from "../Reusable/Spinner/spinner";
 import Threads from "../Reusable/thread";
-import { ChevronsDown, Rocket } from "lucide-react";
+import { ChevronsDown, Rocket, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { TypeAnimation } from "react-type-animation";
 
@@ -91,13 +91,32 @@ const HeroSection = () => {
       data-testid="hero-section"
       id="hero-section"
     >
-      {/* Glass Morphism Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/80 via-indigo-600/80 to-purple-600/80 backdrop-blur-md z-0" />
+      {/* Enhanced Background with Parallax Effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-indigo-600/90 to-purple-600/90 backdrop-blur-md z-0" />
+
+      {/* Particle Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white/10"
+            style={{
+              width: `${Math.random() * 10 + 5}px`,
+              height: `${Math.random() * 10 + 5}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`,
+            }}
+          />
+        ))}
+      </div>
 
       {/* Animated Gradient Overlay */}
       <div className="absolute inset-0 z-0 opacity-30">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent animate-pulse-slow" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,_var(--tw-gradient-stops))] from-indigo-400/20 via-transparent to-transparent animate-pulse-slow delay-1000" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent animate-pulse-slow delay-1500" />
       </div>
 
       {!shouldReduceMotion && (
@@ -119,10 +138,11 @@ const HeroSection = () => {
         />
       </div>
 
-      {/* Floating Glass Elements */}
-      <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 animate-float-slow" />
-      <div className="absolute bottom-1/3 right-1/4 w-40 h-40 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 animate-float-medium delay-1000" />
-      <div className="absolute top-1/3 right-1/3 w-24 h-24 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 animate-float-fast delay-500" />
+      {/* Floating Glass Elements with Enhanced Animation */}
+      <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 animate-float-slow hover:scale-110 transition-transform duration-300" />
+      <div className="absolute bottom-1/3 right-1/4 w-40 h-40 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 animate-float-medium delay-1000 hover:scale-110 transition-transform duration-300" />
+      <div className="absolute top-1/3 right-1/3 w-24 h-24 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 animate-float-fast delay-500 hover:scale-110 transition-transform duration-300" />
+      <div className="absolute bottom-1/4 left-1/3 w-28 h-28 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 animate-float-slow delay-1500 hover:scale-110 transition-transform duration-300" />
 
       {/* Hero Content */}
       <motion.div
@@ -133,8 +153,10 @@ const HeroSection = () => {
         role="banner"
       >
         <motion.div variants={childVariants} className="mb-1 md:mb-4">
-          <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium border border-white/10 hover:bg-white/15 transition-all duration-300">
-            <Rocket className="w-4 h-4 mr-2" /> Digital Transformation
+          <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium border border-white/10 hover:bg-white/15 hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300 group">
+            <Rocket className="w-4 h-4 mr-2 group-hover:animate-pulse" />
+            Digital Transformation
+            <Sparkles className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </span>
         </motion.div>
 
@@ -148,14 +170,16 @@ const HeroSection = () => {
                 2000,
                 "Create Powerful Web Experiences 🚀",
                 2000,
-                `Grow Your Online Presence 🚀`,
+                "Grow Your Online Presence 🚀",
+                2000,
+                "Innovate With Cutting-Edge Tech 🚀",
                 2000,
               ]}
               wrapper="span"
               speed={50}
               deletionSpeed={70}
               repeat={Infinity}
-              className="text-4xl font-bold bg-gradient-to-r from-yellow-500 to-purple-600 bg-clip-text text-transparent"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent"
               cursor={!shouldReduceMotion}
             />
           </div>
@@ -178,7 +202,7 @@ const HeroSection = () => {
         </motion.p>
       </motion.div>
 
-      {/* Buttons with Glass Effect */}
+      {/* Buttons with Enhanced Glass Effect */}
       <motion.div
         initial="hidden"
         animate="visible"
@@ -194,31 +218,41 @@ const HeroSection = () => {
           first_nav={"/services"}
           second_nav={"/contact"}
           first_styles={
-            "px-8 py-3.5 bg-gradient-to-r flex-inline items-center from-blue-400/90 to-indigo-500/90 hover:from-blue-300/90 hover:to-indigo-400/90 text-white font-semibold rounded-lg hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20"
+            "px-8 py-3.5 bg-gradient-to-r flex-inline items-center from-blue-400/90 to-indigo-500/90 hover:from-blue-300/90 hover:to-indigo-400/90 text-white font-semibold rounded-lg hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20 hover:animate-pulse"
           }
           second_styles={
-            "px-8 py-3.5 border-2 border-white/30 hover:border-blue-200/50 text-white font-semibold rounded-lg hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+            "px-8 py-3.5 border-2 border-white/30 hover:border-blue-200/50 text-white font-semibold rounded-lg hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-300 hover:scale-105 backdrop-blur-sm hover:animate-pulse"
           }
         />
       </motion.div>
 
-      {/* Scroll Indicator */}
+      {/* Enhanced Scroll Indicator */}
       {!shouldReduceMotion && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2 }}
-          className="absolute bottom-10 transform -translate-x-1/2 z-10 flex flex-col items-center"
+          className="absolute bottom-10 transform -translate-x-1/2 z-10 flex flex-col items-center group cursor-pointer"
+          onClick={() => {
+            document
+              .getElementById("content-section")
+              ?.scrollIntoView({ behavior: "smooth" });
+          }}
         >
-          <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 animate-pulse">
-            <ChevronsDown className="w-6 h-6 text-white/80 animate-bounce" />
+          <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 animate-pulse group-hover:bg-white/20 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
+            <ChevronsDown className="w-6 h-6 text-white/80 animate-bounce group-hover:text-white" />
           </div>
+          <span className="text-xs text-white/60 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            Scroll to explore
+          </span>
         </motion.div>
       )}
 
-      {/* Trust Badge with Glass Effect */}
-      <div className="absolute transform right-2 md:right-4 z-10 flex items-center bottom-0 sm:bottom-2 gap-2 p-2 rounded-lg sm:bg-white/5 sm:backdrop-blur-sm sm:border border-white/10">
-        <span className="text-sm text-white/80">Trusted by</span>
+      {/* Enhanced Trust Badge */}
+      <div className="absolute transform right-2 md:right-4 z-10 flex items-center bottom-0 sm:bottom-2 gap-2 p-2 rounded-lg sm:bg-white/5 sm:backdrop-blur-sm sm:border border-white/10 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
+        <span className="text-sm text-white/80 hidden sm:inline-block">
+          Trusted by
+        </span>
         <TrustSVG
           width={50}
           height={40}
@@ -226,6 +260,13 @@ const HeroSection = () => {
           aria-label="Trust Badge"
           className="hover:scale-105 transition-transform duration-200"
         />
+      </div>
+
+      {/* Floating CTA for Mobile */}
+      <div className="fixed sm:hidden bottom-4 right-4 z-50">
+        <button className="p-3 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.7)] transition-all duration-300">
+          <Rocket className="w-6 h-6 text-white" />
+        </button>
       </div>
     </section>
   );

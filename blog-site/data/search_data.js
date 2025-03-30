@@ -5,7 +5,7 @@ import {
   eco_services,
   services_list_ecod,
 } from "./service_data";
-import { blogs, allBlogs } from "./blog_data";
+import { allBlogs } from "./blog_data";
 
 // Extract policy pages from policy_data
 const policyPages = Object.entries(policy_data)
@@ -54,16 +54,6 @@ const subServices = Object.entries(services_list_ecod).flatMap(
     }))
 );
 
-// Extract all blog posts from blogs
-const mainBlogPosts = blogs.map((blog) => ({
-  title: blog.title,
-  description: blog.description,
-  url: `/blog${blog.slug}`,
-  type: "blog",
-  category: blog.category,
-  image: blog.image,
-}));
-
 // Extract all blog posts from allBlogs
 const categorizedBlogPosts = Object.values(allBlogs).flatMap((categoryPosts) =>
   categoryPosts.map((post) => ({
@@ -77,7 +67,7 @@ const categorizedBlogPosts = Object.values(allBlogs).flatMap((categoryPosts) =>
 );
 
 // Combine all blog posts
-const allBlogPosts = [...mainBlogPosts, ...categorizedBlogPosts];
+const allBlogPosts = [...categorizedBlogPosts];
 
 export const searchData = [
   {

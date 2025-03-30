@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
 import "swiper/css";
@@ -18,7 +18,7 @@ import {
   User,
   Tag,
 } from "lucide-react";
-import { blogs } from "@/data/blog_data";
+import { allBlogs, blog_services } from "@/data/blog_data";
 import { useRouter } from "next/router";
 
 const fadeInUp = {
@@ -50,6 +50,18 @@ const HomeBlog = () => {
   const router = useRouter();
   const swiperRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [blogs, setFewBlogs] = useState([]);
+  useEffect(() => {
+    const filteredBlogs = blog_services
+      .flatMap((item) => {
+        const blogPosts = allBlogs[item.slug];
+        return blogPosts ? blogPosts.slice(0, 3) : [];
+      })
+      .filter((blog) => blog) // Remove any undefined entries
+      .slice(0, 9); // Limit total number of blogs
+
+    setFewBlogs(filteredBlogs);
+  }, [blog_services, allBlogs]);
 
   if (!blogs || !Array.isArray(blogs) || blogs.length === 0) {
     return (
@@ -202,15 +214,15 @@ const HomeBlog = () => {
 
                 {/* Blog Image */}
                 <div className="relative h-48 w-full overflow-hidden group">
-                  {blog.image === "" ? (
+                  {blog.imageSrc === "" ? (
                     <div className="h-full bg-gradient-to-r from-blue-400/80 to-purple-400/80 text-white flex items-center justify-center text-3xl backdrop-blur-sm">
-                      {blog.title.charAt(0)}
+                      {blog?.title.charAt(0)}
                     </div>
                   ) : (
                     <>
                       <Image
-                        src={blog.image}
-                        alt={blog.title}
+                        src={blog?.imageSrc}
+                        alt={blog?.title}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
@@ -230,7 +242,7 @@ const HomeBlog = () => {
                     <span
                       className={`px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full backdrop-blur-sm border border-white/20`}
                     >
-                      {blog.category}
+                      {blog?.category}
                     </span>
                   </div>
                 </div>
@@ -240,15 +252,15 @@ const HomeBlog = () => {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500/90 dark:text-gray-400/90 mb-4">
                     <div className="flex items-center">
                       <User className="w-4 h-4 mr-1" />
-                      <span>{blog.author.name}</span>
+                      <span>{blog?.author?.name}</span>
                     </div>
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-1" />
-                      <span>{blog.date}</span>
+                      <span>{blog?.date}</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      <span>{blog.readTime}</span>
+                      <span>{blog?.readTime}</span>
                     </div>
                   </div>
 
@@ -263,7 +275,7 @@ const HomeBlog = () => {
                   {/* Tags */}
                   {blog.tags && blog.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-5">
-                      {blog.tags.slice(0, 3).map((tag, i) => (
+                      {blog?.tags.slice(0, 3).map((tag, i) => (
                         <span
                           key={i}
                           className="inline-flex items-center px-3 py-1 text-xs font-medium bg-gray-100/70 dark:bg-gray-700/50 rounded-full backdrop-blur-sm"

@@ -224,12 +224,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                   src={
                     theme === "light"
                       ? `/Images/ECOD_.png`
-                      : "/Images/ECOD_dark.png"
+                      : "/Images/ECOD_DIGI__.png"
                   }
                   width={100}
                   height={100}
+                  priority // Add this for LCP images
                   className="h-10 w-10 transition ease-in-out duration-300 transform"
                   alt="ECOD_Alt"
+                  sizes="100px" // Helps browser select correct image source
                 />
               ) : (
                 <motion.span

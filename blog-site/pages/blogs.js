@@ -1,8 +1,8 @@
 "use client";
 
-import { blog_services, blogs } from "@/data/blog_data";
+import { blog_services, allBlogs } from "@/data/blog_data";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, BookOpen } from "lucide-react";
 import { useRouter } from "next/router";
 import HeadSEO from "./components/Reusable/seo_head";
@@ -31,6 +31,17 @@ const BlogPosts = () => {
   const postsPerPage = 6;
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [blogs, setFewBlogs] = useState([]);
+  useEffect(() => {
+    const filteredBlogs = blog_services
+      .flatMap((item) => {
+        const blogPosts = allBlogs[item.slug];
+        return blogPosts ? blogPosts.slice(0, 3) : [];
+      })
+      .filter((blog) => blog)
+      .slice(0, 9);
+    setFewBlogs(filteredBlogs);
+  }, [blog_services, allBlogs]);
 
   const filteredBlogs = blogs.filter(
     (blog) =>
