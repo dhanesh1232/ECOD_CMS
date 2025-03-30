@@ -88,7 +88,7 @@ const Layout = ({ children }) => {
 
       return () => clearInterval(interval);
     } else {
-      document.title = "My Website";
+      document.title = "ECOD DIGI";
     }
   }, [isMounted, isLoading, routeChanging]);
 
