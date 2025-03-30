@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessageCircle, Mail } from "lucide-react";
 import { motion, useAnimation } from "framer-motion";
 import { useState, useEffect } from "react";
+import ScrollToTopButton from "./Reusable/back-top-top";
 
 const StickyContactButton = ({
   label = "Contact Us",
@@ -79,12 +80,13 @@ const StickyContactButton = ({
 
   return (
     <motion.div
-      className={`fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 ${className}`}
+      className={`fixed bottom-4 sm:bottom-6 right-4 space-y-2 sm:right-6 z-50 ${className}`}
       initial={{ opacity: 0, y: 20, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.4, delay: 0.7, type: "spring" }}
       whileHover={!isMobile ? { scale: 1.05 } : {}}
     >
+      <ScrollToTopButton />
       <Link href={href} passHref legacyBehavior>
         <motion.a className="block" aria-label={label}>
           <motion.button

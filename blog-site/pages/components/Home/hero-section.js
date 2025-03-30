@@ -263,7 +263,7 @@ const HeroSection = () => {
       </div>
 
       {/* Floating CTA for Mobile */}
-      <div className="fixed sm:hidden bottom-4 right-4 z-50">
+      <div className="fixed sm:hidden bottom-4 left-4 z-50">
         <button className="p-3 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.7)] transition-all duration-300">
           <Rocket className="w-6 h-6 text-white" />
         </button>

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MoveUp, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
 import HeadSEO from "./components/Reusable/seo_head";
-import BackAndForward from "./components/Reusable/back-forw";
+const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 // Utility functions
 const formatDate = (date) => {
@@ -82,7 +82,6 @@ export default function PrivacyPolicy() {
   const policy = policy_data[policy_id];
   const [lastUpdated, setLastUpdated] = useState("");
   const [activeSection, setActiveSection] = useState("");
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     setLastUpdated(formatDate(new Date()));
@@ -112,7 +111,6 @@ export default function PrivacyPolicy() {
       });
 
       setActiveSection(current);
-      setShowBackToTop(window.scrollY > 500);
     }, 100);
 
     window.addEventListener("scroll", handleScroll);
@@ -312,15 +310,6 @@ export default function PrivacyPolicy() {
             </div>
           </div>
         </div>
-
-        {/* Back to Top Button */}
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className={`fixed bottom-5 z-40 left-8 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-all duration-300 ${showBackToTop ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-          aria-label="Back to top"
-        >
-          <MoveUp className="w-5 h-5" />
-        </button>
       </div>
     </>
   );

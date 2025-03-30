@@ -5,6 +5,7 @@ import Head from "next/head";
 import LoaderSpinner from "./Reusable/Spinner/spinner";
 import PropTypes from "prop-types";
 import StickyContactButton from "./contact-button";
+import PortfolioPage from "../portfolio";
 
 const OfferButton = dynamic(() => import("./button-offer"), { ssr: false });
 const Footer = dynamic(() => import("./footer"), { ssr: false });
@@ -20,7 +21,7 @@ const Layout = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [routeChanging, setRouteChanging] = useState(false);
   const [titleFrame, setTitleFrame] = useState(0);
-
+  const isPortfolioPage = router.pathname === "/portfolio";
   const { isHomePage, layoutClasses } = useMemo(() => {
     const isHome = router.pathname === "/";
     return {
@@ -109,6 +110,18 @@ const Layout = ({ children }) => {
           <title>Loading {loadingFrames[titleFrame]}</title>
         </Head>
         <LoaderSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (isPortfolioPage) {
+    return (
+      <div className="min-h-screen w-full">
+        <Head>
+          <title>Dhanesh | Portfolio</title>
+          <meta name="theme-color" content="#ffffff" />
+        </Head>
+        <PortfolioPage theme={theme} toggleTheme={toggleTheme} />
       </div>
     );
   }

@@ -1,17 +1,67 @@
 import { TrustSVG } from "@/public/Assets/svg";
 import Link from "next/link";
-import * as FaIcons from "react-icons/fa";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaLinkedinIn,
+  FaInstagram,
+  FaYoutube,
+  FaLaptopCode,
+  FaArrowRight,
+  FaEnvelope,
+  FaHeadset,
+  FaPhoneAlt,
+  FaStar,
+} from "react-icons/fa";
 import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const socialLinks = [
-  { Icon: FaIcons.FaFacebookF, link: "#", name: "Facebook", color: "#1877F2" },
-  { Icon: FaIcons.FaTwitter, link: "#", name: "Twitter", color: "#1DA1F2" },
-  { Icon: FaIcons.FaLinkedinIn, link: "#", name: "LinkedIn", color: "#0077B5" },
-  { Icon: FaIcons.FaInstagram, link: "#", name: "Instagram", color: "#E4405F" },
-  { Icon: FaIcons.FaYoutube, link: "#", name: "YouTube", color: "#FF0000" },
+  {
+    Icon: FaFacebookF,
+    link: "#",
+    name: "Facebook",
+    color: "#1877F2",
+    ariaLabel: "Visit our Facebook page",
+  },
+  {
+    Icon: FaTwitter,
+    link: "#",
+    name: "Twitter",
+    color: "#1DA1F2",
+    ariaLabel: "Follow us on Twitter",
+  },
+  {
+    Icon: FaLinkedinIn,
+    link: "#",
+    name: "LinkedIn",
+    color: "#0077B5",
+    ariaLabel: "Connect on LinkedIn",
+  },
+  {
+    Icon: FaInstagram,
+    link: "#",
+    name: "Instagram",
+    color: "#E4405F",
+    ariaLabel: "Follow our Instagram",
+  },
+  {
+    Icon: FaYoutube,
+    link: "#",
+    name: "YouTube",
+    color: "#FF0000",
+    ariaLabel: "Subscribe to our YouTube",
+  },
+  {
+    Icon: FaLaptopCode,
+    link: "https://yourportfolio.com",
+    name: "Portfolio",
+    color: "#3b82f6",
+    ariaLabel: "View our portfolio website",
+    isPortfolio: true,
+  },
 ];
 
 const quickLinks = [
@@ -62,7 +112,6 @@ const Footer = () => {
 
     setIsLoading(true);
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setSubscribed(true);
       setEmail("");
@@ -153,7 +202,7 @@ const Footer = () => {
                       className="inline-block mr-2 group-hover:translate-x-1 transition-transform"
                       whileHover={{ x: 3 }}
                     >
-                      <FaIcons.FaArrowRight className="text-xs text-green-400" />
+                      <FaArrowRight className="text-xs text-green-400" />
                     </motion.span>
                     {service}
                   </Link>
@@ -190,7 +239,7 @@ const Footer = () => {
                         opacity: router.pathname === `/${link.path}` ? 1 : 0,
                       }}
                     >
-                      <FaIcons.FaArrowRight className="text-xs text-green-400" />
+                      <FaArrowRight className="text-xs text-green-400" />
                     </motion.span>
                     {link.name}
                   </Link>
@@ -216,7 +265,7 @@ const Footer = () => {
                     {Array(5)
                       .fill(0)
                       .map((_, i) => (
-                        <FaIcons.FaStar
+                        <FaStar
                           key={i}
                           className={`w-4 h-4 ${i < testimonial.rating ? "text-yellow-400" : "text-gray-600"}`}
                         />
@@ -249,7 +298,7 @@ const Footer = () => {
           <div className="bg-gray-800/40 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50 hover:border-green-500/30 transition-colors shadow-lg">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-lg bg-green-500/10 backdrop-blur-sm border border-green-500/20">
-                <FaIcons.FaEnvelope className="text-green-400 text-xl" />
+                <FaEnvelope className="text-green-400 text-xl" />
               </div>
               <h3 className="text-xl font-bold">Newsletter</h3>
             </div>
@@ -331,7 +380,7 @@ const Footer = () => {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-lg bg-blue-500/10 backdrop-blur-sm border border-blue-500/20">
-                  <FaIcons.FaHeadset className="text-blue-400 text-xl" />
+                  <FaHeadset className="text-blue-400 text-xl" />
                 </div>
                 <h3 className="text-xl font-bold">Need Help?</h3>
               </div>
@@ -345,10 +394,54 @@ const Footer = () => {
               className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-6 py-3 rounded-lg transition-colors font-medium group backdrop-blur-sm"
               aria-label="Contact us"
             >
-              <FaIcons.FaPhoneAlt className="group-hover:animate-pulse" />
+              <FaPhoneAlt className="group-hover:animate-pulse group-hover:rotate-[15deg] transition transform duration-300 ease-in-out" />
               <span>Contact Us</span>
-              <FaIcons.FaArrowRight className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <FaArrowRight className="ml-1 group-hover:translate-x-1 transition" />
             </Link>
+          </div>
+        </motion.div>
+
+        {/* Portfolio Showcase Section */}
+        <motion.div
+          className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 backdrop-blur-lg p-8 rounded-xl border border-blue-700/30 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          viewport={{ once: true }}
+        >
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-shrink-0">
+              <div className="w-16 h-16 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <FaLaptopCode className="text-blue-400 text-2xl" />
+              </div>
+            </div>
+            <div className="flex-grow">
+              <h3 className="text-xl font-bold mb-2">Explore Our Portfolio</h3>
+              <p className="text-gray-400 mb-4">
+                {`Discover our latest projects and see how we've helped businesses
+                like yours succeed online.`}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/portfolio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 group backdrop-blur-sm"
+                  aria-label="View our portfolio"
+                >
+                  <span>View Portfolio</span>
+                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="/services"
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center justify-center gap-2 group backdrop-blur-sm"
+                  aria-label="See our services"
+                >
+                  <span>Our Services</span>
+                  <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -356,29 +449,55 @@ const Footer = () => {
         <div className="pt-8 border-t border-gray-800/50">
           {/* Social Links */}
           <motion.div
-            className="flex justify-center gap-4 mb-8"
+            className="flex flex-wrap justify-center gap-4 mb-8"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             viewport={{ once: true }}
           >
-            {socialLinks.map(({ Icon, link, name, color }, index) => (
-              <motion.a
-                key={index}
-                href={link}
-                aria-label={`Follow us on ${name}`}
-                className="w-10 h-10 rounded-full bg-gray-800/50 hover:bg-gray-700/50 text-white flex items-center justify-center transition-colors relative overflow-hidden group backdrop-blur-sm border border-gray-700/50 hover:border-gray-600/50"
-                whileHover={{ y: -3 }}
-                whileTap={{ scale: 0.95 }}
-                style={{ color }}
-              >
-                <Icon className="w-5 h-5 z-10" />
-                <span
-                  className="absolute inset-0 bg-current opacity-0 group-hover:opacity-10 transition-opacity"
-                  aria-hidden="true"
-                />
-              </motion.a>
-            ))}
+            {socialLinks.map(
+              ({ Icon, link, name, color, isPortfolio }, index) => (
+                <motion.a
+                  key={index}
+                  href={link}
+                  target={isPortfolio ? "_blank" : "_self"}
+                  rel={isPortfolio ? "noopener noreferrer" : ""}
+                  aria-label={
+                    isPortfolio
+                      ? "View our portfolio website"
+                      : `Follow us on ${name}`
+                  }
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all relative overflow-hidden group backdrop-blur-sm border ${
+                    isPortfolio
+                      ? "border-blue-500/50 hover:border-blue-400/70 bg-blue-500/10 hover:bg-blue-500/20"
+                      : "border-gray-700/50 hover:border-gray-600/50 bg-gray-800/50 hover:bg-gray-700/50"
+                  }`}
+                  whileHover={{
+                    y: -3,
+                    scale: isPortfolio ? 1.1 : 1.05,
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{ color }}
+                >
+                  <Icon
+                    className={`w-5 h-5 z-10 ${isPortfolio ? "text-blue-400" : ""}`}
+                  />
+                  {isPortfolio && (
+                    <motion.span
+                      className="absolute -bottom-1 text-xs font-medium text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                      initial={{ y: 5 }}
+                      whileHover={{ y: 0 }}
+                    >
+                      Portfolio
+                    </motion.span>
+                  )}
+                  <span
+                    className="absolute inset-0 bg-current opacity-0 group-hover:opacity-10 transition-opacity"
+                    aria-hidden="true"
+                  />
+                </motion.a>
+              )
+            )}
           </motion.div>
 
           {/* Legal Links */}
@@ -386,7 +505,7 @@ const Footer = () => {
             className="flex flex-wrap justify-center gap-4 mb-8 text-sm"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
             viewport={{ once: true }}
           >
             {policy_data.policy_links.map((link, index) => {
@@ -412,7 +531,7 @@ const Footer = () => {
             className="text-center text-gray-500 text-sm"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             viewport={{ once: true }}
           >
             <div className="flex items-center justify-center gap-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 max-w-fit mx-auto border border-gray-700/30">
