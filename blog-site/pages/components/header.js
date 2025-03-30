@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { searchData } from "@/data/search_data";
 import Image from "next/image";
-const image_ = true;
+
 const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
   const [navScrolled, setNavScrolled] = useState(false);
@@ -18,39 +18,59 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   const [instantResults, setInstantResults] = useState([]);
   const [openDropDesk, setOpenDropDesk] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isHomePage, setIsHomePage] = useState(null);
+  const [isHomePage, setIsHomePage] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   const searchInputRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const dropdownRefs = useRef({});
 
+  // Enhanced dropdown handling with proper mouse tracking
+  const handleMouseEnter = useCallback((label) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setActiveDropdown(label);
+    setOpenDropDesk(label);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    timeoutRef.current = setTimeout(() => {
+      if (activeDropdown === openDropDesk) {
+        setOpenDropDesk(null);
+        setActiveDropdown(null);
+      }
+    }, 300); // Increased delay for better UX
+  }, [activeDropdown, openDropDesk]);
+
+  // Track if we're on homepage
+  useEffect(() => {
+    setIsHomePage(router.pathname === "/");
+  }, [router.pathname]);
+
+  // Scroll effects
   useEffect(() => {
     const handleScroll = () => {
       const heroSection = document.getElementById("hero-section");
       if (heroSection) {
-        const heroHeight = heroSection?.clientHeight;
+        const heroHeight = heroSection.clientHeight;
         const scrollPosition = window.scrollY;
-        setNavScrolled(scrollPosition > heroHeight);
+        setNavScrolled(scrollPosition > heroHeight * 0.8); // Trigger earlier
       }
+      setIsScrolled(window.scrollY > 10);
     };
-    // Add scroll event listener
-    window.addEventListener("scroll", handleScroll);
-    // Initial check
-    handleScroll();
-    // Clean up
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
-  useEffect(() => {
-    setIsHomePage(router.pathname === "/");
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initial call
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Debounce search input
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
+    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 250);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -58,16 +78,16 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   const searchContent = useCallback((query) => {
     if (!query.trim()) return [];
     const lowerCaseQuery = query.toLowerCase();
-
-    const filterData = searchData.filter(
-      (item) =>
-        item.title.toLowerCase().includes(lowerCaseQuery) ||
-        item.description?.toLowerCase().includes(lowerCaseQuery)
-    );
-    return filterData.slice(0, 5);
+    return searchData
+      .filter(
+        (item) =>
+          item.title.toLowerCase().includes(lowerCaseQuery) ||
+          item.description?.toLowerCase().includes(lowerCaseQuery)
+      )
+      .slice(0, 5);
   }, []);
 
-  // In your useEffect for search results
+  // Update search results
   useEffect(() => {
     if (debouncedQuery.trim()) {
       setInstantResults(searchContent(debouncedQuery));
@@ -76,29 +96,34 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     }
   }, [debouncedQuery, searchContent]);
 
-  // Close dropdowns on route change
+  // Reset UI on route change
   useEffect(() => {
-    setOpenDropDesk(null);
-    setIsMobileMenuOpen(false);
-    setShowSearch(false);
-    document.body.style.overflow = "";
-  }, [router.asPath]);
+    const handleRouteChange = () => {
+      setOpenDropDesk(null);
+      setIsMobileMenuOpen(false);
+      setShowSearch(false);
+      document.body.style.overflow = "";
+    };
 
-  // Scroll effect for header
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    router.events.on("routeChangeComplete", handleRouteChange);
+    return () => router.events.off("routeChangeComplete", handleRouteChange);
+  }, [router]);
 
-  // Close on Escape key
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         setShowSearch(false);
         setIsMobileMenuOpen(false);
       }
+      // Cmd+K or Ctrl+K for search
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        handleSearchToggle();
+        searchInputRef.current?.focus();
+      }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
@@ -113,9 +138,13 @@ const HeaderSection = ({ theme, toggleTheme }) => {
         );
       }
     };
+
+    const observer = new ResizeObserver(updateHeaderHeight);
+    if (headerRef.current) {
+      observer.observe(headerRef.current);
+    }
     updateHeaderHeight();
-    window.addEventListener("resize", updateHeaderHeight);
-    return () => window.removeEventListener("resize", updateHeaderHeight);
+    return () => observer.disconnect();
   }, []);
 
   // Handle body overflow
@@ -126,13 +155,11 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     };
   }, [isMobileMenuOpen]);
 
+  // Toggle handlers
   const handleSearchToggle = useCallback(() => {
-    setShowSearch((prev) => !prev);
     setIsMobileMenuOpen(false);
-    if (!showSearch) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
-    }
-  }, [showSearch]);
+    setTimeout(() => searchInputRef.current?.focus(), 100);
+  }, []);
 
   const handleMobileMenuToggle = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -143,6 +170,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     setOpenDropDesk((prev) => (prev === label ? null : label));
   }, []);
 
+  // Search submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const query = searchQuery.trim();
@@ -163,25 +191,53 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     );
     const current = document.activeElement;
 
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      if (current === searchInputRef.current) {
-        results[0]?.focus();
-      } else if (current.id?.startsWith("search-result-")) {
-        const index = results.findIndex((el) => el === current);
-        if (index < results.length - 1) results[index + 1]?.focus();
-      }
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      if (current.id?.startsWith("search-result-")) {
-        const index = results.findIndex((el) => el === current);
-        index > 0
-          ? results[index - 1]?.focus()
-          : searchInputRef.current?.focus();
-      }
-    } else if (e.key === "Enter" && current.id?.startsWith("search-result-")) {
-      current.click();
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (current === searchInputRef.current) {
+          results[0]?.focus();
+        } else if (current.id?.startsWith("search-result-")) {
+          const index = results.findIndex((el) => el === current);
+          if (index < results.length - 1) results[index + 1]?.focus();
+        }
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        if (current.id?.startsWith("search-result-")) {
+          const index = results.findIndex((el) => el === current);
+          index > 0
+            ? results[index - 1]?.focus()
+            : searchInputRef.current?.focus();
+        }
+        break;
+      case "Enter":
+        if (current.id?.startsWith("search-result-")) {
+          current.click();
+        }
+        break;
     }
+  };
+
+  // Render function for dropdown items
+  const renderDropdownItems = (subpages) => {
+    return subpages.map((subpage) => (
+      <motion.li
+        key={subpage.label}
+        whileHover={{ x: 5 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        <Link
+          href={subpage.slug}
+          className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-gray-700/50 rounded transition-colors"
+          onClick={() => {
+            setIsMobileMenuOpen(false);
+            setOpenDropDesk(null);
+          }}
+        >
+          {subpage.label}
+        </Link>
+      </motion.li>
+    ));
   };
 
   return (
@@ -218,31 +274,24 @@ const HeaderSection = ({ theme, toggleTheme }) => {
           {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-6 md:gap-8">
             <Link href="/" className="flex items-center gap-2">
-              {image_ ? (
-                <Image
-                  key={theme}
-                  src={
-                    theme === "light"
-                      ? `/Images/ECOD_.png`
-                      : "/Images/ECOD_DIGI__.png"
-                  }
-                  width={100}
-                  height={100}
-                  priority // Add this for LCP images
-                  className="h-10 w-10 transition ease-in-out duration-300 transform"
-                  alt="ECOD_Alt"
-                  sizes="100px" // Helps browser select correct image source
-                />
-              ) : (
-                <motion.span
-                  className={`text-2xl font-bold bg-clip-text text-transparent 
-                bg-gradient-to-r ${isHomePage ? (navScrolled ? "from-blue-600 to-pink-600" : "from-blue-200 to-purple-200") : "from-blue-500 to-purple-400"} dark:from-green-400 dark:to-yellow-400`}
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  ECOD
-                </motion.span>
-              )}
+              <Image
+                src={
+                  theme === "dark"
+                    ? "/Images/ECOD_DIGI__.png"
+                    : "/Images/ECOD_.png"
+                }
+                width={150}
+                height={60}
+                priority
+                className="h-10 w-10 transition ease-in-out duration-300 transform hover:scale-105"
+                alt="ECOD Logo"
+                sizes="(max-width: 768px) 100px, 150px"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  maxWidth: "100%",
+                }}
+              />
             </Link>
 
             <nav className="hidden md:block">
@@ -250,20 +299,25 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                 {nav_list.map((item) => (
                   <motion.li
                     key={item.label}
-                    className="relative"
+                    className="relative group"
                     whileHover="hover"
                     initial="initial"
                     animate="animate"
+                    onMouseEnter={() => handleMouseEnter(item.label)}
+                    onMouseLeave={handleMouseLeave}
+                    ref={(el) => (dropdownRefs.current[item.label] = el)}
                   >
                     {item.subpages ? (
-                      <div
-                        onMouseEnter={() => handleDropdownToggle(item.label)}
-                        onMouseLeave={() => setOpenDropDesk(null)}
-                        className="px-3 py-2 rounded-lg"
-                      >
+                      <div className="px-3 py-2 rounded-lg">
                         <button
                           type="button"
-                          className={`flex items-center gap-1 font-medium ${isHomePage ? (navScrolled ? "text-gray-800 dark:text-gray-200" : "text-white/90") : "text-gray-800"} dark:text-gray-200 hover:text-blue-300 dark:hover:text-blue-400 transition-colors`}
+                          className={`flex items-center gap-1 font-medium ${
+                            isHomePage
+                              ? navScrolled
+                                ? "text-gray-800 dark:text-gray-200"
+                                : "text-white/90"
+                              : "text-gray-800"
+                          } dark:text-gray-200 hover:text-blue-300 dark:hover:text-blue-400 transition-colors`}
                           aria-expanded={openDropDesk === item.label}
                         >
                           {item.label}
@@ -277,29 +331,18 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                         <AnimatePresence>
                           {openDropDesk === item.label && (
                             <motion.ul
-                              className="absolute left-0 mt-2 w-64 overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
+                              className="absolute left-0 mt-0 w-64 overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
                               transition={{ type: "spring", stiffness: 300 }}
+                              onMouseEnter={() => handleMouseEnter(item.label)}
+                              onMouseLeave={handleMouseLeave}
+                              style={{
+                                pointerEvents: "auto",
+                              }}
                             >
-                              {item.subpages.map((subpage) => (
-                                <motion.li
-                                  key={subpage.label}
-                                  whileHover={{ x: 5 }}
-                                  transition={{
-                                    type: "spring",
-                                    stiffness: 300,
-                                  }}
-                                >
-                                  <Link
-                                    href={subpage.slug}
-                                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-gray-700/50 rounded transition-colors"
-                                  >
-                                    {subpage.label}
-                                  </Link>
-                                </motion.li>
-                              ))}
+                              {renderDropdownItems(item.subpages)}
                             </motion.ul>
                           )}
                         </AnimatePresence>
@@ -307,7 +350,13 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     ) : (
                       <Link
                         href={item.href}
-                        className={`px-3 py-2 font-medium ${isHomePage ? (navScrolled ? "text-gray-800 dark:text-gray-200" : "text-white/90") : "text-gray-800"} dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors rounded-lg block`}
+                        className={`px-3 py-2 font-medium ${
+                          isHomePage
+                            ? navScrolled
+                              ? "text-gray-800 dark:text-gray-200"
+                              : "text-white/90"
+                            : "text-gray-800"
+                        } dark:text-gray-200 hover:text-blue-200 dark:hover:text-blue-400 transition-colors rounded-lg block`}
                       >
                         {item.label}
                       </Link>
@@ -324,19 +373,34 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             <div className="hidden md:block relative">
               <form onSubmit={handleSearchSubmit} className="relative">
                 <Search
-                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 transition ease-in-out transform duration-300 h-5 ${isHomePage ? (navScrolled ? "text-gray-700/50" : "text-white/70") : "text-gray-800"} dark:text-gray-400`}
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${
+                    isHomePage
+                      ? navScrolled
+                        ? "text-gray-700/50"
+                        : "text-white/70"
+                      : "text-gray-800"
+                  } dark:text-gray-400`}
                   aria-hidden="true"
                 />
                 <input
                   ref={searchInputRef}
                   type="search"
                   placeholder="Search..."
-                  className={`pl-10 pr-4 py-2 w-48 lg:w-56 rounded-full border ${isHomePage ? (navScrolled ? "border-gray-800/50" : "border-white/30 placeholder-white/60") : "border-gray-600 placeholder-gray-700/60"} dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 text-white dark:text-gray-200 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all backdrop-blur-sm`}
+                  className={`pl-10 pr-4 py-2 w-48 lg:w-56 rounded-full border ${
+                    isHomePage
+                      ? navScrolled
+                        ? "border-gray-800/50"
+                        : "border-white/30 placeholder-white/60"
+                      : "border-gray-600 placeholder-gray-700/60"
+                  } dark:border-gray-600 bg-white/10 dark:bg-gray-800/50 text-white dark:text-gray-200 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all backdrop-blur-sm`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   aria-label="Search"
                 />
+                <kbd className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs rounded bg-white/10 dark:bg-gray-700/50 text-gray-500 dark:text-gray-300 border border-white/20 dark:border-gray-600 hidden md:block">
+                  {navigator.userAgent.includes("Mac") ? "⌘K" : "Ctrl+K"}
+                </kbd>
               </form>
 
               {/* Search Results */}
@@ -388,7 +452,13 @@ const HeaderSection = ({ theme, toggleTheme }) => {
               className="md:hidden p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-800/50 transition-colors"
             >
               <Search
-                className={`w-5 h-5 ${isHomePage ? (navScrolled ? "text-gray-800/50" : "text-white") : "text-gray-800/50"} dark:text-gray-200`}
+                className={`w-5 h-5 ${
+                  isHomePage
+                    ? navScrolled
+                      ? "text-gray-800/50"
+                      : "text-white"
+                    : "text-gray-800/50"
+                } dark:text-gray-200`}
               />
             </button>
 
@@ -402,7 +472,13 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                 <Sun className="w-5 h-5 text-yellow-400" />
               ) : (
                 <Moon
-                  className={`w-5 h-5 ${isHomePage ? (navScrolled ? "text-gray-800/50" : "text-white/90") : "text-gray-800/90"}`}
+                  className={`w-5 h-5 ${
+                    isHomePage
+                      ? navScrolled
+                        ? "text-gray-800/50"
+                        : "text-white/90"
+                      : "text-gray-800/90"
+                  }`}
                 />
               )}
             </button>
@@ -434,7 +510,6 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                   aria-hidden="true"
                 />
                 <input
-                  ref={searchInputRef}
                   type="search"
                   placeholder="Search..."
                   className="w-full pl-12 pr-12 py-3 rounded-xl bg-white/10 backdrop-blur-md text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-lg border border-white/20"
@@ -505,16 +580,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             ref={mobileMenuRef}
             className="fixed inset-0 top-[var(--header-height)] z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg md:hidden overflow-y-auto"
             style={{
-              // Better glass effect with subtle border
               boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
-              WebkitBackdropFilter: "blur(16px)", // Safari fallback
+              WebkitBackdropFilter: "blur(16px)",
             }}
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            {/* Container with edge padding for curved screens */}
             <div className="p-5 safe-area-padding">
               <ul className="space-y-3">
                 {nav_list.map((item) => (
@@ -552,28 +625,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                               exit={{ opacity: 0, height: 0 }}
                               transition={{ duration: 0.2 }}
                             >
-                              {item.subpages.map((subpage) => (
-                                <motion.li
-                                  key={subpage.label}
-                                  whileHover={{ x: 5 }}
-                                  transition={{
-                                    type: "spring",
-                                    stiffness: 300,
-                                  }}
-                                  className="rounded-lg overflow-hidden"
-                                >
-                                  <Link
-                                    href={subpage.slug}
-                                    className="block p-3 pl-6 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-lg transition-colors"
-                                    style={{
-                                      backdropFilter: "blur(10px)",
-                                    }}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                  >
-                                    {subpage.label}
-                                  </Link>
-                                </motion.li>
-                              ))}
+                              {renderDropdownItems(item.subpages)}
                             </motion.ul>
                           )}
                         </AnimatePresence>
