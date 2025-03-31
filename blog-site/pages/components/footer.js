@@ -56,7 +56,7 @@ const socialLinks = [
   },
   {
     Icon: FaLaptopCode,
-    link: "https://yourportfolio.com",
+    link: "/portfolio",
     name: "Portfolio",
     color: "#3b82f6",
     ariaLabel: "View our portfolio website",
@@ -74,12 +74,20 @@ const quickLinks = [
 ];
 
 const services = [
-  "Web Development",
-  "SEO Optimization",
-  "Digital Marketing",
-  "Shopify Solutions",
-  "UI/UX Design",
-  "App Development",
+  { label: "Web Development", slug: "/services/web-development" },
+  { label: "Google | Meta Ads", slug: "/services/google-meta-ads" },
+  { label: "SEO", slug: "seo" },
+  {
+    label: "Social Media Marketing",
+    slug: "/services/social-media-marketing",
+  },
+  {
+    label: "Shopify Optimization",
+    slug: "/services/shopify-optimization",
+  },
+  { label: "Content Marketing", slug: "/services/content-marketing" },
+  { label: "Email Marketing", slug: "/services/email-marketing" },
+  //{ label: "Graphic | Logo Design", slug: "/services/graphic-logo-design" },
 ];
 
 const testimonials = [
@@ -194,9 +202,9 @@ const Footer = () => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <Link
-                    href={`/services/${service.toLowerCase().replace(/\s/g, "-")}`}
+                    href={`${service.slug}`}
                     className="flex items-center text-gray-400 hover:text-green-400 transition-colors group"
-                    aria-label={`Learn more about ${service}`}
+                    aria-label={`Learn more about ${service.label}`}
                   >
                     <motion.span
                       className="inline-block mr-2 group-hover:translate-x-1 transition-transform"
@@ -204,7 +212,7 @@ const Footer = () => {
                     >
                       <FaArrowRight className="text-xs text-green-400" />
                     </motion.span>
-                    {service}
+                    {service.label}
                   </Link>
                 </motion.li>
               ))}

@@ -18,7 +18,7 @@ export const nav_list = [
       },
       { label: "Content Marketing", slug: "/services/content-marketing" },
       { label: "Email Marketing", slug: "/services/email-marketing" },
-      { label: "Graphic | Logo Design", slug: "/services/graphic-logo-design" },
+      //{ label: "Graphic | Logo Design", slug: "/services/graphic-logo-design" },
     ],
   },
   {

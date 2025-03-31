@@ -1,26 +1,39 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, HelpCircle, MessageCircle } from "lucide-react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import {
+  ChevronDown,
+  HelpCircle,
+  MessageCircle,
+  ChevronRight,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { faqs } from "@/data/faq";
+import { useRouter } from "next/router";
+import { useInView } from "react-intersection-observer";
 
 const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
   const contentRef = useRef(null);
+  const [conRef, inConView] = useInView({
+    threshold: 0.1,
+  });
 
   return (
     <motion.div
+      ref={conRef}
       data-testid="faq-container"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20, scale: 0.85 }}
+      animate={inConView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{
-        duration: 0.6,
-        delay: animationDelay,
+        duration: 0.3,
+        delay: index * 0.1 + 0.1,
         type: "spring",
         stiffness: 100,
         damping: 10,
+        ease: "easeInOut",
       }}
       className="group mb-4"
+      whileHover={{ scale: 1.01 }}
     >
       <div
         className={`p-6 rounded-xl cursor-pointer transition-all duration-300 ease-in-out
@@ -40,10 +53,13 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
         role="button"
         aria-expanded={isOpen}
         aria-controls={`faq-content-${index}`}
-        aria-label={`Expand FAQ ${index + 1}`}
-        aria-describedby={`faq-content-${index}`}
-        aria-haspopup="true"
+        aria-label={`Question: ${item.question}`}
       >
+        {/* Gradient overlay */}
+        <div
+          className={`absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isOpen ? "!opacity-100" : ""}`}
+        ></div>
+
         {/* Inner shadow */}
         <div className="absolute inset-0 rounded-xl shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.15)] pointer-events-none"></div>
 
@@ -51,18 +67,25 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
           <h3
             className={`text-lg md:text-xl font-semibold text-gray-800/90 dark:text-gray-100/90 text-left ${
               isOpen
-                ? "text-blue-600 dark:text-blue-400"
-                : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
-            } transition-colors`}
+                ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+                : "group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600"
+            } transition-all`}
           >
             {item.question}
           </h3>
-          <ChevronDown
-            size={24}
-            className={`flex-shrink-0 text-gray-500/90 dark:text-gray-400/90 transition-transform duration-300 ${
-              isOpen ? "rotate-180 text-blue-600 dark:text-blue-400" : ""
-            } group-hover:text-blue-600 dark:group-hover:text-blue-400`}
-          />
+          <motion.div
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ChevronDown
+              size={24}
+              className={`flex-shrink-0 transition-colors ${
+                isOpen
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-gray-500/90 dark:text-gray-400/90"
+              } group-hover:text-blue-600 dark:group-hover:text-blue-400`}
+            />
+          </motion.div>
         </div>
 
         <AnimatePresence mode="wait">
@@ -134,18 +157,26 @@ const FAQList = ({
         const nextIndex = (openIndex + 1) % items.length;
         setOpenIndex(nextIndex);
         // Scroll into view if needed
-        document.getElementById(`faq-content-${nextIndex}`)?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
+        document
+          .querySelector(
+            `[aria-label="Question: ${items[nextIndex].question}"]`
+          )
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         const prevIndex = (openIndex - 1 + items.length) % items.length;
         setOpenIndex(prevIndex);
-        document.getElementById(`faq-content-${prevIndex}`)?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
+        document
+          .querySelector(
+            `[aria-label="Question: ${items[prevIndex].question}"]`
+          )
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
       } else if (e.key === "Home") {
         e.preventDefault();
         setOpenIndex(0);
@@ -157,7 +188,7 @@ const FAQList = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [openIndex, items.length, enableKeyboardNavigation]);
+  }, [openIndex, items, enableKeyboardNavigation]);
 
   return (
     <div ref={listRef} className={`space-y-4 ${className}`}>
@@ -179,41 +210,83 @@ const FAQList = ({
 };
 
 const ECODFaqs = () => {
+  const router = useRouter();
+  const [ref, inView] = useInView({
+    threshold: 0.1,
+  });
+
   return (
-    <section className="w-full py-24 px-4 sm:px-8 bg-gradient-to-b from-gray-50/50 via-white/50 to-white/50 dark:from-slate-800/50 dark:via-slate-900/50 dark:to-slate-900/50 backdrop-blur-sm relative overflow-hidden">
-      {/* Background elements */}
+    <section
+      ref={ref}
+      className="w-full py-24 px-4 sm:px-8 bg-gradient-to-b from-gray-50/50 via-white/50 to-white/50 dark:from-slate-800/50 dark:via-slate-900/50 dark:to-slate-900/50 backdrop-blur-sm relative overflow-hidden"
+    >
+      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden -z-10">
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-100/30 blur-3xl dark:bg-blue-900/20"></div>
-        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-purple-100/30 blur-3xl dark:bg-purple-900/20"></div>
+        <motion.div
+          animate={
+            inView
+              ? {
+                  x: [0, 15, 0],
+                  y: [0, 10, 0],
+                }
+              : {}
+          }
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-100/30 blur-3xl dark:bg-blue-900/20"
+        ></motion.div>
+        <motion.div
+          animate={
+            inView
+              ? {
+                  x: [0, -20, 0],
+                  y: [0, -15, 0],
+                }
+              : {}
+          }
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-purple-100/30 blur-3xl dark:bg-purple-900/20"
+        ></motion.div>
       </div>
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true, margin: "-100px" }}
           className="text-center mb-16"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
+            animate={inView ? { scale: 1, opacity: 1 } : {}}
             transition={{ delay: 0.2 }}
             className="inline-flex items-center px-4 py-2 rounded-full bg-white/80 dark:bg-blue-900/50 backdrop-blur-md text-blue-600 dark:text-blue-300 text-sm font-medium mb-6 border border-blue-200/30 dark:border-blue-700/30 shadow-inner"
           >
             <HelpCircle className="w-4 h-4 mr-2" /> Common Questions
           </motion.div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900/90 dark:text-white/90 mb-4">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.3 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900/90 dark:text-white/90 mb-4"
+          >
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
               Frequently Asked Questions
             </span>
-          </h2>
+          </motion.h2>
 
           <motion.p
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            animate={inView ? { opacity: 1 } : {}}
             transition={{ delay: 0.4 }}
             className="text-xl text-gray-600/90 dark:text-gray-300/90 max-w-3xl mx-auto backdrop-blur-sm"
           >
@@ -223,35 +296,50 @@ const ECODFaqs = () => {
         </motion.div>
 
         {/* FAQ List */}
-        <div className="mt-12 max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.5 }}
+          className="mt-12 max-w-4xl mx-auto"
+        >
           <FAQList
             items={faqs}
             initialOpenIndex={0}
             itemAnimationDelay={0.1}
             enableKeyboardNavigation={true}
           />
-        </div>
+        </motion.div>
 
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.6 }}
           className="mt-16 text-center"
         >
-          <p className="text-lg text-gray-600/90 dark:text-gray-300/90 mb-6 backdrop-blur-sm">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ delay: 0.7 }}
+            className="text-lg text-gray-600/90 dark:text-gray-300/90 mb-6 backdrop-blur-sm"
+          >
             {`Still have questions? We're here to help!`}
-          </p>
+          </motion.p>
           <motion.button
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.1, duration: 0.3 }}
             whileHover={{
               scale: 1.05,
               boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.3)",
             }}
             whileTap={{ scale: 0.98 }}
+            onClick={() => router.push("/contact")}
             className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 backdrop-blur-sm"
           >
             <MessageCircle className="w-5 h-5" />
             Contact Our Team
+            <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
           </motion.button>
         </motion.div>
       </div>

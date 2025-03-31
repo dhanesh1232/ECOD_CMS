@@ -18,10 +18,17 @@ import {
 } from "recharts";
 import Buttons from "../Reusable/buttons";
 import Link from "next/link";
+import { useInView } from "react-intersection-observer";
 
 const COLORS = ["#3b82f6", "#10b981", "#f97316", "#8b5cf6"];
 
 const ShopifySection = () => {
+  // Create inView refs for each section
+  const [heroRef, heroInView] = useInView({ threshold: 0.1 });
+  const [servicesRef, servicesInView] = useInView({ threshold: 0.1 });
+  const [chartsRef, chartsInView] = useInView({ threshold: 0.1 });
+  const [ctaRef, ctaInView] = useInView({ threshold: 0.1 });
+
   return (
     <section className="w-full py-20 px-6 md:px-12 bg-gradient-to-br from-blue-50/50 via-white/50 to-blue-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50 backdrop-blur-sm text-center transition-colors relative overflow-hidden">
       {/* Background elements */}
@@ -33,33 +40,44 @@ const ShopifySection = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Hero Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          ref={heroRef}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={heroInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-4xl mx-auto"
         >
           <motion.span
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={heroInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
             className="inline-block mb-4 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md text-blue-600 dark:text-blue-300 rounded-full text-sm font-medium border border-blue-200/30 dark:border-blue-700/30 shadow-inner"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
           >
             Shopify Excellence
           </motion.span>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white/90">
+          <motion.h2
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={heroInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+            className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white/90"
+          >
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Transform Your E-Commerce Experience
             </span>
             <motion.span
               initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ type: "spring" }}
+              animate={heroInView ? { scale: 1 } : {}}
+              transition={{ type: "spring", delay: 0.3 }}
               className="inline-block ml-2"
             >
               🚀
             </motion.span>
-          </h2>
-          <p className="mt-6 text-lg md:text-xl text-gray-700/90 dark:text-gray-300/90 leading-relaxed backdrop-blur-sm">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={heroInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+            className="mt-6 text-lg md:text-xl text-gray-700/90 dark:text-gray-300/90 leading-relaxed backdrop-blur-sm"
+          >
             We craft{" "}
             <span className="font-semibold text-blue-600 dark:text-blue-400 bg-white/50 dark:bg-gray-800/50 px-1.5 py-0.5 rounded">
               high-performance
@@ -75,22 +93,29 @@ const ShopifySection = () => {
               seamless functionality
             </span>{" "}
             that drive conversions.
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Services Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+          ref={servicesRef}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={servicesInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="mt-16 max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {shopify_services_data.map((service, index) => (
             <motion.div
               key={index}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={servicesInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{
+                duration: 0.5,
+                ease: "easeOut",
+                delay: index * 0.1,
+              }}
               whileHover={{ y: -8 }}
               whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.3, type: "spring" }}
               className="group relative"
             >
               <Link href={`${service.link}`}>
@@ -128,9 +153,10 @@ const ShopifySection = () => {
 
         {/* Data Visualization Section */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+          ref={chartsRef}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={chartsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="max-w-6xl mx-auto mt-20 grid grid-cols-1 lg:grid-cols-2 gap-6"
         >
           {[
@@ -247,8 +273,14 @@ const ShopifySection = () => {
           ].map((chart, index) => (
             <motion.div
               key={index}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={chartsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{
+                duration: 0.5,
+                ease: "easeOut",
+                delay: index * 0.1,
+              }}
               whileHover={{ y: -5 }}
-              transition={{ duration: 0.3 }}
               className="bg-white/70 dark:bg-gray-800/60 backdrop-blur-md rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all overflow-hidden"
             >
               {/* Inner shadow */}
@@ -266,9 +298,10 @@ const ShopifySection = () => {
 
         {/* CTA Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.6 }}
+          ref={ctaRef}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={ctaInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="mt-20 text-center"
         >
           <div className="relative max-w-2xl mx-auto bg-white/70 dark:bg-gray-800/60 backdrop-blur-lg rounded-2xl p-8 sm:p-10 border border-gray-200/50 dark:border-gray-700/30 shadow-lg overflow-hidden">
@@ -280,19 +313,35 @@ const ShopifySection = () => {
             <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.2)] pointer-events-none"></div>
 
             <div className="relative z-10">
-              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white/90 mb-6">
+              <motion.h3
+                initial={{ opacity: 0, y: 10 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white/90 mb-6"
+              >
                 Ready to Elevate Your Shopify Store?
-              </h3>
-              <p className="text-lg text-gray-600/90 dark:text-gray-400/90 mb-8">
+              </motion.h3>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.3, delay: 0.2 }}
+                className="text-lg text-gray-600/90 dark:text-gray-400/90 mb-8"
+              >
                 Our experts will help you build a high-converting e-commerce
                 platform that stands out from the competition.
-              </p>
-              <Buttons
-                first_nav="/services/shopify-theme-development"
-                first_label="Get Started Now"
-                icon={"rocket"}
-                first_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm"
-              />
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.3, delay: 0.3 }}
+              >
+                <Buttons
+                  first_nav="/services/shopify-theme-development"
+                  first_label="Get Started Now"
+                  icon={"rocket"}
+                  first_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 backdrop-blur-sm"
+                />
+              </motion.div>
             </div>
           </div>
         </motion.div>

@@ -1,6 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
 import {
   LineChart,
   Line,
@@ -16,6 +17,10 @@ import { Search, BarChart2, Share2, Rocket, ArrowRight } from "lucide-react";
 const Buttons = dynamic(() => import("../Reusable/buttons"));
 
 const DigitalMarketing = () => {
+  const [ctaRef, ctaInView] = useInView({ threshold: 0.1 });
+  const [chartRef, chartInView] = useInView({ threshold: 0.1 });
+  const [servicesRef, servicesInView] = useInView({ threshold: 0.1 });
+
   const serviceData = [
     {
       icon: <Search className="w-6 h-6" />,
@@ -98,9 +103,10 @@ const DigitalMarketing = () => {
 
         {/* Performance Chart */}
         <motion.div
+          ref={chartRef}
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          animate={chartInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
           className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/30 mb-16 relative overflow-hidden"
         >
           {/* Inner shadow */}
@@ -223,9 +229,10 @@ const DigitalMarketing = () => {
 
         {/* Services Grid */}
         <motion.div
+          ref={servicesRef}
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          animate={servicesInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20"
         >
           {serviceData.map((service, index) => (
@@ -275,9 +282,10 @@ const DigitalMarketing = () => {
 
         {/* CTA Section */}
         <motion.div
+          ref={ctaRef}
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
+          animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
           className="text-center"
         >
           <div className="relative max-w-3xl mx-auto px-8 py-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl overflow-hidden backdrop-blur-sm">

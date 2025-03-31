@@ -6,6 +6,7 @@ import LoaderSpinner from "./Reusable/Spinner/spinner";
 import PropTypes from "prop-types";
 import StickyContactButton from "./contact-button";
 import PortfolioPage from "../portfolio";
+import CookiePopup from "./cookies";
 
 const OfferButton = dynamic(() => import("./button-offer"), { ssr: false });
 const Footer = dynamic(() => import("./footer"), { ssr: false });
@@ -30,6 +31,38 @@ const Layout = ({ children }) => {
     };
   }, [router.pathname]);
 
+  // Enhanced visitor tracking
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const trackVisit = async () => {
+      try {
+        const response = await fetch("/api/log", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            path: router.pathname,
+            referrer: document.referrer || "direct",
+          }),
+        });
+        console.log(await response.json());
+        if (!response.ok) {
+          throw new Error("Failed to track visit");
+        }
+      } catch (error) {
+        console.error("Visit tracking error:", error);
+      }
+    };
+
+    // Track only once per page load
+    const timeoutId = setTimeout(trackVisit, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [router.pathname, isMounted]);
+
+  // Route change handlers
   useEffect(() => {
     const handleStart = () => {
       setRouteChanging(true);
@@ -50,6 +83,7 @@ const Layout = ({ children }) => {
     };
   }, [router]);
 
+  // Theme and mount initialization
   useEffect(() => {
     setIsMounted(true);
     const savedTheme =
@@ -74,6 +108,7 @@ const Layout = ({ children }) => {
     }
   }, []);
 
+  // Theme persistence
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem("theme", theme);
@@ -81,6 +116,7 @@ const Layout = ({ children }) => {
     }
   }, [theme, isMounted]);
 
+  // Loading animations
   useEffect(() => {
     if (!isMounted || isLoading || routeChanging) {
       const interval = setInterval(() => {
@@ -167,6 +203,7 @@ const Layout = ({ children }) => {
         <Footer />
         <OfferButton />
         <StickyContactButton />
+        <CookiePopup />
       </div>
     </>
   );

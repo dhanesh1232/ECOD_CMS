@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { useInView } from "react-intersection-observer";
 
 const Buttons = dynamic(() => import("../Reusable/buttons"));
 
@@ -56,6 +57,12 @@ const enhancedAdPerformanceData = adPerformanceData.map((data, index) => ({
 }));
 
 const OurServices = () => {
+  // Create inView refs for each section
+  const [headerRef, headerInView] = useInView({ threshold: 0.1 });
+  const [servicesRef, servicesInView] = useInView({ threshold: 0.1 });
+  const [analyticsRef, analyticsInView] = useInView({ threshold: 0.1 });
+  const [ctaRef, ctaInView] = useInView({ threshold: 0.1 });
+
   return (
     <section className="w-full py-20 px-2 sm:px-6 bg-gradient-to-b from-gray-50/50 to-white/30 dark:from-gray-900/50 dark:to-gray-800/30 relative overflow-hidden">
       {/* Background elements */}
@@ -67,12 +74,11 @@ const OurServices = () => {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12" ref={headerRef}>
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={headerInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="inline-flex items-center px-2 py-2 rounded-full bg-blue-100/80 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-sm font-medium mb-4 backdrop-blur-sm border border-blue-200/30 dark:border-blue-700/30 shadow-sm"
           >
             <Rocket className="w-4 h-4 mr-2" />
@@ -80,10 +86,9 @@ const OurServices = () => {
           </motion.div>
 
           <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: false }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={headerInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6"
           >
             <span className="inline-block">Our Premium </span>
@@ -118,10 +123,9 @@ const OurServices = () => {
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={headerInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
             className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto"
           >
             Cutting-edge digital solutions tailored to drive your business
@@ -130,30 +134,24 @@ const OurServices = () => {
         </div>
 
         {/* Services Grid */}
-        <div className="relative mb-20">
+        <div className="relative mb-20" ref={servicesRef}>
           {/* Single row horizontal scroll container */}
           <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "0px" }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={servicesInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="flex overflow-x-auto pb-8 -mx-4 px-4 scrollbar-hide"
           >
             <div className="flex space-x-6 px-2 md:px-4 py-2 -mx-2">
               {eco_services.map((service, index) => (
                 <motion.div
                   key={index}
-                  variants={{
-                    hidden: { opacity: 0, y: 20 },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        type: "spring",
-                        stiffness: 100,
-                        damping: 15,
-                        delay: index * 0.05,
-                      },
-                    },
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={servicesInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                  transition={{
+                    duration: 0.5,
+                    ease: "easeOut",
+                    delay: index * 0.05,
                   }}
                   className="flex-shrink-0 w-80 sm:w-96"
                 >
@@ -242,7 +240,10 @@ const OurServices = () => {
         </div>
 
         {/* Analytics Section */}
-        <div className="bg-white/70 dark:bg-gray-800/50 backdrop-blur-xl rounded-3xl p-2 sm:p-8 shadow-xl border border-gray-200/50 dark:border-gray-700/30 relative overflow-hidden mb-20">
+        <div
+          className="bg-white/70 dark:bg-gray-800/50 backdrop-blur-xl rounded-3xl p-2 sm:p-8 shadow border border-gray-200/50 dark:border-gray-700/30 relative overflow-hidden mb-20"
+          ref={analyticsRef}
+        >
           {/* Glass texture */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjA1IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcmVjdD4KPHBhdGggZD0iTTAgMEw2IDZaIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiIGZpbGw9Im5vbmUiPjwvcGF0aD4KPHBhdGggZD0iTTYgMEwwIDZaIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiIGZpbGw9Im5vbmUiPjwvcGF0aD4KPC9zdmc+')]"></div>
 
@@ -251,10 +252,9 @@ const OurServices = () => {
           <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-xl pointer-events-none"></div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={analyticsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-10"
           >
             <div>
@@ -269,24 +269,33 @@ const OurServices = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-blue-600 dark:text-blue-300 text-sm shadow-sm">
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={analyticsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-blue-600 dark:text-blue-300 text-sm shadow-sm"
+              >
                 <TrendingUp className="w-4 h-4" />
                 <span>2024 Trends</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-green-600 dark:text-green-300 text-sm shadow-sm">
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={analyticsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-green-600 dark:text-green-300 text-sm shadow-sm"
+              >
                 <Search className="w-4 h-4" />
                 <span>Real-time Data</span>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
             {/* Meta & Google Ads Performance */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={analyticsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
               className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-lg p-5 rounded-xl border border-gray-200/50 dark:border-gray-700/30 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-center mb-6">
@@ -294,12 +303,22 @@ const OurServices = () => {
                   Paid Advertising Performance
                 </h4>
                 <div className="flex gap-2">
-                  <span className="py-1 px-2 text-xs rounded-full bg-blue-100/80 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 backdrop-blur-sm border border-blue-200/30 dark:border-blue-700/30">
+                  <motion.span
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={analyticsInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className="py-1 px-2 text-xs rounded-full bg-blue-100/80 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 backdrop-blur-sm border border-blue-200/30 dark:border-blue-700/30"
+                  >
                     Meta Ads
-                  </span>
-                  <span className="px-2 py-1 text-xs rounded-full bg-orange-100/80 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 backdrop-blur-sm border border-orange-200/30 dark:border-orange-700/30">
+                  </motion.span>
+                  <motion.span
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={analyticsInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                    className="px-2 py-1 text-xs rounded-full bg-orange-100/80 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 backdrop-blur-sm border border-orange-200/30 dark:border-orange-700/30"
+                  >
                     Google Ads
-                  </span>
+                  </motion.span>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={300}>
@@ -398,19 +417,23 @@ const OurServices = () => {
 
             {/* SEO Growth */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={analyticsInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
               className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-lg p-5 rounded-xl border border-gray-200/50 dark:border-gray-700/30 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-center mb-6">
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white/90">
                   Organic Growth Metrics
                 </h4>
-                <span className="px-2 py-1 text-xs rounded-full bg-green-100/80 dark:bg-green-900/50 text-green-800 dark:text-green-200 backdrop-blur-sm border border-green-200/30 dark:border-green-700/30">
+                <motion.span
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={analyticsInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.3, delay: 0.3 }}
+                  className="px-2 py-1 text-xs rounded-full bg-green-100/80 dark:bg-green-900/50 text-green-800 dark:text-green-200 backdrop-blur-sm border border-green-200/30 dark:border-green-700/30"
+                >
                   SEO Performance
-                </span>
+                </motion.span>
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
@@ -476,31 +499,47 @@ const OurServices = () => {
 
         {/* CTA Section */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
+          ref={ctaRef}
+          initial={{ opacity: 0, y: 20, scale: 0.9 }}
+          animate={ctaInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative"
         >
-          <div className="bg-gradient-to-r from-blue-50/70 to-purple-50/70 dark:from-gray-800/70 dark:to-gray-700/70 rounded-3xl p-8 sm:p-10 shadow-lg border border-gray-200/50 dark:border-gray-700/30 backdrop-blur-xl relative overflow-hidden text-center flex flex-col items-center">
+          <div className="bg-gradient-to-r from-blue-50/70 to-purple-50/70 dark:from-gray-800/70 dark:to-gray-700/70 rounded-3xl p-8 sm:p-10 shadow border border-gray-200/50 dark:border-gray-700/30 backdrop-blur-xl relative overflow-hidden text-center flex flex-col items-center">
             {/* Decorative elements */}
             <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-xl pointer-events-none"></div>
             <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-xl pointer-events-none"></div>
             <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjAyIj48L3JlY3Q+Cjwvc3ZnPg==')]"></div>
 
-            <h3 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 dark:text-white/90 mb-4 relative z-10">
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="text-2xl sm:text-3xl font-bold text-center text-gray-900 dark:text-white/90 mb-4 relative z-10"
+            >
               Ready to Transform Your Digital Presence?
-            </h3>
-            <p className="text-lg text-center text-gray-600 dark:text-gray-300/80 max-w-2xl mx-auto mb-8 relative z-10">
+            </motion.h3>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="text-lg text-center text-gray-600 dark:text-gray-300/80 max-w-2xl mx-auto mb-8 relative z-10"
+            >
               Our team of experts is ready to help you achieve exceptional
               results with tailored solutions.
-            </p>
-            <Buttons
-              first_label="Explore All Services"
-              first_nav="/services"
-              icon={"right-arrow"}
-              first_styles="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 relative z-10"
-            />
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.3, delay: 0.3 }}
+            >
+              <Buttons
+                first_label="Explore All Services"
+                first_nav="/services"
+                icon={"right-arrow"}
+                first_styles="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 relative z-10"
+              />
+            </motion.div>
           </div>
         </motion.div>
       </div>

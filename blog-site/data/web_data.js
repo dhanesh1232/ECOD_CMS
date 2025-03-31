@@ -130,15 +130,15 @@ export const home_about = {
   ],
   stats: [
     {
-      value: "150+",
+      value: "50+",
       label: "Projects Delivered",
     },
     {
-      value: "90%",
+      value: "93%",
       label: "Client Retention Rate",
     },
     {
-      value: "4.9/5",
+      value: "4.5/5",
       label: "Average Client Rating",
     },
     {
