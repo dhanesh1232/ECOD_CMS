@@ -172,7 +172,7 @@ const Layout = ({ children }) => {
       </Head>
       <div
         data-testid="root"
-        className={`min-h-screen w-full flex flex-col relative transition-colors duration-300 ${
+        className={`w-full flex flex-col relative transition-colors duration-300 ${
           theme === "dark"
             ? "bg-gray-900 text-gray-100"
             : "bg-white text-gray-900"
