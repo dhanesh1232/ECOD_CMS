@@ -498,7 +498,7 @@ const Footer = () => {
                         ? "View our portfolio website"
                         : `Follow us on ${name}`
                     }
-                    className={`flex flex-col items-center group w-16 h-16 rounded-2xl flex items-center justify-center transition-all relative overflow-hidden backdrop-blur-sm border ${
+                    className={`flex flex-col items-center group w-16 h-16 rounded-2xl justify-center transition-all relative overflow-hidden backdrop-blur-sm border ${
                       isPortfolio
                         ? "border-blue-500/50 hover:border-blue-400/70 bg-blue-500/10 hover:bg-blue-500/20"
                         : "border-gray-700/50 hover:border-gray-600/50 bg-gray-800/50 hover:bg-gray-700/50"
