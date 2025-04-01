@@ -53,7 +53,7 @@ const GrowYourBusiness = () => {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.2 }}
-          transition={{ duration: 2, delay: 0.5 }}
+          transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
           className="absolute -top-1/4 -right-1/4 w-full h-full bg-radial-gradient from-blue-400/20 to-transparent pointer-events-none"
         />
 
@@ -61,16 +61,16 @@ const GrowYourBusiness = () => {
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Header Section */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="text-center mb-16"
           >
             <motion.span
               className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium mb-6 border border-white/20 shadow-inner"
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.1, ease: "easeInOut", duration: 0.3 }}
             >
               <Rocket className="w-4 h-4 mr-2" /> Digital Transformation
             </motion.span>
@@ -78,9 +78,13 @@ const GrowYourBusiness = () => {
             <h2 className="text-4xl sm:text-5xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
               Accelerate Your Business Growth
               <motion.span
-                initial={{ scale: 0 }}
+                initial={{ scale: 0.8 }}
                 whileInView={{ scale: 1 }}
-                transition={{ type: "spring" }}
+                transition={{
+                  type: "spring",
+                  ease: "easeInOut",
+                  duration: 0.3,
+                }}
                 className="inline-block ml-3"
               >
                 🚀
@@ -88,9 +92,9 @@ const GrowYourBusiness = () => {
             </h2>
 
             <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
               className="mt-6 text-xl text-blue-100/90 max-w-3xl mx-auto backdrop-blur-sm"
             >
               From stunning digital experiences to data-driven marketing, we
@@ -100,9 +104,9 @@ const GrowYourBusiness = () => {
 
           {/* Performance Metrics */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
             className="bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/20 mb-16 relative overflow-hidden"
           >
             {/* Inner shadow */}
@@ -177,15 +181,16 @@ const GrowYourBusiness = () => {
 
           {/* Benefits Grid */}
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20"
           >
             {enhancedBenefits.map((item, index) => (
               <motion.div
                 key={index}
-                whileHover={{ y: -2 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{
                   type: "spring",
@@ -237,9 +242,9 @@ const GrowYourBusiness = () => {
 
           {/* CTA Section */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
             className="text-center"
           >
             <div className="relative max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-8 sm:p-10 border border-white/20 shadow-lg overflow-hidden">

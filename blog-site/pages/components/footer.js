@@ -87,7 +87,6 @@ const services = [
   },
   { label: "Content Marketing", slug: "/services/content-marketing" },
   { label: "Email Marketing", slug: "/services/email-marketing" },
-  //{ label: "Graphic | Logo Design", slug: "/services/graphic-logo-design" },
 ];
 
 const testimonials = [
@@ -151,48 +150,58 @@ const Footer = () => {
         ease: "easeOut",
       },
     },
+    hover: {
+      scale: 1.03,
+      transition: { duration: 0.2 },
+    },
   };
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 text-white pt-16 pb-8 backdrop-blur-lg relative overflow-hidden">
-      {/* Background elements */}
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-white pt-20 pb-10 relative overflow-hidden">
+      {/* Floating gradient elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/5 via-transparent to-transparent opacity-20"></div>
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-purple-500/5 blur-3xl"></div>
-        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent opacity-30"></div>
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-purple-500/10 blur-3xl"></div>
+        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         {/* Main Footer Content */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16"
           initial="hidden"
           whileInView="visible"
           variants={containerVariants}
           viewport={{ once: true, margin: "-100px" }}
         >
           {/* About ECOD */}
-          <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
-              About ECOD
-            </h3>
-            <p className="text-gray-400 mb-4">
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-8 bg-green-400 rounded-full"></div>
+              <h3 className="text-xl font-bold">About ECOD</h3>
+            </div>
+            <p className="text-gray-400 leading-relaxed">
               We create digital experiences that transform businesses and drive
               growth through innovative solutions.
             </p>
-            <div className="flex items-center gap-2 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-gray-700/30 max-w-fit">
+            <motion.div
+              whileHover="hover"
+              variants={itemVariants}
+              className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-gray-700/50 hover:border-green-400/30 transition-colors max-w-fit"
+            >
               <TrustSVG width={40} height={48} color="#10B981" />
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-gray-300">
                 Trusted by 500+ businesses worldwide
               </span>
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Services */}
-          <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
-              Our Services
-            </h3>
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-8 bg-blue-400 rounded-full"></div>
+              <h3 className="text-xl font-bold">Our Services</h3>
+            </div>
             <ul className="space-y-3">
               {services.map((service, index) => (
                 <motion.li
@@ -203,14 +212,14 @@ const Footer = () => {
                 >
                   <Link
                     href={`${service.slug}`}
-                    className="flex items-center text-gray-400 hover:text-green-400 transition-colors group"
+                    className="flex items-center text-gray-400 hover:text-blue-400 transition-colors group"
                     aria-label={`Learn more about ${service.label}`}
                   >
                     <motion.span
-                      className="inline-block mr-2 group-hover:translate-x-1 transition-transform"
+                      className="inline-block mr-3 group-hover:translate-x-1 transition-transform"
                       whileHover={{ x: 3 }}
                     >
-                      <FaArrowRight className="text-xs text-green-400" />
+                      <FaArrowRight className="text-xs text-blue-400" />
                     </motion.span>
                     {service.label}
                   </Link>
@@ -220,10 +229,11 @@ const Footer = () => {
           </motion.div>
 
           {/* Quick Links */}
-          <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
-              Quick Links
-            </h3>
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-8 bg-purple-400 rounded-full"></div>
+              <h3 className="text-xl font-bold">Quick Links</h3>
+            </div>
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <motion.li
@@ -236,18 +246,18 @@ const Footer = () => {
                     href={`/${link.path}`}
                     className={`${
                       router.pathname === `/${link.path}`
-                        ? "text-green-400"
-                        : "text-gray-400 hover:text-green-400"
+                        ? "text-purple-400"
+                        : "text-gray-400 hover:text-purple-400"
                     } transition-colors flex items-center`}
                     aria-label={`Go to ${link.name}`}
                   >
                     <motion.span
-                      className="inline-block mr-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="inline-block mr-3 opacity-0 group-hover:opacity-100 transition-opacity"
                       animate={{
                         opacity: router.pathname === `/${link.path}` ? 1 : 0,
                       }}
                     >
-                      <FaArrowRight className="text-xs text-green-400" />
+                      <FaArrowRight className="text-xs text-purple-400" />
                     </motion.span>
                     {link.name}
                   </Link>
@@ -257,19 +267,20 @@ const Footer = () => {
           </motion.div>
 
           {/* Testimonials */}
-          <motion.div variants={itemVariants}>
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b border-gray-700/50 inline-block">
-              Client Testimonials
-            </h3>
+          <motion.div variants={itemVariants} className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-8 bg-yellow-400 rounded-full"></div>
+              <h3 className="text-xl font-bold">Client Testimonials</h3>
+            </div>
             <div className="space-y-4">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={index}
                   variants={itemVariants}
-                  className="bg-gray-800/30 backdrop-blur-sm p-4 rounded-lg hover:bg-gray-800/50 transition-colors border border-gray-700/30"
+                  className="bg-gray-800/30 backdrop-blur-sm p-5 rounded-xl hover:bg-gray-800/50 transition-colors border border-gray-700/30 hover:border-yellow-400/20"
                   whileHover={{ y: -3 }}
                 >
-                  <div className="flex mb-2">
+                  <div className="flex mb-3">
                     {Array(5)
                       .fill(0)
                       .map((_, i) => (
@@ -279,10 +290,10 @@ const Footer = () => {
                         />
                       ))}
                   </div>
-                  <p className="text-gray-300 italic mb-2">
+                  <p className="text-gray-300 italic mb-3 leading-relaxed">
                     {`"${testimonial.quote}"`}
                   </p>
-                  <div className="text-green-400 font-medium">
+                  <div className="text-yellow-400 font-medium">
                     {testimonial.name}
                   </div>
                   <div className="text-gray-500 text-sm">
@@ -296,21 +307,25 @@ const Footer = () => {
 
         {/* Newsletter & CTA */}
         <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-12"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           viewport={{ once: true }}
         >
           {/* Newsletter */}
-          <div className="bg-gray-800/40 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50 hover:border-green-500/30 transition-colors shadow-lg">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-green-500/10 backdrop-blur-sm border border-green-500/20">
+          <motion.div
+            whileHover="hover"
+            variants={itemVariants}
+            className="bg-gray-800/40 backdrop-blur-lg p-8 rounded-2xl border border-gray-700/50 hover:border-green-500/30 transition-colors shadow-lg"
+          >
+            <div className="flex items-center gap-4 mb-5">
+              <div className="p-3 rounded-xl bg-green-500/10 backdrop-blur-sm border border-green-500/20">
                 <FaEnvelope className="text-green-400 text-xl" />
               </div>
-              <h3 className="text-xl font-bold">Newsletter</h3>
+              <h3 className="text-xl font-bold">Stay Updated</h3>
             </div>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 mb-6 leading-relaxed">
               Get the latest digital insights and exclusive offers straight to
               your inbox.
             </p>
@@ -381,55 +396,59 @@ const Footer = () => {
                 </motion.form>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
           {/* Contact CTA */}
-          <div className="bg-gray-800/40 backdrop-blur-lg p-6 rounded-xl border border-gray-700/50 hover:border-blue-500/30 transition-colors shadow-lg flex flex-col justify-between">
+          <motion.div
+            whileHover="hover"
+            variants={itemVariants}
+            className="bg-gray-800/40 backdrop-blur-lg p-8 rounded-2xl border border-gray-700/50 hover:border-blue-500/30 transition-colors shadow-lg flex flex-col justify-between"
+          >
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-blue-500/10 backdrop-blur-sm border border-blue-500/20">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="p-3 rounded-xl bg-blue-500/10 backdrop-blur-sm border border-blue-500/20">
                   <FaHeadset className="text-blue-400 text-xl" />
                 </div>
                 <h3 className="text-xl font-bold">Need Help?</h3>
               </div>
-              <p className="text-gray-400 mb-6">
+              <p className="text-gray-400 mb-6 leading-relaxed">
                 Our experts are ready to discuss your project and answer any
                 questions.
               </p>
             </div>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-6 py-3 rounded-lg transition-colors font-medium group backdrop-blur-sm"
+              className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white px-6 py-3 rounded-lg transition-colors font-medium group backdrop-blur-sm"
               aria-label="Contact us"
             >
-              <FaPhoneAlt className="group-hover:animate-pulse group-hover:rotate-[15deg] transition transform duration-300 ease-in-out" />
+              <FaPhoneAlt className="group-hover:animate-pulse transition" />
               <span>Contact Us</span>
               <FaArrowRight className="ml-1 group-hover:translate-x-1 transition" />
             </Link>
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Portfolio Showcase Section */}
         <motion.div
-          className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 backdrop-blur-lg p-8 rounded-xl border border-blue-700/30 mb-12"
+          className="bg-gradient-to-r from-blue-900/30 to-blue-800/20 backdrop-blur-lg p-8 rounded-2xl border border-blue-700/30 mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           viewport={{ once: true }}
         >
-          <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <FaLaptopCode className="text-blue-400 text-2xl" />
+              <div className="w-20 h-20 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                <FaLaptopCode className="text-blue-400 text-3xl" />
               </div>
             </div>
             <div className="flex-grow">
-              <h3 className="text-xl font-bold mb-2">Explore Our Portfolio</h3>
-              <p className="text-gray-400 mb-4">
+              <h3 className="text-2xl font-bold mb-3">Explore Our Portfolio</h3>
+              <p className="text-gray-400 mb-6 leading-relaxed">
                 {`Discover our latest projects and see how we've helped businesses
                 like yours succeed online.`}
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/portfolio"
                   target="_blank"
@@ -454,100 +473,105 @@ const Footer = () => {
         </motion.div>
 
         {/* Social & Legal */}
-        <div className="pt-8 border-t border-gray-800/50">
-          {/* Social Links */}
+        <div className="pt-12 border-t border-gray-800/50">
+          {/* Social Links with Description */}
           <motion.div
-            className="flex flex-wrap justify-center gap-4 mb-8"
+            className="flex flex-col items-center mb-12"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
             viewport={{ once: true }}
           >
-            {socialLinks.map(
-              ({ Icon, link, name, color, isPortfolio }, index) => (
-                <motion.a
-                  key={index}
-                  href={link}
-                  target={isPortfolio ? "_blank" : "_self"}
-                  rel={isPortfolio ? "noopener noreferrer" : ""}
-                  aria-label={
-                    isPortfolio
-                      ? "View our portfolio website"
-                      : `Follow us on ${name}`
-                  }
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all relative overflow-hidden group backdrop-blur-sm border ${
-                    isPortfolio
-                      ? "border-blue-500/50 hover:border-blue-400/70 bg-blue-500/10 hover:bg-blue-500/20"
-                      : "border-gray-700/50 hover:border-gray-600/50 bg-gray-800/50 hover:bg-gray-700/50"
-                  }`}
-                  whileHover={{
-                    y: -3,
-                    scale: isPortfolio ? 1.1 : 1.05,
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                  style={{ color }}
-                >
-                  <Icon
-                    className={`w-5 h-5 z-10 ${isPortfolio ? "text-blue-400" : ""}`}
-                  />
-                  {isPortfolio && (
-                    <motion.span
-                      className="absolute -bottom-1 text-xs font-medium text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      initial={{ y: 5 }}
-                      whileHover={{ y: 0 }}
-                    >
-                      Portfolio
-                    </motion.span>
-                  )}
-                  <span
-                    className="absolute inset-0 bg-current opacity-0 group-hover:opacity-10 transition-opacity"
-                    aria-hidden="true"
-                  />
-                </motion.a>
-              )
-            )}
+            <h3 className="text-lg font-medium text-gray-300 mb-6">
+              Connect With Us
+            </h3>
+            <div className="flex flex-wrap justify-center gap-5 mb-8">
+              {socialLinks.map(
+                ({ Icon, link, name, color, isPortfolio }, index) => (
+                  <motion.a
+                    key={index}
+                    href={link}
+                    target={isPortfolio ? "_blank" : "_self"}
+                    rel={isPortfolio ? "noopener noreferrer" : ""}
+                    aria-label={
+                      isPortfolio
+                        ? "View our portfolio website"
+                        : `Follow us on ${name}`
+                    }
+                    className={`flex flex-col items-center group w-16 h-16 rounded-2xl flex items-center justify-center transition-all relative overflow-hidden backdrop-blur-sm border ${
+                      isPortfolio
+                        ? "border-blue-500/50 hover:border-blue-400/70 bg-blue-500/10 hover:bg-blue-500/20"
+                        : "border-gray-700/50 hover:border-gray-600/50 bg-gray-800/50 hover:bg-gray-700/50"
+                    }`}
+                    whileHover={{
+                      y: -5,
+                      scale: 1.05,
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ color }}
+                  >
+                    <Icon
+                      className={`w-6 h-6 z-10 ${isPortfolio ? "text-blue-400" : ""}`}
+                    />
+                    <span className="absolute -bottom-5 text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {isPortfolio ? "Portfolio" : name}
+                    </span>
+                  </motion.a>
+                )
+              )}
+            </div>
           </motion.div>
 
-          {/* Legal Links */}
+          {/* Legal Links with Better Structure */}
           <motion.div
-            className="flex flex-wrap justify-center gap-4 mb-8 text-sm"
+            className="mb-10"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             viewport={{ once: true }}
           >
-            {policy_data.policy_links.map((link, index) => {
-              const href_link = link
-                .toLowerCase()
-                .replace(/[^a-z\s-]/g, "")
-                .replace(/\s+/g, "-");
-              return (
-                <Link
-                  key={index}
-                  href={`/${href_link}`}
-                  className="text-gray-500 hover:text-gray-300 transition-colors hover:bg-gray-800/50 px-3 py-1 rounded backdrop-blur-sm"
-                  aria-label={`View our ${link}`}
-                >
-                  {link}
-                </Link>
-              );
-            })}
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
+              {policy_data.policy_links.map((link, index) => {
+                const href_link = link
+                  .toLowerCase()
+                  .replace(/[^a-z\s-]/g, "")
+                  .replace(/\s+/g, "-");
+                return (
+                  <Link
+                    key={index}
+                    href={`/${href_link}`}
+                    className="relative text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg group"
+                    aria-label={`View our ${link}`}
+                  >
+                    {link}
+                    <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-green-400 group-hover:w-4/5 group-hover:left-[10%] transition-all duration-300"></span>
+                  </Link>
+                );
+              })}
+            </div>
           </motion.div>
 
-          {/* Copyright */}
+          {/* Enhanced Copyright Section */}
           <motion.div
-            className="text-center text-gray-500 text-sm"
+            className=""
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
             viewport={{ once: true }}
           >
-            <div className="flex items-center justify-center gap-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-3 max-w-fit mx-auto border border-gray-700/30">
-              <TrustSVG width={30} height={36} color="#6B7280" />
-              <span>
-                &copy; {new Date().getFullYear()} ECOD Digital. All rights
-                reserved.
-              </span>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-800/50 backdrop-blur-sm rounded-xl p-5 mx-auto border border-gray-700/30 max-w-4xl">
+              <div className="flex items-center gap-3">
+                <TrustSVG width={30} height={36} color="#6B7280" />
+                <span className="text-gray-400 text-sm md:text-base">
+                  &copy; {new Date().getFullYear()} ECOD Digital. All rights
+                  reserved.
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm">
+                <span>Made with</span>
+                <span className="text-red-400">❤️</span>
+                <span>in India</span>
+              </div>
             </div>
           </motion.div>
         </div>

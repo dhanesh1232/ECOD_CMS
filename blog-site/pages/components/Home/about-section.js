@@ -99,13 +99,11 @@ const AboutSection = () => {
         {/* Hero About Card */}
         <motion.div
           ref={heroRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
-            heroInView
-              ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+            heroInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className={cardClasses}
         >
           <h2 className="text-2xl md:text-4xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600 mb-6">
@@ -117,13 +115,13 @@ const AboutSection = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={
                 heroInView
-                  ? { scale: 1, opacity: 1, y: 0 }
-                  : { scale: 0.9, opacity: 0, y: 20 }
+                  ? { scale: 1, opacity: 1 }
+                  : { scale: 0.8, opacity: 0 }
               }
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+              transition={{ duration: 0.3, ease: "easeInOut", delay: 0.2 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className={innerCardClasses}
@@ -136,13 +134,13 @@ const AboutSection = () => {
               </p>
             </motion.div>
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={
                 heroInView
-                  ? { scale: 1, opacity: 1, y: 0 }
-                  : { scale: 0.9, opacity: 0, y: 20 }
+                  ? { scale: 1, opacity: 1 }
+                  : { scale: 0.8, opacity: 0 }
               }
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
+              transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className={innerCardClasses}
@@ -160,13 +158,11 @@ const AboutSection = () => {
         {/* Differentiators Section */}
         <motion.div
           ref={diffRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
-            diffInView
-              ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+            diffInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className={cardClasses}
         >
           <h2 className="text-xl md:text-3xl font-bold text-gray-800 dark:text-white mb-12 text-center">
@@ -176,15 +172,15 @@ const AboutSection = () => {
             {home_about.differentiators.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={
                   diffInView
-                    ? { scale: 1, opacity: 1, y: 0 }
-                    : { scale: 0.9, opacity: 0, y: 20 }
+                    ? { scale: 1, opacity: 1 }
+                    : { scale: 0.8, opacity: 0 }
                 }
                 transition={{
-                  duration: 0.5,
-                  ease: "easeOut",
+                  duration: 0.3,
+                  ease: "easeInOut",
                   delay: index * 0.1,
                 }}
                 whileHover={{ scale: 1.05 }}
@@ -206,13 +202,13 @@ const AboutSection = () => {
         {/* Timeline Section */}
         <motion.div
           ref={timelineRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
             timelineInView
               ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+              : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className={cardClasses}
         >
           <h2 className="text-xl md:text-3xl font-bold text-gray-800 dark:text-white mb-12 text-center">
@@ -224,15 +220,15 @@ const AboutSection = () => {
             {home_about.timeline.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={
                   timelineInView
-                    ? { scale: 1, opacity: 1, y: 0 }
-                    : { scale: 0.9, opacity: 0, y: 20 }
+                    ? { scale: 1, opacity: 1 }
+                    : { scale: 0.8, opacity: 0 }
                 }
                 transition={{
-                  duration: 0.5,
-                  ease: "easeOut",
+                  duration: 0.3,
+                  ease: "easeInOut",
                   delay: index * 0.1,
                 }}
                 className={`relative mb-12 pl-12 md:pl-0 ${index % 2 === 0 ? "md:pr-12 md:text-right" : "md:pl-12"}`}
@@ -241,37 +237,36 @@ const AboutSection = () => {
                   className={`flex md:block items-start ${index % 2 === 0 ? "md:flex-row-reverse" : ""}`}
                 >
                   <motion.div
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                    initial={{ scale: 0.8, opacity: 0 }}
                     animate={
                       timelineInView
-                        ? { scale: 1, opacity: 1, y: 0 }
-                        : { scale: 0.9, opacity: 0, y: 20 }
+                        ? { scale: 1, opacity: 1 }
+                        : { scale: 0.8, opacity: 0 }
                     }
                     transition={{
-                      duration: 0.5,
-                      ease: "easeOut",
+                      duration: 0.3,
+                      ease: "easeInOut",
                       delay: index * 0.1 + 0.1,
                     }}
                     whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={{ scale: 0.8 }}
                     className="absolute left-0 md:left-1/2 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center transform -translate-x-1/2 z-10"
                   >
                     <span className="text-white font-bold">{index + 1}</span>
                   </motion.div>
 
                   <motion.div
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                    initial={{ scale: 0.8, opacity: 0 }}
                     animate={
                       timelineInView
-                        ? { scale: 1, opacity: 1, y: 0 }
-                        : { scale: 0.9, opacity: 0, y: 20 }
+                        ? { scale: 1, opacity: 1 }
+                        : { scale: 0.8, opacity: 0 }
                     }
                     transition={{
-                      duration: 0.5,
-                      ease: "easeOut",
-                      delay: index * 0.1 + 0.2,
+                      duration: 0.3,
+                      ease: "easeInOut",
+                      delay: index * 0.1 + 0.1,
                     }}
-                    whileHover={{ y: -5 }}
                     className={`${innerCardClasses} ${index % 2 === 0 ? "md:mr-8" : "md:ml-8"}`}
                   >
                     <span className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 mb-3">
@@ -293,13 +288,11 @@ const AboutSection = () => {
         {/* Stats Section */}
         <motion.div
           ref={statsRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
-            statsInView
-              ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+            statsInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className={cardClasses}
         >
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white mb-12 text-center">
@@ -309,15 +302,15 @@ const AboutSection = () => {
             {home_about.stats.map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={
                   statsInView
-                    ? { scale: 1, opacity: 1, y: 0 }
-                    : { scale: 0.9, opacity: 0, y: 20 }
+                    ? { scale: 1, opacity: 1 }
+                    : { scale: 0.8, opacity: 0 }
                 }
                 transition={{
-                  duration: 0.5,
-                  ease: "easeOut",
+                  duration: 0.3,
+                  ease: "easeInOut",
                   delay: index * 0.1,
                 }}
               >
@@ -330,13 +323,11 @@ const AboutSection = () => {
         {/* Values Section */}
         <motion.div
           ref={valuesRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
-            valuesInView
-              ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+            valuesInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className={cardClasses}
         >
           <h2 className="text-xl md:text-3xl font-bold text-gray-800 dark:text-white mb-12 text-center">
@@ -346,14 +337,14 @@ const AboutSection = () => {
             {home_about.values.map((value, index) => (
               <motion.div
                 key={index}
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={
                   valuesInView
-                    ? { scale: 1, opacity: 1, y: 0 }
-                    : { scale: 0.9, opacity: 0, y: 20 }
+                    ? { scale: 1, opacity: 1 }
+                    : { scale: 0.8, opacity: 0 }
                 }
                 transition={{
-                  duration: 0.5,
+                  duration: 0.3,
                   ease: "easeOut",
                   delay: index * 0.1,
                 }}
@@ -378,13 +369,13 @@ const AboutSection = () => {
         {/* Stepper Section */}
         <motion.div
           ref={stepperRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
             stepperInView
-              ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+              ? { scale: 1, opacity: 1 }
+              : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
           className="glass-card py-4 sm:p-8 rounded-3xl mb-20"
         >
           <h2 className="text-xl md:text-3xl font-bold text-gray-800 dark:text-white mb-4 text-center">
@@ -414,13 +405,11 @@ const AboutSection = () => {
         {/* CTA Section */}
         <motion.div
           ref={ctaRef}
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={
-            ctaInView
-              ? { scale: 1, opacity: 1, y: 0 }
-              : { scale: 0.9, opacity: 0, y: 20 }
+            ctaInView ? { scale: 1, opacity: 1 } : { scale: 0.8, opacity: 0 }
           }
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
           className={cardClasses}
         >
           <h2 className="text-xl md:text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mb-6">
@@ -433,14 +422,14 @@ const AboutSection = () => {
             {home_about.cta.buttons.map((button, index) => (
               <motion.a
                 key={index}
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                initial={{ scale: 0.8, opacity: 0 }}
                 animate={
                   ctaInView
-                    ? { scale: 1, opacity: 1, y: 0 }
-                    : { scale: 0.9, opacity: 0, y: 20 }
+                    ? { scale: 1, opacity: 1 }
+                    : { scale: 0.8, opacity: 0 }
                 }
                 transition={{
-                  duration: 0.5,
+                  duration: 0.3,
                   ease: "easeOut",
                   delay: index * 0.1,
                 }}

@@ -14,7 +14,6 @@ import {
 } from "react-icons/fi";
 import { FaLinkedin, FaInstagram, FaFacebook, FaTwitter } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaIcons } from "react-icons/fa";
 
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
