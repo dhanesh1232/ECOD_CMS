@@ -205,7 +205,7 @@ const CategoryServices = () => {
         <BackAndForward back="/services" forward="/contact" />
         <hr className="my-6 border-gray-200 dark:border-gray-700" />
 
-        <div className="mb-10">
+        <div className="mb-10 relative">
           <CategorySelector page="/services" services={services_ecod} />
           <SearchComponent
             filterSearch={handleSearch}

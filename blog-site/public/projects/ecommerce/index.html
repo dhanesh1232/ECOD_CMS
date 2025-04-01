@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShopEasy - Your Online Store</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <header>
+      <div class="container">
+        <div class="logo">
+          <h1>ShopEasy</h1>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="#products" class="nav-link">Products</a></li>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+          </ul>
+        </nav>
+        <div class="cart-icon">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="container">
+          <h2>Welcome to ShopEasy</h2>
+          <p>Discover amazing products at unbeatable prices</p>
+          <a href="#products" class="btn">Shop Now</a>
+        </div>
+      </section>
+
+      <section id="products" class="products">
+        <div class="container">
+          <h2>Our Products</h2>
+          <div class="product-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="electronics">
+              Electronics
+            </button>
+            <button class="filter-btn" data-filter="clothing">Clothing</button>
+            <button class="filter-btn" data-filter="home">
+              Home & Kitchen
+            </button>
+          </div>
+          <div class="product-grid">
+            <!-- Products will be loaded here by JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="about">
+        <div class="container">
+          <h2>About ShopEasy</h2>
+          <p>
+            We're a passionate team dedicated to bringing you the best products
+            at the best prices. Our mission is to make online shopping easy,
+            enjoyable, and accessible to everyone.
+          </p>
+          <div class="team">
+            <div class="team-member">
+              <img
+                src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+                alt="Team Member"
+              />
+              <h3>John Doe</h3>
+              <p>Founder & CEO</p>
+            </div>
+            <div class="team-member">
+              <img
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+                alt="Team Member"
+              />
+              <h3>Jane Smith</h3>
+              <p>Marketing Director</p>
+            </div>
+            <div class="team-member">
+              <img
+                src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
+                alt="Team Member"
+              />
+              <h3>Mike Johnson</h3>
+              <p>Lead Developer</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="contact">
+        <div class="container">
+          <h2>Contact Us</h2>
+          <div class="contact-container">
+            <div class="contact-info">
+              <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <p>123 Main Street, New York, NY 10001</p>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-phone"></i>
+                <p>(123) 456-7890</p>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-envelope"></i>
+                <p>info@shopeasy.com</p>
+              </div>
+              <div class="social-links">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+              </div>
+            </div>
+            <form class="contact-form">
+              <input type="text" placeholder="Your Name" required />
+              <input type="email" placeholder="Your Email" required />
+              <input type="text" placeholder="Subject" />
+              <textarea placeholder="Your Message" required></textarea>
+              <button type="submit" class="btn">Send Message</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="cart-sidebar">
+      <div class="cart-header">
+        <h3>Your Cart</h3>
+        <button class="close-cart">&times;</button>
+      </div>
+      <div class="cart-items">
+        <!-- Cart items will be loaded here -->
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total:</span>
+          <span class="total-price">$0.00</span>
+        </div>
+        <button class="btn checkout-btn">Proceed to Checkout</button>
+      </div>
+    </div>
+    <div class="overlay"></div>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>ShopEasy</h3>
+            <p>
+              Your one-stop shop for all your needs. Quality products at
+              affordable prices.
+            </p>
+          </div>
+          <div class="footer-section">
+            <h3>Quick Links</h3>
+            <ul>
+              <li><a href="#home">Home</a></li>
+              <li><a href="#products">Products</a></li>
+              <li><a href="#about">About Us</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Customer Service</h3>
+            <ul>
+              <li><a href="#">FAQ</a></li>
+              <li><a href="#">Shipping Policy</a></li>
+              <li><a href="#">Returns & Refunds</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Newsletter</h3>
+            <p>Subscribe to get updates on new products and special offers.</p>
+            <form class="newsletter-form">
+              <input type="email" placeholder="Your Email" required />
+              <button type="submit" class="btn">Subscribe</button>
+            </form>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2023 ShopEasy. All Rights Reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

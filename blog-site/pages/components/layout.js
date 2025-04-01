@@ -7,6 +7,7 @@ import PropTypes from "prop-types";
 import StickyContactButton from "./contact-button";
 import PortfolioPage from "../portfolio";
 import CookiePopup from "./cookies";
+import ProjectShow from "../preview";
 
 const OfferButton = dynamic(() => import("./button-offer"), { ssr: false });
 const Footer = dynamic(() => import("./footer"), { ssr: false });
@@ -23,6 +24,7 @@ const Layout = ({ children }) => {
   const [routeChanging, setRouteChanging] = useState(false);
   const [titleFrame, setTitleFrame] = useState(0);
   const isPortfolioPage = router.pathname === "/portfolio";
+  const isPreviewPage = router.pathname === "/preview";
   const { isHomePage, layoutClasses } = useMemo(() => {
     const isHome = router.pathname === "/";
     return {
@@ -181,25 +183,29 @@ const Layout = ({ children }) => {
         <HeaderSection theme={theme} toggleTheme={toggleTheme} />
 
         <div
-          className={`${layoutClasses} z-0 flex flex-col md:flex-row flex-1 overflow-x-hidden overflow-y-hidden`}
+          className={`${layoutClasses} z-0 flex flex-col md:flex-row flex-1 overflow-x-hidden`}
         >
-          {!isHomePage && (
+          {/* Left sidebar - hidden on home and preview pages */}
+          {!isHomePage && !isPreviewPage && (
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
 
+          {/* Main content - full width on preview page */}
           <main
             id="main-content"
-            className="flex-1 flex flex-col items-center w-full lg:w-3/4"
+            className={`flex-1 flex flex-col items-center ${
+              isPreviewPage ? "w-full" : "w-full lg:w-3/4"
+            }`}
           >
             {children}
-            <LowerContent />
+            {!isPreviewPage && <LowerContent />}
           </main>
 
-          {!isHomePage && (
+          {/* Right sidebar - hidden on home and preview pages */}
+          {!isHomePage && !isPreviewPage && (
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
         </div>
-
         <Footer />
         <OfferButton />
         <StickyContactButton />

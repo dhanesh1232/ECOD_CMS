@@ -1,6 +1,6 @@
 import { MessageCircle, Mail, X, Send } from "lucide-react";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ScrollToTopButton from "./Reusable/back-top-top";
 
 const StickyContactButton = ({
@@ -21,6 +21,7 @@ const StickyContactButton = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const controls = useAnimation();
+  const chatRef = useRef(null);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -42,7 +43,7 @@ const StickyContactButton = ({
           "0 10px 15px -3px rgb(79 70 229 / 0.3)",
           "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
         ],
-        transition: { duration: 2, repeat: Infinity, repeatDelay: 5 },
+        transition: { duration: 0.3, repeat: Infinity, repeatDelay: 0.1 },
       });
     } else {
       controls.stop();
@@ -54,6 +55,19 @@ const StickyContactButton = ({
     setSubmitStatus(null);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (chatRef.current && !chatRef.current.contains(event.target)) {
+        setIsChatOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -64,14 +78,11 @@ const StickyContactButton = ({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
       // Reset form
       setFormData({ name: "", email: "", message: "" });
       setSubmitStatus("success");
 
-      // Close after 3 seconds
       setTimeout(() => {
         setIsChatOpen(false);
         setSubmitStatus(null);
@@ -98,7 +109,7 @@ const StickyContactButton = ({
 
   return (
     <div
-      className={`fixed bottom-4 sm:bottom-6 right-4 space-y-2 sm:right-6 z-50 ${className}`}
+      className={`fixed bottom-4 sm:bottom-6 right-4 space-y-2 sm:right-6 z-40 ${className}`}
     >
       <ScrollToTopButton />
 
@@ -106,11 +117,12 @@ const StickyContactButton = ({
       <AnimatePresence>
         {isChatOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-            className="absolute bottom-full right-0 mb-4 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+            ref={chatRef}
+            initial={{ opacity: 0, x: 100, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 100, scale: 0.9 }}
+            transition={{ duration: 0.5 }}
+            className="absolute bottom-full right-0 mb-4 w-56 sm:w-72 md:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
           >
             <div className="p-4 bg-indigo-600 text-white flex justify-between items-center">
               <h3 className="font-medium">Contact Us</h3>
@@ -123,7 +135,7 @@ const StickyContactButton = ({
               </button>
             </div>
 
-            <div className="p-4 h-96 overflow-y-auto">
+            <div className="p-4 h-96 overflow-y-hidden">
               {submitStatus === "success" ? (
                 <div className="h-full flex flex-col items-center justify-center text-center">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -277,57 +289,56 @@ const StickyContactButton = ({
         )}
       </AnimatePresence>
 
-      {/* Contact Button */}
-      <motion.button
-        onClick={toggleChat}
-        className={`flex items-center justify-center gap-2 font-medium text-sm rounded-full transition-all duration-200 ease-out relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 px-4 sm:px-6 py-2 sm:py-3 min-w-[auto] sm:min-w-[120px] ${variantStyles.button}`}
-        onMouseEnter={() => !isMobile && setIsHovered(true)}
-        onMouseLeave={() => !isMobile && setIsHovered(false)}
-        whileHover={!isMobile ? { y: -3 } : {}}
-        whileTap={{ scale: 0.96 }}
-        animate={pulse && !isChatOpen ? controls : {}}
-        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-        //animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.4, delay: 0.7, type: "spring" }}
-        aria-label={isChatOpen ? "Close contact form" : label}
-      >
-        {icon && (
-          <motion.span
-            className={variantStyles.icon}
-            animate={
-              !isMobile
-                ? {
-                    rotate: isHovered ? [0, 10, -10, 0] : 0,
-                    scale: isHovered ? [1, 1.1, 1] : 1,
-                  }
-                : {}
-            }
-            transition={{ duration: 0.6 }}
-          >
-            {isChatOpen ? (
-              <X className="w-4 h-4 sm:w-5 sm:h-5" />
-            ) : isMobile ? (
-              <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-            ) : (
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-            )}
-          </motion.span>
-        )}
-
-        {(!isMobile || variant !== "minimal") && (
-          <motion.span
-            className="hidden xs:inline-block"
-            animate={!isMobile ? { x: isHovered ? [0, 2, 0] : 0 } : {}}
-            transition={{ duration: 0.4 }}
-          >
-            {isMobile && variant === "minimal"
-              ? "Chat"
-              : isChatOpen
-                ? "Close"
-                : label}
-          </motion.span>
-        )}
-      </motion.button>
+      {/* Contact Button - Only show when chat is closed */}
+      {!isChatOpen && (
+        <motion.button
+          onMouseEnter={() => !isMobile && setIsHovered(true)}
+          onMouseLeave={() => !isMobile && setIsHovered(false)}
+          whileHover={!isMobile ? { y: -3 } : {}}
+          whileTap={{ scale: 0.96 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={pulse ? { opacity: 1, scale: 1 } : {}}
+          transition={{
+            duration: 0.5,
+            delay: 0.1,
+            type: "spring",
+            ease: "easeInOut",
+          }}
+          aria-label={label}
+          onClick={toggleChat}
+          className={`flex items-center justify-center gap-2 font-medium text-sm rounded-full transition-all duration-200 ease-out relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 px-4 sm:px-6 py-2 sm:py-3 min-w-[auto] sm:min-w-[120px] ${variantStyles.button}`}
+        >
+          {icon && (
+            <motion.span
+              className={variantStyles.icon}
+              animate={
+                !isMobile
+                  ? {
+                      rotate: isHovered ? [0, 10, -10, 0] : 0,
+                      scale: isHovered ? [1, 1.1, 1] : 1,
+                    }
+                  : {}
+              }
+              transition={{ duration: 0.6 }}
+            >
+              {isMobile ? (
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+              ) : (
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              )}
+            </motion.span>
+          )}
+          {(!isMobile || variant !== "minimal") && (
+            <motion.span
+              className="hidden xs:inline-block"
+              animate={!isMobile ? { x: isHovered ? [0, 2, 0] : 0 } : {}}
+              transition={{ duration: 0.4 }}
+            >
+              {isMobile && variant === "minimal" ? "Chat" : label}
+            </motion.span>
+          )}
+        </motion.button>
+      )}
     </div>
   );
 };

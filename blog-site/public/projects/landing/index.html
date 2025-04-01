@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Solutions | Build Your Digital Future</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* Base Styles */
+      :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --accent: #4895ef;
+        --dark: #1a1a2e;
+        --light: #f8f9fa;
+        --success: #4cc9f0;
+        --text: #333;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        color: var(--text);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        line-height: 1.2;
+        margin-bottom: 1rem;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .btn {
+        display: inline-block;
+        background: var(--primary);
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      }
+
+      .btn:hover {
+        background: var(--secondary);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+      }
+
+      section {
+        padding: 6rem 0;
+      }
+
+      /* Navigation */
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 0;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--dark);
+      }
+
+      .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.8rem;
+        font-weight: bold;
+      }
+
+      .nav-links {
+        display: flex;
+        list-style: none;
+        align-items: center;
+      }
+
+      .nav-links li {
+        margin-left: 2rem;
+      }
+
+      .nav-links a {
+        font-weight: 500;
+        transition: color 0.3s ease;
+        position: relative;
+      }
+
+      .nav-links a:hover {
+        color: var(--primary);
+      }
+
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--primary);
+        transition: width 0.3s ease;
+      }
+
+      .nav-links a:hover::after {
+        width: 100%;
+      }
+
+      /* Active nav link styles */
+      .nav-links a.active {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .nav-links a.active::after {
+        width: 100%;
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--dark);
+      }
+
+      /* Hero Section */
+      .hero {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        padding: 10rem 0 8rem;
+        margin-top: 80px;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80")
+          center/cover;
+        opacity: 0.1;
+      }
+
+      .hero-content {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+        animation: fadeInUp 1s ease;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+      }
+
+      /* Services Section */
+      .services {
+        text-align: center;
+        background: var(--light);
+      }
+
+      .services h2 {
+        font-size: 2.5rem;
+        color: var(--dark);
+      }
+
+      .subtext {
+        color: #666;
+        margin-bottom: 3rem;
+        font-size: 1.1rem;
+      }
+
+      .service-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .service-box {
+        background: white;
+        padding: 2.5rem 2rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .service-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .service-box i {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+      }
+
+      .service-box h3 {
+        color: var(--dark);
+        font-size: 1.5rem;
+      }
+
+      /* Testimonials */
+      .testimonials {
+        text-align: center;
+      }
+
+      .testimonials h2 {
+        font-size: 2.5rem;
+        color: var(--dark);
+      }
+
+      .testimonial-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .testimonial-box {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        position: relative;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .testimonial-box::before {
+        content: '"';
+        font-size: 5rem;
+        color: rgba(67, 97, 238, 0.1);
+        position: absolute;
+        top: -1rem;
+        left: 1rem;
+        font-family: serif;
+      }
+
+      .testimonial-box p {
+        font-style: italic;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .testimonial-box h4 {
+        color: var(--primary);
+      }
+
+      /* CTA Section */
+      .cta {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        text-align: center;
+      }
+
+      .cta h2 {
+        font-size: 2.5rem;
+      }
+
+      .cta p {
+        margin-bottom: 2rem;
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .cta .btn {
+        background: white;
+        color: var(--primary);
+      }
+
+      .cta .btn:hover {
+        background: var(--light);
+        color: var(--secondary);
+      }
+
+      /* Footer */
+      .footer {
+        background: var(--dark);
+        color: white;
+        text-align: center;
+        padding: 3rem 0;
+      }
+
+      .footer-links {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+        list-style: none;
+        margin: 2rem 0;
+      }
+
+      .footer-links li {
+        margin: 0 1rem;
+      }
+
+      .footer-links a {
+        color: rgba(255, 255, 255, 0.7);
+        transition: color 0.3s ease;
+      }
+
+      .footer-links a:hover {
+        color: white;
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        margin: 1.5rem 0;
+      }
+
+      .social-links a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        margin: 0 0.5rem;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .social-links a:hover {
+        background: var(--primary);
+        transform: translateY(-3px);
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .nav-links {
+          position: fixed;
+          top: 80px;
+          left: -100%;
+          width: 100%;
+          height: calc(100vh - 80px);
+          background: white;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          padding-top: 2rem;
+          transition: all 0.5s ease;
+        }
+
+        .nav-links.active {
+          left: 0;
+        }
+
+        .nav-links li {
+          margin: 1.5rem 0;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+        }
+
+        .hero h1 {
+          font-size: 2.5rem;
+        }
+
+        section {
+          padding: 4rem 0;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero {
+          padding: 8rem 0 6rem;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .hero p,
+        .cta p {
+          font-size: 1rem;
+        }
+
+        .logo {
+          font-size: 1.2rem;
+        }
+
+        .logo-icon {
+          width: 30px;
+          height: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <header>
+      <div class="container">
+        <nav>
+          <a href="#" class="logo">
+            <div class="logo-icon">DS</div>
+            <span>DigitalSolutions</span>
+          </a>
+
+          <ul class="nav-links">
+            <li><a href="#services" class="nav-link">Services</a></li>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+            <li><a href="#" class="btn">Get Started</a></li>
+          </ul>
+
+          <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <h1>Build Your Digital Future</h1>
+        <p>
+          Web development, digital marketing & Shopify solutions that drive
+          measurable results
+        </p>
+        <a href="#services" class="btn">Explore Services</a>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+      <div class="container">
+        <h2>Our Services</h2>
+        <p class="subtext">
+          We provide high-quality digital solutions tailored to your business
+          needs
+        </p>
+        <div class="service-container">
+          <div class="service-box">
+            <i class="fas fa-code"></i>
+            <h3>Web Development</h3>
+            <p>
+              Modern, responsive websites built with React, Next.js, and
+              cutting-edge technologies for optimal performance.
+            </p>
+          </div>
+          <div class="service-box">
+            <i class="fas fa-chart-line"></i>
+            <h3>Digital Marketing</h3>
+            <p>
+              Data-driven SEO, PPC campaigns, and social media strategies to
+              boost your online visibility.
+            </p>
+          </div>
+          <div class="service-box">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Shopify Solutions</h3>
+            <p>
+              Custom Shopify stores designed to convert visitors into loyal
+              customers.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="testimonials">
+      <div class="container">
+        <h2>What Our Clients Say</h2>
+        <div class="testimonial-container">
+          <div class="testimonial-box">
+            <p>
+              "Amazing service! My website now looks stunning and loads
+              incredibly fast. The team delivered beyond my expectations."
+            </p>
+            <h4>- John Doe, TechSolutions Inc.</h4>
+          </div>
+          <div class="testimonial-box">
+            <p>
+              "Incredible SEO results, my organic traffic has doubled in just 3
+              months! Their strategies are data-driven and effective."
+            </p>
+            <h4>- Sarah Williams, WellnessBrand</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section id="contact" class="cta">
+      <div class="container">
+        <h2>Ready to Grow Your Business?</h2>
+        <p>
+          Let's create something amazing together. Schedule a free consultation
+          today.
+        </p>
+        <a href="#contact" class="btn">Get Started</a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <a
+          href="#"
+          class="logo"
+          style="color: white; justify-content: center; margin-bottom: 1rem"
+        >
+          <div class="logo-icon">DS</div>
+          <span>DigitalSolutions</span>
+        </a>
+
+        <ul class="footer-links">
+          <li><a href="#services">Services</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#testimonials">Testimonials</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+
+        <p>© 2025 DigitalSolutions. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile menu toggle
+      const menuBtn = document.querySelector(".mobile-menu-btn");
+      const navLinks = document.querySelector(".nav-links");
+
+      menuBtn.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+      });
+
+      // Close mobile menu when clicking a link
+      document.querySelectorAll(".nav-links a").forEach((link) => {
+        link.addEventListener("click", () => {
+          navLinks.classList.remove("active");
+        });
+      });
+
+      // Smooth scrolling for navigation links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+
+          const targetId = this.getAttribute("href");
+          if (targetId === "#") return;
+
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: "smooth",
+            });
+          }
+        });
+      });
+
+      // Highlight active section in navigation
+      const sections = document.querySelectorAll("section[id]");
+      const navItems = document.querySelectorAll(".nav-link");
+
+      function highlightNavItem() {
+        let scrollPosition = window.scrollY + 100;
+
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.offsetHeight;
+          const sectionId = section.getAttribute("id");
+
+          if (
+            scrollPosition >= sectionTop &&
+            scrollPosition < sectionTop + sectionHeight
+          ) {
+            navItems.forEach((item) => {
+              item.classList.remove("active");
+              if (item.getAttribute("href") === `#${sectionId}`) {
+                item.classList.add("active");
+              }
+            });
+          }
+        });
+
+        // Special case for hero section
+        const hero = document.querySelector(".hero");
+        const heroBottom = hero.offsetTop + hero.offsetHeight;
+        if (scrollPosition < heroBottom) {
+          navItems.forEach((item) => item.classList.remove("active"));
+          document.querySelector('a[href="#home"]')?.classList.add("active");
+        }
+      }
+
+      // Add scroll event listener
+      window.addEventListener("scroll", highlightNavItem);
+
+      // Run once on page load
+      highlightNavItem();
+    </script>
+  </body>
+</html>

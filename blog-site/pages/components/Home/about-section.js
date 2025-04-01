@@ -436,7 +436,7 @@ const AboutSection = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 href={button.link}
-                className={`px-8 py-4 rounded-full font-medium text-sm sm:text-base transition-all ${
+                className={`px-8 py-4 text-center rounded-full font-medium text-sm sm:text-base transition-all ${
                   index === 0
                     ? "bg-gradient-to-r from-blue-500 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 text-white"
                     : "bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-white"

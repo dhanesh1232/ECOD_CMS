@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import { searchData } from "@/data/search_data";
 import Image from "next/image";
-
+import { policy_data } from "@/data/policies_data";
 const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
   const [navScrolled, setNavScrolled] = useState(false);
@@ -158,8 +158,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   // Toggle handlers
   const handleSearchToggle = useCallback(() => {
     setIsMobileMenuOpen(false);
+    setShowSearch(!showSearch);
     setTimeout(() => searchInputRef.current?.focus(), 100);
-  }, []);
+  }, [showSearch]);
 
   const handleMobileMenuToggle = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -244,9 +245,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 w-full z-50 py-3 px-4 transition-all duration-300 ${
+        className={`fixed top-0 ${router.pathname === "/preview" ? "z-0" : "z-50"} w-full py-3 px-4 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border-b border-white/10 dark:border-gray-800"
+            ? "bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border-b z-50 border-white/10 dark:border-gray-800"
             : "bg-white/5 dark:bg-gray-900/5 backdrop-blur-sm"
         }`}
       >
@@ -490,7 +491,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
       <AnimatePresence>
         {showSearch && (
           <motion.div
-            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-lg pt-20 px-4"
+            className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-lg pt-20 px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -588,7 +589,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="p-5 safe-area-padding">
+            <div className="p-5 safe-area-padding flex flex-col w-full h-full justify-between">
               <ul className="space-y-3">
                 {nav_list.map((item) => (
                   <motion.li
@@ -645,6 +646,20 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                   </motion.li>
                 ))}
               </ul>
+              <div className="flex items-center justify-around flex-wrap gap-2 transition-all ease-in-out duration-300">
+                {policy_data.policy_links.slice(0, 3).map((item, ind) => {
+                  const href_link = `/policy/${item.toLowerCase().replace(/\s/g, "-")}`;
+                  return (
+                    <Link
+                      key={ind}
+                      href={href_link}
+                      className="text-gray-800 text-sm dark:text-gray-200 hover:text-blue-400"
+                    >
+                      {item}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         )}
