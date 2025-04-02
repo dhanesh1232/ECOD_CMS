@@ -286,6 +286,7 @@ export const shopify_services_data = [
 ]; //
 export const services_list_ecod = {
   "web-development": [
+    // ================== CORE WEB APPS ==================
     {
       id: 1,
       label: "Single-Page Applications (SPA)",
@@ -301,7 +302,11 @@ export const services_list_ecod = {
       ],
       image_url: "",
       href: "single-page-applications",
+      preview_link: "/demos/spa",
       category: "web-apps",
+      pricing:
+        "$8,000 – $30,000+ | Let’s tailor the scope to your performance needs.",
+      projects: [], // Add project IDs later
     },
     {
       id: 2,
@@ -318,8 +323,12 @@ export const services_list_ecod = {
       ],
       image_url: "",
       href: "progressive-web-apps",
+      preview_link: "/demos/pwa",
       category: "web-apps",
+      pricing: "$12,000 – $50,000 | Includes App Store optimization.",
+      projects: [],
     },
+    // ================== REAL-TIME APPS ==================
     {
       id: 3,
       label: "Real-Time Web Apps",
@@ -335,27 +344,157 @@ export const services_list_ecod = {
       ],
       image_url: "",
       href: "real-time-web-apps",
-      category: "web-apps",
+      preview_link: "/demos/realtime-chat",
+      category: "real-time",
+      pricing:
+        "$15,000 – $60,000 | Price scales with concurrent user capacity.",
+      projects: [],
     },
     {
       id: 4,
-      label: "Enterprise Web Applications",
-      description:
-        "Scalable, secure business solutions with complex workflows and integrations.",
+      label: "Live Auction Platforms",
+      description: "Bid in real-time with WebSocket-powered auction systems.",
       deliverables: [
-        "Role-based access control (RBAC)",
-        "Audit logging system",
-        "API gateway setup",
-        "Database schema + migration scripts",
-        "CI/CD pipeline (AWS/Azure)",
-        "Disaster recovery plan",
+        "Countdown timers with bid extensions",
+        "Auto-bid algorithms",
+        "Fraud detection systems",
+        "Escrow payment integration",
+        "Email/SMS bid notifications",
+        "Admin dashboard for moderation",
       ],
       image_url: "",
-      href: "enterprise-web-apps",
-      category: "web-apps",
+      href: "live-auction-platforms",
+      preview_link: "/demos/auction",
+      category: "real-time",
+      pricing: "$25,000+ | Custom pricing for high-traffic auctions.",
+      projects: [],
     },
+    // ================== E-COMMERCE ==================
     {
       id: 5,
+      label: "E-Commerce Marketplaces",
+      description: "Multi-vendor platforms with secure payment processing.",
+      deliverables: [
+        "Vendor onboarding workflows",
+        "Escrow payment system",
+        "Product review/rating system",
+        "AI-powered recommendations",
+        "Tax/Shipping rule engine",
+        "Fraud detection setup",
+      ],
+      image_url: "",
+      href: "ecommerce-marketplaces",
+      preview_link: "/demos/marketplace",
+      category: "ecommerce",
+      pricing: "$25,000 – $100,000+ | Revenue share models available.",
+      projects: [],
+    },
+    {
+      id: 6,
+      label: "Custom E-Commerce Stores",
+      description:
+        "Branded online stores with unique UX tailored to your products.",
+      deliverables: [
+        "Headless commerce architecture",
+        "AR product previews (WebXR)",
+        "Subscription/recurring billing",
+        "Abandoned cart recovery flows",
+        "Loyalty program integration",
+        "Custom checkout experiences",
+      ],
+      image_url: "",
+      href: "custom-ecommerce-stores",
+      preview_link: "/demos/ecom-store",
+      category: "ecommerce",
+      pricing:
+        "$10,000 – $75,000 | No transaction fees – you own the platform.",
+      projects: [],
+    },
+    // ================== REAL ESTATE ==================
+    {
+      id: 7,
+      label: "Real Estate Platforms",
+      description:
+        "Property listing portals with advanced search, virtual tours, and CRM integration.",
+      deliverables: [
+        "Interactive property maps (Google Maps/Mapbox)",
+        "3D virtual tours (Matterport/WebGL)",
+        "Lead capture forms + CRM sync",
+        "Mortgage calculator widget",
+        "Agent/broker dashboards",
+        "IDX/MLS API integration",
+      ],
+      image_url: "",
+      href: "real-estate-platforms",
+      preview_link: "/demos/realestate",
+      category: "real-estate",
+      pricing: "$20,000 – $80,000 | MLS integration fees vary by region.",
+      projects: [],
+    },
+    {
+      id: 8,
+      label: "Vacation Rental Systems",
+      description:
+        "Airbnb-like platforms with booking calendars and dynamic pricing.",
+      deliverables: [
+        "Multi-calendar availability system",
+        "Dynamic pricing algorithms",
+        "Guest/owner portals",
+        "Damage deposit handling",
+        "Cleaning schedule coordination",
+        "Review/rating system",
+      ],
+      image_url: "",
+      href: "vacation-rental-systems",
+      preview_link: "/demos/vacation-rental",
+      category: "real-estate",
+      pricing: "$18,000 – $70,000 | Commission-based pricing available.",
+      projects: [],
+    },
+    // ================== INDUSTRY-SPECIFIC ==================
+    {
+      id: 9,
+      label: "Healthcare Portals",
+      description:
+        "HIPAA-compliant platforms for telemedicine and patient management.",
+      deliverables: [
+        "Video consultation modules",
+        "E-prescription integration",
+        "HL7/FHIR API compliance",
+        "Patient health records (PHR)",
+        "Role-based access (Doctors/Patients)",
+        "Appointment scheduling system",
+      ],
+      image_url: "",
+      href: "healthcare-portals",
+      preview_link: "/demos/telehealth",
+      category: "healthcare",
+      pricing: "$30,000+ | HIPAA compliance adds 15-20% to base cost.",
+      projects: [],
+    },
+    {
+      id: 10,
+      label: "On-Demand Service Apps",
+      description:
+        "Uber-like platforms for local services (cleaning, repairs, etc.).",
+      deliverables: [
+        "Geolocation tracking",
+        "Dynamic service area mapping",
+        "Two-way rating system",
+        "In-app chat/calling",
+        "Automated payout system",
+        "Background check integrations",
+      ],
+      image_url: "",
+      href: "ondemand-service-apps",
+      preview_link: "/demos/ondemand",
+      category: "on-demand",
+      pricing: "$35,000 – $120,000 | Includes driver/provider apps.",
+      projects: [],
+    },
+    // ================== EMERGING TECH ==================
+    {
+      id: 11,
       label: "AI-Integrated Web Apps",
       description:
         "Applications enhanced with machine learning, chatbots, or computer vision APIs.",
@@ -369,7 +508,31 @@ export const services_list_ecod = {
       ],
       image_url: "",
       href: "ai-integrated-web-apps",
-      category: "web-apps",
+      preview_link: "/demos/ai-chatbot",
+      category: "ai",
+      pricing:
+        "$15,000 – $200,000+ | Depends on model complexity and data needs.",
+      projects: [],
+    },
+    {
+      id: 12,
+      label: "Web3/Blockchain Apps",
+      description:
+        "Decentralized applications with wallet integration and smart contracts.",
+      deliverables: [
+        "Ethereum/Solana wallet connectivity",
+        "NFT minting/display systems",
+        "Tokenomics dashboard",
+        "Smart contract development + auditing",
+        "Gas optimization",
+        "DAO governance interfaces",
+      ],
+      image_url: "",
+      href: "web3-applications",
+      preview_link: "/demos/web3",
+      category: "web3",
+      pricing: "$50,000+ | Smart contract auditing billed separately.",
+      projects: [],
     },
   ],
   "google-meta-ads": [

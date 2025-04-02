@@ -1,16 +1,19 @@
 "use client";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/router";
 
 const SearchComponent = ({ searchValue, filterSearch }) => {
+  const router = useRouter();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="flex justify-center my-6 px-4"
+      className="w-full max-w-xl mx-auto my-6 px-4"
     >
-      <div className="relative w-full max-w-xl">
+      <div className="relative w-full">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
         </div>
@@ -19,7 +22,7 @@ const SearchComponent = ({ searchValue, filterSearch }) => {
           placeholder="Search services, blogs, or updates..."
           value={searchValue}
           onChange={(e) => filterSearch(e.target.value)}
-          className="block w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
+          className="block w-full h-12 pl-10 pr-10 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
         />
         {searchValue && (
           <motion.button
@@ -30,7 +33,7 @@ const SearchComponent = ({ searchValue, filterSearch }) => {
             aria-label="Clear search"
           >
             <svg
-              className="h-5 w-5 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 transition-colors"
+              className="h-5 w-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

@@ -18,6 +18,7 @@ const loadingFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "
 
 const Layout = ({ children }) => {
   const router = useRouter();
+  const { category } = router.query;
   const [theme, setTheme] = useState("light");
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +26,7 @@ const Layout = ({ children }) => {
   const [titleFrame, setTitleFrame] = useState(0);
   const isPortfolioPage = router.pathname === "/portfolio";
   const isPreviewPage = router.pathname === "/preview";
+  const isServiceWebPage = category === "web-development";
   const { isHomePage, layoutClasses } = useMemo(() => {
     const isHome = router.pathname === "/";
     return {
@@ -33,6 +35,12 @@ const Layout = ({ children }) => {
     };
   }, [router.pathname]);
 
+  useEffect(() => {
+    const checkoutPage = () => {
+      console.log(isServiceWebPage);
+    };
+    checkoutPage();
+  });
   // Enhanced visitor tracking
   useEffect(() => {
     if (!isMounted) return;
@@ -186,7 +194,7 @@ const Layout = ({ children }) => {
           className={`${layoutClasses} z-0 flex flex-col md:flex-row flex-1 overflow-x-hidden`}
         >
           {/* Left sidebar - hidden on home and preview pages */}
-          {!isHomePage && !isPreviewPage && (
+          {!isHomePage && !isPreviewPage && !isServiceWebPage && (
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
 
@@ -194,7 +202,7 @@ const Layout = ({ children }) => {
           <main
             id="main-content"
             className={`flex-1 flex flex-col items-center ${
-              isPreviewPage ? "w-full" : "w-full lg:w-3/4"
+              isPreviewPage || isServiceWebPage ? "w-full" : "w-full lg:w-3/4"
             }`}
           >
             {children}
@@ -202,7 +210,7 @@ const Layout = ({ children }) => {
           </main>
 
           {/* Right sidebar - hidden on home and preview pages */}
-          {!isHomePage && !isPreviewPage && (
+          {!isHomePage && !isPreviewPage && !isServiceWebPage && (
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
         </div>

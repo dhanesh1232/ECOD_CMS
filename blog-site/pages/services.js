@@ -14,22 +14,6 @@ import {
   BadgeCheck,
 } from "lucide-react";
 
-// Dynamic imports with better loading states
-const CategorySelector = dynamic(
-  () => import("./components/Reusable/CategorySelector"),
-  {
-    loading: () => (
-      <div className="h-12 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl animate-pulse" />
-    ),
-  }
-);
-
-const SearchComponent = dynamic(() => import("./components/Reusable/search"), {
-  loading: () => (
-    <div className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
-  ),
-});
-
 const ServiceCard = dynamic(() => import("./components/serviceCard"), {
   loading: () => (
     <div className="h-full bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
@@ -280,24 +264,12 @@ export default function ServicesGrid() {
 
       <div className="container mx-auto px-4 sm:px-6 py-12 bg-background text-foreground">
         <BackAndForward forward="/services/web-development" />
-        <hr className="my-6 border-gray-200 dark:border-gray-800" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          className="mb-12"
-        >
-          <SearchComponent
-            searchValue={searchQuery}
-            filterSearch={handleSearch}
-          />
-        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-center mb-12"
+          className="text-center my-4"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Our{" "}
@@ -344,21 +316,6 @@ export default function ServicesGrid() {
         </AnimatePresence>
 
         <CallToAction />
-
-        <hr className="my-12 border-gray-200 dark:border-gray-800" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <CategorySelector
-            services={services_ecod}
-            page={"/services"}
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-          />
-        </motion.div>
       </div>
     </>
   );

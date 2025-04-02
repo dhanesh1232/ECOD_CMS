@@ -306,7 +306,7 @@ const DigitalMarketing = () => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Buttons
-                  first_nav="/services/digital-marketing"
+                  first_nav="/services/web-development"
                   first_label="Get Started"
                   second_nav="/contact"
                   second_label="Book Consultation"

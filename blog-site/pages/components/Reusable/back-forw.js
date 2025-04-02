@@ -50,12 +50,13 @@ const BackAndForward = ({
   }, [back]);
 
   return (
-    <div className="flex items-center justify-between relative">
+    <div className="flex items-center justify-between relative border-b pb-2">
       {/* Back Button */}
       <Link
         href={backPath}
         className={`transition-all transform ease-in-out duration-300 ${backClassName}`}
         aria-label={`Go back to ${navBack}`}
+        aria-hidden={true}
       >
         <MoveLeft size={20} />
         <span className="text-sm sm:text-base md:text-xl font-medium">

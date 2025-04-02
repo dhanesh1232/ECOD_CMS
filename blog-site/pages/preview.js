@@ -109,10 +109,9 @@ const ProjectShow = () => {
               href={selectedProject.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              className="flex items-center justify-center px-4 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
             >
-              <span className="md:block hidden">New Tab</span>
-              <ArrowUpRight />
+              <span className="block">Live</span>
             </a>
             <button
               type="button"
