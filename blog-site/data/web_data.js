@@ -76,31 +76,26 @@ export const home_about = {
   },
   timeline: [
     {
-      year: "2020",
+      year: "2023",
       event: "Founded in Tirupati, India",
       description:
         "Started as a small web development team with a focus on Shopify and WordPress.",
     },
     {
-      year: "2021",
+      year: "2023",
       event: "Expanded to Digital Marketing",
       description: "Launched SEO, PPC, and social media marketing services.",
     },
     {
-      year: "2022",
+      year: "2024",
       event: "50+ Clients Served",
       description:
-        "Worked with e-commerce brands, startups, and SMEs across 5 countries.",
+        "Worked with e-commerce brands, startups, and SMEs across 3 countries.",
     },
     {
-      year: "2023",
-      event: "Award-Winning Projects",
-      description: "Recognized as 'Top Shopify Developers' by Clutch.co.",
-    },
-    {
-      year: "2024",
+      year: "2025",
       event: "Global Remote Team",
-      description: "Expanded to a fully remote team of 20+ experts worldwide.",
+      description: "Expanded to a fully remote team of 10+ experts worldwide.",
     },
   ],
   values: [
@@ -215,16 +210,15 @@ export const home_about = {
     title: "Let’s Build Something Great",
     subtitle:
       "I’m currently accepting Some new projects this month. Reach out to discuss yours!",
-    buttons: [
-      {
+    buttons: {
+      button_one: {
         text: "Get a Free Quote",
-        link: "/contact",
       },
-      {
+      button_two: {
         text: "See My Skills",
-        link: "#expertise",
+        link: "/portfolio",
       },
-    ],
+    },
   },
 };
 

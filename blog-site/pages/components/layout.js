@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 import StickyContactButton from "./contact-button";
 import PortfolioPage from "../portfolio";
 import CookiePopup from "./cookies";
-import ProjectShow from "../preview";
+import ContactModel from "./contact-model";
 
 const OfferButton = dynamic(() => import("./button-offer"), { ssr: false });
 const Footer = dynamic(() => import("./footer"), { ssr: false });
@@ -23,6 +23,7 @@ const Layout = ({ children }) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [routeChanging, setRouteChanging] = useState(false);
+
   const [titleFrame, setTitleFrame] = useState(0);
   const isPortfolioPage = router.pathname === "/portfolio";
   const isPreviewPage = router.pathname === "/preview";
@@ -35,12 +36,6 @@ const Layout = ({ children }) => {
     };
   }, [router.pathname]);
 
-  useEffect(() => {
-    const checkoutPage = () => {
-      console.log(isServiceWebPage);
-    };
-    checkoutPage();
-  });
   // Enhanced visitor tracking
   useEffect(() => {
     if (!isMounted) return;
@@ -214,10 +209,13 @@ const Layout = ({ children }) => {
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
         </div>
-        <Footer />
-        <OfferButton />
-        <StickyContactButton />
-        <CookiePopup />
+        <>
+          <Footer />
+          <OfferButton />
+          <StickyContactButton />
+          <CookiePopup />
+          <ContactModel />
+        </>
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { adPerformanceData, eco_services } from "@/data/service_data";
+import { adPerformanceData, eco_services } from "../../../data/service_data";
 import {
   LineChart,
   BarChart,
@@ -26,8 +26,14 @@ import {
 import Link from "next/link";
 import { useInView } from "react-intersection-observer";
 
-const Buttons = dynamic(() => import("../Reusable/buttons"));
+// Lazy load components
+const Buttons = dynamic(() => import("../Reusable/buttons"), {
+  loading: () => (
+    <div className="h-12 w-40 bg-gray-200/50 rounded-lg animate-pulse" />
+  ),
+});
 
+// Utility functions
 const getGrowthTrend = (current, previous) => {
   if (!previous)
     return { text: "No Previous Data", icon: "📊", positive: null };
@@ -40,6 +46,7 @@ const getGrowthTrend = (current, previous) => {
   };
 };
 
+// Memoize enhanced data
 const enhancedAdPerformanceData = adPerformanceData.map((data, index) => ({
   ...data,
   MetaTrend:
@@ -56,29 +63,117 @@ const enhancedAdPerformanceData = adPerformanceData.map((data, index) => ({
       : null,
 }));
 
+// Custom Tooltip Components
+const ChartTooltip = ({ active, payload, label, data }) => {
+  if (!active || !payload?.length) return null;
+
+  const metaTrend = data.find((d) => d.name === label)?.MetaTrend;
+  const googleTrend = data.find((d) => d.name === label)?.GoogleTrend;
+  const seoTrend = data.find((d) => d.name === label)?.SEOTrend;
+
+  return (
+    <div className="bg-white/90 dark:bg-gray-800/90 p-4 rounded-lg shadow-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
+      <p className="font-semibold text-gray-900 dark:text-white/90">{label}</p>
+      <div className="mt-2 space-y-2">
+        {payload.map((item) => (
+          <div key={item.dataKey} className="flex items-center justify-between">
+            <span className="flex items-center gap-1">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{
+                  backgroundColor:
+                    item.color ||
+                    (item.dataKey === "MetaAds"
+                      ? "#3b82f6"
+                      : item.dataKey === "GoogleAds"
+                        ? "#f97316"
+                        : "#10b981"),
+                }}
+              />
+              <span className="text-sm capitalize">
+                {item.dataKey.replace(/([A-Z])/g, " $1").trim()}
+              </span>
+            </span>
+            <span className="font-medium">
+              {item.value}
+              {item.dataKey === "MetaAds" && metaTrend && (
+                <TrendIndicator trend={metaTrend} />
+              )}
+              {item.dataKey === "GoogleAds" && googleTrend && (
+                <TrendIndicator trend={googleTrend} />
+              )}
+              {item.dataKey === "SEO" && seoTrend && (
+                <TrendIndicator trend={seoTrend} />
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const TrendIndicator = ({ trend }) => (
+  <span
+    className={`ml-2 text-xs ${trend.positive ? "text-green-500" : "text-red-500"}`}
+  >
+    {trend.icon} {trend.text}
+  </span>
+);
+
+// Main Component
 const OurServices = () => {
-  // Create inView refs for each section
-  const [headerRef, headerInView] = useInView({ threshold: 0.1 });
-  const [servicesRef, servicesInView] = useInView({ threshold: 0.1 });
-  const [analyticsRef, analyticsInView] = useInView({ threshold: 0.1 });
-  const [ctaRef, ctaInView] = useInView({ threshold: 0.1 });
+  // Intersection observers with thresholds
+  const [headerRef, headerInView] = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
+  const [servicesRef, servicesInView] = useInView({
+    threshold: 0.05,
+    triggerOnce: true,
+  });
+  const [analyticsRef, analyticsInView] = useInView({
+    threshold: 0.05,
+    triggerOnce: true,
+  });
+  const [ctaRef, ctaInView] = useInView({ threshold: 0.1, triggerOnce: true });
+
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const staggerContainer = {
+    visible: {
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const serviceItem = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 },
+  };
 
   return (
     <section className="w-full py-20 px-2 sm:px-6 bg-gradient-to-b from-gray-50/50 to-white/30 dark:from-gray-900/50 dark:to-gray-800/30 relative overflow-hidden">
-      {/* Background elements */}
+      {/* Background elements - optimized */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-100/20 to-transparent dark:from-blue-900/10 dark:to-transparent opacity-30"></div>
-        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-purple-200/20 dark:bg-purple-900/10 blur-3xl"></div>
-        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-blue-200/20 dark:bg-blue-900/10 blur-3xl"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-100/20 to-transparent dark:from-blue-900/10 dark:to-transparent opacity-30" />
+        <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-purple-200/20 dark:bg-purple-900/10 blur-3xl" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-blue-200/20 dark:bg-blue-900/10 blur-3xl" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header Section */}
         <div className="text-center mb-12" ref={headerRef}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={headerInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial="hidden"
+            animate={headerInView ? "visible" : "hidden"}
+            variants={fadeInUp}
+            transition={{ duration: 0.3 }}
             className="inline-flex items-center px-2 py-2 rounded-full bg-blue-100/80 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 text-sm font-medium mb-4 backdrop-blur-sm border border-blue-200/30 dark:border-blue-700/30 shadow-sm"
           >
             <Rocket className="w-4 h-4 mr-2" />
@@ -86,9 +181,10 @@ const OurServices = () => {
           </motion.div>
 
           <motion.h2
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={headerInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+            initial="hidden"
+            animate={headerInView ? "visible" : "hidden"}
+            variants={fadeInUp}
+            transition={{ duration: 0.3, delay: 0.1 }}
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6"
           >
             <span className="inline-block">Our Premium </span>
@@ -98,7 +194,7 @@ const OurServices = () => {
               transition={{ type: "spring", stiffness: 400 }}
             >
               <span className="relative z-10">Services</span>
-              <span className="absolute bottom-1 left-0 w-full h-2 bg-blue-500/60 dark:bg-blue-700 -z-0"></span>
+              <span className="absolute bottom-1 left-0 w-full h-2 bg-blue-500/60 dark:bg-blue-700 -z-0" />
             </motion.span>
 
             <div className="mt-4 flex justify-center">
@@ -110,7 +206,7 @@ const OurServices = () => {
                   "Google Ads",
                 ]}
                 mainClassName="text-lg md:text-xl px-4 py-2 flex items-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md text-gray-800 dark:text-white overflow-hidden rounded-full border border-gray-200/50 dark:border-gray-700/30 shadow-sm"
-                staggerFrom={"last"}
+                staggerFrom="last"
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "-120%" }}
@@ -123,9 +219,10 @@ const OurServices = () => {
           </motion.h2>
 
           <motion.p
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={headerInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+            initial="hidden"
+            animate={headerInView ? "visible" : "hidden"}
+            variants={fadeInUp}
+            transition={{ duration: 0.3, delay: 0.2 }}
             className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto"
           >
             Cutting-edge digital solutions tailored to drive your business
@@ -133,32 +230,27 @@ const OurServices = () => {
           </motion.p>
         </div>
 
-        {/* Services Grid */}
+        {/* Services Grid - Horizontal Scroll */}
         <div className="relative mb-20" ref={servicesRef}>
-          {/* Single row horizontal scroll container */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={servicesInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            initial="hidden"
+            animate={servicesInView ? "visible" : "hidden"}
+            variants={staggerContainer}
             className="flex overflow-x-auto pb-8 -mx-4 px-4 scrollbar-hide"
           >
             <div className="flex space-x-6 px-2 md:px-4 py-2 -mx-2">
               {eco_services.map((service, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={servicesInView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{
-                    duration: 0.3,
-                    ease: "easeInOut",
-                    delay: index * 0.05,
-                  }}
+                  variants={serviceItem}
                   className="flex-shrink-0 w-80 sm:w-96"
                 >
-                  <Link href={service.href} className="h-full block group">
-                    <div
-                      className={`relative h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col border border-gray-200/50 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden hover:-translate-y-1`}
-                    >
+                  <Link
+                    href={service.href}
+                    className="h-full block group"
+                    passHref
+                  >
+                    <div className="relative h-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl p-6 flex flex-col border border-gray-200/50 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden hover:-translate-y-1">
                       {/* Floating sparkles */}
                       <div className="absolute inset-0 overflow-hidden pointer-events-none">
                         <div className="absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -178,9 +270,7 @@ const OurServices = () => {
                       )}
 
                       {/* Icon with glass effect */}
-                      <div
-                        className={`relative z-10 mb-6 w-14 h-14 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-200/30 dark:border-gray-700/30`}
-                      >
+                      <div className="relative z-10 mb-6 w-14 h-14 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-200/30 dark:border-gray-700/30">
                         <span className="text-2xl">{service.icon}</span>
                       </div>
 
@@ -245,16 +335,16 @@ const OurServices = () => {
           ref={analyticsRef}
         >
           {/* Glass texture */}
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjA1IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcmVjdD4KPHBhdGggZD0iTTAgMEw2IDZaIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiIGZpbGw9Im5vbmUiPjwvcGF0aD4KPHBhdGggZD0iTTYgMEwwIDZaIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiIGZpbGw9Im5vbmUiPjwvcGF0aD4KPC9zdmc+')]"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjA1IiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjwvcmVjdD4KPHBhdGggZD0iTTAgMEw2IDZaIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiIGZpbGw9Im5vbmUiPjwvcGF0aD4KPHBhdGggZD0iTTYgMEwwIDZaIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjEiIGZpbGw9Im5vbmUiPjwvcGF0aD4KPC9zdmc+')]" />
 
           {/* Gradient accents */}
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-xl pointer-events-none"></div>
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-xl pointer-events-none"></div>
+          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-xl pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-xl pointer-events-none" />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial="hidden"
+            animate={analyticsInView ? "visible" : "hidden"}
+            variants={fadeInUp}
             className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-10"
           >
             <div>
@@ -270,18 +360,16 @@ const OurServices = () => {
             </div>
             <div className="flex items-center gap-3">
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+                variants={fadeInUp}
+                transition={{ delay: 0.1 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-blue-600 dark:text-blue-300 text-sm shadow-sm"
               >
                 <TrendingUp className="w-4 h-4" />
                 <span>2024 Trends</span>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+                variants={fadeInUp}
+                transition={{ delay: 0.2 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/80 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 text-green-600 dark:text-green-300 text-sm shadow-sm"
               >
                 <Search className="w-4 h-4" />
@@ -293,9 +381,10 @@ const OurServices = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
             {/* Meta & Google Ads Performance */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+              initial="hidden"
+              animate={analyticsInView ? "visible" : "hidden"}
+              variants={fadeInUp}
+              transition={{ delay: 0.1 }}
               className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-lg p-5 rounded-xl border border-gray-200/50 dark:border-gray-700/30 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-center mb-6">
@@ -304,17 +393,15 @@ const OurServices = () => {
                 </h4>
                 <div className="flex gap-2">
                   <motion.span
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.3, delay: 0.1 }}
+                    variants={fadeInUp}
+                    transition={{ delay: 0.2 }}
                     className="py-1 px-2 text-xs rounded-full bg-blue-100/80 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 backdrop-blur-sm border border-blue-200/30 dark:border-blue-700/30"
                   >
                     Meta Ads
                   </motion.span>
                   <motion.span
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ duration: 0.3, delay: 0.1 }}
+                    variants={fadeInUp}
+                    transition={{ delay: 0.3 }}
                     className="px-2 py-1 text-xs rounded-full bg-orange-100/80 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200 backdrop-blur-sm border border-orange-200/30 dark:border-orange-700/30"
                   >
                     Google Ads
@@ -341,59 +428,12 @@ const OurServices = () => {
                     axisLine={{ stroke: "rgba(156, 163, 175, 0.2)" }}
                   />
                   <Tooltip
-                    content={({ active, payload, label }) => {
-                      if (active && payload && payload.length) {
-                        const metaTrend = enhancedAdPerformanceData.find(
-                          (d) => d.name === label
-                        )?.MetaTrend;
-                        const googleTrend = enhancedAdPerformanceData.find(
-                          (d) => d.name === label
-                        )?.GoogleTrend;
-
-                        return (
-                          <div className="bg-white/90 dark:bg-gray-800/90 p-4 rounded-lg shadow-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
-                            <p className="font-semibold text-gray-900 dark:text-white/90">
-                              {label}
-                            </p>
-                            <div className="mt-2 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <div className="w-3 h-3 rounded-full bg-blue-600" />
-                                  <span className="text-sm">Meta Ads</span>
-                                </span>
-                                <span className="font-medium">
-                                  {payload[0].value}
-                                  {metaTrend && (
-                                    <span
-                                      className={`ml-2 text-xs ${metaTrend.positive ? "text-green-500" : "text-red-500"}`}
-                                    >
-                                      {metaTrend.icon} {metaTrend.text}
-                                    </span>
-                                  )}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <div className="w-3 h-3 rounded-full bg-orange-500" />
-                                  <span className="text-sm">Google Ads</span>
-                                </span>
-                                <span className="font-medium">
-                                  {payload[1].value}
-                                  {googleTrend && (
-                                    <span
-                                      className={`ml-2 text-xs ${googleTrend.positive ? "text-green-500" : "text-red-500"}`}
-                                    >
-                                      {googleTrend.icon} {googleTrend.text}
-                                    </span>
-                                  )}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
+                    content={(props) => (
+                      <ChartTooltip
+                        {...props}
+                        data={enhancedAdPerformanceData}
+                      />
+                    )}
                   />
                   <Line
                     type="monotone"
@@ -417,9 +457,10 @@ const OurServices = () => {
 
             {/* SEO Growth */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+              initial="hidden"
+              animate={analyticsInView ? "visible" : "hidden"}
+              variants={fadeInUp}
+              transition={{ delay: 0.2 }}
               className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-lg p-5 rounded-xl border border-gray-200/50 dark:border-gray-700/30 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-center mb-6">
@@ -427,9 +468,8 @@ const OurServices = () => {
                   Organic Growth Metrics
                 </h4>
                 <motion.span
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={analyticsInView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ duration: 0.3, ease: "easeInOut", delay: 0.1 }}
+                  variants={fadeInUp}
+                  transition={{ delay: 0.3 }}
                   className="px-2 py-1 text-xs rounded-full bg-green-100/80 dark:bg-green-900/50 text-green-800 dark:text-green-200 backdrop-blur-sm border border-green-200/30 dark:border-green-700/30"
                 >
                   SEO Performance
@@ -455,40 +495,12 @@ const OurServices = () => {
                     axisLine={{ stroke: "rgba(156, 163, 175, 0.2)" }}
                   />
                   <Tooltip
-                    content={({ active, payload, label }) => {
-                      if (active && payload && payload.length) {
-                        const seoTrend = enhancedAdPerformanceData.find(
-                          (d) => d.name === label
-                        )?.SEOTrend;
-
-                        return (
-                          <div className="bg-white/90 dark:bg-gray-800/90 p-4 rounded-lg shadow-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm">
-                            <p className="font-semibold text-gray-900 dark:text-white/90">
-                              {label}
-                            </p>
-                            <div className="mt-2">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                                  <span className="text-sm">SEO Growth</span>
-                                </span>
-                                <span className="font-medium">
-                                  {payload[0].value}
-                                  {seoTrend && (
-                                    <span
-                                      className={`ml-2 text-xs ${seoTrend.positive ? "text-green-500" : "text-red-500"}`}
-                                    >
-                                      {seoTrend.icon} {seoTrend.text}
-                                    </span>
-                                  )}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
+                    content={(props) => (
+                      <ChartTooltip
+                        {...props}
+                        data={enhancedAdPerformanceData}
+                      />
+                    )}
                   />
                   <Bar dataKey="SEO" fill="#10b981" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -500,39 +512,33 @@ const OurServices = () => {
         {/* CTA Section */}
         <motion.div
           ref={ctaRef}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={ctaInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
+          initial="hidden"
+          animate={ctaInView ? "visible" : "hidden"}
+          variants={fadeInUp}
           className="relative"
         >
           <div className="bg-gradient-to-r from-blue-50/70 to-purple-50/70 dark:from-gray-800/70 dark:to-gray-700/70 rounded-3xl p-8 sm:p-10 shadow border border-gray-200/50 dark:border-gray-700/30 backdrop-blur-xl relative overflow-hidden text-center flex flex-col items-center">
             {/* Decorative elements */}
-            <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-xl pointer-events-none"></div>
-            <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-xl pointer-events-none"></div>
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjAyIj48L3JlY3Q+Cjwvc3ZnPg==')]"></div>
+            <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-blue-400/10 dark:bg-blue-500/10 blur-xl pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-purple-400/10 dark:bg-purple-500/10 blur-xl pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiPgo8cmVjdCB3aWR0aD0iNiIgaGVpZ2h0PSI2IiBmaWxsPSIjZmZmZmZmIiBvcGFjaXR5PSIwLjAyIj48L3JlY3Q+Cjwvc3ZnPg==')]" />
 
             <motion.h3
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={ctaInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
+              variants={fadeInUp}
+              transition={{ delay: 0.1 }}
               className="text-2xl sm:text-3xl font-bold text-center text-gray-900 dark:text-white/90 mb-4 relative z-10"
             >
               Ready to Transform Your Digital Presence?
             </motion.h3>
             <motion.p
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={ctaInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.3, ease: "easeInOut", delay: 0.2 }}
+              variants={fadeInUp}
+              transition={{ delay: 0.2 }}
               className="text-lg text-center text-gray-600 dark:text-gray-300/80 max-w-2xl mx-auto mb-8 relative z-10"
             >
               Our team of experts is ready to help you achieve exceptional
               results with tailored solutions.
             </motion.p>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={ctaInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-            >
+            <motion.div variants={fadeInUp} transition={{ delay: 0.3 }}>
               <Buttons
                 first_label="Explore All Services"
                 first_nav="/services"

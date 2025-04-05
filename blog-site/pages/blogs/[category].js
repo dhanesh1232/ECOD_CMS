@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { blog_services } from "@/data/blog_data";
-import { allBlogs } from "@/data/blog_data";
+import { blog_services } from "../../data/blog_data";
+import { allBlogs } from "../../data/blog_data";
 import { PaginationControls } from "../../hooks/pagination-control";
 
 // Dynamic imports with loading states

@@ -22,7 +22,6 @@ import {
   FiUser,
   FiChevronDown,
 } from "react-icons/fi";
-
 import Image from "next/image";
 import {
   projects,
@@ -35,6 +34,8 @@ import {
 } from "@/data/web_data";
 import dynamic from "next/dynamic";
 import ScrollToTopButton from "./components/Reusable/back-top-top";
+import { useInView } from "react-intersection-observer";
+
 const AnimatedCursor = dynamic(
   () => import("./components/Reusable/AnimatedCursor"),
   { ssr: false }
@@ -44,7 +45,7 @@ const FloatingParticles = dynamic(
   { ssr: false }
 );
 
-// Custom animated components
+// Enhanced animated components with viewport animations
 const HeaderLogo = ({ isScrolled, theme }) => {
   return (
     <motion.div
@@ -56,6 +57,8 @@ const HeaderLogo = ({ isScrolled, theme }) => {
         <motion.div
           className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent interactive"
           whileHover={{ scale: 1.05 }}
+          whileInView={{ scale: [0.8, 1] }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           Dhanesh
         </motion.div>
@@ -72,7 +75,7 @@ const ProfileImageHeader = ({ isScrolled }) => {
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
-          transition={{ type: "spring", stiffness: 500 }}
+          transition={{ type: "spring", stiffness: 500, ease: "easeInOut" }}
           className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-300 rounded-full overflow-hidden shadow-md flex items-center justify-center"
         >
           <div className="text-2xl">👨‍💻</div>
@@ -90,13 +93,12 @@ const AnimatedSection = ({ children, id, className = "" }) => {
   });
 
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.2, 1, 1]);
-  const y = useTransform(scrollYProgress, [0, 1], [50, 0]);
 
   return (
     <motion.section
       id={id}
       ref={ref}
-      style={{ opacity, y }}
+      style={{ opacity }}
       className={`relative ${className}`}
     >
       {children}
@@ -129,27 +131,27 @@ const SectionHeader = ({ title, subtitle, highlight }) => {
         variants={{
           visible: { scaleX: 1 },
         }}
-        transition={{ duration: 0.8, type: "spring" }}
+        transition={{ duration: 0.3, ease: "easeInOut", type: "spring" }}
       />
       <motion.h2
         className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 dark:text-white mb-2"
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, scale: 0.8 }}
         animate={controls}
         variants={{
-          visible: { opacity: 1, y: 0 },
+          visible: { opacity: 1, scale: 1 },
         }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.2, type: "spring", ease: "easeInOut" }}
       >
         {title} <span className="text-blue-600">{highlight}</span>
       </motion.h2>
       <motion.p
         className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-lg md:text-xl"
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, scale: 0.85 }}
         animate={controls}
         variants={{
-          visible: { opacity: 1, y: 0 },
+          visible: { opacity: 1, scale: 1 },
         }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.4, type: "spring", ease: "easeInOut" }}
       >
         {subtitle}
       </motion.p>
@@ -217,36 +219,54 @@ const AnimatedBackgroundGradient = () => {
 };
 
 const AnimatedSkillBar = ({ skill }) => {
-  const controls = useAnimation();
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "start start"],
+  const [ref, inView] = useInView({
+    threshold: 0.3,
+    rootMargin: "-50px 0px",
   });
 
+  const controls = useAnimation();
+
   useEffect(() => {
-    scrollYProgress.on("change", (latest) => {
-      if (latest > 0.3) {
-        controls.start({
-          width: `${skill.level}%`,
-          transition: { duration: 1, type: "spring" },
-        });
-      }
-    });
-  }, [scrollYProgress, controls, skill.level]);
+    if (inView) {
+      controls.start({
+        width: `${skill.level}%`,
+        transition: {
+          duration: 0.3,
+          ease: [0.16, 1, 0.3, 1],
+          delay: 0.1,
+        },
+      });
+    } else {
+      controls.start({
+        width: "0%",
+        transition: { duration: 0.3 },
+      });
+    }
+  }, [inView, controls, skill.level]);
 
   return (
-    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5 mb-1 sm:mb-2 overflow-hidden">
+    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 sm:h-2.5 mb-1 sm:mb-2 overflow-hidden relative">
+      {/* Optional: Add a percentage label */}
+      <span className="absolute right-0 -top-5 text-xs font-medium text-gray-600 dark:text-gray-300">
+        {skill.level}%
+      </span>
+
       <motion.div
         ref={ref}
-        className="bg-gradient-to-r from-blue-500 to-blue-400 h-full rounded-full"
+        className={`h-full rounded-full bg-gradient-to-r ${
+          skill.level > 70
+            ? "from-green-500 to-green-400"
+            : skill.level > 40
+              ? "from-blue-500 to-blue-400"
+              : "from-purple-500 to-purple-400"
+        }`}
         initial={{ width: 0 }}
         animate={controls}
+        whileHover={{ scaleY: 1.2, transition: { duration: 0.2 } }}
       />
     </div>
   );
 };
-
 const InteractiveCard = ({ children, className = "" }) => {
   const ref = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -269,7 +289,15 @@ const InteractiveCard = ({ children, className = "" }) => {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       whileHover={{ y: -10 }}
-      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      initial={{ scale: 0.8, opacity: 0 }}
+      whileInView={{ scale: 1, opacity: 1 }}
+      viewport={{ margin: "0px 0px -100px 0px" }}
+      transition={{
+        type: "spring",
+        stiffness: 400,
+        damping: 10,
+        ease: "easeInOut",
+      }}
     >
       {children}
       <motion.div
@@ -295,18 +323,22 @@ const ExperienceTimeline = () => {
       {experiences.map((exp, index) => (
         <motion.div
           key={exp.id}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px 0px -50px 0px" }}
-          transition={{ delay: index * 0.1, duration: 0.5 }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ margin: "-50px 0px -50px 0px" }}
+          transition={{ delay: index * 0.1, duration: 0.5, ease: "easeInOut" }}
           className="mb-8 md:mb-12"
         >
           {/* Mobile layout (stacked) */}
           <div className="md:hidden flex flex-col space-y-4">
             <div className="flex justify-center">
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shadow-md">
+              <motion.div
+                className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shadow-md"
+                whileInView={{ rotate: 360, scale: [0.8, 1] }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+              >
                 {exp.icon}
-              </div>
+              </motion.div>
             </div>
             <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
               <h3 className="text-lg font-bold text-gray-800 dark:text-white">
@@ -327,10 +359,11 @@ const ExperienceTimeline = () => {
             className={`hidden md:flex ${index % 2 === 0 ? "flex-row" : "flex-row-reverse"} items-center`}
           >
             <div className="w-1/2 px-4 py-2">
-              <div
+              <motion.div
                 className={`p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md ${
                   index % 2 === 0 ? "text-right" : "text-left"
                 } hover:shadow-lg transition-shadow duration-300`}
+                whileInView={{ scale: [0.85, 1] }}
               >
                 <h3 className="text-lg font-bold text-gray-800 dark:text-white">
                   {exp.role}
@@ -344,16 +377,20 @@ const ExperienceTimeline = () => {
                 <p className="mt-2 text-gray-600 dark:text-gray-300">
                   {exp.description}
                 </p>
-              </div>
+              </motion.div>
             </div>
             <div className="w-1/2 flex justify-center relative">
               {/* Connector line for first item */}
               {index === 0 && (
                 <div className="absolute top-0 w-0.5 h-1/2 bg-gray-200 dark:bg-gray-700"></div>
               )}
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shadow-md relative z-10 hover:scale-110 transition-transform duration-300">
+              <motion.div
+                className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shadow-md relative z-10 hover:scale-110 transition-transform duration-300"
+                whileInView={{ rotate: 360, scale: [0.8, 1] }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
                 {exp.icon}
-              </div>
+              </motion.div>
               {/* Connector line for last item */}
               {index === experiences.length - 1 && (
                 <div className="absolute bottom-0 w-0.5 h-1/2 bg-gray-200 dark:bg-gray-700"></div>
@@ -461,9 +498,11 @@ export default function PortfolioPage({ theme, toggleTheme }) {
       <motion.button
         onClick={toggleTheme}
         whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.8 }}
         className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors interactive"
         aria-label="Toggle dark mode"
+        initial={{ scale: 0.8 }}
+        whileInView={{ scale: 1 }}
       >
         {theme === "dark" ? (
           <FiSun className="text-yellow-300" />
@@ -519,7 +558,7 @@ export default function PortfolioPage({ theme, toggleTheme }) {
           width: useTransform(scrollYProgress, [0, 1], ["0%", "100%"]),
           opacity: useTransform(
             scrollYProgress,
-            [0, 0.1, 0.9, 1],
+            [0, 0.1, 0.8, 1],
             [0, 1, 1, 0]
           ),
         }}
@@ -528,14 +567,14 @@ export default function PortfolioPage({ theme, toggleTheme }) {
       {/* Floating Action Buttons */}
       <motion.div
         className="fixed right-6 bottom-6 z-30 flex flex-col space-y-3"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1 }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1, ease: "easeInOut" }}
       >
         <ScrollToTopButton />
         <motion.button
           whileHover={{ scale: 1.1, y: -5 }}
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.8 }}
           className="w-12 h-12 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 rounded-full shadow-lg flex items-center justify-center interactive"
           onClick={toggleTheme}
           aria-label="Toggle theme"
@@ -551,14 +590,19 @@ export default function PortfolioPage({ theme, toggleTheme }) {
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              ease: "easeInOut",
+            }}
             className="fixed inset-0 bg-white dark:bg-gray-900 z-50 p-6 flex flex-col"
           >
             <div className="flex justify-between items-center mb-12">
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
+                initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                transition={{ delay: 0.2, ease: "easeInOut" }}
                 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent"
               >
                 Dhanesh
@@ -568,7 +612,7 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                 className="p-2 interactive"
                 aria-label="Close menu"
                 whileHover={{ rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
+                whileTap={{ scale: 0.8 }}
               >
                 <FiX className="text-xl text-gray-800 dark:text-white" />
               </motion.button>
@@ -578,9 +622,13 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                 {navItems.map((item, index) => (
                   <motion.li
                     key={item.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 * index }}
+                    initial={{ opacity: 0, x: 20, scale: 0.8 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    transition={{
+                      delay: 0.1 * index,
+                      ease: "easeInOut",
+                      duration: 0.3,
+                    }}
                   >
                     <a
                       href={`#${item.id}`}
@@ -602,10 +650,14 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                   rel="noopener noreferrer"
                   className="w-12 h-12 rounded-full bg-blue-100 dark:bg-gray-700 flex items-center justify-center hover:bg-blue-200 dark:hover:bg-gray-600 transition-colors interactive"
                   whileHover={{ scale: 1.1, rotate: 10 }}
-                  whileTap={{ scale: 0.9 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
+                  whileTap={{ scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{
+                    delay: 0.6 + index * 0.1,
+                    ease: "easeInOut",
+                    duration: 0.3,
+                  }}
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -636,9 +688,9 @@ export default function PortfolioPage({ theme, toggleTheme }) {
               {navItems.map((item, index) => (
                 <motion.li
                   key={item.id}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
+                  initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.1 * index, ease: "easeInOut" }}
                 >
                   <a
                     href={`#${item.id}`}
@@ -670,7 +722,9 @@ export default function PortfolioPage({ theme, toggleTheme }) {
               className="md:hidden p-2 interactive"
               aria-label="Open menu"
               whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.8 }}
+              initial={{ scale: 0.8 }}
+              whileInView={{ scale: 1 }}
             >
               <FiMenu className="text-xl text-gray-800 dark:text-white" />
             </motion.button>
@@ -689,14 +743,18 @@ export default function PortfolioPage({ theme, toggleTheme }) {
         >
           <motion.div className="md:w-1/2 mb-12 md:mb-0" style={{ y }}>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, ease: "easeInOut" }}
             >
               <motion.h1
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 dark:text-white mb-4 leading-tight"
                 animate={isHoveringHero ? { x: 5 } : { x: 0 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  ease: "easeInOut",
+                }}
               >
                 Hi, {`I'm`}{" "}
                 <motion.span
@@ -766,22 +824,26 @@ export default function PortfolioPage({ theme, toggleTheme }) {
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <motion.a
                   whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.85 }}
                   href="#contact"
                   className="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-medium text-center flex items-center justify-center space-x-2 interactive"
                   animate={isHoveringHero ? { x: 30 } : { x: 0 }}
                   transition={{ type: "spring", stiffness: 300, delay: 0.5 }}
+                  initial={{ scale: 0.8 }}
+                  whileInView={{ scale: 1 }}
                 >
                   <FiMail />
                   <span>Get In Touch</span>
                 </motion.a>
                 <motion.a
                   whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.85 }}
                   href="#projects"
                   className="border-2 border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400 px-6 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all font-medium text-center flex items-center justify-center space-x-2 interactive"
                   animate={isHoveringHero ? { x: 35 } : { x: 0 }}
                   transition={{ type: "spring", stiffness: 300, delay: 0.6 }}
+                  initial={{ scale: 0.8 }}
+                  whileInView={{ scale: 1 }}
                 >
                   <FiExternalLink />
                   <span>View Projects</span>
@@ -791,7 +853,7 @@ export default function PortfolioPage({ theme, toggleTheme }) {
           </motion.div>
           <div className="md:w-1/2 flex justify-center">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4 }}
               className="relative"
@@ -858,6 +920,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                 .getElementById("services")
                 ?.scrollIntoView({ behavior: "smooth" });
             }}
+            initial={{ scale: 0.8 }}
+            whileInView={{ scale: 1 }}
           >
             <FiChevronDown className="text-gray-400 text-2xl" />
           </motion.div>
@@ -890,6 +954,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                   <motion.div
                     className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-4"
                     whileHover={{ rotate: 15, scale: 1.1 }}
+                    whileInView={{ rotate: 360, scale: [0.8, 1] }}
+                    transition={{ duration: 0.6 }}
                   >
                     {service.icon}
                   </motion.div>
@@ -906,8 +972,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                       <motion.li
                         key={i}
                         className="flex items-start"
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, x: -10, scale: 0.8 }}
+                        whileInView={{ opacity: 1, x: 0, scale: 1 }}
                         transition={{ delay: 0.1 * i }}
                       >
                         <span className="text-blue-500 mr-2">✓</span>
@@ -940,6 +1006,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                   <motion.div
                     className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-2 sm:mr-3"
                     whileHover={{ rotate: 15 }}
+                    whileInView={{ rotate: 360, scale: [0.8, 1] }}
+                    transition={{ duration: 0.6 }}
                   >
                     {skill.icon}
                   </motion.div>
@@ -971,8 +1039,9 @@ export default function PortfolioPage({ theme, toggleTheme }) {
               >
                 <div className="h-48 bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/30 flex items-center justify-center relative overflow-hidden">
                   <motion.div
-                    initial={{ scale: 1 }}
+                    initial={{ scale: 0.8 }}
                     whileHover={{ scale: 1.1 }}
+                    whileInView={{ scale: 1 }}
                     className="z-10"
                   >
                     {project.icon}
@@ -1013,8 +1082,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                         key={i}
                         className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs px-3 py-1 rounded-full interactive"
                         whileHover={{ scale: 1.05 }}
-                        initial={{ opacity: 0, y: 5 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, y: 5, scale: 0.8 }}
+                        whileInView={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ delay: 0.1 * i }}
                       >
                         {tag}
@@ -1058,7 +1127,6 @@ export default function PortfolioPage({ theme, toggleTheme }) {
             className="absolute inset-0 bg-blue-500 opacity-5 dark:opacity-10 pointer-events-none"
             initial={{ scale: 0.5, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 0.05 }}
-            viewport={{ once: true }}
             transition={{ duration: 1 }}
           />
           <SectionHeader
@@ -1076,7 +1144,6 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                   className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500 rounded-full opacity-5 dark:opacity-10"
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
-                  viewport={{ once: true }}
                   transition={{ delay: 0.2 + index * 0.1 }}
                 />
                 <p className="text-gray-600 dark:text-gray-300 mb-4 italic relative z-10">
@@ -1120,9 +1187,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
           <motion.div
             className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden"
             whileHover={{ scale: 1.005 }}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, y: 50, scale: 0.85 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
           >
             <div className="md:flex">
               <div className="md:w-1/2 bg-gradient-to-br from-blue-600 to-blue-400 p-8 text-white relative overflow-hidden">
@@ -1181,9 +1247,9 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                             rel="noopener noreferrer"
                             className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition interactive"
                             whileHover={{ scale: 1.1, rotate: 10 }}
-                            whileTap={{ scale: 0.9 }}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            whileTap={{ scale: 0.8 }}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.1 * index }}
                             aria-label={social.label}
                           >
@@ -1198,8 +1264,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
               <div className="md:w-1/2 p-8">
                 {isSubmitted ? (
                   <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     className="p-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg mb-6"
                   >
                     {`Thanks! Your message has been sent. I'll get back to you
@@ -1293,10 +1359,12 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                     </div>
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileTap={{ scale: 0.88 }}
                       type="submit"
                       disabled={isSubmitting}
                       className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 rounded-lg hover:shadow-lg transition-all font-medium flex items-center justify-center space-x-2 interactive"
+                      initial={{ scale: 0.8 }}
+                      whileInView={{ scale: 1 }}
                     >
                       <FiMail />
                       <span>
@@ -1317,21 +1385,23 @@ export default function PortfolioPage({ theme, toggleTheme }) {
           className="absolute inset-0 bg-blue-500 opacity-5 pointer-events-none"
           initial={{ scale: 0.5, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 0.05 }}
-          viewport={{ once: true }}
           transition={{ duration: 1 }}
         />
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               className="mb-6 md:mb-0"
             >
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-300 rounded-full overflow-hidden shadow-md flex items-center justify-center mr-3">
+                <motion.div
+                  className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-300 rounded-full overflow-hidden shadow-md flex items-center justify-center mr-3"
+                  whileInView={{ rotate: 360, scale: [0.8, 1] }}
+                  transition={{ duration: 0.6 }}
+                >
                   <div className="text-xl">👨‍💻</div>
-                </div>
+                </motion.div>
                 <div>
                   <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent mb-1">
                     Dhanesh
@@ -1344,9 +1414,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
             </motion.div>
             <motion.div
               className="flex space-x-6"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ staggerChildren: 0.1 }}
             >
               {socialLinks.map((social, index) => (
@@ -1357,8 +1426,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition interactive"
                   whileHover={{ y: -3, scale: 1.1, rotate: 10 }}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ delay: 0.1 * index }}
                   aria-label={social.label}
                 >
@@ -1369,9 +1438,8 @@ export default function PortfolioPage({ theme, toggleTheme }) {
           </div>
           <motion.div
             className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
           >
             <p>© {new Date().getFullYear()} Dhanesh. All rights reserved.</p>
             <p className="mt-2">

@@ -537,78 +537,463 @@ export const services_list_ecod = {
   ],
   "google-meta-ads": [
     {
-      id: 6,
+      id: 1,
       label: "Search Ads",
-      description: "Targeted search ads to reach your audience on Google.",
+      description:
+        "Text-based ads that appear when users search for specific keywords on Google.",
+      how_it_works:
+        "These ads appear at the top or bottom of search results. You bid on keywords relevant to your business, and your ad shows when users search those terms. Uses a pay-per-click (PPC) model.",
+      business_implementation: {
+        setup: [
+          "Conduct keyword research using Google Keyword Planner",
+          "Create tightly themed ad groups",
+          "Write compelling ad copy with CTAs",
+          "Set up conversion tracking",
+        ],
+        optimization: [
+          "Negative keyword filtering",
+          "A/B test different ad variations",
+          "Implement ad extensions (call, location, etc.)",
+          "Adjust bids based on performance data",
+        ],
+        best_for: [
+          "Businesses with clear products/services",
+          "Lead generation",
+          "Local service providers",
+          "E-commerce stores",
+        ],
+      },
+      objectives: [
+        "Drive traffic",
+        "Generate leads",
+        "Increase sales",
+        "Brand awareness",
+      ],
+      platform: "Google",
       image_url: "",
       href: "search-ads",
-      category: "google-ads",
+      category: "google-meta-ads",
+    },
+    {
+      id: 2,
+      label: "Display Ads",
+      description:
+        "Visual banner ads shown across websites in Google's Display Network.",
+      how_it_works:
+        "Uses targeting options to show image/video ads on relevant websites. Can target by interests, demographics, or remarketing lists. Charges by impressions (CPM) or clicks (CPC).",
+      business_implementation: {
+        setup: [
+          "Create responsive display ads with multiple assets",
+          "Define target audiences (affinity, in-market, custom intent)",
+          "Set frequency caps",
+          "Upload customer email lists for matching",
+        ],
+        optimization: [
+          "Exclude irrelevant placements",
+          "Layer targeting options for precision",
+          "Create separate campaigns for prospecting/remarketing",
+          "Use dynamic remarketing for e-commerce",
+        ],
+        best_for: [
+          "Brand awareness campaigns",
+          "Visual products/services",
+          "Remarketing to past visitors",
+          "Consideration-stage marketing",
+        ],
+      },
+      objectives: ["Brand visibility", "Remarketing", "Lead generation"],
+      platform: "Google",
+      image_url: "",
+      href: "display-ads",
+      category: "google-meta-ads",
+    },
+    {
+      id: 3,
+      label: "YouTube Ads",
+      description: "Video advertising across YouTube's platform.",
+      how_it_works:
+        "Various formats including skippable in-stream ads, bumper ads, and discovery ads. Can target based on viewer demographics, interests, or specific video content.",
+      business_implementation: {
+        setup: [
+          "Create engaging 15-30 second videos",
+          "Choose between skippable/non-skippable formats",
+          "Target by audience demographics or video topics",
+          "Add end screens and CTAs",
+        ],
+        optimization: [
+          "Analyze audience retention metrics",
+          "Retarget viewers who watched certain percentages",
+          "Test different thumbnail images",
+          "Combine with Google Ads for full-funnel approach",
+        ],
+        best_for: [
+          "Brand storytelling",
+          "Product demonstrations",
+          "Educational content",
+          "High-consideration purchases",
+        ],
+      },
+      objectives: ["Brand awareness", "Product consideration", "Conversions"],
+      platform: "Google",
+      image_url: "",
+      href: "youtube-ads",
+      category: "google-meta-ads",
+    },
+    {
+      id: 4,
+      label: "Shopping Ads",
+      description:
+        "Product listings that appear in Google Search results and the Shopping tab.",
+      how_it_works:
+        "Pulls product data from your Merchant Center feed to show images, prices, and store info directly in search results. Uses product IDs rather than keywords.",
+      business_implementation: {
+        setup: [
+          "Create Google Merchant Center account",
+          "Upload product feed with accurate data",
+          "Connect to Google Ads account",
+          "Set up product groups for bidding",
+        ],
+        optimization: [
+          "Optimize product titles/descriptions",
+          "Implement promotions and special offers",
+          "Use negative keywords strategically",
+          "Segment products by performance",
+        ],
+        best_for: [
+          "E-commerce businesses",
+          "Retailers with clear inventory",
+          "Price-competitive products",
+          "Visual products that benefit from images",
+        ],
+      },
+      objectives: ["Product sales", "E-commerce conversions"],
+      platform: "Google",
+      image_url: "",
+      href: "google-shopping-ads",
+      category: "google-meta-ads",
+    },
+    {
+      id: 5,
+      label: "Performance Max",
+      description:
+        "Automated campaign type that uses Google's AI across all their properties.",
+      how_it_works:
+        "Uses machine learning to automatically serve ads across Search, Display, YouTube, Gmail, Discover, and Maps. Requires asset inputs and conversion goals.",
+      business_implementation: {
+        setup: [
+          "Upload various creative assets (images, videos, text)",
+          "Provide conversion goals and values",
+          "Input audience signals (who might convert)",
+          "Set budget and let Google optimize",
+        ],
+        optimization: [
+          "Regularly refresh creative assets",
+          "Analyze which asset combinations perform best",
+          "Supplement with audience insights",
+          "Compare against other campaign types",
+        ],
+        best_for: [
+          "Businesses with conversion tracking",
+          "Omnichannel marketing",
+          "Limited marketing resources",
+          "Testing new markets/products",
+        ],
+      },
+      objectives: ["Maximize conversions", "Increase conversion value"],
+      platform: "Google",
+      image_url: "",
+      href: "performance-max",
+      category: "google-meta-ads",
+    },
+    {
+      id: 6,
+      label: "Discovery Ads",
+      description: "Visually rich ads that appear in Google's discovery feeds.",
+      how_it_works:
+        "Appears in YouTube Home feed, Gmail promotions/social tabs, and Discover feed. Uses machine learning to show to interested users.",
+      business_implementation: {
+        setup: [
+          "Create visually compelling images",
+          "Write engaging headlines/descriptions",
+          "Set audience targeting parameters",
+          "Connect to conversion goals",
+        ],
+        optimization: [
+          "Test different image styles/formats",
+          "Analyze swipe-through rates",
+          "Refine audience targeting",
+          "Coordinate with Display campaigns",
+        ],
+        best_for: [
+          "Mobile-first campaigns",
+          "Visual products/services",
+          "Content marketing",
+          "App installs",
+        ],
+      },
+      objectives: ["Drive consideration", "Generate leads"],
+      platform: "Google",
+      image_url: "",
+      href: "discovery-ads",
+      category: "google-meta-ads",
     },
     {
       id: 7,
-      label: "Display Ads",
+      label: "Facebook Feed Ads",
       description:
-        "Visually appealing display ads to increase brand visibility.",
+        "Native advertisements that appear in users' main Facebook feed.",
+      how_it_works:
+        "Blends with organic content in the news feed. Can include images, videos, carousels, or slideshows. Highly targetable by demographics, interests, and behaviors.",
+      business_implementation: {
+        setup: [
+          "Choose campaign objective matching goals",
+          "Create eye-catching visuals",
+          "Define detailed target audience",
+          "Set budget and schedule",
+        ],
+        optimization: [
+          "Test different creative formats",
+          "Use dynamic creative optimization",
+          "Analyze frequency metrics",
+          "Retarget engaged users",
+        ],
+        best_for: [
+          "Community-focused businesses",
+          "Local services",
+          "B2C products",
+          "Content distribution",
+        ],
+      },
+      objectives: ["Brand awareness", "Engagement", "Conversions"],
+      platform: "Meta",
       image_url: "",
-      href: "display-ads",
-      category: "google-ads",
+      href: "facebook-feed-ads",
+      category: "google-meta-ads",
     },
     {
       id: 8,
-      label: "Remarketing",
-      description: "Re-engage visitors and convert them into customers.",
+      label: "Instagram Feed Ads",
+      description: "Sponsored posts that appear in users' Instagram feeds.",
+      how_it_works:
+        "Seamlessly integrates with organic posts. Supports photos, videos, carousels, and collections. Leverages Instagram's visual-first platform.",
+      business_implementation: {
+        setup: [
+          "Create visually stunning content",
+          "Use vertical formats (4:5 aspect ratio)",
+          "Include subtle branding elements",
+          "Add shoppable tags if applicable",
+        ],
+        optimization: [
+          "Monitor engagement metrics closely",
+          "Test different caption styles",
+          "Use branded hashtags strategically",
+          "Coordinate with influencer content",
+        ],
+        best_for: [
+          "Visual products (fashion, food, art)",
+          "Lifestyle brands",
+          "Younger demographics",
+          "Aesthetic-driven businesses",
+        ],
+      },
+      objectives: ["Brand awareness", "Engagement", "Product sales"],
+      platform: "Meta",
       image_url: "",
-      href: "remarketing",
-      category: "google-ads",
+      href: "instagram-feed-ads",
+      category: "google-meta-ads",
     },
     {
       id: 9,
-      label: "YouTube Ads",
-      description: "Video ads to capture attention on YouTube.",
+      label: "Stories Ads",
+      description: "Full-screen vertical ads between users' Stories.",
+      how_it_works:
+        "Appears between organic Stories on Instagram and Facebook. Uses immersive 9:16 format with tap-forward navigation.",
+      business_implementation: {
+        setup: [
+          "Create vertical video content (15s max)",
+          "Design for sound-off viewing",
+          "Include interactive elements (polls, questions)",
+          "Use strong first-frame visuals",
+        ],
+        optimization: [
+          "Analyze drop-off rates",
+          "Test different CTA placements",
+          "Use sequential storytelling",
+          "Repurpose top-performing feed content",
+        ],
+        best_for: [
+          "Time-sensitive promotions",
+          "Behind-the-scenes content",
+          "Product demonstrations",
+          "Mobile-first audiences",
+        ],
+      },
+      objectives: ["Brand awareness", "Engagement", "Lead generation"],
+      platform: "Meta",
       image_url: "",
-      href: "youtube-ads",
-      category: "google-ads",
+      href: "stories-ads",
+      category: "google-meta-ads",
     },
     {
       id: 10,
-      label: "Google Shopping Ads",
-      description: "Promote your products directly on Google Shopping.",
+      label: "Reels Ads",
+      description: "Short-form video ads in Instagram's Reels platform.",
+      how_it_works:
+        "Appears between user-generated Reels content. 9:16 vertical format with up to 30 seconds runtime.",
+      business_implementation: {
+        setup: [
+          "Create authentic, entertaining content",
+          "Use trending audio when appropriate",
+          "Include text overlays for silent viewing",
+          "Hook viewers in first 3 seconds",
+        ],
+        optimization: [
+          "Monitor watch time metrics",
+          "Participate in relevant challenges",
+          "Collaborate with creators",
+          "Test different content styles",
+        ],
+        best_for: [
+          "Brands targeting Gen Z",
+          "Creative industries",
+          "Viral content strategies",
+          "Product showcases",
+        ],
+      },
+      objectives: ["Brand awareness", "Video views", "Engagement"],
+      platform: "Meta",
       image_url: "",
-      href: "google-shopping-ads",
-      category: "google-ads",
+      href: "reels-ads",
+      category: "google-meta-ads",
     },
     {
       id: 11,
-      label: "Facebook Ads",
-      description: "Run high-performing ad campaigns on Facebook.",
+      label: "Messenger Ads",
+      description: "Ads that initiate conversations in Facebook Messenger.",
+      how_it_works:
+        "Appears in Messenger inbox or as sponsored messages. Opens chat dialog where businesses can automate responses.",
+      business_implementation: {
+        setup: [
+          "Create welcome message flow",
+          "Set up automated responses",
+          "Design quick reply options",
+          "Integrate with CRM if possible",
+        ],
+        optimization: [
+          "Analyze response rates",
+          "Test different opening messages",
+          "Implement chatbot sequences",
+          "Follow up within 24 hours",
+        ],
+        best_for: [
+          "High-touch sales processes",
+          "Customer support",
+          "Appointment booking",
+          "Personalized offers",
+        ],
+      },
+      objectives: ["Conversations", "Lead generation", "Messages"],
+      platform: "Meta",
       image_url: "",
-      href: "facebook-ads",
-      category: "meta-ads",
+      href: "messenger-ads",
+      category: "google-meta-ads",
     },
     {
       id: 12,
-      label: "Instagram Ads",
-      description: "Target your audience with visually engaging Instagram ads.",
+      label: "Audience Network",
+      description: "Ads shown on third-party apps and websites.",
+      how_it_works:
+        "Extends Facebook's targeting to off-platform placements. Includes native, banner, interstitial, and rewarded video formats.",
+      business_implementation: {
+        setup: [
+          "Select Audience Network placements",
+          "Create mobile-optimized creatives",
+          "Set frequency caps",
+          "Monitor brand safety settings",
+        ],
+        optimization: [
+          "Exclude low-quality placements",
+          "Analyze viewability metrics",
+          "Test different ad formats",
+          "Compare performance to on-platform",
+        ],
+        best_for: [
+          "Mobile app installs",
+          "Extended reach campaigns",
+          "Performance marketing",
+          "Brands with broad appeal",
+        ],
+      },
+      objectives: ["Brand awareness", "Reach", "Conversions"],
+      platform: "Meta",
       image_url: "",
-      href: "instagram-ads",
-      category: "meta-ads",
+      href: "audience-network",
+      category: "google-meta-ads",
     },
     {
       id: 13,
-      label: "Messenger Ads",
-      description: "Directly connect with customers using Messenger ads.",
+      label: "Dynamic Product Ads",
+      description: "Automatically promoted products based on user behavior.",
+      how_it_works:
+        "Uses your product catalog to show relevant items to users who viewed them or similar products. Automatically updates as inventory changes.",
+      business_implementation: {
+        setup: [
+          "Upload product catalog",
+          "Create product sets",
+          "Set up dynamic creative",
+          "Build remarketing audiences",
+        ],
+        optimization: [
+          "Segment by product categories",
+          "Test different audience windows",
+          "Coordinate with email remarketing",
+          "Analyze cross-sell opportunities",
+        ],
+        best_for: [
+          "E-commerce with large inventories",
+          "Retailers with frequent inventory changes",
+          "Abandoned cart recovery",
+          "Product recommendation strategies",
+        ],
+      },
+      objectives: ["Catalog sales", "Product sales", "Retargeting"],
+      platform: "Meta",
       image_url: "",
-      href: "messenger-ads",
-      category: "meta-ads",
+      href: "dynamic-product-ads",
+      category: "google-meta-ads",
     },
     {
       id: 14,
-      label: "Audience Targeting",
+      label: "Advantage+ Shopping",
       description:
-        "Reach the right audience with advanced targeting strategies.",
+        "AI-powered shopping campaigns that automate creative and targeting.",
+      how_it_works:
+        "Meta's automated system combines creative generation, placement selection, and audience targeting using machine learning.",
+      business_implementation: {
+        setup: [
+          "Upload product catalog",
+          "Provide multiple creative assets",
+          "Set budget and optimization goal",
+          "Let AI handle initial learning phase",
+        ],
+        optimization: [
+          "Monitor creative combinations",
+          "Supplement with audience insights",
+          "Analyze new customer acquisition",
+          "Compare against standard shopping campaigns",
+        ],
+        best_for: [
+          "E-commerce businesses",
+          "Brands with limited marketing resources",
+          "Testing new products",
+          "Scaling proven performers",
+        ],
+      },
+      objectives: ["Catalog sales", "Product sales", "Store traffic"],
+      platform: "Meta",
       image_url: "",
-      href: "audience-targeting",
-      category: "meta-ads",
+      href: "advantage-plus-shopping",
+      category: "google-meta-ads",
     },
   ],
   seo: [
@@ -617,6 +1002,28 @@ export const services_list_ecod = {
       label: "On-Page SEO",
       description:
         "Optimize your website's content and structure for better rankings.",
+      how_it_works:
+        "Analyzes and optimizes title tags, meta descriptions, headers, content, and internal linking structure to improve search engine visibility.",
+      business_implementation: {
+        setup: [
+          "Conduct comprehensive content audit",
+          "Optimize meta tags and headings",
+          "Improve content structure and readability",
+          "Implement schema markup",
+        ],
+        optimization: [
+          "Monitor keyword rankings",
+          "Update content regularly",
+          "Optimize for featured snippets",
+          "Improve internal linking strategy",
+        ],
+        best_for: [
+          "Websites with existing content",
+          "Businesses targeting specific keywords",
+          "Content-heavy websites",
+          "E-commerce product pages",
+        ],
+      },
       image_url: "",
       href: "on-page-seo",
       category: "seo",
@@ -626,6 +1033,28 @@ export const services_list_ecod = {
       label: "Off-Page SEO",
       description:
         "Build authority and backlinks to improve your site's visibility.",
+      how_it_works:
+        "Focuses on building high-quality backlinks and online presence through various digital channels to improve domain authority.",
+      business_implementation: {
+        setup: [
+          "Identify authoritative websites in your niche",
+          "Create link-worthy content",
+          "Develop outreach strategy",
+          "Build social media presence",
+        ],
+        optimization: [
+          "Monitor backlink profile",
+          "Disavow toxic backlinks",
+          "Expand guest posting opportunities",
+          "Leverage PR for media coverage",
+        ],
+        best_for: [
+          "New websites needing authority",
+          "Competitive industries",
+          "Brands establishing online presence",
+          "Local businesses expanding reach",
+        ],
+      },
       image_url: "",
       href: "off-page-seo",
       category: "seo",
@@ -635,6 +1064,28 @@ export const services_list_ecod = {
       label: "Technical SEO",
       description:
         "Enhance your website's technical performance for search engines.",
+      how_it_works:
+        "Improves website infrastructure including site speed, mobile-friendliness, indexing, and crawlability for better search engine performance.",
+      business_implementation: {
+        setup: [
+          "Conduct technical audit",
+          "Fix crawl errors",
+          "Optimize robots.txt and XML sitemaps",
+          "Implement proper redirects",
+        ],
+        optimization: [
+          "Monitor site speed improvements",
+          "Check mobile usability",
+          "Optimize JavaScript rendering",
+          "Improve URL structure",
+        ],
+        best_for: [
+          "Websites with poor performance",
+          "Large e-commerce sites",
+          "Sites undergoing redesign",
+          "Websites with indexing issues",
+        ],
+      },
       image_url: "",
       href: "technical-seo",
       category: "seo",
@@ -643,6 +1094,28 @@ export const services_list_ecod = {
       id: 14,
       label: "Local SEO",
       description: "Boost your visibility in local search results.",
+      how_it_works:
+        "Optimizes your online presence for local searches through Google My Business optimization, local citations, and review management.",
+      business_implementation: {
+        setup: [
+          "Claim and optimize Google My Business",
+          "Ensure NAP consistency across directories",
+          "Build local citations",
+          "Encourage customer reviews",
+        ],
+        optimization: [
+          "Monitor local rankings",
+          "Respond to all reviews",
+          "Post regular GMB updates",
+          "Optimize for local keywords",
+        ],
+        best_for: [
+          "Local brick-and-mortar businesses",
+          "Service area businesses",
+          "Multi-location businesses",
+          "Restaurants and retail stores",
+        ],
+      },
       image_url: "",
       href: "local-seo",
       category: "seo",
@@ -652,6 +1125,28 @@ export const services_list_ecod = {
       label: "SEO Audits & Reporting",
       description:
         "Comprehensive audits and reports to track your SEO performance.",
+      how_it_works:
+        "Provides detailed analysis of your website's SEO health with actionable insights and regular performance tracking.",
+      business_implementation: {
+        setup: [
+          "Implement tracking codes",
+          "Set up Google Search Console",
+          "Configure analytics dashboards",
+          "Establish KPIs and benchmarks",
+        ],
+        optimization: [
+          "Monthly performance analysis",
+          "Competitor benchmarking",
+          "Identify new opportunities",
+          "Adjust strategy based on data",
+        ],
+        best_for: [
+          "Businesses needing performance tracking",
+          "Agencies managing multiple clients",
+          "Websites with stagnant growth",
+          "Companies investing in SEO long-term",
+        ],
+      },
       image_url: "",
       href: "seo-audits-reporting",
       category: "seo",
@@ -663,6 +1158,28 @@ export const services_list_ecod = {
       label: "Facebook & Instagram Ads",
       description:
         "Targeted ads to reach your audience on Facebook and Instagram.",
+      how_it_works:
+        "Leverages Meta's powerful targeting options to deliver highly relevant ads to your ideal customers across Facebook and Instagram platforms.",
+      business_implementation: {
+        setup: [
+          "Define campaign objectives",
+          "Create audience personas",
+          "Develop ad creatives",
+          "Set up conversion tracking",
+        ],
+        optimization: [
+          "A/B test different creatives",
+          "Refine audience targeting",
+          "Adjust bids based on performance",
+          "Scale winning ad sets",
+        ],
+        best_for: [
+          "E-commerce businesses",
+          "Local service providers",
+          "App install campaigns",
+          "Brand awareness campaigns",
+        ],
+      },
       image_url: "",
       href: "facebook-instagram-ads",
       category: "social-media-marketing",
@@ -671,6 +1188,28 @@ export const services_list_ecod = {
       id: 17,
       label: "Content Creation",
       description: "Engaging content tailored for your social media platforms.",
+      how_it_works:
+        "Develops platform-specific content strategies and creatives designed to maximize engagement and brand awareness.",
+      business_implementation: {
+        setup: [
+          "Audit existing content",
+          "Develop content pillars",
+          "Create content calendar",
+          "Establish brand guidelines",
+        ],
+        optimization: [
+          "Analyze engagement metrics",
+          "Adjust content mix based on performance",
+          "Incorporate trending topics",
+          "Leverage user-generated content",
+        ],
+        best_for: [
+          "Brands building social presence",
+          "Businesses with visual products",
+          "Content-driven marketing strategies",
+          "Platform-specific branding",
+        ],
+      },
       image_url: "",
       href: "content-creation",
       category: "social-media-marketing",
@@ -679,6 +1218,28 @@ export const services_list_ecod = {
       id: 18,
       label: "Influencer Marketing",
       description: "Leverage influencers to amplify your brand's reach.",
+      how_it_works:
+        "Identifies and partners with relevant influencers to promote your brand to their engaged audiences.",
+      business_implementation: {
+        setup: [
+          "Identify relevant influencers",
+          "Establish partnership criteria",
+          "Develop campaign briefs",
+          "Create tracking mechanisms",
+        ],
+        optimization: [
+          "Monitor engagement rates",
+          "Adjust influencer mix",
+          "Negotiate performance-based deals",
+          "Scale successful partnerships",
+        ],
+        best_for: [
+          "Lifestyle brands",
+          "Beauty and fashion products",
+          "Consumer packaged goods",
+          "Targeting niche audiences",
+        ],
+      },
       image_url: "",
       href: "influencer-marketing",
       category: "social-media-marketing",
@@ -687,6 +1248,28 @@ export const services_list_ecod = {
       id: 19,
       label: "Community Management",
       description: "Build and engage with your online community.",
+      how_it_works:
+        "Manages all aspects of your social media presence including comments, messages, and engagement to build brand loyalty.",
+      business_implementation: {
+        setup: [
+          "Establish brand voice guidelines",
+          "Set up response protocols",
+          "Create FAQ resources",
+          "Implement monitoring tools",
+        ],
+        optimization: [
+          "Analyze sentiment trends",
+          "Identify brand advocates",
+          "Develop engagement strategies",
+          "Crisis management planning",
+        ],
+        best_for: [
+          "Brands with active social following",
+          "Customer service via social media",
+          "Community-driven businesses",
+          "High-touch customer relationships",
+        ],
+      },
       image_url: "",
       href: "community-management",
       category: "social-media-marketing",
@@ -695,6 +1278,28 @@ export const services_list_ecod = {
       id: 20,
       label: "Social Media Strategy",
       description: "Data-driven strategies to grow your social media presence.",
+      how_it_works:
+        "Develops comprehensive social media roadmaps aligned with business goals, incorporating content, advertising, and engagement tactics.",
+      business_implementation: {
+        setup: [
+          "Conduct competitive analysis",
+          "Define SMART goals",
+          "Select key platforms",
+          "Establish KPIs",
+        ],
+        optimization: [
+          "Monthly performance reviews",
+          "Platform algorithm adjustments",
+          "Content strategy refinements",
+          "Budget reallocation",
+        ],
+        best_for: [
+          "Businesses launching social presence",
+          "Brands expanding to new platforms",
+          "Companies with stagnant growth",
+          "Integrated marketing strategies",
+        ],
+      },
       image_url: "",
       href: "social-media-strategy",
       category: "social-media-marketing",
@@ -706,6 +1311,28 @@ export const services_list_ecod = {
       label: "Custom Shopify Theme Design",
       description:
         "Unique and responsive Shopify themes tailored to your brand.",
+      how_it_works:
+        "Creates completely custom Shopify themes from scratch designed to reflect your brand identity while optimizing for conversions.",
+      business_implementation: {
+        setup: [
+          "Conduct brand discovery",
+          "Create design mockups",
+          "Develop custom liquid templates",
+          "Implement responsive design",
+        ],
+        optimization: [
+          "User testing iterations",
+          "Conversion rate optimization",
+          "Performance benchmarking",
+          "Ongoing maintenance",
+        ],
+        best_for: [
+          "Brands needing unique storefronts",
+          "High-volume e-commerce",
+          "Businesses with strong brand identity",
+          "Stores with specific functionality needs",
+        ],
+      },
       image_url: "",
       href: "custom-shopify-theme-design",
       category: "shopify-theme-development",
@@ -714,6 +1341,28 @@ export const services_list_ecod = {
       id: 22,
       label: "Theme Customization",
       description: "Customize existing Shopify themes to fit your needs.",
+      how_it_works:
+        "Modifies pre-existing Shopify themes with custom code, features, and design elements to better suit your brand and business requirements.",
+      business_implementation: {
+        setup: [
+          "Audit current theme limitations",
+          "Plan customization scope",
+          "Create child theme",
+          "Implement custom features",
+        ],
+        optimization: [
+          "A/B test custom elements",
+          "Monitor performance impacts",
+          "Iterate based on user feedback",
+          "Ensure update compatibility",
+        ],
+        best_for: [
+          "Businesses using premium themes",
+          "Stores needing specific tweaks",
+          "Brands with limited budgets",
+          "Quick turnaround projects",
+        ],
+      },
       image_url: "",
       href: "theme-customization",
       category: "shopify-theme-development",
@@ -722,6 +1371,28 @@ export const services_list_ecod = {
       id: 23,
       label: "Mobile-Optimized Themes",
       description: "Themes designed for seamless mobile experiences.",
+      how_it_works:
+        "Focuses on creating or modifying themes specifically optimized for mobile devices, which account for the majority of e-commerce traffic.",
+      business_implementation: {
+        setup: [
+          "Analyze current mobile experience",
+          "Implement mobile-first design",
+          "Optimize touch interactions",
+          "Streamline checkout flow",
+        ],
+        optimization: [
+          "Monitor mobile conversion rates",
+          "Test different mobile layouts",
+          "Improve page speed on mobile",
+          "Adapt to new mobile standards",
+        ],
+        best_for: [
+          "Businesses with mobile-heavy traffic",
+          "Stores with high cart abandonment",
+          "Brands targeting younger demographics",
+          "Markets with high mobile commerce adoption",
+        ],
+      },
       image_url: "",
       href: "mobile-optimized-themes",
       category: "shopify-theme-development",
@@ -730,6 +1401,28 @@ export const services_list_ecod = {
       id: 24,
       label: "Speed Optimization",
       description: "Optimize your Shopify store for faster loading times.",
+      how_it_works:
+        "Identifies and resolves performance bottlenecks to dramatically improve page load times, which directly impacts conversion rates and SEO.",
+      business_implementation: {
+        setup: [
+          "Run performance audit",
+          "Optimize image assets",
+          "Minify CSS/JavaScript",
+          "Implement lazy loading",
+        ],
+        optimization: [
+          "Monitor speed metrics",
+          "Test third-party app impacts",
+          "Implement CDN solutions",
+          "Stay updated with Shopify performance features",
+        ],
+        best_for: [
+          "Stores with slow load times",
+          "International e-commerce",
+          "Image-heavy product catalogs",
+          "Businesses focused on SEO",
+        ],
+      },
       image_url: "",
       href: "speed-optimization",
       category: "shopify-theme-development",
@@ -738,6 +1431,28 @@ export const services_list_ecod = {
       id: 25,
       label: "App Integration",
       description: "Integrate third-party apps to enhance your Shopify store.",
+      how_it_works:
+        "Carefully selects and implements Shopify apps that add functionality while maintaining site performance and user experience.",
+      business_implementation: {
+        setup: [
+          "Audit business needs",
+          "Research app options",
+          "Test compatibility",
+          "Implement with customizations",
+        ],
+        optimization: [
+          "Monitor app performance",
+          "Consolidate overlapping functionality",
+          "Customize app interfaces",
+          "Stay updated with new app releases",
+        ],
+        best_for: [
+          "Stores needing specific features",
+          "Businesses scaling operations",
+          "Niche e-commerce requirements",
+          "Advanced functionality needs",
+        ],
+      },
       image_url: "",
       href: "app-integration",
       category: "shopify-theme-development",
@@ -748,6 +1463,28 @@ export const services_list_ecod = {
       id: 26,
       label: "Blog Writing",
       description: "High-quality blog posts to engage your audience.",
+      how_it_works:
+        "Develops strategic, well-researched blog content that establishes thought leadership and drives organic traffic.",
+      business_implementation: {
+        setup: [
+          "Conduct keyword research",
+          "Develop content calendar",
+          "Establish brand voice guidelines",
+          "Set up editorial workflow",
+        ],
+        optimization: [
+          "Analyze engagement metrics",
+          "Update evergreen content",
+          "Expand on high-performing topics",
+          "Repurpose top content",
+        ],
+        best_for: [
+          "B2B companies",
+          "Niche expertise businesses",
+          "Content-driven marketing funnels",
+          "Brands building authority",
+        ],
+      },
       image_url: "",
       href: "blog-writing",
       category: "content-marketing",
@@ -757,6 +1494,28 @@ export const services_list_ecod = {
       label: "SEO Content Writing",
       description:
         "Content optimized for search engines to drive organic traffic.",
+      how_it_works:
+        "Creates content specifically designed to rank for target keywords while maintaining readability and value for human readers.",
+      business_implementation: {
+        setup: [
+          "Conduct comprehensive keyword research",
+          "Analyze search intent",
+          "Develop content clusters",
+          "Implement on-page SEO best practices",
+        ],
+        optimization: [
+          "Monitor ranking progress",
+          "Update content based on algorithm changes",
+          "Expand top-performing pieces",
+          "Internal linking optimization",
+        ],
+        best_for: [
+          "Websites focusing on organic growth",
+          "Competitive industries",
+          "Long-term marketing strategies",
+          "Businesses with educational content needs",
+        ],
+      },
       image_url: "",
       href: "seo-content-writing",
       category: "content-marketing",
@@ -765,6 +1524,28 @@ export const services_list_ecod = {
       id: 28,
       label: "Video Script Writing",
       description: "Engaging scripts for your video content.",
+      how_it_works:
+        "Develops compelling video scripts tailored to platform requirements and audience preferences to maximize engagement.",
+      business_implementation: {
+        setup: [
+          "Define video objectives",
+          "Research target audience preferences",
+          "Develop script templates",
+          "Establish brand tone guidelines",
+        ],
+        optimization: [
+          "Analyze viewer retention data",
+          "Test different hooks and CTAs",
+          "Adapt to platform algorithm changes",
+          "Repurpose top-performing scripts",
+        ],
+        best_for: [
+          "YouTube channel growth",
+          "Social media video content",
+          "Explainer videos",
+          "Product demonstration content",
+        ],
+      },
       image_url: "",
       href: "video-script-writing",
       category: "content-marketing",
@@ -773,6 +1554,28 @@ export const services_list_ecod = {
       id: 29,
       label: "Copywriting",
       description: "Compelling copy to drive conversions and sales.",
+      how_it_works:
+        "Creates persuasive, benefit-driven copy for websites, ads, and marketing materials designed to convert readers into customers.",
+      business_implementation: {
+        setup: [
+          "Conduct customer research",
+          "Identify key pain points",
+          "Develop unique value propositions",
+          "Create messaging hierarchy",
+        ],
+        optimization: [
+          "A/B test different copy variations",
+          "Analyze conversion data",
+          "Refine based on customer feedback",
+          "Update for market trends",
+        ],
+        best_for: [
+          "Landing pages",
+          "Advertising campaigns",
+          "Email marketing",
+          "Product descriptions",
+        ],
+      },
       image_url: "",
       href: "copywriting",
       category: "content-marketing",
@@ -781,6 +1584,28 @@ export const services_list_ecod = {
       id: 30,
       label: "Content Strategy",
       description: "Strategic planning to align content with business goals.",
+      how_it_works:
+        "Develops comprehensive content roadmaps that align with business objectives, audience needs, and distribution channels.",
+      business_implementation: {
+        setup: [
+          "Conduct audience research",
+          "Perform content audit",
+          "Map customer journey",
+          "Develop channel-specific strategies",
+        ],
+        optimization: [
+          "Regular performance reviews",
+          "Adjust based on analytics",
+          "Incorporate new content formats",
+          "Realign with business goals",
+        ],
+        best_for: [
+          "Businesses launching content programs",
+          "Brands with disjointed content",
+          "Companies scaling content production",
+          "Integrated marketing strategies",
+        ],
+      },
       image_url: "",
       href: "content-strategy",
       category: "content-marketing",
@@ -791,6 +1616,28 @@ export const services_list_ecod = {
       id: 31,
       label: "Email Campaign Management",
       description: "End-to-end management of your email marketing campaigns.",
+      how_it_works:
+        "Handles all aspects of email marketing from strategy and design to execution, analysis, and optimization.",
+      business_implementation: {
+        setup: [
+          "Select email marketing platform",
+          "Segment email lists",
+          "Develop campaign calendar",
+          "Set up tracking and analytics",
+        ],
+        optimization: [
+          "Analyze open/click rates",
+          "Test send times and frequencies",
+          "Refine segmentation",
+          "Personalize content",
+        ],
+        best_for: [
+          "E-commerce businesses",
+          "Lead nurturing",
+          "Customer retention",
+          "Promotional campaigns",
+        ],
+      },
       image_url: "",
       href: "email-campaign-management",
       category: "email-marketing",
@@ -800,6 +1647,28 @@ export const services_list_ecod = {
       label: "Newsletter Design",
       description:
         "Professionally designed newsletters to engage your audience.",
+      how_it_works:
+        "Creates visually appealing, brand-consistent email templates optimized for various devices and email clients.",
+      business_implementation: {
+        setup: [
+          "Establish brand guidelines",
+          "Design responsive templates",
+          "Create modular content blocks",
+          "Test across email clients",
+        ],
+        optimization: [
+          "Monitor engagement by design elements",
+          "Simplify layouts based on performance",
+          "Update visual trends",
+          "Personalize design variations",
+        ],
+        best_for: [
+          "Regular newsletter senders",
+          "Content publishers",
+          "B2B communications",
+          "Brand awareness campaigns",
+        ],
+      },
       image_url: "",
       href: "newsletter-design",
       category: "email-marketing",
@@ -808,6 +1677,28 @@ export const services_list_ecod = {
       id: 33,
       label: "Automated Email Sequences",
       description: "Automated email workflows to nurture leads and customers.",
+      how_it_works:
+        "Builds trigger-based email sequences that automatically send based on user actions or predefined schedules.",
+      business_implementation: {
+        setup: [
+          "Map customer journey",
+          "Identify trigger points",
+          "Develop sequence content",
+          "Set up automation rules",
+        ],
+        optimization: [
+          "Analyze sequence performance",
+          "Test different delay times",
+          "Personalize based on behavior",
+          "Prune underperforming emails",
+        ],
+        best_for: [
+          "Lead nurturing",
+          "Onboarding sequences",
+          "Abandoned cart recovery",
+          "Customer re-engagement",
+        ],
+      },
       image_url: "",
       href: "automated-email-sequences",
       category: "email-marketing",
@@ -816,6 +1707,28 @@ export const services_list_ecod = {
       id: 34,
       label: "Personalized Email Marketing",
       description: "Personalized email campaigns to increase engagement.",
+      how_it_works:
+        "Leverages customer data to deliver highly relevant, individualized email content at scale.",
+      business_implementation: {
+        setup: [
+          "Integrate CRM/data sources",
+          "Define personalization rules",
+          "Create dynamic content blocks",
+          "Establish data hygiene processes",
+        ],
+        optimization: [
+          "Test personalization levels",
+          "Refine segmentation",
+          "Incorporate real-time data",
+          "Balance automation with human touch",
+        ],
+        best_for: [
+          "Businesses with rich customer data",
+          "E-commerce product recommendations",
+          "Localized marketing",
+          "Customer loyalty programs",
+        ],
+      },
       image_url: "",
       href: "personalized-email-marketing",
       category: "email-marketing",
@@ -824,6 +1737,28 @@ export const services_list_ecod = {
       id: 35,
       label: "A/B Testing & Optimization",
       description: "Test and optimize your email campaigns for better results.",
+      how_it_works:
+        "Systematically tests different email elements to identify the highest performing variations and continuously improve results.",
+      business_implementation: {
+        setup: [
+          "Identify key test variables",
+          "Establish testing methodology",
+          "Set up tracking for reliable data",
+          "Determine sample sizes",
+        ],
+        optimization: [
+          "Implement winning variations",
+          "Explore new test hypotheses",
+          "Segment test results",
+          "Document learnings",
+        ],
+        best_for: [
+          "Mature email programs",
+          "High-volume senders",
+          "Conversion-focused campaigns",
+          "Data-driven marketing teams",
+        ],
+      },
       image_url: "",
       href: "ab-testing-optimization",
       category: "email-marketing",
@@ -1115,4 +2050,34 @@ export const benefits_data = [
     svgTips:
       "Use icons that represent content types (e.g., blogs, videos). Ensure the SVG is responsive for all devices.",
   },
+];
+
+export const customer_budget_range = [
+  { label: "$0 - $50", value: "0-50" },
+  { label: "$50 - $100", value: "50-100" },
+  { label: "$100 - $200", value: "100-200" },
+  { label: "$200 - $500", value: "200-500" },
+  { label: "$500 - $1000", value: "500-1000" },
+  { label: "$1000 - $2000", value: "1000-2000" },
+  { label: "$2000 - $5000", value: "2000-5000" },
+  { label: "$5000 - $10000", value: "5000-10000" },
+  { label: "$10000+", value: "10000+" },
+  { label: "Custom", value: "custom" },
+  { label: "Not sure", value: "not-sure" },
+];
+
+export const customer_porject_timeline = [
+  { label: "1 Day", value: "1-day" },
+  { label: "2 Days", value: "2-days" },
+  { label: "1 Week", value: "1-week" },
+  { label: "2 Weeks", value: "2-weeks" },
+  { label: "4 Weeks", value: "4-weeks" },
+  { label: "1 Month", value: "1-month" },
+  { label: "3 Months", value: "3-months" },
+  { label: "6 Months", value: "6-months" },
+  { label: "9 Months", value: "9-months" },
+  { label: "12 Months", value: "12-months" },
+  { label: "Ongoing", value: "ongoing" },
+  { label: "Custom", value: "custom" },
+  { label: "Not sure", value: "not-sure" },
 ];

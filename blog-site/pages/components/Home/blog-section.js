@@ -18,7 +18,7 @@ import {
   User,
   Tag,
 } from "lucide-react";
-import { allBlogs, blog_services } from "@/data/blog_data";
+import { allBlogs, blog_services } from "../../../data/blog_data";
 import { useRouter } from "next/router";
 import { useInView } from "react-intersection-observer";
 
@@ -193,8 +193,8 @@ const HomeBlog = () => {
           {blogs.map((blog, index) => (
             <SwiperSlide key={index}>
               <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={swiperInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={swiperInView ? { opacity: 1, scale: 1 } : {}}
                 transition={{
                   duration: 0.5,
                   ease: "easeOut",

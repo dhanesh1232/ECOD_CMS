@@ -109,7 +109,7 @@ const StickyContactButton = ({
 
   return (
     <div
-      className={`fixed bottom-4 sm:bottom-6 right-4 space-y-2 sm:right-6 z-40 ${className}`}
+      className={`fixed bottom-4 sm:bottom-6 right-4 space-y-2 sm:right-6 z-20 ${className}`}
     >
       <ScrollToTopButton />
 

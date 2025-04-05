@@ -12,7 +12,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { data } from "@/data/service_data";
+import { data } from "../../../data/service_data";
 import { Search, BarChart2, Share2, Rocket, ArrowRight } from "lucide-react";
 const Buttons = dynamic(() => import("../Reusable/buttons"));
 
@@ -50,6 +50,17 @@ const DigitalMarketing = () => {
       stats: "3-5x engagement boost",
     },
   ];
+
+  const handleContactModel = () => {
+    const clickData = {
+      timestamp: new Date().toISOString(),
+      modelOpen: true,
+    };
+
+    // Save the individual click
+    localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
+    window.location.reload();
+  };
 
   return (
     <section className="w-full py-20 px-4 sm:px-8 bg-gradient-to-br from-blue-50/50 via-white/50 to-blue-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50 backdrop-blur-sm relative overflow-hidden">
@@ -308,8 +319,8 @@ const DigitalMarketing = () => {
                 <Buttons
                   first_nav="/services/web-development"
                   first_label="Get Started"
-                  second_nav="/contact"
                   second_label="Book Consultation"
+                  buttonActionTwo={handleContactModel}
                   icon={true}
                   first_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/90 hover:bg-white text-blue-600 hover:text-blue-700 font-semibold rounded-lg hover:scale-105 transition-transform ease-in-out backdrop-blur-sm"
                   second_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white/80 hover:border-white text-white hover:bg-white/10 font-semibold rounded-lg hover:scale-105 transition-transform backdrop-blur-sm"

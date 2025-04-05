@@ -1,26 +1,18 @@
 import dynamic from "next/dynamic";
 import { motion, useReducedMotion } from "framer-motion";
-import { TrustSVG } from "@/public/Assets/svg";
-import ClickSpark from "../Reusable/sparkle";
+import { TrustSVG } from "../../../public/Assets/svg";
 import LoaderSpinner from "../Reusable/Spinner/spinner";
-import { ChevronsDown, Rocket, Sparkles } from "lucide-react";
+import { ChevronsDown, Rocket, Sparkles, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import Head from "next/head";
 
-// Dynamically import heavy components
-const Threads = dynamic(() => import("../Reusable/thread"), {
-  ssr: false,
-  loading: () => null,
-});
-
-// Corrected TypeAnimation import
 const TypeAnimation = dynamic(
   () => import("react-type-animation").then((mod) => mod.TypeAnimation),
   {
     ssr: false,
     loading: () => (
-      <span className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-        Transform Your Vision Into Reality 🚀
+      <span className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+        Custom Web Development Solutions
       </span>
     ),
   }
@@ -42,69 +34,68 @@ const Buttons = dynamic(() => import("../Reusable/buttons"), {
 
 const HeroSection = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [frstLabel, setFrstLabel] = useState("Learn More");
   const shouldReduceMotion = useReducedMotion() || isMobile;
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      setFrstLabel(mobile ? "Learn" : "Learn More");
+      setIsMobile(window.innerWidth < 768);
     };
 
-    // Set initial values
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Animation variants that respect device capabilities
+  // Animation variants
   const containerVariants = {
     hidden: {
       opacity: shouldReduceMotion ? 1 : 0,
-      y: shouldReduceMotion ? 0 : isMobile ? -20 : -50,
+      y: shouldReduceMotion ? 0 : -30,
     },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        staggerChildren: isMobile ? 0.1 : 0.2,
-        delayChildren: isMobile ? 0.1 : 0.3,
-      },
-    },
-  };
-
-  const buttonVariants = {
-    hidden: {
-      opacity: shouldReduceMotion ? 1 : 0,
-      scale: shouldReduceMotion ? 1 : 0.8,
-    },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 10,
+        staggerChildren: 0.2,
+        delayChildren: 0.3,
       },
     },
   };
 
   const childVariants = {
-    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 20 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.8,
-        ease: [0.16, 1, 0.3, 1],
-      },
+      transition: { duration: 0.6, ease: "easeOut" },
     },
   };
 
-  const particleCount = isMobile ? 8 : 15;
-  const typeSpeed = isMobile ? 30 : 50;
-  const deletionSpeed = isMobile ? 50 : 70;
+  const buttonVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { type: "spring", stiffness: 300 },
+    },
+  };
+
+  // Trust badges data
+  const trustBadges = [
+    { text: "24/7 Support", icon: <Sparkles className="w-4 h-4" /> },
+    { text: "100% Satisfaction", icon: <Check className="w-4 h-4" /> },
+  ];
+
+  const handleContactModel = () => {
+    const clickData = {
+      timestamp: new Date().toISOString(),
+      modelOpen: true,
+    };
+
+    // Save the individual click
+    localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
+    window.location.reload();
+  };
 
   return (
     <>
@@ -113,63 +104,44 @@ const HeroSection = () => {
       </Head>
 
       <section
-        className="w-full h-[500px] md:h-[700px] flex flex-col items-center justify-center px-4 sm:px-6 relative overflow-hidden transition-all ease-in-out duration-150"
+        className="w-full h-[600px] md:h-[700px] flex flex-col items-center justify-center px-4 sm:px-6 relative overflow-hidden"
         aria-label="Hero Section"
-        data-testid="hero-section"
         id="hero-section"
       >
-        {/* Optimized Background */}
-        <div
-          className={`absolute inset-0 ${
-            isMobile
-              ? "bg-blue-600/90"
-              : "bg-gradient-to-br from-blue-600/90 via-indigo-600/90 to-purple-600/90"
-          } backdrop-blur-md z-0`}
-        />
-        {/* Simplified Particle Background */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          {Array.from({ length: particleCount }).map((_, i) => (
-            <div
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 z-0" />
+
+        {/* Particle Background - WORKING VERSION */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: isMobile ? 10 : 20 }).map((_, i) => (
+            <motion.div
               key={`particle-${i}`}
-              className="absolute rounded-full bg-white/10"
+              className="absolute rounded-full bg-white/20"
+              initial={{
+                opacity: 0,
+                x: Math.random() * 100 - 50,
+                y: Math.random() * 100 - 50,
+              }}
+              animate={{
+                opacity: [0, 0.4, 0],
+                x: `${Math.random() * 200 - 100}px`,
+                y: `${Math.random() * 200 - 100}px`,
+              }}
+              transition={{
+                duration: Math.random() * 15 + 10,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "linear",
+              }}
               style={{
-                width: `${Math.random() * 10 + 5}px`,
-                height: `${Math.random() * 10 + 5}px`,
-                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 6 + 3}px`,
+                height: `${Math.random() * 6 + 3}px`,
                 left: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 10 + 10}s linear infinite`,
-                animationDelay: `${Math.random() * 5}s`,
+                top: `${Math.random() * 100}%`,
               }}
             />
           ))}
         </div>
-        {/* Conditional Animated Gradient Overlay */}
-        {!isMobile && (
-          <div className="absolute inset-0 z-0 opacity-30">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent animate-pulse-slow" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,_var(--tw-gradient-stops))] from-indigo-400/20 via-transparent to-transparent animate-pulse-slow delay-1000" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_30%,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent animate-pulse-slow delay-1500" />
-          </div>
-        )}
-        {!shouldReduceMotion && (
-          <ClickSpark
-            sparkColor="rgba(255,255,255,0.9)"
-            sparkCount={isMobile ? 10 : 20}
-            extraScale={1.5}
-            duration={800}
-            easing="ease-in-out"
-          />
-        )}
-        {!isMobile && (
-          <div className="absolute w-full h-full">
-            <Threads
-              amplitude={1.5}
-              distance={20}
-              enableMouseInteraction={true}
-              linecolor="rgba(255,255,255,0.15)"
-            />
-          </div>
-        )}
         {/* Conditional Floating Glass Elements */}
         <>
           <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 animate-float-slow hover:scale-110 transition-transform duration-300" />
@@ -177,139 +149,133 @@ const HeroSection = () => {
           <div className="absolute top-1/3 right-1/3 w-24 h-24 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 animate-float-fast delay-500 hover:scale-110 transition-transform duration-300" />
           <div className="absolute bottom-1/4 left-1/3 w-28 h-28 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 animate-float-slow delay-1500 hover:scale-110 transition-transform duration-300" />
         </>
-        {/* Hero Content */}
+
+        {/* Main Content */}
         <motion.div
           initial="hidden"
           animate="visible"
           variants={containerVariants}
           className="z-10 text-center flex flex-col items-center justify-center max-w-6xl mx-auto"
-          role="banner"
         >
-          <motion.div variants={childVariants} className="mb-1 md:mb-4">
-            <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white/90 text-sm font-medium border border-white/10 hover:bg-white/15 hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300 group">
-              <Rocket className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-              Digital Transformation
-              <Sparkles className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </span>
+          {/* Trust Badge */}
+          <motion.div variants={childVariants} className="mb-4 md:mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+              <Rocket className="w-4 h-4 text-blue-300" />
+              <span className="text-sm font-medium text-white/90">
+                Trusted by 100+ Businesses
+              </span>
+            </div>
           </motion.div>
 
-          <motion.h1 variants={childVariants} className="mb-1 md:mb-6">
-            <div className="flex items-center justify-center">
-              {typeof window !== "undefined" && (
-                <TypeAnimation
-                  sequence={
-                    isMobile
-                      ? [
-                          "Transform Your Vision 🚀",
-                          2000,
-                          "Build Your Future 🚀",
-                          2000,
-                        ]
-                      : [
-                          "Transform Your Vision Into Reality 🚀",
-                          2000,
-                          "Build Your Digital Future 🚀",
-                          2000,
-                          "Create Powerful Web Experiences 🚀",
-                          2000,
-                          "Grow Your Online Presence 🚀",
-                          2000,
-                          "Innovate With Cutting-Edge Tech 🚀",
-                          2000,
-                        ]
-                  }
-                  wrapper="span"
-                  speed={typeSpeed}
-                  deletionSpeed={deletionSpeed}
-                  repeat={Infinity}
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent"
-                  cursor={!shouldReduceMotion}
-                />
-              )}
-            </div>
+          {/* Headline */}
+          <motion.h1 variants={childVariants} className="mb-4 md:mb-6">
+            <TypeAnimation
+              sequence={[
+                "Custom Web Development Solutions",
+                2000,
+                "High-Performance Websites & Apps",
+                2000,
+                "SEO-Optimized Business Sites",
+                2000,
+                "Scalable E-Commerce Platforms",
+                2000,
+              ]}
+              wrapper="span"
+              speed={50}
+              deletionSpeed={70}
+              repeat={Infinity}
+              className="text-2xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+              cursor={!shouldReduceMotion}
+            />
           </motion.h1>
 
+          {/* Subheading */}
           <motion.p
             variants={childVariants}
-            transition={{ delay: 0.2 }}
-            className="text-lg sm:text-xl md:text-2xl max-w-3xl mb-2 md:mb-8 leading-relaxed text-blue-100/90"
+            className="text-base sm:text-lg md:text-xl max-w-3xl mb-6 md:mb-8 text-white/90 leading-relaxed"
           >
-            <span className="block sm:hidden">
-              We create blazing-fast, scalable websites and web apps that
-              deliver real results.
-            </span>
-            <span className="sm:block hidden">
-              We create blazing-fast, scalable websites and web apps that
-              deliver real results. From sleek business sites to powerful
-              eCommerce platforms and modern SaaS solutions.
+            We design & develop{" "}
+            <span className="font-semibold text-white">
+              blazing-fast websites
+            </span>{" "}
+            that convert visitors into customers. Perfect for businesses looking
+            to{" "}
+            <span className="font-semibold text-white">
+              scale their online presence.
             </span>
           </motion.p>
+
+          {/* Trust Badges */}
+          <motion.div
+            variants={childVariants}
+            className="flex flex-wrap justify-center gap-3 mb-6 md:mb-8"
+          >
+            {trustBadges.map((badge, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10"
+              >
+                {badge.icon}
+                <span className="text-sm text-white/80">{badge.text}</span>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <motion.div
+            variants={buttonVariants}
+            className="flex flex-wrap justify-center gap-4 z-50"
+          >
+            <Buttons
+              first_label={"See Our Work"}
+              second_label={"Get Free Consultation"}
+              first_nav={"/services"}
+              buttonActionTwo={handleContactModel}
+              first_styles={
+                "px-6 py-3 md:px-8 md:py-3.5 border-2 border-white/20 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-300"
+              }
+              second_styles={
+                "px-6 py-3 md:px-8 md:py-3.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-medium rounded-lg hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all duration-300"
+              }
+            />
+          </motion.div>
         </motion.div>
-        {/* Buttons */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={buttonVariants}
-          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-          className="flex items-center gap-3 sm:gap-4 z-50 relative mt-2"
-          role="navigation"
-          aria-label="navigation"
-        >
-          <Buttons
-            first_label={frstLabel}
-            second_label={"Contact"}
-            first_nav={"/services"}
-            second_nav={"/contact"}
-            first_styles={
-              "px-8 py-3.5 bg-gradient-to-r flex-inline items-center from-blue-400/90 to-indigo-500/90 hover:from-blue-300/90 hover:to-indigo-400/90 text-white font-semibold rounded-lg hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] transition-all duration-300 hover:scale-105 backdrop-blur-sm border border-white/20 hover:animate-pulse"
-            }
-            second_styles={
-              "px-8 py-3.5 border-2 border-white/30 hover:border-blue-200/50 text-white font-semibold rounded-lg hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all duration-300 hover:scale-105 backdrop-blur-sm hover:animate-pulse"
-            }
-          />
-        </motion.div>
+
         {/* Scroll Indicator */}
         {!shouldReduceMotion && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
-            className="absolute bottom-10 transform -translate-x-1/2 z-10 flex flex-col items-center group cursor-pointer"
-            onClick={() => {
-              document
-                .getElementById("content-section")
-                ?.scrollIntoView({ behavior: "smooth" });
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+            className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
           >
-            <div className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 animate-pulse group-hover:bg-white/20 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
-              <ChevronsDown className="w-6 h-6 text-white/80 animate-bounce group-hover:text-white" />
-            </div>
-            <span className="text-xs text-white/60 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Scroll to explore
-            </span>
+            <button
+              onClick={() =>
+                document
+                  .getElementById("services")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="p-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/15 transition-colors duration-300"
+              aria-label="Scroll down"
+            >
+              <ChevronsDown className="w-5 h-5 text-white animate-bounce" />
+            </button>
           </motion.div>
         )}
-        {/* Trust Badge */}
-        <div className="absolute transform right-2 md:right-4 z-10 flex items-center bottom-0 sm:bottom-2 gap-2 p-2 rounded-lg sm:bg-white/5 sm:backdrop-blur-sm sm:border border-white/10 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
-          <span className="text-sm text-white/80 hidden sm:inline-block">
-            Trusted by
-          </span>
-          <TrustSVG
-            width={50}
-            height={40}
-            color="#026607"
-            aria-label="Trust Badge"
-            className="hover:scale-105 transition-transform duration-200"
-          />
-        </div>
-        {/* Mobile CTA */}
-        {isMobile && (
-          <div className="fixed bottom-4 left-4 z-50">
-            <button className="p-3 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full shadow-lg hover:shadow-[0_0_20px_rgba(59,130,246,0.7)] transition-all duration-300">
-              <Rocket className="w-6 h-6 text-white" />
-            </button>
+
+        {/* Client Logos (Optional - Add your own logos) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="absolute bottom-4 right-4 flex justify-center gap-6 md:gap-10 opacity-80"
+        >
+          {/* Replace with your client logos */}
+          <div className="inline-flex items-center grayscale border px-2 border-gray-500 p-1 rounded bg-gray-500/20 contrast-200 brightness-0 invert-[1] opacity-60">
+            <span className="text-xs">Trusted By</span>{" "}
+            <TrustSVG width={40} height={30} color="green" />
           </div>
-        )}
+        </motion.div>
       </section>
     </>
   );

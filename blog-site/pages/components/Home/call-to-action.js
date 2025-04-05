@@ -2,8 +2,8 @@
 import dynamic from "next/dynamic";
 import React from "react";
 import { useState } from "react";
-import { benefits_data as benefits } from "@/data/service_data";
-import { data_traffic as data } from "@/data/service_data";
+import { benefits_data as benefits } from "../../../data/service_data";
+import { data_traffic as data } from "../../../data/service_data";
 import { motion } from "framer-motion";
 import {
   BarChart,
@@ -38,6 +38,17 @@ const GrowYourBusiness = () => {
       <Users key="users" />,
     ][i],
   }));
+
+  const handleContactModel = () => {
+    const clickData = {
+      timestamp: new Date().toISOString(),
+      modelOpen: true,
+    };
+
+    // Save the individual click
+    localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
+    window.location.reload();
+  };
 
   return (
     <>
@@ -264,7 +275,7 @@ const GrowYourBusiness = () => {
                 </p>
                 <Buttons
                   first_label="Get Started"
-                  first_nav="/contact"
+                  buttonActionOne={handleContactModel}
                   first_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/90 hover:bg-white text-blue-800 hover:text-blue-900 font-bold rounded-lg hover:scale-105 transition-transform shadow-lg backdrop-blur-sm"
                   icon={<Rocket className="w-5 h-5" />}
                 />

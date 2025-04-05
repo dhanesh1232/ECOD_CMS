@@ -1,9 +1,11 @@
 "use client";
 
-import { services_list_ecod } from "@/data/service_data";
-import { services_ecod } from "@/data/service_data";
-import { adPerformanceData } from "@/data/service_data";
-import { allCategories } from "@/data/service_data";
+import {
+  services_list_ecod,
+  allCategories,
+  services_ecod,
+  adPerformanceData,
+} from "../../data/service_data";
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";

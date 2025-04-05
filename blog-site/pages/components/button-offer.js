@@ -100,7 +100,7 @@ const OfferButton = () => {
               damping: 20,
             }}
             onClick={openPopup}
-            className="fixed bottom-6 left-6 z-40 h-14 w-14 rounded-full shadow-xl flex items-center justify-center text-white bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 transition-all group backdrop-blur-sm border border-amber-400/30"
+            className="fixed bottom-6 left-6 z-20 h-14 w-14 rounded-full shadow-xl flex items-center justify-center text-white bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 transition-all group backdrop-blur-sm border border-amber-400/30"
             aria-label="View special offers"
           >
             {/* Sparkle effects */}

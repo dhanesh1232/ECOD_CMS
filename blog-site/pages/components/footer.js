@@ -1,4 +1,4 @@
-import { TrustSVG } from "@/public/Assets/svg";
+import { TrustSVG } from "../../public/Assets/svg";
 import Link from "next/link";
 import {
   FaFacebookF,
@@ -74,19 +74,19 @@ const quickLinks = [
 ];
 
 const services = [
-  { label: "Web Development", slug: "/services/web-development" },
-  { label: "Google | Meta Ads", slug: "/services/google-meta-ads" },
+  { label: "Web Development", slug: "web-development" },
+  { label: "Google | Meta Ads", slug: "google-meta-ads" },
   { label: "SEO", slug: "seo" },
   {
     label: "Social Media Marketing",
-    slug: "/services/social-media-marketing",
+    slug: "social-media-marketing",
   },
   {
     label: "Shopify Optimization",
-    slug: "/services/shopify-optimization",
+    slug: "shopify-optimization",
   },
-  { label: "Content Marketing", slug: "/services/content-marketing" },
-  { label: "Email Marketing", slug: "/services/email-marketing" },
+  { label: "Content Marketing", slug: "content-marketing" },
+  { label: "Email Marketing", slug: "email-marketing" },
 ];
 
 const testimonials = [
@@ -106,6 +106,7 @@ const testimonials = [
 
 const Footer = () => {
   const router = useRouter();
+  const { category } = router.query;
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -157,7 +158,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-white pt-20 pb-10 relative overflow-hidden">
+    <footer className="bg-gradient-to-br from-gray-900 z-0 to-gray-800 text-white pt-20 pb-10 relative overflow-hidden">
       {/* Floating gradient elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent opacity-30"></div>
@@ -211,8 +212,8 @@ const Footer = () => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <Link
-                    href={`${service.slug}`}
-                    className="flex items-center text-gray-400 hover:text-blue-400 transition-colors group"
+                    href={`/services/${service.slug}`}
+                    className={`flex items-center text-gray-400 ${category === service.slug ? "text-green-600" : "hover:text-blue-400"} transition-colors group`}
                     aria-label={`Learn more about ${service.label}`}
                   >
                     <motion.span

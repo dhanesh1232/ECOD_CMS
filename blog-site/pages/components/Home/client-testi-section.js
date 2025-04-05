@@ -7,7 +7,7 @@ import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
-import { testimonials } from "@/data/web_data";
+import { testimonials } from "../../../data/web_data";
 import dynamic from "next/dynamic";
 import { Quote, Star, ChevronRight, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/router";

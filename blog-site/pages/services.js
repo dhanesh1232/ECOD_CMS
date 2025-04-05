@@ -1,4 +1,4 @@
-import { eco_services, services_ecod } from "@/data/service_data";
+import { eco_services, services_ecod } from "../data/service_data";
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";

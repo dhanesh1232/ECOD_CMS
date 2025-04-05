@@ -9,7 +9,8 @@ const Buttons = ({
   second_styles = "",
   second_nav = "",
   icon,
-  buttonAction = () => {},
+  buttonActionOne = () => {},
+  buttonActionTwo = () => {},
 }) => {
   const icons = () => {
     switch (icon) {
@@ -21,6 +22,7 @@ const Buttons = ({
         return null;
     }
   };
+
   return (
     <>
       {first_label &&
@@ -33,19 +35,34 @@ const Buttons = ({
             {first_label} {icons(icon)}
           </Link>
         ) : (
-          <button type="button" onClick={buttonAction} className={first_styles}>
+          <button
+            type="button"
+            onClick={buttonActionOne}
+            className={first_styles}
+            aria-label={first_label}
+          >
             {first_label}
           </button>
         ))}
-      {second_label && (
-        <Link
-          href={second_nav}
-          className={second_styles}
-          aria-label={second_label}
-        >
-          {second_label}
-        </Link>
-      )}
+      {second_label &&
+        (second_nav.includes("/") ? (
+          <Link
+            href={second_nav}
+            className={second_styles}
+            aria-label={second_label}
+          >
+            {second_label}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={buttonActionTwo}
+            aria-label={second_label}
+            className={second_styles}
+          >
+            {second_label}
+          </button>
+        ))}
     </>
   );
 };

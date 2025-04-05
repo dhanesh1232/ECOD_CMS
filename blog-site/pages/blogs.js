@@ -1,6 +1,6 @@
 "use client";
 
-import { blog_services, allBlogs } from "@/data/blog_data";
+import { blog_services, allBlogs } from "../data/blog_data";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Search, BookOpen } from "lucide-react";
@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import HeadSEO from "./components/Reusable/seo_head";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaginationControls } from "../hooks/pagination-control";
-import { usePagination } from "@/hooks/use-pagination";
+import { usePagination } from "../hooks/use-pagination";
 
 const CategorySelector = dynamic(
   () => import("./components/Reusable/CategorySelector"),

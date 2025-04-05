@@ -87,7 +87,7 @@ const CookiePopup = () => {
             damping: 25,
             stiffness: 120,
           }}
-          className="fixed inset-x-0 bottom-0 bg-white p-6 shadow-2xl sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md sm:rounded-xl border border-gray-200 z-[999]"
+          className="fixed inset-x-0 bottom-0 bg-white p-6 shadow-2xl sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-md sm:rounded-xl border border-gray-200 z-[99]"
         >
           <div className="flex items-start gap-3 mb-4">
             <span className="text-2xl">🔒</span>

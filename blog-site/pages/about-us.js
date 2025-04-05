@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   FiArrowRight,
   FiCheckCircle,
@@ -20,7 +20,7 @@ import {
   FaHandshake,
   FaLightbulb,
 } from "react-icons/fa";
-import { experties_data } from "@/data/shopify";
+import { experties_data } from "../data/shopify";
 
 // Dynamic imports with better loading states
 const TeamMemberCard = dynamic(() => import("./components/About/team"), {

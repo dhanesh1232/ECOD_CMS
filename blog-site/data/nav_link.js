@@ -7,7 +7,7 @@ export const nav_list = [
       { label: "All Services", slug: "/services/" },
       { label: "Web Development", slug: "/services/web-development" },
       { label: "Google | Meta Ads", slug: "/services/google-meta-ads" },
-      { label: "SEO", slug: "seo" },
+      { label: "SEO", slug: "/services/seo" },
       {
         label: "Social Media Marketing",
         slug: "/services/social-media-marketing",

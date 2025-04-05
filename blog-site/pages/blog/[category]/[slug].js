@@ -3,7 +3,7 @@
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { allBlogs } from "@/data/blog_data";
+import { allBlogs } from "../../../data/blog_data";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiArrowLeft,

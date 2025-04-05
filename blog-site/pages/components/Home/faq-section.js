@@ -8,7 +8,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { faqs } from "@/data/faq";
+import { faqs } from "../../../data/faq";
 import { useRouter } from "next/router";
 import { useInView } from "react-intersection-observer";
 

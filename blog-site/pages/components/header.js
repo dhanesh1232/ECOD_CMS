@@ -1,13 +1,13 @@
 "use client";
-import { nav_list } from "@/data/nav_link";
+import { nav_list } from "../../data/nav_link";
 import { ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-import { searchData } from "@/data/search_data";
+import { searchData } from "../../data/search_data";
 import Image from "next/image";
-import { policy_data } from "@/data/policies_data";
+import { policy_data } from "../../data/policies_data";
 const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
   const [navScrolled, setNavScrolled] = useState(false);
@@ -245,9 +245,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 ${router.pathname === "/preview" ? "z-0" : "z-50"} w-full py-3 px-4 transition-all duration-300 ${
+        className={`fixed top-0 ${router.pathname === "/preview" ? "z-0" : "z-50"} z-40 w-full py-3 px-4 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border-b z-50 border-white/10 dark:border-gray-800"
+            ? "bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border-b border-white/10 dark:border-gray-800"
             : "bg-white/5 dark:bg-gray-900/5 backdrop-blur-sm"
         }`}
       >
