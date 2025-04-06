@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import { useRouter } from "next/router";
+import {
+  X,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Mail,
+  Phone,
+} from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -11,7 +17,8 @@ import {
 } from "../../data/service_data";
 
 const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE;
-// Temporary email domains to block
+
+// Constants
 const TEMP_EMAIL_DOMAINS = [
   "temp-mail.org",
   "mailinator.com",
@@ -22,13 +29,12 @@ const TEMP_EMAIL_DOMAINS = [
   "fakeinbox.com",
   "tempmailaddress.com",
 ];
-
-const MAX_FORM_SUBMISSIONS = 10; // Max submissions in 24 hours
+const MAX_FORM_SUBMISSIONS = 10;
 const VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10 minutes
+const RESEND_COOLDOWN = 60; // seconds
 
 const ContactModel = () => {
-  const router = useRouter();
-  const [openSection, setOpenSection] = useState("personal");
+  // State management
   const [isContactModel, setIsContactModel] = useState(false);
   const [currentStage, setCurrentStage] = useState(1);
   const formRef = useRef(null);
@@ -36,39 +42,12 @@ const ContactModel = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [defaultCountry, setDefaultCountry] = useState("US");
 
-  // Track touched fields for validation
-  const [touchedFields, setTouchedFields] = useState({
-    personalInfo: {
-      name: false,
-      email: false,
-      phone: false,
-    },
-    serviceDetails: {
-      serviceType: false,
-      budget: false,
-      timeline: false,
-    },
-    projectBrief: {
-      description: false,
-      referenceLinks: false,
-      budgetDetails: false,
-      timelineDetails: false,
-    },
-  });
-
-  // Form data state
+  // Form data and validation
   const [formData, setFormData] = useState({
-    personalInfo: {
-      name: "",
-      email: "",
-      phone: "",
-    },
-    serviceDetails: {
-      serviceType: "",
-      budget: "",
-      timeline: "",
-    },
+    personalInfo: { name: "", email: "", phone: "" },
+    serviceDetails: { serviceType: "", budget: "", timeline: "" },
     projectBrief: {
       description: "",
       referenceLinks: "",
@@ -77,22 +56,56 @@ const ContactModel = () => {
     },
   });
 
-  // Fraud prevention state
-  const [formSubmissions, setFormSubmissions] = useState(0);
+  const [touchedFields, setTouchedFields] = useState({
+    personalInfo: { name: false, email: false, phone: false },
+    serviceDetails: { serviceType: false, budget: false, timeline: false },
+    projectBrief: {
+      description: false,
+      referenceLinks: false,
+      budgetDetails: false,
+      timelineDetails: false,
+    },
+  });
+
+  // Verification states
   const [recaptchaToken, setRecaptchaToken] = useState(null);
-  const [ipAddress, setIpAddress] = useState(null);
-  const [userAgent, setUserAgent] = useState(null);
-  const [formFingerprint, setFormFingerprint] = useState(null);
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
   const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [userEnteredCode, setUserEnteredCode] = useState("");
-  const [isHumanVerified, setIsHumanVerified] = useState(false);
+  const [whatsappOtp, setWhatsappOtp] = useState("");
+  const [whatsappVerificationCode, setWhatsappVerificationCode] = useState("");
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [whatsappVerified, setWhatsappVerified] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [whatsappResendCooldown, setWhatsappResendCooldown] = useState(0);
+  const [statusMessage, setStatusMessage] = useState(null);
+  const [verificationInProgress, setVerificationInProgress] = useState(false);
+
+  // Fraud prevention state
+  const [formSubmissions, setFormSubmissions] = useState(0);
+  const [ipAddress, setIpAddress] = useState(null);
+  const [userAgent, setUserAgent] = useState(null);
+  const [formFingerprint, setFormFingerprint] = useState(null);
   const [verificationAttempts, setVerificationAttempts] = useState(0);
+  const [isHumanVerified, setIsHumanVerified] = useState(false);
+
+  // Refs
   const recaptchaRef = useRef(null);
   const timerRef = useRef(null);
 
-  // Form validation state
+  // Derived values
+  const isCustomBudget = useCallback(
+    () => ["custom"].includes(formData.serviceDetails.budget),
+    [formData.serviceDetails.budget]
+  );
+
+  const isCustomTimeline = useCallback(
+    () => ["custom"].includes(formData.serviceDetails.timeline),
+    [formData.serviceDetails.timeline]
+  );
+
+  // Form validation
   const [formValid, setFormValid] = useState({
     stage1: false,
     stage2: false,
@@ -100,8 +113,9 @@ const ContactModel = () => {
     stage4: false,
   });
 
-  // Generate form fingerprint on mount
+  // Effects
   useEffect(() => {
+    // Generate form fingerprint on mount
     const fingerprint = {
       screenResolution: `${window.screen.width}x${window.screen.height}`,
       colorDepth: window.screen.colorDepth,
@@ -118,7 +132,7 @@ const ContactModel = () => {
     setFormFingerprint(JSON.stringify(fingerprint));
     setUserAgent(navigator.userAgent);
 
-    // Get IP address (in production, this should be done server-side)
+    // Get IP address
     const fetchIP = async () => {
       try {
         const response = await fetch("https://api.ipify.org?format=json");
@@ -138,27 +152,66 @@ const ContactModel = () => {
       setFormSubmissions(parseInt(submissions));
     }
 
+    // Set default country based on user's location
+    fetch("https://ipapi.co/json/")
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.country) {
+          setDefaultCountry(data.country);
+        }
+      })
+      .catch(() => {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (timezone.toLowerCase().includes("india")) {
+          setDefaultCountry("IN");
+        }
+      });
+
     return () => {
       if (timerRef.current) {
-        clearTimeout(timerRef.current);
+        clearTimeout(timerRef?.current);
       }
     };
   }, []);
 
-  // Check if budget is custom/not sure
-  const isCustomBudget = useCallback(
-    () => ["custom"].includes(formData.serviceDetails.budget),
-    [formData.serviceDetails.budget]
-  );
-
-  // Check if timeline is custom/not sure
-  const isCustomTimeline = useCallback(
-    () => ["custom"].includes(formData.serviceDetails.timeline),
-    [formData.serviceDetails.timeline]
-  );
-
-  // Validate form stages with fraud checks
   useEffect(() => {
+    // Handle scroll locking when modal is open
+    if (isContactModel) {
+      document.body.style.overflow = "hidden";
+      setTimeout(() => {
+        const firstInput = formRef.current?.querySelector(
+          "input, textarea, select"
+        );
+        firstInput?.focus();
+      }, 100);
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isContactModel]);
+
+  useEffect(() => {
+    // Initialize and handle storage changes
+    if (initialLoad) {
+      checkLocalStorage();
+      setInitialLoad(false);
+    }
+
+    const handleStorageChange = (e) => {
+      if (e.key === `contactModelClick`) {
+        checkLocalStorage();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [initialLoad]);
+
+  useEffect(() => {
+    // Validate form stages
     const validateEmail = (email) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(email) && !isSuspiciousEmail(email);
@@ -185,311 +238,30 @@ const ContactModel = () => {
       (!isCustomTimeline() ||
         formData.projectBrief.timelineDetails.trim() !== "");
 
-    const isStage4Valid =
-      isHumanVerified &&
-      verificationCode &&
-      verificationCode === userEnteredCode;
-
     setFormValid({
       stage1: isStage1Valid,
       stage2: isStage2Valid,
       stage3: isStage3Valid,
-      stage4: isStage4Valid,
+      stage4: isHumanVerified && emailVerified && whatsappVerified,
     });
   }, [
     formData,
-    isHumanVerified,
-    verificationCode,
-    userEnteredCode,
     isCustomBudget,
     isCustomTimeline,
+    isHumanVerified,
+    emailVerified,
+    whatsappVerified,
   ]);
 
-  // Check for suspicious email patterns
+  // Helper functions
   const isSuspiciousEmail = useCallback((email) => {
-    if (!email) return false;
-    const domain = email.split("@")[1];
-    return TEMP_EMAIL_DOMAINS.some((tempDomain) => domain.includes(tempDomain));
-  }, []);
-
-  // Check localStorage and initialize modal state
-  const checkLocalStorage = useCallback(() => {
-    try {
-      const storageKey = `contactModelClick`;
-      const data = localStorage.getItem(storageKey);
-      setIsContactModel(data ? JSON.parse(data)?.modelOpen === true : false);
-    } catch (error) {
-      console.error("Error checking localStorage:", error);
-      setIsContactModel(false);
-    }
-  }, []);
-
-  // Initialize and handle storage changes
-  useEffect(() => {
-    if (initialLoad) {
-      checkLocalStorage();
-      setInitialLoad(false);
-    }
-
-    const handleStorageChange = (e) => {
-      if (e.key === `contactModelClick`) {
-        checkLocalStorage();
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [initialLoad, checkLocalStorage]);
-
-  // Handle scroll locking when modal is open
-  useEffect(() => {
-    if (isContactModel) {
-      document.body.style.overflow = "hidden";
-      setTimeout(() => {
-        const firstInput = formRef.current?.querySelector(
-          "input, textarea, select"
-        );
-        firstInput?.focus();
-      }, 100);
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isContactModel]);
-
-  const handleClose = useCallback(() => {
-    try {
-      localStorage.removeItem(`contactModelClick`);
-      setIsContactModel(false);
-      window.dispatchEvent(new Event("contactModelUpdate"));
-      setSubmitError(null);
-      setSubmitSuccess(false);
-    } catch (error) {
-      console.error("Error closing modal:", error);
-    }
-  }, []);
-
-  const handleInputChange = useCallback((stage, field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [stage]: {
-        ...prev[stage],
-        [field]: value,
-      },
-    }));
-  }, []);
-
-  const handleBlur = useCallback((stage, field) => {
-    setTouchedFields((prev) => ({
-      ...prev,
-      [stage]: {
-        ...prev[stage],
-        [field]: true,
-      },
-    }));
-  }, []);
-
-  // Send verification code via email
-  const sendVerificationCodeMail = useCallback(
-    async (type) => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setVerificationCode(code);
-      setVerificationAttempts(0);
-
-      if (type === "email") {
-        try {
-          setIsSubmitting(true);
-          const response = await fetch("/api/send-verification", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({
-              email: formData.personalInfo.email,
-              formData,
-              code: code,
-              ipAddress: ipAddress,
-              userAgent: userAgent,
-              formFingerprint: formFingerprint,
-              recaptchaToken,
-            }),
-          });
-
-          const result = await response.json();
-          if (result.success) {
-            setEmailVerificationSent(true);
-            setPhoneVerificationSent(false);
-          } else {
-            throw new Error(
-              result.message || "Failed to send verification email"
-            );
-          }
-        } catch (error) {
-          console.error("Error sending verification:", error);
-          setSubmitError(error.message);
-        } finally {
-          setIsSubmitting(false);
-        }
-      } else {
-        // SMS implementation would go here
-        console.log(`SMS verification code: ${code}`);
-        setPhoneVerificationSent(true);
-        setEmailVerificationSent(false);
-      }
-
-      // Clear any existing timeout
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-
-      // Set new timeout for code expiration
-      timerRef.current = setTimeout(() => {
-        setVerificationCode("");
-        setSubmitError(
-          "Verification code has expired. Please request a new one."
-        );
-      }, VERIFICATION_CODE_EXPIRY);
-    },
-    [formData.personalInfo.email]
-  );
-
-  // Handle reCAPTCHA verification
-  const handleRecaptchaChange = useCallback((token) => {
-    setRecaptchaToken(token);
-    setIsHumanVerified(!!token);
-  }, []);
-
-  // Enhanced submission handling
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-      setSubmitError(null);
-
-      try {
-        // Get current submission count from localStorage
-        const currentSubmissions = parseInt(
-          localStorage.getItem("formSubmissions") || 0
-        );
-
-        // Check rate limit
-        if (currentSubmissions >= MAX_FORM_SUBMISSIONS) {
-          // Calculate when the limit will reset (24 hours from first submission)
-          const firstSubmissionTime = parseInt(
-            localStorage.getItem("firstSubmissionTime")
-          );
-          const resetTime = firstSubmissionTime + 24 * 60 * 60 * 1000;
-          const timeLeft = Math.ceil(
-            (resetTime - Date.now()) / (60 * 60 * 1000)
-          );
-
-          throw new Error(
-            `Too many submissions. Please try again in ${timeLeft} hours.`
-          );
-        }
-
-        // Prepare submission data
-        const submissionData = {
-          formData,
-          metadata: {
-            ipAddress,
-            userAgent,
-            formFingerprint,
-            recaptchaToken,
-            submissionTime: new Date().toISOString(),
-            submissionCount: currentSubmissions + 1,
-            verificationMethod: emailVerificationSent ? "email" : "sms",
-          },
-        };
-
-        // Track first submission time if not set
-        if (!localStorage.getItem("firstSubmissionTime")) {
-          localStorage.setItem("firstSubmissionTime", Date.now().toString());
-        }
-
-        // Increment submission count
-        localStorage.setItem(
-          "formSubmissions",
-          (currentSubmissions + 1).toString()
-        );
-        setFormSubmissions(currentSubmissions + 1);
-
-        // Submit data
-        const response = await fetch("/api/submit-contact", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(submissionData),
-        });
-
-        // Handle response
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || "Submission failed");
-        }
-
-        const result = await response.json();
-
-        // Clear submission limits on success
-        localStorage.removeItem("formSubmissions");
-        localStorage.removeItem("firstSubmissionTime");
-
-        setSubmitSuccess(true);
-
-        // Reset form after delay
-        setTimeout(() => {
-          handleClose();
-          setFormData({
-            personalInfo: { name: "", email: "", phone: "" },
-            serviceDetails: { serviceType: "", budget: "", timeline: "" },
-            projectBrief: {
-              description: "",
-              referenceLinks: "",
-              budgetDetails: "",
-              timelineDetails: "",
-            },
-          });
-          setCurrentStage(1);
-          setVerificationCode("");
-          setUserEnteredCode("");
-          setIsHumanVerified(false);
-          recaptchaRef.current?.reset();
-        }, 2000);
-      } catch (error) {
-        console.error("Submission error:", error);
-        setSubmitError(error.message || "An error occurred during submission");
-
-        // Reset reCAPTCHA on error
-        recaptchaRef.current?.reset();
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [
-      formData,
-      ipAddress,
-      userAgent,
-      formFingerprint,
-      emailVerificationSent,
-      handleClose,
-    ]
-  );
-
-  const nextStage = useCallback(() => {
-    if (formValid[`stage${currentStage}`]) {
-      setCurrentStage((prev) => prev + 1);
-      if (currentStage === 3 && !verificationCode) {
-        sendVerificationCodeMail("email");
-      }
-    }
-  }, [currentStage, formValid, verificationCode, sendVerificationCodeMail]);
-
-  const prevStage = useCallback(() => {
-    setCurrentStage((prev) => Math.max(1, prev - 1));
-    setSubmitError(null);
+    if (!email || typeof email !== "string") return false;
+    const parts = email.split("@");
+    if (parts.length !== 2 || !parts[1]) return false;
+    const domain = parts[1].toLowerCase();
+    return TEMP_EMAIL_DOMAINS.some((tempDomain) =>
+      domain.includes(tempDomain.toLowerCase())
+    );
   }, []);
 
   const isFieldInvalid = useCallback(
@@ -511,6 +283,340 @@ const ContactModel = () => {
     [touchedFields, isSuspiciousEmail]
   );
 
+  // Verification handlers
+  const handleOtpChange = (e, index) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 1);
+    const newOtp = [...userEnteredCode];
+    newOtp[index] = value;
+    setUserEnteredCode(newOtp.join(""));
+
+    if (value && index < 5) {
+      const nextInput = document.querySelector(
+        `input[data-index="${index + 1}"]`
+      );
+      nextInput?.focus();
+    }
+  };
+
+  const handleWhatsappOtpChange = (e, index) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 1);
+    const newOtp = [...whatsappOtp];
+    newOtp[index] = value;
+    setWhatsappOtp(newOtp.join(""));
+
+    if (value && index < 5) {
+      const nextInput = document.querySelector(
+        `input[data-whatsapp-index="${index + 1}"]`
+      );
+      nextInput?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !userEnteredCode[index] && index > 0) {
+      const prevInput = document.querySelector(
+        `input[data-index="${index - 1}"]`
+      );
+      prevInput?.focus();
+    }
+  };
+
+  const handleWhatsappOtpKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !whatsappOtp[index] && index > 0) {
+      const prevInput = document.querySelector(
+        `input[data-whatsapp-index="${index - 1}"]`
+      );
+      prevInput?.focus();
+    }
+  };
+
+  // Verification functions
+  const sendVerification = async (type) => {
+    setVerificationInProgress(true);
+    setStatusMessage(null);
+
+    try {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+      if (type === "email") {
+        setVerificationCode(code);
+        setUserEnteredCode("");
+      } else {
+        setWhatsappVerificationCode(code);
+        setWhatsappOtp("");
+      }
+
+      const response = await fetch(`/api/send-verification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Client-Info": JSON.stringify({
+            fingerprint: formFingerprint,
+          }),
+        },
+        body: JSON.stringify({
+          [type === "email" ? "email" : "phone"]:
+            type === "email"
+              ? formData.personalInfo.email
+              : formData.personalInfo.phone,
+          code,
+          name: formData.personalInfo.name,
+          ipAddress,
+          userAgent,
+          service: formData.serviceDetails.serviceType.replace(/-/g, "-"),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        /*if (error.retryAfter) {
+          startCooldownTimer(error.retryAfter);
+        }*/
+        throw new Error(error.message || "Failed to send verification");
+      }
+
+      if (type === "email") {
+        setEmailVerificationSent(true);
+      } else {
+        setPhoneVerificationSent(true);
+      }
+      startResendCooldown(type);
+
+      setStatusMessage({
+        type: "success",
+        text: `Verification code sent to your ${type}`,
+      });
+    } catch (error) {
+      setStatusMessage({
+        type: "error",
+        text: error.message || "Failed to send verification code",
+      });
+    } finally {
+      setVerificationInProgress(false);
+    }
+  };
+
+  const resendVerification = () => sendVerification("email");
+  const resendWhatsappVerification = () => sendVerification("whatsapp");
+
+  const startResendCooldown = (type) => {
+    if (type === "email") {
+      setResendCooldown(RESEND_COOLDOWN);
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) clearInterval(timer);
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setWhatsappResendCooldown(RESEND_COOLDOWN);
+      const timer = setInterval(() => {
+        setWhatsappResendCooldown((prev) => {
+          if (prev <= 1) clearInterval(timer);
+          return prev - 1;
+        });
+      }, 1000);
+    }
+  };
+
+  const verifyEmailCode = async () => {
+    if (userEnteredCode.length !== 6) {
+      setStatusMessage({
+        type: "error",
+        text: "Please enter a 6-digit code",
+      });
+      return;
+    }
+
+    try {
+      setVerificationInProgress(true);
+      if (userEnteredCode === verificationCode) {
+        setEmailVerified(true);
+        setStatusMessage({
+          type: "success",
+          text: "Email verified successfully!",
+        });
+      } else {
+        throw new Error("Invalid verification code");
+      }
+    } catch (error) {
+      setStatusMessage({
+        type: "error",
+        text: error.message || "Verification failed",
+      });
+    } finally {
+      setVerificationInProgress(false);
+    }
+  };
+
+  const verifyWhatsappCode = async () => {
+    if (whatsappOtp.length !== 6) {
+      setStatusMessage({
+        type: "error",
+        text: "Please enter a 6-digit code",
+      });
+      return;
+    }
+
+    try {
+      setVerificationInProgress(true);
+      if (whatsappOtp === whatsappVerificationCode) {
+        setWhatsappVerified(true);
+        setStatusMessage({
+          type: "success",
+          text: "WhatsApp verified successfully!",
+        });
+      } else {
+        throw new Error("Invalid verification code");
+      }
+    } catch (error) {
+      setStatusMessage({
+        type: "error",
+        text: error.message || "Verification failed",
+      });
+    } finally {
+      setVerificationInProgress(false);
+    }
+  };
+
+  // Form handlers
+  const handleBlur = useCallback((stage, field) => {
+    setTouchedFields((prev) => ({
+      ...prev,
+      [stage]: {
+        ...prev[stage],
+        [field]: true,
+      },
+    }));
+  }, []);
+
+  const handleInputChange = useCallback((stage, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [stage]: {
+        ...prev[stage],
+        [field]: value,
+      },
+    }));
+  }, []);
+
+  const handleRecaptchaChange = useCallback((token) => {
+    setRecaptchaToken(token);
+    setIsHumanVerified(!!token);
+  }, []);
+
+  const nextStage = useCallback(() => {
+    if (formValid[`stage${currentStage}`]) {
+      setCurrentStage((prev) => prev + 1);
+      if (currentStage === 3 && !verificationCode) {
+        sendVerification("email");
+      }
+    }
+  }, [currentStage, formValid, verificationCode]);
+
+  const prevStage = useCallback(() => {
+    setCurrentStage((prev) => Math.max(1, prev - 1));
+    setSubmitError(null);
+  }, []);
+
+  const checkLocalStorage = useCallback(() => {
+    try {
+      const storageKey = `contactModelClick`;
+      const data = localStorage.getItem(storageKey);
+      setIsContactModel(data ? JSON.parse(data)?.modelOpen === true : false);
+    } catch (error) {
+      console.error("Error checking localStorage:", error);
+      setIsContactModel(false);
+    }
+  }, []);
+
+  const handleClose = useCallback(() => {
+    try {
+      localStorage.removeItem(`contactModelClick`);
+      setIsContactModel(false);
+      window.dispatchEvent(new Event("contactModelUpdate"));
+      setSubmitError(null);
+      setSubmitSuccess(false);
+    } catch (error) {
+      console.error("Error closing modal:", error);
+    }
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Check rate limit
+      const currentSubmissions = formSubmissions;
+      if (currentSubmissions >= MAX_FORM_SUBMISSIONS) {
+        const firstSubmissionTime = Date.now() - 24 * 60 * 60 * 1000; // Dummy value for example
+        const resetTime = firstSubmissionTime + 24 * 60 * 60 * 1000;
+        const timeLeft = Math.ceil((resetTime - Date.now()) / (60 * 60 * 1000));
+        throw new Error(
+          `Too many submissions. Please try again in ${timeLeft} hours.`
+        );
+      }
+
+      // Prepare submission data
+      const submissionData = {
+        formData,
+        metadata: {
+          ipAddress,
+          userAgent,
+          formFingerprint,
+          recaptchaToken,
+          submissionTime: new Date().toISOString(),
+          submissionCount: currentSubmissions + 1,
+          verificationMethod: emailVerificationSent ? "email" : "sms",
+        },
+      };
+
+      setFormSubmissions(currentSubmissions + 1);
+
+      // Submit data
+      const response = await fetch("/api/submit-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submissionData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Submission failed");
+      }
+
+      setSubmitSuccess(true);
+
+      // Reset form after delay
+      setTimeout(() => {
+        handleClose();
+        setFormData({
+          personalInfo: { name: "", email: "", phone: "" },
+          serviceDetails: { serviceType: "", budget: "", timeline: "" },
+          projectBrief: {
+            description: "",
+            referenceLinks: "",
+            budgetDetails: "",
+            timelineDetails: "",
+          },
+        });
+        setCurrentStage(1);
+        setVerificationCode("");
+        setUserEnteredCode("");
+        setIsHumanVerified(false);
+        recaptchaRef.current?.reset();
+      }, 2000);
+    } catch (error) {
+      console.error("Submission error:", error);
+      setSubmitError(error.message || "An error occurred during submission");
+      recaptchaRef.current?.reset();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!isContactModel) return null;
 
   return (
@@ -527,8 +633,8 @@ const ContactModel = () => {
           <X size={24} />
         </button>
 
-        <div className="p-6">
-          <h1 className="text-2xl text-gray-800/80 font-bold mb-4">
+        <div className="p-4 sm:p-6">
+          <h1 className="text-xl md:text-2xl text-gray-800/80 font-bold mb-4">
             Contact Our Team
           </h1>
 
@@ -541,7 +647,7 @@ const ContactModel = () => {
                 style={{ width: `${100 / 4}%` }}
               >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center 
+                  className={`w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center 
                     ${currentStage >= step ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"} 
                     ${currentStage === step ? "ring-4 ring-blue-300" : ""}`}
                 >
@@ -555,7 +661,7 @@ const ContactModel = () => {
                 </span>
               </div>
             ))}
-            <div className="absolute top-5 left-8 right-8 h-1 bg-gray-200 -z-1">
+            <div className="absolute top-3.5 sm:top-5 left-8 right-8 h-1 bg-gray-200 -z-1">
               <div
                 className="h-full bg-blue-600 transition-all duration-300"
                 style={{ width: `${(currentStage - 1) * 33.33}%` }}
@@ -592,7 +698,7 @@ const ContactModel = () => {
 
               {/* Stage 1: Personal Info */}
               {currentStage === 1 && (
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-4">
                   <div>
                     <label
                       className={`block text-sm font-medium mb-1 ${isFieldInvalid("personalInfo", "name", formData.personalInfo.name) ? "text-red-600" : "text-gray-700"}`}
@@ -610,22 +716,12 @@ const ContactModel = () => {
                         )
                       }
                       onBlur={() => handleBlur("personalInfo", "name")}
-                      placeholder="Enter your full name"
+                      placeholder={`Enter your full name`}
                       autoComplete="name"
-                      className={`w-full text-black px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition ${isFieldInvalid("personalInfo", "name", formData.personalInfo.name) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full text-black px-4 py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("personalInfo", "name", formData.personalInfo.name) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     />
-                    {isFieldInvalid(
-                      "personalInfo",
-                      "name",
-                      formData.personalInfo.name
-                    ) && (
-                      <p className="mt-1 text-sm text-red-600">
-                        Please enter your full name
-                      </p>
-                    )}
                   </div>
-
                   <div>
                     <label
                       className={`block text-sm font-medium mb-1 ${isFieldInvalid("personalInfo", "email", formData.personalInfo.email) ? "text-red-600" : "text-gray-700"}`}
@@ -643,14 +739,15 @@ const ContactModel = () => {
                         )
                       }
                       onBlur={() => handleBlur("personalInfo", "email")}
-                      className={`w-full px-4 text-black py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("personalInfo", "email", formData.personalInfo.email) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full px-4 text-black py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("personalInfo", "email", formData.personalInfo.email) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       placeholder={
                         isFieldInvalid(
                           "personalInfo",
                           "email",
                           formData.personalInfo.email
                         )
-                          ? isSuspiciousEmail(formData.personalInfo.email)
+                          ? formData.personalInfo.email &&
+                            isSuspiciousEmail(formData.personalInfo.email)
                             ? "Please use a permanent email address"
                             : "Please enter a valid email"
                           : "Enter your email address"
@@ -666,14 +763,31 @@ const ContactModel = () => {
                     >
                       WhatsApp Number <span className="text-red-500">*</span>
                     </label>
-                    <div className={`relative`}>
+
+                    <div className="relative">
                       <PhoneInput
                         international
-                        defaultCountry="US"
+                        defaultCountry={defaultCountry}
                         value={formData.personalInfo.phone}
                         onChange={(value) =>
                           handleInputChange("personalInfo", "phone", value)
                         }
+                        numberInputProps={{
+                          className: `!py-2 text-gray-800 rounded-lg border-gray-600 !text-sm ${
+                            isFieldInvalid(
+                              "personalInfo",
+                              "phone",
+                              formData.personalInfo.phone
+                            )
+                              ? "ring-red-500"
+                              : ""
+                          }`,
+                          disabled: isFieldInvalid(
+                            "personalInfo",
+                            "phone",
+                            formData.personalInfo.phone
+                          ),
+                        }}
                         onBlur={() => handleBlur("personalInfo", "phone")}
                         placeholder={
                           isFieldInvalid(
@@ -684,10 +798,18 @@ const ContactModel = () => {
                             ? "Please enter a valid WhatsApp number"
                             : "e.g. +1 555 123 4567"
                         }
-                        id="phone-input"
-                        className={`block w-full py-2 pl-3 pr-12 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 sm:text-sm sm:leading-6
-                        ${isFieldInvalid("personalInfo", "phone", formData.personalInfo.phone) ? "ring-1 ring-red-500 rounded-md" : ""}`}
-                        required
+                        countrySelectProps={{
+                          className: "!py-2 !text-sm",
+                        }}
+                        className={`phone-input text-gray-800 ${
+                          isFieldInvalid(
+                            "personalInfo",
+                            "phone",
+                            formData.personalInfo.phone
+                          )
+                            ? "ring-red-500"
+                            : ""
+                        }`}
                       />
                       {isFieldInvalid(
                         "personalInfo",
@@ -725,7 +847,7 @@ const ContactModel = () => {
                         )
                       }
                       onBlur={() => handleBlur("serviceDetails", "serviceType")}
-                      className={`w-full px-4 text-black py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "serviceType", formData.serviceDetails.serviceType) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full px-4 text-black py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "serviceType", formData.serviceDetails.serviceType) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     >
                       <option value="">Select a service</option>
@@ -735,15 +857,6 @@ const ContactModel = () => {
                         </option>
                       ))}
                     </select>
-                    {isFieldInvalid(
-                      "serviceDetails",
-                      "serviceType",
-                      formData.serviceDetails.serviceType
-                    ) && (
-                      <p className="mt-1 text-sm text-red-600">
-                        Please select a service type
-                      </p>
-                    )}
                   </div>
 
                   <div>
@@ -762,7 +875,7 @@ const ContactModel = () => {
                         )
                       }
                       onBlur={() => handleBlur("serviceDetails", "budget")}
-                      className={`w-full text-black px-4 py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "budget", formData.serviceDetails.budget) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full text-black px-4 py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "budget", formData.serviceDetails.budget) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     >
                       <option value="">Select budget</option>
@@ -772,15 +885,6 @@ const ContactModel = () => {
                         </option>
                       ))}
                     </select>
-                    {isFieldInvalid(
-                      "serviceDetails",
-                      "budget",
-                      formData.serviceDetails.budget
-                    ) && (
-                      <p className="mt-1 text-sm text-red-600">
-                        Please select a budget range
-                      </p>
-                    )}
                   </div>
 
                   <div>
@@ -799,7 +903,7 @@ const ContactModel = () => {
                         )
                       }
                       onBlur={() => handleBlur("serviceDetails", "timeline")}
-                      className={`w-full px-4 py-2 text-black border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "timeline", formData.serviceDetails.timeline) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full px-4 py-1.5 sm:py-2 text-black border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "timeline", formData.serviceDetails.timeline) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     >
                       <option value="">Select timeline</option>
@@ -809,15 +913,6 @@ const ContactModel = () => {
                         </option>
                       ))}
                     </select>
-                    {isFieldInvalid(
-                      "serviceDetails",
-                      "timeline",
-                      formData.serviceDetails.timeline
-                    ) && (
-                      <p className="mt-1 text-sm text-red-600">
-                        Please select a project timeline
-                      </p>
-                    )}
                   </div>
                 </div>
               )}
@@ -841,19 +936,10 @@ const ContactModel = () => {
                         )
                       }
                       onBlur={() => handleBlur("projectBrief", "description")}
-                      className={`w-full px-4 py-2 border text-black rounded-lg focus:ring-2 outline-none transition min-h-[120px] ${isFieldInvalid("projectBrief", "description", formData.projectBrief.description) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full px-4 py-1.5 sm:py-2 border text-black rounded-lg focus:ring-2 outline-none transition min-h-[120px] ${isFieldInvalid("projectBrief", "description", formData.projectBrief.description) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       placeholder="Describe your project in detail..."
                       required
                     />
-                    {isFieldInvalid(
-                      "projectBrief",
-                      "description",
-                      formData.projectBrief.description
-                    ) && (
-                      <p className="mt-1 text-sm text-red-600">
-                        Please provide a project description
-                      </p>
-                    )}
                   </div>
 
                   {isCustomBudget() && (
@@ -877,7 +963,7 @@ const ContactModel = () => {
                         onBlur={() =>
                           handleBlur("projectBrief", "budgetDetails")
                         }
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition min-h-[60px] ${isFieldInvalid("projectBrief", "budgetDetails", formData.projectBrief.budgetDetails) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                        className={`w-full px-4 py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition min-h-[60px] ${isFieldInvalid("projectBrief", "budgetDetails", formData.projectBrief.budgetDetails) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                         required={isCustomBudget()}
                         placeholder={
                           formData.serviceDetails.budget === "custom"
@@ -885,15 +971,6 @@ const ContactModel = () => {
                             : "E.g. We're flexible but likely between $10k-$20k"
                         }
                       />
-                      {isFieldInvalid(
-                        "projectBrief",
-                        "budgetDetails",
-                        formData.projectBrief.budgetDetails
-                      ) && (
-                        <p className="mt-1 text-sm text-red-600">
-                          Please provide budget details
-                        </p>
-                      )}
                     </div>
                   )}
 
@@ -918,7 +995,7 @@ const ContactModel = () => {
                         onBlur={() =>
                           handleBlur("projectBrief", "timelineDetails")
                         }
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition min-h-[60px] ${isFieldInvalid("projectBrief", "timelineDetails", formData.projectBrief.timelineDetails) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                        className={`w-full px-4 py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition min-h-[60px] ${isFieldInvalid("projectBrief", "timelineDetails", formData.projectBrief.timelineDetails) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                         required={isCustomTimeline()}
                         placeholder={
                           formData.serviceDetails.timeline === "custom"
@@ -926,15 +1003,6 @@ const ContactModel = () => {
                             : "E.g. We need MVP in 2 months but full product can take longer"
                         }
                       />
-                      {isFieldInvalid(
-                        "projectBrief",
-                        "timelineDetails",
-                        formData.projectBrief.timelineDetails
-                      ) && (
-                        <p className="mt-1 text-sm text-red-600">
-                          Please provide timeline details
-                        </p>
-                      )}
                     </div>
                   )}
 
@@ -952,171 +1020,210 @@ const ContactModel = () => {
                           e.target.value
                         )
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                      className="w-full px-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                       placeholder="Website URLs, Figma links, etc."
                     />
                   </div>
                 </div>
               )}
 
-              {/* Stage 4: Verification */}
               {currentStage === 4 && (
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    Verify Your Identity
+                    {emailVerified
+                      ? "WhatsApp Verification"
+                      : "Email Verification"}
                   </h3>
 
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-700 mb-1">
-                      {`To prevent spam and ensure you're a real customer, we need
-                      to verify your contact information.`}
-                    </p>
-
-                    <div className="mb-2">
+                    {/* reCAPTCHA */}
+                    <div className="mb-4">
                       <ReCAPTCHA
                         ref={recaptchaRef}
                         sitekey={recaptchaSiteKey}
-                        size="normal"
                         onChange={handleRecaptchaChange}
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => sendVerificationCodeMail("email")}
-                        disabled={emailVerificationSent || isSubmitting}
-                        className={`w-full text-left p-3 rounded-lg border flex items-center ${emailVerificationSent ? "bg-gray-100 text-gray-500 border-gray-300" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-50"} ${isSubmitting ? "opacity-75 cursor-not-allowed" : ""}`}
-                      >
-                        <svg
-                          className="w-5 h-5 mr-3 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <div className="text-left">
-                          <p className="font-medium">Email Verification</p>
-                          <p className="text-sm">
-                            {emailVerificationSent
-                              ? `Code sent to ${formData.personalInfo.email}`
-                              : "Send verification code to your email"}
-                          </p>
-                        </div>
-                        {isSubmitting && emailVerificationSent && (
-                          <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                        )}
-                      </button>
+                    {/* Email Verification Block */}
+                    {!emailVerified ? (
+                      <div className="space-y-4">
+                        <p className="text-sm text-gray-700">
+                          {`We'll send a 6-digit code to`}{" "}
+                          {formData.personalInfo.email}
+                        </p>
 
-                      <button
-                        type="button"
-                        onClick={() => sendVerificationCodeMail("phone")}
-                        disabled={phoneVerificationSent || isSubmitting}
-                        className={`w-full text-left p-3 rounded-lg border flex items-center ${phoneVerificationSent ? "bg-gray-100 text-gray-500 border-gray-300" : "bg-white text-blue-600 border-blue-300 hover:bg-blue-50"} ${isSubmitting ? "opacity-75 cursor-not-allowed" : ""}`}
-                      >
-                        <svg
-                          className="w-5 h-5 mr-3 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                          />
-                        </svg>
-                        <div className="text-left">
-                          <p className="font-medium">SMS Verification</p>
-                          <p className="text-sm">
-                            {phoneVerificationSent
-                              ? `Code sent to ${formData.personalInfo.phone}`
-                              : "Send verification code via SMS"}
-                          </p>
-                        </div>
-                        {isSubmitting && phoneVerificationSent && (
-                          <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                        )}
-                      </button>
-                    </div>
+                        {emailVerificationSent ? (
+                          <>
+                            <div className="flex justify-center gap-3 mb-4">
+                              {[...Array(6)].map((_, i) => (
+                                <div key={i} className="relative w-12 h-12">
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    value={userEnteredCode[i] || ""}
+                                    onChange={(e) => handleOtpChange(e, i)}
+                                    onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                                    data-index={i}
+                                    className="w-full h-full text-2xl text-center font-medium text-gray-900 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all"
+                                  />
+                                  {!userEnteredCode[i] && (
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                      <div className="w-0.5 h-6 bg-blue-400 animate-pulse" />
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
 
-                    {(emailVerificationSent || phoneVerificationSent) && (
-                      <div className="mt-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Enter Verification Code*
-                        </label>
-                        <div className="flex space-x-2">
-                          <input
-                            type="text"
-                            value={userEnteredCode}
-                            onChange={(e) => {
-                              const value = e.target.value
-                                .replace(/\D/g, "")
-                                .slice(0, 6);
-                              setUserEnteredCode(value);
-                            }}
-                            placeholder="6-digit code"
-                            className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                            maxLength="6"
-                            disabled={isSubmitting}
-                          />
+                            <div className="flex justify-between items-center">
+                              <button
+                                type="button"
+                                onClick={resendVerification}
+                                disabled={resendCooldown > 0}
+                                className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                              >
+                                {resendCooldown > 0
+                                  ? `Resend in ${resendCooldown}s`
+                                  : "Resend Code"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={verifyEmailCode}
+                                disabled={
+                                  userEnteredCode.length !== 6 ||
+                                  verificationInProgress
+                                }
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                              >
+                                {verificationInProgress ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Verify Email"
+                                )}
+                              </button>
+                            </div>
+                          </>
+                        ) : (
                           <button
                             type="button"
-                            onClick={() =>
-                              sendVerificationCodeMail(
-                                emailVerificationSent ? "email" : "phone"
-                              )
-                            }
-                            disabled={isSubmitting}
-                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap disabled:opacity-75 disabled:cursor-not-allowed"
+                            onClick={() => sendVerification("email")}
+                            disabled={verificationInProgress}
+                            className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center"
                           >
-                            Resend
+                            {verificationInProgress ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Mail className="h-4 w-4 mr-2" />
+                            )}
+                            Send Email Verification Code
                           </button>
-                        </div>
-                        {verificationCode &&
-                          userEnteredCode &&
-                          verificationCode !== userEnteredCode && (
-                            <p className="mt-1 text-sm text-red-600">
-                              {`Verification code doesn't match. Please try again.`}
-                            </p>
-                          )}
-                        {verificationAttempts > 2 && (
-                          <p className="mt-1 text-sm text-yellow-600">
-                            Multiple failed attempts. Consider requesting a new
-                            code.
-                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      /* WhatsApp Verification Block */
+                      <div className="space-y-4">
+                        <p className="text-sm text-gray-700">
+                          Now please verify your WhatsApp number:{" "}
+                          {formData.personalInfo.phone}
+                        </p>
+
+                        {phoneVerificationSent ? (
+                          <>
+                            <div className="flex justify-center gap-3 mb-4">
+                              {[...Array(6)].map((_, i) => (
+                                <div key={i} className="relative w-12 h-12">
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={1}
+                                    value={whatsappOtp[i] || ""}
+                                    onChange={(e) =>
+                                      handleWhatsappOtpChange(e, i)
+                                    }
+                                    onKeyDown={(e) =>
+                                      handleWhatsappOtpKeyDown(e, i)
+                                    }
+                                    data-whatsapp-index={i}
+                                    className="w-full h-full text-2xl text-center font-medium text-gray-900 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="flex justify-between items-center">
+                              <button
+                                type="button"
+                                onClick={resendWhatsappVerification}
+                                disabled={whatsappResendCooldown > 0}
+                                className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                              >
+                                {whatsappResendCooldown > 0
+                                  ? `Resend in ${whatsappResendCooldown}s`
+                                  : "Resend Code"}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={verifyWhatsappCode}
+                                disabled={
+                                  whatsappOtp.length !== 6 ||
+                                  verificationInProgress
+                                }
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                              >
+                                {verificationInProgress ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  "Verify WhatsApp"
+                                )}
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => sendVerification("whatsapp")}
+                            disabled={verificationInProgress}
+                            className="w-full px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center"
+                          >
+                            {verificationInProgress ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Phone className="h-4 w-4 mr-2" />
+                            )}
+                            Send WhatsApp Verification Code
+                          </button>
                         )}
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-start p-3 bg-yellow-50 rounded-lg">
-                    <input
-                      type="checkbox"
-                      id="confirmation-checkbox"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                      required
-                      checked={
-                        isHumanVerified && verificationCode === userEnteredCode
-                      }
-                      onChange={() => {}}
-                    />
-                    <label
-                      htmlFor="confirmation-checkbox"
-                      className="ml-2 block text-sm text-gray-700"
+                  {/* Verification Status */}
+                  {statusMessage && (
+                    <div
+                      className={`p-3 rounded-md ${
+                        statusMessage.type === "error"
+                          ? "bg-red-50 text-red-600"
+                          : "bg-green-50 text-green-600"
+                      }`}
                     >
-                      {`I verify that all information provided is accurate and I'm
-                      a real customer. I understand that ECOD Service will
-                      contact me using the provided details.`}
-                    </label>
-                  </div>
+                      <div className="flex items-center">
+                        {statusMessage.type === "error" ? (
+                          <AlertCircle className="h-5 w-5 mr-2" />
+                        ) : (
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                        )}
+                        <span>
+                          {statusMessage.text.includes("Too many requests")
+                            ? "You've tried too many times. Please wait 5 minutes and try again."
+                            : statusMessage.text}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1142,7 +1249,11 @@ const ContactModel = () => {
                       disabled={
                         !formValid[`stage${currentStage}`] || isSubmitting
                       }
-                      className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center min-w-[100px] ${formValid[`stage${currentStage}`] ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"} ${isSubmitting ? "opacity-75" : ""}`}
+                      className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center min-w-[100px] ${
+                        formValid[`stage${currentStage}`]
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      } ${isSubmitting ? "opacity-75" : ""}`}
                     >
                       {isSubmitting ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -1156,7 +1267,11 @@ const ContactModel = () => {
                     <button
                       type="submit"
                       disabled={!formValid.stage4 || isSubmitting}
-                      className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center min-w-[120px] ${formValid.stage4 ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-500 cursor-not-allowed"} ${isSubmitting ? "opacity-75" : ""}`}
+                      className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center min-w-[120px] ${
+                        formValid.stage4
+                          ? "bg-green-600 text-white hover:bg-green-700"
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      } ${isSubmitting ? "opacity-75" : ""}`}
                     >
                       {isSubmitting ? (
                         <>
