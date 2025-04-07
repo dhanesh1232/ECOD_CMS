@@ -1,11 +1,4 @@
 import {
-  ContentMarketingSVG,
-  PPCAdsSVG,
-  SEOSVG,
-  SocialMediaSVG,
-} from "@/public/Assets/svg";
-
-import {
   Palette,
   ShoppingCart,
   Zap,
@@ -14,7 +7,175 @@ import {
   Rocket,
   Shield,
   BarChart2,
+  TrendingUp,
+  Globe,
+  Users,
 } from "lucide-react";
+
+// utils/marketingData.js
+export const generateMarketingData = () => {
+  const now = new Date();
+  const currentMonth = now.toLocaleString("default", { month: "short" });
+  const currentYear = now.getFullYear();
+
+  // Simulate daily fluctuations (±3-8%)
+  const dailyFluctuation = () => 1 + (Math.random() * 0.1 - 0.03);
+
+  // Base data with realistic growth patterns
+  const baseData = [
+    { month: "Jun", SEO: 20, PPC: 5, SMM: 10 },
+    { month: "Jul", SEO: 65, PPC: 45, SMM: 45 },
+    { month: "Aug", SEO: 70, PPC: 70, SMM: 50 },
+    { month: "Sep", SEO: 105, PPC: 120, SMM: 95 },
+    { month: "Oct", SEO: 120, PPC: 140, SMM: 110 },
+    { month: "Nov", SEO: 135, PPC: 160, SMM: 125 },
+    { month: "Dec", SEO: 150, PPC: 180, SMM: 140 },
+  ];
+
+  // Enhance with real-time values and additional metrics
+  return baseData.map((item) => {
+    const isCurrentMonth = item.month === currentMonth;
+    const fluctuation = isCurrentMonth ? dailyFluctuation() : 1;
+
+    return {
+      ...item,
+      SEO: Math.round(item.SEO * (isCurrentMonth ? fluctuation : 1)),
+      PPC: Math.round(item.PPC * (isCurrentMonth ? fluctuation : 1)),
+      SMM: Math.round(item.SMM * (isCurrentMonth ? fluctuation : 1)),
+      // Additional metrics
+      SEO_Trend: isCurrentMonth
+        ? `${(Math.random() * 5 + 5).toFixed(1)}%`
+        : null,
+      PPC_Trend: isCurrentMonth
+        ? `${(Math.random() * 7 + 3).toFixed(1)}%`
+        : null,
+      SMM_Trend: isCurrentMonth
+        ? `${(Math.random() * 10 + 8).toFixed(1)}%`
+        : null,
+      // Cost metrics (estimated)
+      SEO_Cost: Math.round(item.SEO * 12.5),
+      PPC_Cost: Math.round(item.PPC * 22),
+      SMM_Cost: Math.round(item.SMM * 18),
+      // ROI estimates
+      SEO_ROI: (item.SEO * 0.8).toFixed(1),
+      PPC_ROI: (item.PPC * 1.2).toFixed(1),
+      SMM_ROI: (item.SMM * 1.5).toFixed(1),
+      // Conversion estimates
+      SEO_Conversions: Math.round(item.SEO * 0.15),
+      PPC_Conversions: Math.round(item.PPC * 0.25),
+      SMM_Conversions: Math.round(item.SMM * 0.2),
+      lastUpdated: isCurrentMonth ? new Date().toISOString() : null,
+    };
+  });
+};
+
+// Current data export
+export const data = generateMarketingData();
+
+// utils/trafficData.js
+export const generateTrafficData = () => {
+  const now = new Date();
+  const currentMonth = now.toLocaleString("default", { month: "short" });
+  const currentYear = now.getFullYear();
+
+  // Base conversion rate (traffic to revenue)
+  const baseConversionRate = 0.02; // 2% conversion
+  const valuePerConversion = 50; // Average order value
+
+  // Seasonal multipliers (example patterns)
+  const seasonalMultipliers = {
+    Jan: { traffic: 0.9, revenue: 1.1 }, // Post-holiday slump but high-value customers
+    Feb: { traffic: 0.95, revenue: 0.95 },
+    Mar: { traffic: 1.0, revenue: 1.0 },
+    Apr: { traffic: 1.05, revenue: 1.05 },
+    May: { traffic: 1.1, revenue: 1.1 },
+    Jun: { traffic: 1.2, revenue: 1.3 }, // Summer shopping season
+    Jul: { traffic: 1.15, revenue: 1.25 },
+    Aug: { traffic: 1.1, revenue: 1.2 },
+    Sep: { traffic: 1.05, revenue: 1.1 }, // Back-to-school
+    Oct: { traffic: 1.15, revenue: 1.3 }, // Pre-holiday
+    Nov: { traffic: 1.3, revenue: 1.5 }, // Black Friday/Cyber Monday
+    Dec: { traffic: 1.4, revenue: 1.8 }, // Holiday season
+  };
+
+  // Daily fluctuation (±5-15%)
+  const dailyFluctuation = () => 1 + (Math.random() * 0.2 - 0.1);
+
+  // Generate base data with growth trends
+  const baseData = [
+    { name: "Jan", traffic: 5000, revenue: 10000 },
+    { name: "Feb", traffic: 8000, revenue: 15000 },
+    { name: "Mar", traffic: 12000, revenue: 25000 },
+    { name: "Apr", traffic: 10000, revenue: 22000 },
+    { name: "May", traffic: 15000, revenue: 35000 },
+    { name: "Jun", traffic: 20000, revenue: 50000 },
+    { name: "Jul", traffic: 22000, revenue: 55000 },
+    { name: "Aug", traffic: 21000, revenue: 52000 },
+    { name: "Sep", traffic: 23000, revenue: 58000 },
+    { name: "Oct", traffic: 25000, revenue: 65000 },
+    { name: "Nov", traffic: 30000, revenue: 90000 },
+    { name: "Dec", traffic: 35000, revenue: 120000 },
+  ];
+
+  return baseData.map((item) => {
+    const isCurrentMonth = item.name === currentMonth;
+    const season = seasonalMultipliers[item.name] || { traffic: 1, revenue: 1 };
+
+    // Calculate base values with seasonal adjustments
+    let traffic = item.traffic * season.traffic;
+    let revenue = item.revenue * season.revenue;
+
+    // Apply daily fluctuation for current month
+    if (isCurrentMonth) {
+      const fluctuation = dailyFluctuation();
+      traffic = Math.round(traffic * fluctuation);
+
+      // Revenue calculation with realistic conversion variance
+      const conversionRate = baseConversionRate * (0.9 + Math.random() * 0.2); // ±10% variance
+      revenue = Math.round(
+        traffic * conversionRate * valuePerConversion * fluctuation
+      );
+    }
+
+    return {
+      name: item.name,
+      traffic,
+      revenue,
+      conversionRate: parseFloat(
+        (revenue / valuePerConversion / traffic).toFixed(4)
+      ),
+      avgOrderValue: valuePerConversion,
+      isCurrent: isCurrentMonth,
+      lastUpdated: isCurrentMonth ? new Date().toISOString() : null,
+      // Additional metrics
+      returningVisitors: Math.round(traffic * (0.3 + Math.random() * 0.1)), // 30-40%
+      newVisitors: traffic - Math.round(traffic * (0.3 + Math.random() * 0.1)),
+      bounceRate: parseFloat((0.4 + Math.random() * 0.15).toFixed(2)), // 40-55%
+    };
+  });
+};
+
+// Current data export
+export const data_traffic = generateTrafficData();
+
+// For React component usage with auto-refresh
+let trafficDataCache = null;
+let lastGenerated = 0;
+
+export const getTrafficData = (forceRefresh = false) => {
+  // Cache for 5 minutes unless forced
+  if (
+    !forceRefresh &&
+    trafficDataCache &&
+    Date.now() - lastGenerated < 300000
+  ) {
+    return trafficDataCache;
+  }
+
+  trafficDataCache = generateTrafficData();
+  lastGenerated = Date.now();
+  return trafficDataCache;
+};
 
 export const about_service = [
   {
@@ -284,6 +445,7 @@ export const shopify_services_data = [
     darkColor: "from-teal-400 to-teal-500",
   },
 ]; //
+
 export const services_list_ecod = {
   "web-development": [
     // ================== CORE WEB APPS ==================
@@ -1814,155 +1976,158 @@ export const allCategories = [
 export const adPerformanceData = [
   {
     name: "Mar 24",
-    MetaAds: 500,
-    GoogleAds: 600,
-    SEO: 300,
-    ContentMarketing: 250,
-    EmailMarketing: 200,
-    WebDevelopment: 400,
-    SocialMedia: 350,
-    EcomSolutions: 450,
+    MetaAds: 487,
+    GoogleAds: 612,
+    SEO: 295,
+    ContentMarketing: 263,
+    EmailMarketing: 207,
+    WebDevelopment: 392,
+    SocialMedia: 347,
+    EcomSolutions: 441,
   },
   {
     name: "Apr 24",
-    MetaAds: 400,
-    GoogleAds: 450,
-    SEO: 350,
-    ContentMarketing: 270,
-    EmailMarketing: 220,
-    WebDevelopment: 420,
-    SocialMedia: 370,
-    EcomSolutions: 460,
+    MetaAds: 423,
+    GoogleAds: 467,
+    SEO: 342,
+    ContentMarketing: 268,
+    EmailMarketing: 215,
+    WebDevelopment: 417,
+    SocialMedia: 372,
+    EcomSolutions: 455,
   },
   {
     name: "May 24",
-    MetaAds: 700,
-    GoogleAds: 500,
-    SEO: 400,
-    ContentMarketing: 300,
-    EmailMarketing: 250,
-    WebDevelopment: 440,
-    SocialMedia: 390,
-    EcomSolutions: 480,
+    MetaAds: 687,
+    GoogleAds: 523,
+    SEO: 412,
+    ContentMarketing: 293,
+    EmailMarketing: 247,
+    WebDevelopment: 438,
+    SocialMedia: 385,
+    EcomSolutions: 476,
   },
   {
     name: "Jun 24",
-    MetaAds: 600,
-    GoogleAds: 550,
-    SEO: 500,
-    ContentMarketing: 350,
-    EmailMarketing: 280,
-    WebDevelopment: 460,
-    SocialMedia: 420,
-    EcomSolutions: 500,
+    MetaAds: 612,
+    GoogleAds: 543,
+    SEO: 487,
+    ContentMarketing: 362,
+    EmailMarketing: 276,
+    WebDevelopment: 453,
+    SocialMedia: 418,
+    EcomSolutions: 492,
   },
   {
     name: "Jul 24",
-    MetaAds: 750,
-    GoogleAds: 900,
-    SEO: 600,
-    ContentMarketing: 400,
-    EmailMarketing: 320,
-    WebDevelopment: 500,
-    SocialMedia: 460,
-    EcomSolutions: 550,
+    MetaAds: 728,
+    GoogleAds: 887,
+    SEO: 612,
+    ContentMarketing: 392,
+    EmailMarketing: 318,
+    WebDevelopment: 487,
+    SocialMedia: 463,
+    EcomSolutions: 538,
   },
   {
     name: "Aug 24",
-    MetaAds: 1000,
-    GoogleAds: 850,
-    SEO: 750,
-    ContentMarketing: 450,
-    EmailMarketing: 350,
-    WebDevelopment: 550,
-    SocialMedia: 500,
-    EcomSolutions: 600,
+    MetaAds: 1023,
+    GoogleAds: 867,
+    SEO: 737,
+    ContentMarketing: 462,
+    EmailMarketing: 343,
+    WebDevelopment: 543,
+    SocialMedia: 487,
+    EcomSolutions: 592,
   },
   {
     name: "Sep 24",
-    MetaAds: 1250,
-    GoogleAds: 950,
-    SEO: 900,
-    ContentMarketing: 500,
-    EmailMarketing: 400,
-    WebDevelopment: 600,
-    SocialMedia: 550,
-    EcomSolutions: 650,
+    MetaAds: 1238,
+    GoogleAds: 937,
+    SEO: 887,
+    ContentMarketing: 512,
+    EmailMarketing: 392,
+    WebDevelopment: 587,
+    SocialMedia: 543,
+    EcomSolutions: 638,
   },
   {
     name: "Oct 24",
-    MetaAds: 1100,
-    GoogleAds: 1200,
-    SEO: 1100,
-    ContentMarketing: 600,
-    EmailMarketing: 450,
-    WebDevelopment: 700,
-    SocialMedia: 600,
-    EcomSolutions: 700,
+    MetaAds: 1087,
+    GoogleAds: 1187,
+    SEO: 1072,
+    ContentMarketing: 612,
+    EmailMarketing: 437,
+    WebDevelopment: 687,
+    SocialMedia: 612,
+    EcomSolutions: 687,
   },
   {
     name: "Nov 24",
-    MetaAds: 1300,
-    GoogleAds: 1000,
-    SEO: 1300,
-    ContentMarketing: 700,
-    EmailMarketing: 500,
-    WebDevelopment: 750,
-    SocialMedia: 650,
-    EcomSolutions: 750,
+    MetaAds: 1312,
+    GoogleAds: 1012,
+    SEO: 1287,
+    ContentMarketing: 712,
+    EmailMarketing: 487,
+    WebDevelopment: 737,
+    SocialMedia: 638,
+    EcomSolutions: 737,
   },
   {
     name: "Dec 24",
-    MetaAds: 1850,
-    GoogleAds: 1100,
-    SEO: 1550,
-    ContentMarketing: 800,
-    EmailMarketing: 550,
-    WebDevelopment: 800,
-    SocialMedia: 700,
-    EcomSolutions: 800,
+    MetaAds: 1823,
+    GoogleAds: 1123,
+    SEO: 1538,
+    ContentMarketing: 812,
+    EmailMarketing: 538,
+    WebDevelopment: 787,
+    SocialMedia: 687,
+    EcomSolutions: 787,
   },
   {
     name: "Jan 25",
-    MetaAds: 1700,
-    GoogleAds: 1650,
-    SEO: 1800,
-    ContentMarketing: 850,
-    EmailMarketing: 600,
-    WebDevelopment: 850,
-    SocialMedia: 750,
-    EcomSolutions: 850,
+    MetaAds: 1687,
+    GoogleAds: 1638,
+    SEO: 1775,
+    ContentMarketing: 837,
+    EmailMarketing: 587,
+    WebDevelopment: 837,
+    SocialMedia: 737,
+    EcomSolutions: 837,
   },
   {
     name: "Feb 25",
-    MetaAds: 2300,
-    GoogleAds: 2000,
-    SEO: 2100,
-    ContentMarketing: 900,
-    EmailMarketing: 650,
-    WebDevelopment: 900,
-    SocialMedia: 800,
-    EcomSolutions: 900,
+    MetaAds: 2275,
+    GoogleAds: 1987,
+    SEO: 2075,
+    ContentMarketing: 887,
+    EmailMarketing: 637,
+    WebDevelopment: 887,
+    SocialMedia: 787,
+    EcomSolutions: 887,
   },
-];
-// Data for the line chart
-export const data = [
-  { month: "Jun", SEO: 20, PPC: 5, SMM: 10 },
-  { month: "Jul", SEO: 65, PPC: 45, SMM: 45 },
-  { month: "Aug", SEO: 70, PPC: 70, SMM: 50 },
-  { month: "Sep", SEO: 105, PPC: 120, SMM: 95 },
-  { month: "Oct", SEO: 120, PPC: 140, SMM: 110 },
-  { month: "Nov", SEO: 135, PPC: 160, SMM: 125 },
-  { month: "Dec", SEO: 150, PPC: 180, SMM: 140 },
-];
-
-export const data_traffic = [
-  { name: "Jan", traffic: 5000, revenue: 10000 },
-  { name: "Feb", traffic: 8000, revenue: 15000 },
-  { name: "Mar", traffic: 12000, revenue: 25000 },
-  { name: "Apr", traffic: 10000, revenue: 22000 },
-  { name: "May", traffic: 15000, revenue: 35000 },
-  { name: "Jun", traffic: 20000, revenue: 50000 },
+  {
+    name: "Mar 25",
+    MetaAds: 2412,
+    GoogleAds: 2112,
+    SEO: 2187,
+    ContentMarketing: 937,
+    EmailMarketing: 687,
+    WebDevelopment: 937,
+    SocialMedia: 837,
+    EcomSolutions: 937,
+  },
+  {
+    name: "Apr 25",
+    MetaAds: 2537,
+    GoogleAds: 2237,
+    SEO: 2312,
+    ContentMarketing: 987,
+    EmailMarketing: 737,
+    WebDevelopment: 987,
+    SocialMedia: 887,
+    EcomSolutions: 987,
+  },
 ];
 
 /*Online traffic Growth */
@@ -2017,38 +2182,30 @@ export const growth_traffic_data = {
   ],
 };
 
-export const benefits_data = [
+export const enhancedBenefits = [
   {
-    icon: <SEOSVG height={36} width={36} color="#FFFFFF" />,
-    title: "SEO",
-    description:
-      "Rank higher on search engines and drive organic traffic. Our SEO strategies ensure your website is optimized for visibility and performance.",
-    svgTips:
-      "Ensure the SVG is lightweight and uses semantic tags for better SEO. Add a `<title>` and `<desc>` for accessibility.",
+    title: "Performance Boost",
+    description: "Optimized solutions that increase speed and conversions",
+    icon: <Zap className="w-6 h-6" />,
+    stats: "50-300% performance gains",
   },
   {
-    icon: <SocialMediaSVG height={36} width={36} color="#FFFFFF" />,
-    title: "Social Media",
-    description:
-      "Engage your audience and build a loyal community. We create compelling social media strategies to boost your brand presence.",
-    svgTips:
-      "Use vibrant colors and scalable designs for social media platforms. Add hover effects for interactivity.",
+    title: "Revenue Growth",
+    description: "Data-driven strategies to maximize your ROI",
+    icon: <TrendingUp className="w-6 h-6" />,
+    stats: "Average 3.5x ROI",
   },
   {
-    icon: <PPCAdsSVG height={36} width={36} color="#FFFFFF" />,
-    title: "PPC Ads",
-    description:
-      "Get instant results with targeted ad campaigns. Our PPC experts maximize ROI through data-driven ad strategies.",
-    svgTips:
-      "Keep the design simple and focused. Use dynamic colors to match branding and ad themes.",
+    title: "Global Reach",
+    description: "Expand your market with localized digital experiences",
+    icon: <Globe className="w-6 h-6" />,
+    stats: "200+ countries reached",
   },
   {
-    icon: <ContentMarketingSVG height={36} width={36} color="#FFFFFF" />,
-    title: "Content Marketing",
-    description:
-      "Attract and convert customers with valuable content. We craft content that resonates with your audience and drives conversions.",
-    svgTips:
-      "Use icons that represent content types (e.g., blogs, videos). Ensure the SVG is responsive for all devices.",
+    title: "Audience Engagement",
+    description: "Build lasting relationships with your customers",
+    icon: <Users className="w-6 h-6" />,
+    stats: "70% repeat visitors",
   },
 ];
 
@@ -2067,8 +2224,6 @@ export const customer_budget_range = [
 ];
 
 export const customer_porject_timeline = [
-  { label: "1 Day", value: "1-day" },
-  { label: "2 Days", value: "2-days" },
   { label: "1 Week", value: "1-week" },
   { label: "2 Weeks", value: "2-weeks" },
   { label: "4 Weeks", value: "4-weeks" },
@@ -2080,4 +2235,139 @@ export const customer_porject_timeline = [
   { label: "Ongoing", value: "ongoing" },
   { label: "Custom", value: "custom" },
   { label: "Not sure", value: "not-sure" },
+];
+
+export const service_client_data = [
+  {
+    label: "Web Development",
+    slug: "web-development",
+    budget_range: [
+      { label: "₹5,000 - ₹15,000", value: "5000-15000" },
+      { label: "₹15,000 - ₹30,000", value: "15000-30000" },
+      { label: "₹30,000+", value: "30000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "1 Week", value: "1-week" },
+      { label: "2 Weeks", value: "2-weeks" },
+      { label: "1 Month", value: "1-month" },
+      { label: "3 Months", value: "3-months" },
+      { label: "Ongoing", value: "ongoing" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
+  {
+    label: "Google | Meta Ads",
+    slug: "google-meta-ads",
+    budget_range: [
+      { label: "₹3,000 - ₹7,000", value: "3000-7000" },
+      { label: "₹7,000 - ₹15,000", value: "7000-15000" },
+      { label: "₹15,000+", value: "15000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "1 Week", value: "1-week" },
+      { label: "2 Weeks", value: "2-weeks" },
+      { label: "1 Month", value: "1-month" },
+      { label: "3 Months", value: "3-months" },
+      { label: "6 Months", value: "6-months" },
+      { label: "12 Months", value: "12-months" },
+      { label: "Ongoing", value: "ongoing" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
+  {
+    label: "SEO",
+    slug: "seo",
+    budget_range: [
+      { label: "₹3,000 - ₹8,000", value: "3000-8000" },
+      { label: "₹8,000 - ₹15,000", value: "8000-15000" },
+      { label: "₹15,000+", value: "15000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "1 Month", value: "1-month" },
+      { label: "3 Months", value: "3-months" },
+      { label: "Ongoing", value: "ongoing" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
+  {
+    label: "Social Media Marketing",
+    slug: "social-media-marketing",
+    budget_range: [
+      { label: "₹4,000 - ₹10,000", value: "4000-10000" },
+      { label: "₹10,000 - ₹20,000", value: "10000-20000" },
+      { label: "₹20,000+", value: "20000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "2 Weeks", value: "2-weeks" },
+      { label: "1 Month", value: "1-month" },
+      { label: "Ongoing", value: "ongoing" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
+  {
+    label: "Shopify Optimization",
+    slug: "shopify-optimization",
+    budget_range: [
+      { label: "₹5,000 - ₹10,000", value: "5000-10000" },
+      { label: "₹10,000 - ₹20,000", value: "10000-20000" },
+      { label: "₹20,000+", value: "20000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "1 Week", value: "1-week" },
+      { label: "2 Weeks", value: "2-weeks" },
+      { label: "1 Month", value: "1-month" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
+  {
+    label: "Content Marketing",
+    slug: "content-marketing",
+    budget_range: [
+      { label: "₹2,000 - ₹5,000", value: "2000-5000" },
+      { label: "₹5,000 - ₹10,000", value: "5000-10000" },
+      { label: "₹10,000+", value: "10000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "1 Week", value: "1-week" },
+      { label: "2 Weeks", value: "2-weeks" },
+      { label: "Ongoing", value: "ongoing" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
+  {
+    label: "Email Marketing",
+    slug: "email-marketing",
+    budget_range: [
+      { label: "₹1,500 - ₹4,000", value: "1500-4000" },
+      { label: "₹4,000 - ₹8,000", value: "4000-8000" },
+      { label: "₹8,000+", value: "8000+" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+    timeline: [
+      { label: "1 Week", value: "1-week" },
+      { label: "2 Weeks", value: "2-weeks" },
+      { label: "Ongoing", value: "ongoing" },
+      { label: "Custom", value: "custom" },
+      { label: "Not sure", value: "not-sure" },
+    ],
+  },
 ];

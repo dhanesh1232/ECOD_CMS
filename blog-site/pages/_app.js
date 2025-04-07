@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import LoaderSpinner from "./components/Reusable/Spinner/spinner";
 
 // Dynamic import for Layout with no loading component (we'll handle loading globally)
-const Layout = dynamic(() => import("./components/layout"), { ssr: false });
+const Layout = dynamic(() => import("@/Layout/layout"), { ssr: false });
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();

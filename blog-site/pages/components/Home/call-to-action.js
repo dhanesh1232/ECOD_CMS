@@ -1,10 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
-import React from "react";
-import { useState } from "react";
-import { benefits_data as benefits } from "../../../data/service_data";
-import { data_traffic as data } from "../../../data/service_data";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart,
   Bar,
@@ -13,47 +10,188 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ReferenceLine,
+  Cell,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
 } from "recharts";
 import {
   Rocket,
   ArrowRight,
+  Clock,
+  RefreshCw,
+  Activity,
   Zap,
   TrendingUp,
-  Globe,
-  Users,
+  BarChart2,
+  LineChart,
 } from "lucide-react";
+import { enhancedBenefits, generateTrafficData } from "@/data/service_data";
+
 const Buttons = dynamic(() => import("../Reusable/buttons"));
 const Popup = dynamic(() => import("./pop"));
 
+// Custom components
+const MetricBadge = ({ value, positive, className = "" }) => (
+  <span
+    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${className} ${
+      positive
+        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+    }`}
+  >
+    {positive ? "↑" : "↓"} {value}%
+  </span>
+);
+
+const GlassCard = ({ children, className = "" }) => (
+  <div
+    className={`backdrop-blur-lg bg-white/30 dark:bg-gray-800/50 rounded-xl p-6 shadow-lg border border-white/20 ${className}`}
+  >
+    {children}
+  </div>
+);
+
 const GrowYourBusiness = () => {
   const [selectedBenefit, setSelectedBenefit] = useState(null);
+  const [trafficData, setTrafficData] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeMetric, setActiveMetric] = useState("traffic");
 
-  // Enhanced benefits data with icons
-  const enhancedBenefits = benefits.map((item, i) => ({
-    ...item,
-    icon: [
-      <Zap key="zap" />,
-      <TrendingUp key="trend" />,
-      <Globe key="globe" />,
-      <Users key="users" />,
-    ][i],
-  }));
+  // Load and refresh data
+  useEffect(() => {
+    const loadData = () => {
+      setIsLoading(true);
+      const data = generateTrafficData();
+      setTrafficData(data);
+      setLastUpdated(new Date().toISOString());
+      setIsLoading(false);
+    };
+
+    loadData();
+    const interval = setInterval(loadData, 300000); // Refresh every 5 minutes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (selectedBenefit) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  });
 
   const handleContactModel = () => {
     const clickData = {
       timestamp: new Date().toISOString(),
       modelOpen: true,
     };
-
-    // Save the individual click
     localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
-    window.location.reload();
+  };
+
+  // Enhanced Custom tooltip component
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const currentIndex = trafficData.findIndex((item) => item.name === label);
+      const previousData =
+        currentIndex > 0 ? trafficData[currentIndex - 1] : null;
+
+      const trafficChange = previousData
+        ? (
+            ((data.traffic - previousData.traffic) / previousData.traffic) *
+            100
+          ).toFixed(1)
+        : null;
+      const revenueChange = previousData
+        ? (
+            ((data.revenue - previousData.revenue) / previousData.revenue) *
+            100
+          ).toFixed(1)
+        : null;
+
+      return (
+        <GlassCard className="p-4 !bg-white/95 dark:!bg-gray-800/95">
+          <div className="font-semibold text-gray-900 dark:text-white mb-3">
+            {label} Performance
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Traffic:
+                </span>
+                <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                  {data.traffic.toLocaleString()}
+                </span>
+              </div>
+              {trafficChange && (
+                <MetricBadge
+                  value={Math.abs(trafficChange)}
+                  positive={trafficChange > 0}
+                  className="mt-1"
+                />
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500 dark:text-gray-400">
+                  Revenue:
+                </span>
+                <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                  ${data.revenue.toLocaleString()}
+                </span>
+              </div>
+              {revenueChange && (
+                <MetricBadge
+                  value={Math.abs(revenueChange)}
+                  positive={revenueChange > 0}
+                  className="mt-1"
+                />
+              )}
+            </div>
+
+            {data.conversionRate && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500 dark:text-gray-400">
+                    Conversion:
+                  </span>
+                  <span className="font-medium text-blue-600 dark:text-blue-400">
+                    {(data.conversionRate * 100).toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {data.isCurrent && (
+              <div className="col-span-2 text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center">
+                <Clock className="w-3 h-3 mr-1" />
+                Updated: {new Date(data.lastUpdated).toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+        </GlassCard>
+      );
+    }
+    return null;
   };
 
   return (
     <>
       <section className="w-full py-24 px-4 sm:px-8 bg-gradient-to-br from-blue-800/90 via-indigo-800/90 to-purple-900/90 dark:from-blue-900/90 dark:via-indigo-900/90 dark:to-purple-900/90 backdrop-blur-sm relative overflow-hidden">
-        {/* Background Elements */}
+        {/* Animated background elements */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.3 }}
@@ -73,7 +211,7 @@ const GrowYourBusiness = () => {
           {/* Header Section */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="text-center mb-16"
           >
@@ -128,23 +266,52 @@ const GrowYourBusiness = () => {
                 <h3 className="text-2xl font-bold text-white/90 mb-2">
                   Business Growth Metrics
                 </h3>
-                <p className="text-blue-200/90">
-                  Measurable results from our client campaigns
-                </p>
+                <div className="flex items-center space-x-3">
+                  <p className="text-blue-200/90">
+                    Real-time performance tracking
+                  </p>
+                  {isLoading && (
+                    <RefreshCw className="w-4 h-4 text-blue-300 animate-spin" />
+                  )}
+                  {lastUpdated && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-blue-200/80">
+                      <Clock className="inline w-3 h-3 mr-1" />
+                      {new Date(lastUpdated).toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex space-x-3 mt-4 md:mt-0">
-                <span className="px-3 py-1 rounded-full bg-blue-600/30 text-blue-100/90 text-sm font-medium backdrop-blur-sm border border-white/10">
+                <button
+                  onClick={() => setActiveMetric("traffic")}
+                  className={`px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm border transition-all ${
+                    activeMetric === "traffic"
+                      ? "bg-indigo-600/30 text-indigo-100/90 border-white/20"
+                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
+                  }`}
+                >
                   Traffic
-                </span>
-                <span className="px-3 py-1 rounded-full bg-emerald-600/30 text-emerald-100/90 text-sm font-medium backdrop-blur-sm border border-white/10">
+                </button>
+                <button
+                  onClick={() => setActiveMetric("revenue")}
+                  className={`px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm border transition-all ${
+                    activeMetric === "revenue"
+                      ? "bg-emerald-600/30 text-emerald-100/90 border-white/20"
+                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
+                  }`}
+                >
                   Revenue
+                </button>
+                <span className="px-3 py-1 rounded-full bg-blue-600/30 text-blue-100/90 text-sm font-medium backdrop-blur-sm border border-white/10">
+                  <Activity className="inline w-3 h-3 mr-1" />
+                  Live
                 </span>
               </div>
             </div>
 
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+                <BarChart data={trafficData}>
                   <XAxis
                     dataKey="name"
                     tick={{ fill: "#CBD5E1" }}
@@ -154,37 +321,57 @@ const GrowYourBusiness = () => {
                     tick={{ fill: "#CBD5E1" }}
                     axisLine={{ stroke: "rgba(203, 213, 225, 0.2)" }}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      background: "rgba(255, 255, 255, 0.95)",
-                      backdropFilter: "blur(4px)",
-                      border: "1px solid rgba(0, 0, 0, 0.1)",
-                      borderRadius: "8px",
-                      color: "#111827",
-                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    }}
-                    itemStyle={{ color: "#111827" }}
-                  />
+                  <Tooltip content={<CustomTooltip />} />
                   <Legend
                     wrapperStyle={{ paddingTop: "20px" }}
                     formatter={(value) => (
                       <span className="text-gray-300">{value}</span>
                     )}
                   />
-                  <Bar
-                    dataKey="traffic"
-                    fill="#6366F1"
-                    radius={[6, 6, 0, 0]}
-                    animationDuration={1500}
-                    name="Website Traffic"
+                  <ReferenceLine
+                    y={10000}
+                    stroke="rgba(203, 213, 225, 0.3)"
+                    strokeDasharray="3 3"
+                    label={{
+                      value: "Target",
+                      position: "insideTopLeft",
+                      fill: "#CBD5E1",
+                      fontSize: 12,
+                    }}
                   />
-                  <Bar
-                    dataKey="revenue"
-                    fill="#10B981"
-                    radius={[6, 6, 0, 0]}
-                    animationDuration={1500}
-                    name="Revenue Growth"
-                  />
+                  {activeMetric === "traffic" ? (
+                    <Bar
+                      dataKey="traffic"
+                      name="Website Traffic"
+                      radius={[6, 6, 0, 0]}
+                      animationDuration={1500}
+                    >
+                      {trafficData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.isCurrent ? "#818cf8" : "#6366F1"}
+                          stroke={entry.isCurrent ? "#a5b4fc" : "#818cf8"}
+                          strokeWidth={entry.isCurrent ? 2 : 1}
+                        />
+                      ))}
+                    </Bar>
+                  ) : (
+                    <Bar
+                      dataKey="revenue"
+                      name="Revenue Growth"
+                      radius={[6, 6, 0, 0]}
+                      animationDuration={1500}
+                    >
+                      {trafficData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.isCurrent ? "#34d399" : "#10B981"}
+                          stroke={entry.isCurrent ? "#6ee7b7" : "#34d399"}
+                          strokeWidth={entry.isCurrent ? 2 : 1}
+                        />
+                      ))}
+                    </Bar>
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -202,6 +389,7 @@ const GrowYourBusiness = () => {
                 key={index}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
+                whileHover={{ y: -5 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{
                   type: "spring",
@@ -212,15 +400,10 @@ const GrowYourBusiness = () => {
                 className="group relative overflow-hidden cursor-pointer"
                 onClick={() => setSelectedBenefit(item)}
               >
-                {/* Glass card with gradient overlay */}
                 <div className="relative bg-white/10 dark:bg-gray-800/20 backdrop-blur-md rounded-xl p-6 h-full border border-white/20 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/50 to-indigo-500/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
-
-                  {/* Inner shadow */}
                   <div className="absolute inset-0 rounded-xl shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.1)] pointer-events-none"></div>
 
-                  {/* Shine effect on hover */}
                   <motion.span
                     className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100"
                     initial={{ x: -100, skewX: -15 }}
@@ -230,10 +413,9 @@ const GrowYourBusiness = () => {
 
                   <div className="relative z-10 h-full flex flex-col items-center text-center">
                     <div className="w-14 h-14 mb-5 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors backdrop-blur-sm border border-white/20">
-                      {item.icon &&
-                        React.cloneElement(item.icon, {
-                          className: "w-6 h-6 text-white",
-                        })}
+                      {React.cloneElement(item.icon, {
+                        className: "w-6 h-6 text-white",
+                      })}
                     </div>
                     <h3 className="text-xl font-bold text-white/90 group-hover:text-white transition-colors">
                       {item.title}
@@ -242,7 +424,7 @@ const GrowYourBusiness = () => {
                       {item.description}
                     </p>
                     <div className="mt-auto flex items-center text-blue-200/90 group-hover:text-white transition-colors">
-                      <span className="text-sm font-medium">Learn more</span>
+                      <span className="text-sm font-medium">{item.stats}</span>
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </div>
                   </div>
@@ -259,11 +441,8 @@ const GrowYourBusiness = () => {
             className="text-center"
           >
             <div className="relative max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-8 sm:p-10 border border-white/20 shadow-lg overflow-hidden">
-              {/* Decorative elements */}
               <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-white/10 blur-xl"></div>
               <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-indigo-500/20 blur-xl"></div>
-
-              {/* Inner shadow */}
               <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.1)] pointer-events-none"></div>
 
               <div className="relative z-10">
@@ -284,11 +463,16 @@ const GrowYourBusiness = () => {
           </motion.div>
         </div>
       </section>
+
       {/* Popup Modal */}
-      <Popup
-        selectedBenefit={selectedBenefit}
-        onClose={() => setSelectedBenefit(null)}
-      />
+      <AnimatePresence>
+        {selectedBenefit && (
+          <Popup
+            selectedBenefit={selectedBenefit}
+            onClose={() => setSelectedBenefit(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

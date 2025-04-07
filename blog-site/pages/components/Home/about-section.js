@@ -85,10 +85,8 @@ const AboutSection = () => {
       timestamp: new Date().toISOString(),
       modelOpen: true,
     };
-
     // Save the individual click
     localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
-    window.location.reload();
   };
 
   return (

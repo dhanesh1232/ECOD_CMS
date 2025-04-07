@@ -86,7 +86,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, phone, code, name, verificationId, service } = req.body;
+    const { email, phone, code, name, verificationId } = req.body;
     const clientInfo = getClientInfo(req);
 
     // Enhanced request validation
@@ -170,7 +170,6 @@ export default async function handler(req, res) {
         email,
         code,
         name,
-        service,
         verificationId
       );
       if (!emailSuccess) {

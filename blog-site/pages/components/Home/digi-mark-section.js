@@ -11,15 +11,31 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Area,
+  ReferenceLine,
 } from "recharts";
-import { data } from "../../../data/service_data";
-import { Search, BarChart2, Share2, Rocket, ArrowRight } from "lucide-react";
+import { generateMarketingData } from "../../../data/service_data";
+import {
+  Search,
+  BarChart2,
+  Share2,
+  Rocket,
+  ArrowRight,
+  TrendingUp,
+  Zap,
+  Users,
+} from "lucide-react";
 const Buttons = dynamic(() => import("../Reusable/buttons"));
 
 const DigitalMarketing = () => {
   const [ctaRef, ctaInView] = useInView({ threshold: 0.1 });
   const [chartRef, chartInView] = useInView({ threshold: 0.1 });
   const [servicesRef, servicesInView] = useInView({ threshold: 0.1 });
+  const [statsRef, statsInView] = useInView({ threshold: 0.1 });
+
+  // Generate real-time data
+  const marketingData = generateMarketingData();
+  const currentMonthData = marketingData[marketingData.length - 1];
 
   const serviceData = [
     {
@@ -29,7 +45,9 @@ const DigitalMarketing = () => {
       darkColor: "from-blue-400 to-blue-500",
       description:
         "Improves website visibility on search engines like Google by optimizing content, keywords, and backlinks.",
-      stats: "250%+ traffic growth",
+      stats: `${currentMonthData.SEO_Trend || "+15%"} MoM growth`,
+      conversions: currentMonthData.SEO_Conversions,
+      roi: currentMonthData.SEO_ROI,
     },
     {
       icon: <BarChart2 className="w-6 h-6" />,
@@ -38,7 +56,9 @@ const DigitalMarketing = () => {
       darkColor: "from-purple-400 to-purple-500",
       description:
         "Paid advertising model where businesses pay per click, effective for quick traffic and conversions.",
-      stats: "5-10x ROI common",
+      stats: `${currentMonthData.PPC_Trend || "+12%"} MoM growth`,
+      conversions: currentMonthData.PPC_Conversions,
+      roi: currentMonthData.PPC_ROI,
     },
     {
       icon: <Share2 className="w-6 h-6" />,
@@ -47,7 +67,9 @@ const DigitalMarketing = () => {
       darkColor: "from-orange-400 to-orange-500",
       description:
         "Engages audiences through platforms like Facebook and Instagram for brand awareness and sales growth.",
-      stats: "3-5x engagement boost",
+      stats: `${currentMonthData.SMM_Trend || "+18%"} MoM growth`,
+      conversions: currentMonthData.SMM_Conversions,
+      roi: currentMonthData.SMM_ROI,
     },
   ];
 
@@ -56,22 +78,92 @@ const DigitalMarketing = () => {
       timestamp: new Date().toISOString(),
       modelOpen: true,
     };
-
-    // Save the individual click
     localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
-    window.location.reload();
   };
 
   return (
     <section className="w-full py-20 px-4 sm:px-8 bg-gradient-to-br from-blue-50/50 via-white/50 to-blue-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50 backdrop-blur-sm relative overflow-hidden">
-      {/* Background elements */}
+      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden -z-10">
-        <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-50/30 to-transparent dark:from-blue-900/10 backdrop-blur-sm"></div>
+        {[...Array(15)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: -20 }}
+            animate={ctaInView ? { opacity: 0.05, y: 0 } : {}}
+            transition={{
+              duration: 1.5,
+              delay: i * 0.1,
+              repeat: Infinity,
+              repeatType: "reverse",
+            }}
+            className="absolute rounded-full bg-blue-400/20 dark:bg-blue-500/20"
+            style={{
+              width: `${Math.random() * 10 + 5}px`,
+              height: `${Math.random() * 10 + 5}px`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+          />
+        ))}
         <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-100/30 blur-3xl dark:bg-blue-900/20"></div>
         <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-purple-100/30 blur-3xl dark:bg-purple-900/20"></div>
       </div>
 
       <div className="max-w-7xl mx-auto">
+        {/* Performance Stats */}
+        <motion.div
+          ref={statsRef}
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={statsInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          {[
+            {
+              icon: <TrendingUp className="w-5 h-5" />,
+              value: `${currentMonthData.SEO + currentMonthData.PPC + currentMonthData.SMM}+`,
+              label: "Monthly Leads",
+              change: "+22% YoY",
+            },
+            {
+              icon: <Zap className="w-5 h-5" />,
+              value: `${(currentMonthData.SEO_Cost + currentMonthData.PPC_Cost + currentMonthData.SMM_Cost) / 1000}k`,
+              label: "Monthly Ad Spend",
+              change: "+15% YoY",
+            },
+            {
+              icon: <Users className="w-5 h-5" />,
+              value: `${currentMonthData.SEO_Conversions + currentMonthData.PPC_Conversions + currentMonthData.SMM_Conversions}+`,
+              label: "Monthly Conversions",
+              change: "+28% YoY",
+            },
+            {
+              icon: <BarChart2 className="w-5 h-5" />,
+              value: `${((currentMonthData.SEO_ROI + currentMonthData.PPC_ROI + currentMonthData.SMM_ROI) / 3).toFixed(1)}x`,
+              label: "Avg. ROI",
+              change: "+12% YoY",
+            },
+          ].map((stat, index) => (
+            <div
+              key={index}
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6 rounded-xl border border-gray-200/30 dark:border-gray-700/30 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100/50 dark:bg-blue-900/20 mb-3">
+                {stat.icon}
+              </div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {stat.value}
+              </div>
+              <div className="mt-1 text-gray-600 dark:text-gray-400">
+                {stat.label}
+              </div>
+              <div className="mt-1 text-sm text-green-600 dark:text-green-400">
+                {stat.change}
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
         {/* Section Heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -120,7 +212,6 @@ const DigitalMarketing = () => {
           transition={{ duration: 0.6 }}
           className="bg-white/80 dark:bg-gray-800/70 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-200/50 dark:border-gray-700/30 mb-16 relative overflow-hidden"
         >
-          {/* Inner shadow */}
           <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.15)] pointer-events-none"></div>
 
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -129,10 +220,14 @@ const DigitalMarketing = () => {
                 Marketing Performance
               </h3>
               <p className="text-gray-500/90 dark:text-gray-400/90">
-                Last 12 months growth metrics
+                Last {marketingData.length} months growth metrics
               </p>
             </div>
-            <div className="flex space-x-2 mt-4 md:mt-0">
+            <div className="flex items-center space-x-2 mt-4 md:mt-0">
+              <span className="text-xs px-2 py-1 rounded-full bg-blue-100/50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300">
+                Updated:{" "}
+                {new Date(currentMonthData.lastUpdated).toLocaleTimeString()}
+              </span>
               {["SEO", "PPC", "SMM"].map((item, index) => (
                 <span
                   key={index}
@@ -159,7 +254,7 @@ const DigitalMarketing = () => {
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
+              <LineChart data={marketingData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="rgba(156, 163, 175, 0.2)"
@@ -175,24 +270,63 @@ const DigitalMarketing = () => {
                   axisLine={{ stroke: "rgba(156, 163, 175, 0.2)" }}
                 />
                 <Tooltip
-                  contentStyle={{
-                    background: "rgba(255, 255, 255, 0.95)",
-                    backdropFilter: "blur(4px)",
-                    border: "1px solid rgba(0, 0, 0, 0.1)",
-                    borderRadius: "8px",
-                    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                    color: "#111827",
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-xl p-4 border border-gray-200/30 dark:border-gray-700/30">
+                          <div className="font-semibold text-gray-900 dark:text-white mb-2">
+                            {data.month}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            {payload.map((entry, idx) => (
+                              <div
+                                key={`tooltip-${idx}`}
+                                className="flex items-center"
+                              >
+                                <div
+                                  className="w-3 h-3 rounded-full mr-2"
+                                  style={{ backgroundColor: entry.color }}
+                                />
+                                <span className="text-gray-500">
+                                  {entry.name}:
+                                </span>
+                                <span className="font-medium ml-auto">
+                                  {entry.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                          {data.lastUpdated && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              Updated:{" "}
+                              {new Date(data.lastUpdated).toLocaleString()}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
                   }}
-                  itemStyle={{ color: "#111827" }}
-                  labelStyle={{ color: "#111827", fontWeight: 600 }}
                 />
                 <Legend
                   wrapperStyle={{ paddingTop: "20px" }}
                   formatter={(value) => (
-                    <span className="text-gray-700 dark:text-gray-300">
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">
                       {value}
                     </span>
                   )}
+                />
+                <ReferenceLine
+                  y={100}
+                  stroke="rgba(156, 163, 175, 0.5)"
+                  strokeDasharray="3 3"
+                  label={{
+                    value: "Target",
+                    position: "insideTopLeft",
+                    fill: "#6b7280",
+                    fontSize: 12,
+                  }}
                 />
                 <Line
                   type="monotone"
@@ -250,24 +384,15 @@ const DigitalMarketing = () => {
             <motion.div
               key={index}
               whileHover={{ y: -5 }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                transition: { duration: 0.3, ease: "ease-in-out" },
-              }}
+              transition={{ type: "spring", stiffness: 300 }}
               className="group relative overflow-hidden shadow-lg transform transition ease-in-out duration-300"
             >
-              {/* Glass card with inner shadow */}
               <div className="relative bg-white/80 shadow-xl dark:bg-gray-800/70 backdrop-blur-md rounded-xl p-8 h-full border border-gray-200/50 dark:border-gray-700/30 hover:shadow-xl transition-all duration-300">
-                {/* Gradient overlay */}
                 <div
                   className={`absolute inset-0 rounded-xl bg-gradient-to-br ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 -z-10`}
                 ></div>
-
-                {/* Inner shadow effect */}
                 <div className="absolute inset-0 rounded-xl shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_0_rgba(0,0,0,0.15)] pointer-events-none"></div>
 
-                {/* Icon container */}
                 <div
                   className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br ${service.color} text-white mb-6 shadow-inner`}
                 >
@@ -280,6 +405,18 @@ const DigitalMarketing = () => {
                 <p className="text-gray-600/90 dark:text-gray-400/90 mb-4">
                   {service.description}
                 </p>
+
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="bg-white/70 dark:bg-gray-700/50 p-2 rounded-lg">
+                    <div className="text-xs text-gray-500">Conversions</div>
+                    <div className="font-bold">{service.conversions}</div>
+                  </div>
+                  <div className="bg-white/70 dark:bg-gray-700/50 p-2 rounded-lg">
+                    <div className="text-xs text-gray-500">ROI</div>
+                    <div className="font-bold">{service.roi}x</div>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between mt-6">
                   <span className="text-sm font-medium px-3 py-1 rounded-full bg-white/70 dark:bg-gray-700/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-600/30 shadow-inner">
                     {service.stats}
@@ -300,11 +437,8 @@ const DigitalMarketing = () => {
           className="text-center"
         >
           <div className="relative max-w-3xl mx-auto px-8 py-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl overflow-hidden backdrop-blur-sm">
-            {/* Decorative elements */}
             <div className="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-white/10 blur-3xl"></div>
             <div className="absolute -bottom-20 -right-20 w-40 h-40 rounded-full bg-purple-500/20 blur-3xl"></div>
-
-            {/* Inner shadow */}
             <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_8px_0_rgba(0,0,0,0.15)] pointer-events-none"></div>
 
             <div className="relative z-10">

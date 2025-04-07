@@ -1,3 +1,134 @@
+// utils/dataHelpers.js
+export const generateLiveData = () => {
+  const now = new Date();
+  const currentMonth = now.toLocaleString("default", { month: "short" });
+  const currentYear = now.getFullYear();
+  const dateKey = `${currentMonth} ${currentYear}`;
+
+  // Simulate daily fluctuations (±5%)
+  const dailyFluctuation = 1 + (Math.random() * 0.1 - 0.05);
+
+  return {
+    pieData: [
+      {
+        name: "Meta Ads",
+        value: Math.round(487 * dailyFluctuation),
+        fill: "#1877F2",
+        trend: `${Math.round(Math.random() * 5 + 6)}%`,
+        cost: Math.round(2450 * dailyFluctuation),
+        conversions: Math.round(92 * dailyFluctuation),
+        roi: (3.8 * dailyFluctuation).toFixed(1),
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        name: "Google Ads",
+        value: Math.round(402 * dailyFluctuation),
+        fill: "#4285F4",
+        trend: `${Math.round(Math.random() * 3 + 4)}%`,
+        cost: Math.round(3100 * dailyFluctuation),
+        conversions: Math.round(87 * dailyFluctuation),
+        roi: (2.9 * dailyFluctuation).toFixed(1),
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        name: "Organic Traffic",
+        value: Math.round(387 * dailyFluctuation),
+        fill: "#0F9D58",
+        trend: `${Math.round(Math.random() * 7 + 9)}%`,
+        cost: Math.round(1800 * dailyFluctuation),
+        conversions: Math.round(105 * dailyFluctuation),
+        roi: (5.1 * dailyFluctuation).toFixed(1),
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        name: "Email",
+        value: Math.round(215 * dailyFluctuation),
+        fill: "#EA4335",
+        trend: `${Math.round(Math.random() * 2 + 2)}%`,
+        cost: Math.round(950 * dailyFluctuation),
+        conversions: Math.round(48 * dailyFluctuation),
+        roi: (4.3 * dailyFluctuation).toFixed(1),
+        lastUpdated: new Date().toISOString(),
+      },
+      {
+        name: "Social Media",
+        value: Math.round(278 * dailyFluctuation),
+        fill: "#E1306C",
+        trend: `${Math.round(Math.random() * 10 + 15)}%`,
+        cost: Math.round(1200 * dailyFluctuation),
+        conversions: Math.round(63 * dailyFluctuation),
+        roi: (4.9 * dailyFluctuation).toFixed(1),
+        lastUpdated: new Date().toISOString(),
+      },
+    ],
+    radarData: [
+      {
+        subject: "Meta Ads",
+        current: Math.round(137 * dailyFluctuation),
+        benchmark: 118,
+        target: 150,
+        trend: `${Math.round(Math.random() * 5 + 10)}%`,
+        efficiency: (0.92 * dailyFluctuation).toFixed(2),
+        quarter: `Q${Math.floor(now.getMonth() / 3) + 1} ${currentYear}`,
+      },
+      {
+        subject: "Google Ads",
+        current: Math.round(142 * dailyFluctuation),
+        benchmark: 125,
+        target: 150,
+        trend: `${Math.round(Math.random() * 3 + 7)}%`,
+        efficiency: (0.88 * dailyFluctuation).toFixed(2),
+        quarter: `Q${Math.floor(now.getMonth() / 3) + 1} ${currentYear}`,
+      },
+      {
+        subject: "SEO",
+        current: Math.round(128 * dailyFluctuation),
+        benchmark: 105,
+        target: 150,
+        trend: `${Math.round(Math.random() * 7 + 12)}%`,
+        efficiency: (0.95 * dailyFluctuation).toFixed(2),
+        quarter: `Q${Math.floor(now.getMonth() / 3) + 1} ${currentYear}`,
+      },
+      {
+        subject: "Social Media",
+        current: Math.round(113 * dailyFluctuation),
+        benchmark: 98,
+        target: 150,
+        trend: `${Math.round(Math.random() * 10 + 18)}%`,
+        efficiency: (0.85 * dailyFluctuation).toFixed(2),
+        quarter: `Q${Math.floor(now.getMonth() / 3) + 1} ${currentYear}`,
+      },
+      {
+        subject: "Email",
+        current: Math.round(104 * dailyFluctuation),
+        benchmark: 92,
+        target: 150,
+        trend: `${Math.round(Math.random() * 2 + 4)}%`,
+        efficiency: (0.78 * dailyFluctuation).toFixed(2),
+        quarter: `Q${Math.floor(now.getMonth() / 3) + 1} ${currentYear}`,
+      },
+      {
+        subject: "Content Marketing",
+        current: Math.round(121 * dailyFluctuation),
+        benchmark: 87,
+        target: 150,
+        trend: `${Math.round(Math.random() * 8 + 15)}%`,
+        efficiency: (0.91 * dailyFluctuation).toFixed(2),
+        quarter: `Q${Math.floor(now.getMonth() / 3) + 1} ${currentYear}`,
+      },
+    ],
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      dataVersion: "2.1",
+      currency: "USD",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+  };
+};
+
+// data/shopify.js
+export const { pieData, radarData } = generateLiveData();
+
 export const salesData = [
   { month: "Jun", sales: 500 },
   { month: "Jul", sales: 800 },
@@ -16,19 +147,6 @@ export const conversionData = [
   { month: "Oct", rate: 3.5 },
   { month: "Nov", rate: 4.0 },
   { month: "Dec", rate: 4.5 },
-];
-
-export const pieData = [
-  { name: "Meta Ads", value: 400 },
-  { name: "Google Ads", value: 300 },
-  { name: "Organic Traffic", value: 300 },
-];
-export const radarData = [
-  { subject: "Meta Ads", A: 120, B: 110, fullMark: 150 },
-  { subject: "Google Ads", A: 98, B: 130, fullMark: 150 },
-  { subject: "SEO", A: 86, B: 130, fullMark: 150 },
-  { subject: "Social Media", A: 99, B: 100, fullMark: 150 },
-  { subject: "Email", A: 85, B: 90, fullMark: 150 },
 ];
 
 export const experties_data = [

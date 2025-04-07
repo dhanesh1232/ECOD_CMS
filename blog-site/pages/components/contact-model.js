@@ -10,11 +10,7 @@ import {
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import ReCAPTCHA from "react-google-recaptcha";
-import {
-  customer_budget_range,
-  customer_porject_timeline,
-  services_ecod,
-} from "../../data/service_data";
+import { service_client_data } from "../../data/service_data";
 
 const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE;
 
@@ -30,7 +26,6 @@ const TEMP_EMAIL_DOMAINS = [
   "tempmailaddress.com",
 ];
 const MAX_FORM_SUBMISSIONS = 10;
-const VERIFICATION_CODE_EXPIRY = 10 * 60 * 1000; // 10 minutes
 const RESEND_COOLDOWN = 60; // seconds
 
 const ContactModel = () => {
@@ -43,6 +38,8 @@ const ContactModel = () => {
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [defaultCountry, setDefaultCountry] = useState("US");
+  const [selectedServiceBudget, setSelectedServiceBudget] = useState([]);
+  const [selectedServiceTimeline, setSelectedServiceTimeline] = useState([]);
 
   // Form data and validation
   const [formData, setFormData] = useState({
@@ -87,12 +84,22 @@ const ContactModel = () => {
   const [ipAddress, setIpAddress] = useState(null);
   const [userAgent, setUserAgent] = useState(null);
   const [formFingerprint, setFormFingerprint] = useState(null);
-  const [verificationAttempts, setVerificationAttempts] = useState(0);
   const [isHumanVerified, setIsHumanVerified] = useState(false);
 
   // Refs
   const recaptchaRef = useRef(null);
   const timerRef = useRef(null);
+
+  useEffect(() => {
+    const matchedService = service_client_data.find(
+      (item) => item.slug === formData.serviceDetails.serviceType
+    );
+
+    console.log("Filtered Service:", matchedService);
+
+    setSelectedServiceBudget(matchedService?.budget_range || []);
+    setSelectedServiceTimeline(matchedService?.timeline || []);
+  }, [formData.serviceDetails.serviceType]);
 
   // Derived values
   const isCustomBudget = useCallback(
@@ -153,7 +160,7 @@ const ContactModel = () => {
     }
 
     // Set default country based on user's location
-    fetch("https://ipapi.co/json/")
+    fetch("/api/ip-data")
       .then((response) => response.json())
       .then((data) => {
         if (data.country) {
@@ -194,21 +201,58 @@ const ContactModel = () => {
   }, [isContactModel]);
 
   useEffect(() => {
-    // Initialize and handle storage changes
-    if (initialLoad) {
-      checkLocalStorage();
-      setInitialLoad(false);
-    }
+    // 1. Check initial state
+    const checkInitialState = () => {
+      try {
+        const storedData = localStorage.getItem("contactModelClick");
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setIsContactModel(parsedData.modelOpen);
+        }
+      } catch (error) {
+        console.error("Error parsing contactModelClick:", error);
+        setIsContactModel(false);
+      }
+    };
 
-    const handleStorageChange = (e) => {
-      if (e.key === `contactModelClick`) {
-        checkLocalStorage();
+    checkInitialState();
+
+    // 2. Create custom event emitter for current tab changes
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = function (key, value) {
+      originalSetItem.apply(this, arguments);
+      if (key === "contactModelClick") {
+        window.dispatchEvent(
+          new StorageEvent("storage", {
+            key,
+            newValue: value,
+            oldValue: localStorage.getItem(key),
+            storageArea: localStorage,
+          })
+        );
+      }
+    };
+
+    // 3. Unified handler for both current tab and cross-tab changes
+    const handleStorageChange = (event) => {
+      if (event.key === "contactModelClick") {
+        try {
+          const newValue = event.newValue ? JSON.parse(event.newValue) : null;
+          setIsContactModel(newValue?.modelOpen ?? false);
+        } catch (error) {
+          console.error("Error parsing contactModelClick change:", error);
+          setIsContactModel(false);
+        }
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [initialLoad]);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      localStorage.setItem = originalSetItem; // Restore original
+    };
+  }, []);
 
   useEffect(() => {
     // Validate form stages
@@ -519,17 +563,6 @@ const ContactModel = () => {
     setSubmitError(null);
   }, []);
 
-  const checkLocalStorage = useCallback(() => {
-    try {
-      const storageKey = `contactModelClick`;
-      const data = localStorage.getItem(storageKey);
-      setIsContactModel(data ? JSON.parse(data)?.modelOpen === true : false);
-    } catch (error) {
-      console.error("Error checking localStorage:", error);
-      setIsContactModel(false);
-    }
-  }, []);
-
   const handleClose = useCallback(() => {
     try {
       localStorage.removeItem(`contactModelClick`);
@@ -537,6 +570,16 @@ const ContactModel = () => {
       window.dispatchEvent(new Event("contactModelUpdate"));
       setSubmitError(null);
       setSubmitSuccess(false);
+      setTouchedFields({
+        personalInfo: { name: false, email: false, phone: false },
+        serviceDetails: { serviceType: false, budget: false, timeline: false },
+        projectBrief: {
+          description: false,
+          referenceLinks: false,
+          budgetDetails: false,
+          timelineDetails: false,
+        },
+      });
     } catch (error) {
       console.error("Error closing modal:", error);
     }
@@ -850,8 +893,10 @@ const ContactModel = () => {
                       className={`w-full px-4 text-black py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "serviceType", formData.serviceDetails.serviceType) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     >
-                      <option value="">Select a service</option>
-                      {services_ecod.map((service) => (
+                      <option value="" className="text-gray-400">
+                        Select a service
+                      </option>
+                      {service_client_data.map((service) => (
                         <option key={service.slug} value={service.slug}>
                           {service.label}
                         </option>
@@ -874,16 +919,20 @@ const ContactModel = () => {
                           e.target.value
                         )
                       }
+                      disabled={selectedServiceBudget.length === 0}
                       onBlur={() => handleBlur("serviceDetails", "budget")}
-                      className={`w-full text-black px-4 py-1.5 sm:py-2 border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "budget", formData.serviceDetails.budget) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full text-black px-4 py-1.5 sm:py-2 border rounded-lg focus:ring-2 ${selectedServiceBudget.length === 0 && "pointer-events-none"} outline-none transition ${isFieldInvalid("serviceDetails", "budget", formData.serviceDetails.budget) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     >
-                      <option value="">Select budget</option>
-                      {customer_budget_range.map((budget) => (
-                        <option key={budget.value} value={budget.value}>
-                          {budget.label}
-                        </option>
-                      ))}
+                      <option value="" className="text-gray-400">
+                        Select budget
+                      </option>
+                      {selectedServiceBudget &&
+                        selectedServiceBudget.map((budget) => (
+                          <option key={budget.value} value={budget.value}>
+                            {budget.label}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
@@ -902,16 +951,20 @@ const ContactModel = () => {
                           e.target.value
                         )
                       }
+                      disabled={selectedServiceTimeline.length === 0}
                       onBlur={() => handleBlur("serviceDetails", "timeline")}
-                      className={`w-full px-4 py-1.5 sm:py-2 text-black border rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "timeline", formData.serviceDetails.timeline) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
+                      className={`w-full px-4 py-1.5 sm:py-2 text-black border ${selectedServiceTimeline.length === 0 && "pointer-events-none"} rounded-lg focus:ring-2 outline-none transition ${isFieldInvalid("serviceDetails", "timeline", formData.serviceDetails.timeline) ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"}`}
                       required
                     >
-                      <option value="">Select timeline</option>
-                      {customer_porject_timeline.map((timeline) => (
-                        <option key={timeline.value} value={timeline.value}>
-                          {timeline.label}
-                        </option>
-                      ))}
+                      <option value="" className="text-gray-400">
+                        Select timeline
+                      </option>
+                      {selectedServiceTimeline &&
+                        selectedServiceTimeline.map((timeline) => (
+                          <option key={timeline.value} value={timeline.value}>
+                            {timeline.label}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 </div>
