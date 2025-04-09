@@ -411,3 +411,252 @@ export const experiences = [
     icon: <FiGlobe className="text-blue-500" />,
   },
 ];
+
+import { v4 as uuidv4 } from "uuid";
+// Offer data
+export const offers = [
+  // Web Development Offers
+  {
+    id: uuidv4(),
+    title: "⚡ Web Performance Package",
+    getDescription: function () {
+      return `90+ PageSpeed score guaranteed or ${this.discount}% off your next month!`;
+    },
+    cta: "Optimize Now",
+    bgColor: "bg-gradient-to-br from-blue-500/90 to-blue-600/90",
+    borderColor: "border-blue-400/30",
+    keywords: ["web development", "performance", "PageSpeed"],
+    discount: Math.floor(Math.random() * 25) + 5, // 5-29%
+    couponPrefix: "WEB",
+    validityDays: 14,
+    serviceSlug: "web-development",
+  },
+  {
+    id: uuidv4(),
+    title: "🌐 Website Launch Special",
+    getDescription: function () {
+      return `Free domain for 1 year + ${this.discount}% off development fees!`;
+    },
+    cta: "Start Project",
+    bgColor: "bg-gradient-to-br from-indigo-500/90 to-indigo-600/90",
+    borderColor: "border-indigo-400/30",
+    keywords: ["web development", "website", "launch"],
+    discount: Math.floor(Math.random() * 20) + 10, // 10-29%
+    couponPrefix: "WEB",
+    validityDays: 30,
+    serviceSlug: "web-development",
+  },
+
+  // Google/Meta Ads Offers
+  {
+    id: uuidv4(),
+    title: "📈 Google Ads Special",
+    getDescription: function () {
+      const credit = Math.floor(Math.random() * 300) + 200;
+      return `$${credit} free ad credit + ${this.discount}% off first campaign!`;
+    },
+    cta: "Claim Credit",
+    bgColor: "bg-gradient-to-br from-red-500/90 to-red-600/90",
+    borderColor: "border-red-400/30",
+    keywords: ["Google Ads", "PPC", "advertising"],
+    discount: Math.floor(Math.random() * 15) + 10, // 10-24%
+    couponPrefix: "ADS",
+    validityDays: 5,
+    serviceSlug: "google-meta-ads",
+  },
+  {
+    id: uuidv4(),
+    title: "📱 Meta Ads Pro Package",
+    getDescription: function () {
+      const months = Math.floor(Math.random() * 3) + 1;
+      return `Free creative strategy + ${this.discount}% off first ${months} ${months > 1 ? "months" : "month"}!`;
+    },
+    cta: "Start Advertising",
+    bgColor: "bg-gradient-to-br from-violet-500/90 to-violet-600/90",
+    borderColor: "border-violet-400/30",
+    keywords: ["Meta Ads", "Facebook Ads", "social media ads"],
+    discount: Math.floor(Math.random() * 20) + 5, // 5-24%
+    couponPrefix: "ADS",
+    validityDays: 10,
+    serviceSlug: "google-meta-ads",
+  },
+
+  // SEO Offers
+  {
+    id: uuidv4(),
+    title: "🚀 SEO Optimization Package",
+    getDescription: function () {
+      return `Get a free SEO audit + ${this.discount}% off our premium ranking package!`;
+    },
+    cta: "Get Free Audit",
+    bgColor: "bg-gradient-to-br from-amber-500/90 to-amber-600/90",
+    borderColor: "border-amber-400/30",
+    keywords: ["SEO", "search engine optimization", "ranking"],
+    discount: Math.floor(Math.random() * 15) + 10, // 10-24%
+    couponPrefix: "SEO",
+    validityDays: 7,
+    serviceSlug: "seo",
+  },
+  {
+    id: uuidv4(),
+    title: "🔍 Technical SEO Fixes",
+    getDescription: function () {
+      return `24-hour express service - ${this.discount}% discount this week only!`;
+    },
+    cta: "Fix My SEO",
+    bgColor: "bg-gradient-to-br from-rose-500/90 to-rose-600/90",
+    borderColor: "border-rose-400/30",
+    keywords: ["technical SEO", "crawling", "indexing"],
+    discount: Math.floor(Math.random() * 25) + 5, // 5-29%
+    couponPrefix: "SEO",
+    validityDays: 3,
+    serviceSlug: "seo",
+  },
+
+  // Social Media Marketing Offers
+  {
+    id: uuidv4(),
+    title: "📢 Social Media Starter Pack",
+    getDescription: function () {
+      return `Free content calendar + ${this.discount}% off first month of management!`;
+    },
+    cta: "Boost Engagement",
+    bgColor: "bg-gradient-to-br from-pink-500/90 to-pink-600/90",
+    borderColor: "border-pink-400/30",
+    keywords: ["social media", "SMM", "engagement"],
+    discount: Math.floor(Math.random() * 20) + 10, // 10-29%
+    couponPrefix: "SMM",
+    validityDays: 14,
+    serviceSlug: "social-media-marketing",
+  },
+  {
+    id: uuidv4(),
+    title: "🎯 Influencer Campaign Package",
+    getDescription: function () {
+      return `Free influencer matching + ${this.discount}% off campaign setup!`;
+    },
+    cta: "Start Campaign",
+    bgColor: "bg-gradient-to-br from-fuchsia-500/90 to-fuchsia-600/90",
+    borderColor: "border-fuchsia-400/30",
+    keywords: ["influencer", "social media", "campaign"],
+    discount: Math.floor(Math.random() * 15) + 15, // 15-29%
+    couponPrefix: "SMM",
+    validityDays: 21,
+    serviceSlug: "social-media-marketing",
+  },
+
+  // Shopify Offers
+  {
+    id: uuidv4(),
+    title: "🛍️ Shopify Speed Boost",
+    getDescription: function () {
+      return `Free store speed optimization + ${this.discount}% off any Shopify plan!`;
+    },
+    cta: "Boost My Store",
+    bgColor: "bg-gradient-to-br from-emerald-500/90 to-emerald-600/90",
+    borderColor: "border-emerald-400/30",
+    keywords: ["Shopify", "ecommerce", "store optimization"],
+    discount: Math.floor(Math.random() * 20) + 5, // 5-24%
+    couponPrefix: "SHOP",
+    validityDays: 7,
+    serviceSlug: "shopify-optimization",
+  },
+  {
+    id: uuidv4(),
+    title: "🔄 Shopify Migration Special",
+    getDescription: function () {
+      return `Free migration assistance + ${this.discount}% off first month!`;
+    },
+    cta: "Migrate Now",
+    bgColor: "bg-gradient-to-br from-teal-500/90 to-teal-600/90",
+    borderColor: "border-teal-400/30",
+    keywords: ["Shopify", "migration", "ecommerce"],
+    discount: Math.floor(Math.random() * 25) + 10, // 10-34%
+    couponPrefix: "SHOP",
+    validityDays: 14,
+    serviceSlug: "shopify-optimization",
+  },
+
+  // Content Marketing Offers
+  {
+    id: uuidv4(),
+    title: "✍️ Content Strategy Package",
+    getDescription: function () {
+      return `Free strategy session + ${this.discount}% off first 10 pieces of content!`;
+    },
+    cta: "Get Strategy",
+    bgColor: "bg-gradient-to-br from-purple-500/90 to-purple-600/90",
+    borderColor: "border-purple-400/30",
+    keywords: ["content", "strategy", "blogging"],
+    discount: Math.floor(Math.random() * 20) + 10, // 10-29%
+    couponPrefix: "CONTENT",
+    validityDays: 21,
+    serviceSlug: "content-marketing",
+  },
+  {
+    id: uuidv4(),
+    title: "📝 Blog Writing Special",
+    getDescription: function () {
+      return `First blog post free + ${this.discount}% off ongoing content!`;
+    },
+    cta: "Start Blogging",
+    bgColor: "bg-gradient-to-br from-lime-500/90 to-lime-600/90",
+    borderColor: "border-lime-400/30",
+    keywords: ["blog", "writing", "content"],
+    discount: Math.floor(Math.random() * 15) + 15, // 15-29%
+    couponPrefix: "CONTENT",
+    validityDays: 30,
+    serviceSlug: "content-marketing",
+  },
+
+  // Email Marketing Offers
+  {
+    id: uuidv4(),
+    title: "📧 Email Campaign Starter",
+    getDescription: function () {
+      return `Free template design + ${this.discount}% off first campaign!`;
+    },
+    cta: "Launch Campaign",
+    bgColor: "bg-gradient-to-br from-cyan-500/90 to-cyan-600/90",
+    borderColor: "border-cyan-400/30",
+    keywords: ["email", "campaign", "newsletter"],
+    discount: Math.floor(Math.random() * 25) + 5, // 5-29%
+    couponPrefix: "EMAIL",
+    validityDays: 14,
+    serviceSlug: "email-marketing",
+  },
+  {
+    id: uuidv4(),
+    title: "📊 Email Analytics Pro",
+    getDescription: function () {
+      return `Free analytics setup + ${this.discount}% off first 3 months!`;
+    },
+    cta: "Optimize Emails",
+    bgColor: "bg-gradient-to-br from-sky-500/90 to-sky-600/90",
+    borderColor: "border-sky-400/30",
+    keywords: ["email", "analytics", "optimization"],
+    discount: Math.floor(Math.random() * 20) + 10, // 10-29%
+    couponPrefix: "EMAIL",
+    validityDays: 21,
+    serviceSlug: "email-marketing",
+  },
+];
+
+export const generateCouponCode = (offer) => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let randomPart = "";
+  for (let i = 0; i < 6; i++) {
+    randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `${offer.couponPrefix}ECOD${randomPart}`;
+};
+
+export const getRandomOffer = () => {
+  const offer = offers[Math.floor(Math.random() * offers.length)];
+  return {
+    ...offer,
+    description: offer.getDescription(),
+    couponCode: generateCouponCode(offer),
+    expiresAt: new Date(Date.now() + offer.validityDays * 24 * 60 * 60 * 1000),
+  };
+};

@@ -2241,6 +2241,7 @@ export const service_client_data = [
   {
     label: "Web Development",
     slug: "web-development",
+    prefix: "WEB",
     budget_range: [
       { label: "₹5,000 - ₹15,000", value: "5000-15000" },
       { label: "₹15,000 - ₹30,000", value: "15000-30000" },
@@ -2261,6 +2262,7 @@ export const service_client_data = [
   {
     label: "Google | Meta Ads",
     slug: "google-meta-ads",
+    prefix: "ADS",
     budget_range: [
       { label: "₹3,000 - ₹7,000", value: "3000-7000" },
       { label: "₹7,000 - ₹15,000", value: "7000-15000" },
@@ -2283,6 +2285,7 @@ export const service_client_data = [
   {
     label: "SEO",
     slug: "seo",
+    prefix: "SEO",
     budget_range: [
       { label: "₹3,000 - ₹8,000", value: "3000-8000" },
       { label: "₹8,000 - ₹15,000", value: "8000-15000" },
@@ -2301,6 +2304,7 @@ export const service_client_data = [
   {
     label: "Social Media Marketing",
     slug: "social-media-marketing",
+    prefix: "SMM",
     budget_range: [
       { label: "₹4,000 - ₹10,000", value: "4000-10000" },
       { label: "₹10,000 - ₹20,000", value: "10000-20000" },
@@ -2319,6 +2323,7 @@ export const service_client_data = [
   {
     label: "Shopify Optimization",
     slug: "shopify-optimization",
+    prefix: "SHOP",
     budget_range: [
       { label: "₹5,000 - ₹10,000", value: "5000-10000" },
       { label: "₹10,000 - ₹20,000", value: "10000-20000" },
@@ -2337,6 +2342,7 @@ export const service_client_data = [
   {
     label: "Content Marketing",
     slug: "content-marketing",
+    prefix: "CONTENT",
     budget_range: [
       { label: "₹2,000 - ₹5,000", value: "2000-5000" },
       { label: "₹5,000 - ₹10,000", value: "5000-10000" },
@@ -2355,6 +2361,7 @@ export const service_client_data = [
   {
     label: "Email Marketing",
     slug: "email-marketing",
+    prefix: "EMAIL",
     budget_range: [
       { label: "₹1,500 - ₹4,000", value: "1500-4000" },
       { label: "₹4,000 - ₹8,000", value: "4000-8000" },

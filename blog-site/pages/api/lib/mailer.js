@@ -230,3 +230,148 @@ export const sendConfirmationEmail = async (
     return false;
   }
 };
+
+export const sendOfferMail = async (name, email, offer, coupon, expiresAt) => {
+  const mailOptions = {
+    from: `"ECOD Service" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
+    to: email,
+    subject: `🎉 Your ${offer.discount}% OFF - ${offer.title}`,
+    html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Exclusive Offer</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; }
+      </style>
+    </head>
+    <body style="margin: 0; background-color: #f8f9fa;">
+      <!-- Main Container -->
+      <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+        
+        <!-- Hero Header -->
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2.5rem; text-align: center; color: white;">
+          <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700;">${offer.title}</h1>
+          <p style="margin: 8px 0 0; font-size: 16px; opacity: 0.9;">Your exclusive ${offer.discount}% discount is ready!</p>
+        </div>
+        
+        <!-- Content Area -->
+        <div style="padding: 0.5rem;">
+          <p style="font-size: 16px; color: #4b5563; margin-bottom: 1.5rem;">Hi <strong>${name}</strong>,</p>
+          <p style="font-size: 16px; color: #4b5563; margin-bottom: 1.5rem;">Thank you for choosing ECO Service! We're excited to offer you this special discount:</p>
+          
+          <!-- Premium Coupon Card -->
+          <div style="position: relative; border-radius: 12px; padding: 2rem; margin: 1.5rem 0; 
+              background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+              border: 1px solid #e5e7eb;
+              box-shadow: inset 0 0 0 1px rgba(255,255,255,0.8), 0 4px 12px rgba(0,0,0,0.05);">
+            
+            <!-- Floating Discount Badge -->
+            <div style="position: absolute; top: -12px; right: 20px; 
+                background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+                color: white; font-weight: 700; font-size: 14px; 
+                padding: 4px 16px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              ${offer.discount}% OFF
+            </div>
+            
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 8px;">YOUR PROMO CODE</p>
+            <div style="font-family: monospace; font-size: 24px; font-weight: 700; letter-spacing: 3px; 
+                text-align: center; color: #111827; margin: 12px 0; padding: 8px; 
+                background: white; border-radius: 8px; border: 1px dashed #d1d5db;">
+              ${coupon}
+            </div>
+            
+            <div style="text-align: center; margin-top: 16px;">
+              <span style="display: inline-block; background-color: #fef2f2; color: #b91c1c; 
+                  font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px;">
+                ⏳ Expires ${new Date(expiresAt).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <div style="text-align: center; margin: 2rem 0;">
+            <a href="https://ecodservice.com" 
+               style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                      color: white; text-decoration: none; font-weight: 600; font-size: 16px; 
+                      padding: 14px 28px; border-radius: 8px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+                      transition: all 0.3s ease;">
+              Redeem Your Discount Now →
+            </a>
+          </div>
+          
+          <!-- Steps -->
+          <div style="background-color: #f9fafb; border-radius: 12px; padding: 1.5rem; margin: 2rem 0;">
+            <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 18px; color: #111827;">How to redeem your offer</h3>
+            
+            ${[
+              {
+                icon: "1️⃣",
+                text: "Visit <a href='https://ecodservice.com' style='color: #6366f1; text-decoration: none; font-weight: 500;'>ecodservice.com</a>",
+              },
+              { icon: "2️⃣", text: "Click on Consultation" },
+              {
+                icon: "3️⃣",
+                text: "Fill Personal and Service Details and Project Brief",
+              },
+              { icon: "4️⃣", text: "Use the coupon code at final Step" },
+              { icon: "5️⃣", text: "Enjoy your discount!" },
+            ]
+              .map(
+                (step) => `
+              <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+                <div style="font-size: 16px; margin-right: 12px; line-height: 1.5;">${step.icon}</div>
+                <p style="margin: 0; font-size: 15px; color: #4b5563; line-height: 1.5;">${step.text}</p>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+          
+          <!-- Support Section -->
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 1.5rem; margin-top: 2rem;">
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 0.5rem;">Need help with your order?</p>
+            <p style="font-size: 15px; margin: 0;">
+              <a href="mailto:support@ecodservice.com" 
+                 style="color: #6366f1; text-decoration: none; font-weight: 500;">
+                Contact our support team
+              </a> or reply to this email
+            </p>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div style="background-color: #f3f4f6; padding: 1.5rem; text-align: center; font-size: 13px; color: #6b7280;">
+          <p style="margin: 0 0 8px 0;">© ${new Date().getFullYear()} ECO Service. All rights reserved.</p>
+          <p style="margin: 0; font-size: 12px;">123 Business Street, City, Country</p>
+          
+          <!-- Social Links -->
+          <div style="margin-top: 16px;">
+            <a href="#" style="display: inline-block; margin: 0 6px;"><img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" alt="Facebook"></a>
+            <a href="#" style="display: inline-block; margin: 0 6px;"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" width="24" alt="Twitter"></a>
+            <a href="#" style="display: inline-block; margin: 0 6px;"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="24" alt="Instagram"></a>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (emailError) {
+    console.error("Email sending failed:", emailError);
+    return false;
+  }
+};

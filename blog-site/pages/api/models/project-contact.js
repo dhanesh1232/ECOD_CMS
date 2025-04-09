@@ -89,7 +89,7 @@ const ContactSubmissionSchema = new Schema(
         default: false,
       },
       verificationMethod: {
-        type: String,
+        type: Object,
         enum: ["email", "whatsapp"],
         required: true,
       },

@@ -222,18 +222,18 @@ const HeroSection = () => {
           {/* CTA Buttons */}
           <motion.div
             variants={buttonVariants}
-            className="flex flex-wrap justify-center gap-4 z-50"
+            className="flex flex-wrap justify-center gap-2 z-50"
           >
             <Buttons
               first_label={"See Our Work"}
-              second_label={"Get Free Consultation"}
+              second_label={"Consultation"}
               first_nav={"/services"}
               buttonActionTwo={handleContactModel}
               first_styles={
-                "px-6 py-3 md:px-8 md:py-3.5 border-2 border-white/20 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-300"
+                "md:px-6 px-3 py-2 md:py-3.5 border-2 border-white/20 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all duration-300"
               }
               second_styles={
-                "px-6 py-3 md:px-8 md:py-3.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-medium rounded-lg hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all duration-300"
+                "md:px-6 px-4 py-2 md:py-3.5 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-medium rounded-lg hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all duration-300"
               }
             />
           </motion.div>

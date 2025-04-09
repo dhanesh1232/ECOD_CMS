@@ -41,9 +41,9 @@ export default async function handler(req, res) {
       budgetDetails: formData.projectBrief.budgetDetails || undefined,
       timelineDetails: formData.projectBrief.timelineDetails || undefined,
       verification: {
-        emailVerified: true,
-        whatsappVerified: true,
-        verificationMethod: formData.verificationMethod || "email",
+        emailVerified: formData.verificationMethod.email || false,
+        whatsappVerified: formData.verificationMethod.whatsapp || false,
+        verificationMethod: { ...formData.verificationMethod } || {},
       },
       metadata: {
         ...metadata,

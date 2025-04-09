@@ -25,26 +25,44 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   const mobileMenuRef = useRef(null);
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
-  const timeoutRef = useRef(null);
   const dropdownRefs = useRef({});
 
-  // Enhanced dropdown handling with proper mouse tracking
-  const handleMouseEnter = useCallback((label) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    setActiveDropdown(label);
-    setOpenDropDesk(label);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    timeoutRef.current = setTimeout(() => {
-      if (activeDropdown === openDropDesk) {
+  const handleDropClicked = useCallback(
+    (label) => {
+      if (openDropDesk === label) {
         setOpenDropDesk(null);
-        setActiveDropdown(null);
+      } else {
+        setOpenDropDesk(label);
       }
-    }, 300); // Increased delay for better UX
-  }, [activeDropdown, openDropDesk]);
+    },
+    [openDropDesk]
+  );
+
+  // Add this useEffect hook for click-outside functionality
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropDesk) {
+        // Get all dropdown elements
+        const dropdownElements = Object.values(dropdownRefs.current).filter(
+          Boolean
+        );
+
+        // Check if click is outside of all dropdown elements
+        const isClickOutside = dropdownElements.every(
+          (element) => element && !element.contains(event.target)
+        );
+
+        if (isClickOutside) {
+          setOpenDropDesk(null);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openDropDesk]);
 
   // Track if we're on homepage
   useEffect(() => {
@@ -109,25 +127,6 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     return () => router.events.off("routeChangeComplete", handleRouteChange);
   }, [router]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        setShowSearch(false);
-        setIsMobileMenuOpen(false);
-      }
-      // Cmd+K or Ctrl+K for search
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        handleSearchToggle();
-        searchInputRef.current?.focus();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
   // Update header height CSS variable
   useEffect(() => {
     const updateHeaderHeight = () => {
@@ -161,6 +160,25 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     setShowSearch(!showSearch);
     setTimeout(() => searchInputRef.current?.focus(), 100);
   }, [showSearch]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowSearch(false);
+        setIsMobileMenuOpen(false);
+      }
+      // Cmd+K or Ctrl+K for search
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        handleSearchToggle();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSearchToggle]);
 
   const handleMobileMenuToggle = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -221,11 +239,14 @@ const HeaderSection = ({ theme, toggleTheme }) => {
 
   // Render function for dropdown items
   const renderDropdownItems = (subpages) => {
-    return subpages.map((subpage) => (
+    return subpages.map((subpage, ind) => (
       <motion.li
         key={subpage.label}
-        whileHover={{ x: 5 }}
-        transition={{ type: "spring", stiffness: 300 }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.1, delay: ind * 0.05 }}
+        exit={{ opacity: 0, x: -20 }}
+        whileHover={{ x: 1 }}
       >
         <Link
           href={subpage.slug}
@@ -245,10 +266,10 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     <>
       <header
         ref={headerRef}
-        className={`fixed top-0 ${router.pathname === "/preview" ? "z-0" : "z-50"} z-40 w-full py-3 px-4 transition-all duration-300 ${
+        className={`fixed top-0 ${router.pathname === "/preview" ? "z-0" : "z-50"} z-20 w-full py-3 px-4 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/20 dark:bg-gray-900/20 backdrop-blur-lg border-b border-white/10 dark:border-gray-800"
-            : "bg-white/5 dark:bg-gray-900/5 backdrop-blur-sm"
+            ? "bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm border-b border-white/10 dark:border-gray-800"
+            : "backdrop-blur-sm"
         }`}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -257,7 +278,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             onClick={handleMobileMenuToggle}
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={isMobileMenuOpen}
-            className="md:hidden p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-800/50 transition-colors"
+            className="md:hidden p-2 py-1.5 rounded-md border-1 dark:border-gray-200 bg-white/20 dark:bg-gray-800/50 transition-colors"
           >
             {isMobileMenuOpen ? (
               <X
@@ -304,8 +325,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     whileHover="hover"
                     initial="initial"
                     animate="animate"
-                    onMouseEnter={() => handleMouseEnter(item.label)}
-                    onMouseLeave={handleMouseLeave}
+                    onClick={() => handleDropClicked(item.label)}
                     ref={(el) => (dropdownRefs.current[item.label] = el)}
                   >
                     {item.subpages ? (
@@ -332,13 +352,11 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                         <AnimatePresence>
                           {openDropDesk === item.label && (
                             <motion.ul
-                              className="absolute left-0 mt-0 w-64 overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
-                              initial={{ opacity: 0, y: -10 }}
+                              className="absolute left-0 top-10 mt-0 w-64 overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
+                              initial={{ opacity: 0, y: -20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ type: "spring", stiffness: 300 }}
-                              onMouseEnter={() => handleMouseEnter(item.label)}
-                              onMouseLeave={handleMouseLeave}
+                              exit={{ opacity: 0, y: -20 }}
+                              transition={{ ease: "easeInOut", duration: 0.2 }}
                               style={{
                                 pointerEvents: "auto",
                               }}

@@ -4,14 +4,10 @@ import { useCallback, useState, useEffect, useMemo } from "react";
 import Head from "next/head";
 import LoaderSpinner from "@/pages/components/Reusable/Spinner/spinner";
 import PropTypes from "prop-types";
-import StickyContactButton from "../pages/components/contact-button";
 import PortfolioPage from "../pages/portfolio";
-import CookiePopup from "../pages/components/cookies";
-import ContactModel from "../pages/components/contact-model";
+import PageNotFound from "@/pages/404";
+import OverlayPages from "@/pages/components/Overlay/overy-pages";
 
-const OfferButton = dynamic(() => import("@/pages/components/button-offer"), {
-  ssr: false,
-});
 const Footer = dynamic(() => import("@/pages/components/footer"), {
   ssr: false,
 });
@@ -35,6 +31,7 @@ const Layout = ({ children }) => {
   const isPortfolioPage = router.pathname === "/portfolio";
   const isPreviewPage = router.pathname === "/preview";
   const isServiceWebPage = category === "web-development";
+  const isNotFound = router.pathname === "/404";
   const { isHomePage, layoutClasses } = useMemo(() => {
     const isHome = router.pathname === "/";
     return {
@@ -142,7 +139,9 @@ const Layout = ({ children }) => {
       </div>
     );
   }
-
+  if (isNotFound) {
+    return <PageNotFound />;
+  }
   return (
     <>
       <Head>
@@ -187,10 +186,7 @@ const Layout = ({ children }) => {
         </div>
         <>
           <Footer />
-          <OfferButton />
-          <StickyContactButton />
-          <CookiePopup />
-          <ContactModel />
+          <OverlayPages />
         </>
       </div>
     </>

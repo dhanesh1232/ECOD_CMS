@@ -5,7 +5,10 @@ import {
   CheckCircle,
   AlertCircle,
   Mail,
-  Phone,
+  FileText,
+  Settings,
+  User,
+  Trash2,
 } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -33,11 +36,10 @@ const ContactModel = () => {
   const [isContactModel, setIsContactModel] = useState(false);
   const [currentStage, setCurrentStage] = useState(1);
   const formRef = useRef(null);
-  const [initialLoad, setInitialLoad] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [defaultCountry, setDefaultCountry] = useState("US");
+  const [defaultCountry, setDefaultCountry] = useState("IN");
   const [selectedServiceBudget, setSelectedServiceBudget] = useState([]);
   const [selectedServiceTimeline, setSelectedServiceTimeline] = useState([]);
 
@@ -66,8 +68,9 @@ const ContactModel = () => {
 
   // Verification states
   const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const [recaptchaExpired, setRecaptchaExpired] = useState(false);
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
-  const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
+
   const [verificationCode, setVerificationCode] = useState("");
   const [userEnteredCode, setUserEnteredCode] = useState("");
   const [whatsappOtp, setWhatsappOtp] = useState("");
@@ -86,17 +89,41 @@ const ContactModel = () => {
   const [formFingerprint, setFormFingerprint] = useState(null);
   const [isHumanVerified, setIsHumanVerified] = useState(false);
 
+  //Coupon Checkbox
+  const [isCoupon, setIsCoupon] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [isCouponValid, setIsCouponValid] = useState(false);
+  const [couponError, setCouponError] = useState(null);
+  const [selectedServiceDetails, setSelectedServiceDetails] = useState(null);
+
   // Refs
   const recaptchaRef = useRef(null);
   const timerRef = useRef(null);
+
+  // Enhanced reCAPTCHA handlers
+  const handleRecaptchaChange = useCallback((token) => {
+    setRecaptchaToken(token);
+    setIsHumanVerified(!!token);
+    setRecaptchaExpired(false);
+  }, []);
+
+  const handleRecaptchaExpired = useCallback(() => {
+    setRecaptchaToken(null);
+    setIsHumanVerified(false);
+    setRecaptchaExpired(true);
+  }, []);
+
+  const handleRecaptchaError = useCallback(() => {
+    setRecaptchaToken(null);
+    setIsHumanVerified(false);
+  }, []);
 
   useEffect(() => {
     const matchedService = service_client_data.find(
       (item) => item.slug === formData.serviceDetails.serviceType
     );
-
-    console.log("Filtered Service:", matchedService);
-
+    setSelectedServiceDetails(matchedService);
     setSelectedServiceBudget(matchedService?.budget_range || []);
     setSelectedServiceTimeline(matchedService?.timeline || []);
   }, [formData.serviceDetails.serviceType]);
@@ -118,6 +145,7 @@ const ContactModel = () => {
     stage2: false,
     stage3: false,
     stage4: false,
+    stage5: false,
   });
 
   // Effects
@@ -144,6 +172,7 @@ const ContactModel = () => {
       try {
         const response = await fetch("https://api.ipify.org?format=json");
         const data = await response.json();
+        console.log(fingerprint);
         setIpAddress(data.ip);
       } catch (error) {
         console.error("Error fetching IP:", error);
@@ -159,46 +188,12 @@ const ContactModel = () => {
       setFormSubmissions(parseInt(submissions));
     }
 
-    // Set default country based on user's location
-    fetch("/api/ip-data")
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.country) {
-          setDefaultCountry(data.country);
-        }
-      })
-      .catch(() => {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (timezone.toLowerCase().includes("india")) {
-          setDefaultCountry("IN");
-        }
-      });
-
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef?.current);
       }
     };
   }, []);
-
-  useEffect(() => {
-    // Handle scroll locking when modal is open
-    if (isContactModel) {
-      document.body.style.overflow = "hidden";
-      setTimeout(() => {
-        const firstInput = formRef.current?.querySelector(
-          "input, textarea, select"
-        );
-        firstInput?.focus();
-      }, 100);
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isContactModel]);
 
   useEffect(() => {
     // 1. Check initial state
@@ -254,6 +249,108 @@ const ContactModel = () => {
     };
   }, []);
 
+  const validateCoupon = async () => {
+    if (!couponCode) {
+      setCouponError("Please enter a coupon code");
+      return;
+    }
+    setIsValidatingCoupon(true);
+    setCouponError(null);
+
+    try {
+      const response = await fetch(
+        `/api/submit-offer?coupon=${encodeURIComponent(couponCode)}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Clone the response to safely read it
+      const responseClone = response.clone();
+
+      if (!response.ok) {
+        // Handle 404 and other error responses
+        if (response.status === 404) {
+          setCouponError("Coupon Invalid or Expired");
+        } else {
+          try {
+            const errorData = await responseClone.json();
+            setCouponError(errorData.message || "Invalid coupon code");
+          } catch {
+            setCouponError("Failed to validate coupon");
+          }
+        }
+        return;
+      }
+
+      // Handle successful response
+      const data = await response.json();
+      if (data.isUsed) {
+        setCouponError("Coupon already used");
+        return;
+      }
+      if (data.offer.couponPrefix !== selectedServiceDetails.prefix) {
+        setCouponError(`Coupon not valid for ${selectedServiceDetails.prefix}`);
+        return;
+      }
+      setIsCouponValid(true);
+    } catch (error) {
+      setCouponError("Network error. Please try again.");
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setIsCoupon(false);
+    setCouponCode("");
+    setIsCouponValid(false);
+    setCouponError(null);
+  };
+
+  // Helper functions
+  const isSuspiciousEmail = useCallback((email) => {
+    if (!email || typeof email !== "string") return false;
+    const parts = email.split("@");
+    if (parts.length !== 2 || !parts[1]) return false;
+    const domain = parts[1].toLowerCase();
+    return TEMP_EMAIL_DOMAINS.some((tempDomain) =>
+      domain.includes(tempDomain.toLowerCase())
+    );
+  }, []);
+
+  const isFieldInvalid = useCallback(
+    (stage, field, value) => {
+      if (!touchedFields[stage][field]) return false;
+
+      if (field === "email") {
+        return (
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || isSuspiciousEmail(value)
+        );
+      }
+
+      if (field === "phone") {
+        return !value || value.replace(/\D/g, "").length < 9;
+      }
+
+      if (field === "name") {
+        const trimmedValue = value.trim();
+        if (trimmedValue === "") return true;
+        const nameParts = trimmedValue
+          .split(/\s+/)
+          .filter((part) => part.length > 0);
+        if (nameParts.length !== 2) return true;
+        return nameParts.some((part) => part.length < 2);
+      }
+
+      return value.trim() === "";
+    },
+    [touchedFields, isSuspiciousEmail]
+  );
+
   useEffect(() => {
     // Validate form stages
     const validateEmail = (email) => {
@@ -287,6 +384,7 @@ const ContactModel = () => {
       stage2: isStage2Valid,
       stage3: isStage3Valid,
       stage4: isHumanVerified && emailVerified && whatsappVerified,
+      stage5: isCoupon ? isCouponValid : true,
     });
   }, [
     formData,
@@ -295,37 +393,10 @@ const ContactModel = () => {
     isHumanVerified,
     emailVerified,
     whatsappVerified,
+    isSuspiciousEmail,
+    isCouponValid,
+    isCoupon,
   ]);
-
-  // Helper functions
-  const isSuspiciousEmail = useCallback((email) => {
-    if (!email || typeof email !== "string") return false;
-    const parts = email.split("@");
-    if (parts.length !== 2 || !parts[1]) return false;
-    const domain = parts[1].toLowerCase();
-    return TEMP_EMAIL_DOMAINS.some((tempDomain) =>
-      domain.includes(tempDomain.toLowerCase())
-    );
-  }, []);
-
-  const isFieldInvalid = useCallback(
-    (stage, field, value) => {
-      if (!touchedFields[stage][field]) return false;
-
-      if (field === "email") {
-        return (
-          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || isSuspiciousEmail(value)
-        );
-      }
-
-      if (field === "phone") {
-        return !value || value.replace(/\D/g, "").length < 8;
-      }
-
-      return value.trim() === "";
-    },
-    [touchedFields, isSuspiciousEmail]
-  );
 
   // Verification handlers
   const handleOtpChange = (e, index) => {
@@ -375,70 +446,76 @@ const ContactModel = () => {
   };
 
   // Verification functions
-  const sendVerification = async (type) => {
-    setVerificationInProgress(true);
-    setStatusMessage(null);
+  const sendVerification = useCallback(
+    async (type) => {
+      setVerificationInProgress(true);
+      setStatusMessage(null);
 
-    try {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      try {
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-      if (type === "email") {
-        setVerificationCode(code);
-        setUserEnteredCode("");
-      } else {
-        setWhatsappVerificationCode(code);
-        setWhatsappOtp("");
-      }
+        if (type === "email") {
+          setVerificationCode(code);
+          setUserEnteredCode("");
+        } else {
+          setWhatsappVerificationCode(code);
+          setWhatsappOtp("");
+        }
 
-      const response = await fetch(`/api/send-verification`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Client-Info": JSON.stringify({
-            fingerprint: formFingerprint,
+        const response = await fetch(`/api/send-verification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Client-Info": JSON.stringify({
+              fingerprint: formFingerprint,
+            }),
+          },
+          body: JSON.stringify({
+            [type === "email" ? "email" : "phone"]:
+              type === "email"
+                ? formData.personalInfo.email
+                : formData.personalInfo.phone,
+            code,
+            name: formData.personalInfo.name,
+            ipAddress,
+            userAgent,
+            service: formData.serviceDetails.serviceType.replace(/-/g, "-"),
           }),
-        },
-        body: JSON.stringify({
-          [type === "email" ? "email" : "phone"]:
-            type === "email"
-              ? formData.personalInfo.email
-              : formData.personalInfo.phone,
-          code,
-          name: formData.personalInfo.name,
-          ipAddress,
-          userAgent,
-          service: formData.serviceDetails.serviceType.replace(/-/g, "-"),
-        }),
-      });
+        });
 
-      if (!response.ok) {
-        const error = await response.json();
-        /*if (error.retryAfter) {
-          startCooldownTimer(error.retryAfter);
-        }*/
-        throw new Error(error.message || "Failed to send verification");
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to send verification");
+        }
+
+        if (type === "email") {
+          setEmailVerificationSent(true);
+        }
+        startResendCooldown(type);
+
+        setStatusMessage({
+          type: "success",
+          text: `Verification code sent to your ${type}`,
+        });
+      } catch (error) {
+        setStatusMessage({
+          type: "error",
+          text: error.message || "Failed to send verification code",
+        });
+      } finally {
+        setVerificationInProgress(false);
       }
-
-      if (type === "email") {
-        setEmailVerificationSent(true);
-      } else {
-        setPhoneVerificationSent(true);
-      }
-      startResendCooldown(type);
-
-      setStatusMessage({
-        type: "success",
-        text: `Verification code sent to your ${type}`,
-      });
-    } catch (error) {
-      setStatusMessage({
-        type: "error",
-        text: error.message || "Failed to send verification code",
-      });
-    } finally {
-      setVerificationInProgress(false);
-    }
-  };
+    },
+    [
+      formData.personalInfo.email,
+      formData.personalInfo.phone,
+      formData.personalInfo.name,
+      formFingerprint,
+      formData.serviceDetails.serviceType,
+      ipAddress,
+      userAgent,
+    ]
+  );
 
   const resendVerification = () => sendVerification("email");
   const resendWhatsappVerification = () => sendVerification("whatsapp");
@@ -480,6 +557,7 @@ const ContactModel = () => {
           type: "success",
           text: "Email verified successfully!",
         });
+        sendVerification("whatsapp");
       } else {
         throw new Error("Invalid verification code");
       }
@@ -544,19 +622,18 @@ const ContactModel = () => {
     }));
   }, []);
 
-  const handleRecaptchaChange = useCallback((token) => {
-    setRecaptchaToken(token);
-    setIsHumanVerified(!!token);
-  }, []);
-
-  const nextStage = useCallback(() => {
-    if (formValid[`stage${currentStage}`]) {
-      setCurrentStage((prev) => prev + 1);
-      if (currentStage === 3 && !verificationCode) {
-        sendVerification("email");
+  const nextStage = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (formValid[`stage${currentStage}`]) {
+        setCurrentStage((prev) => prev + 1);
+        if (currentStage === 3 && !verificationCode) {
+          sendVerification("email");
+        }
       }
-    }
-  }, [currentStage, formValid, verificationCode]);
+    },
+    [currentStage, formValid, verificationCode, sendVerification]
+  );
 
   const prevStage = useCallback(() => {
     setCurrentStage((prev) => Math.max(1, prev - 1));
@@ -594,7 +671,7 @@ const ContactModel = () => {
       // Check rate limit
       const currentSubmissions = formSubmissions;
       if (currentSubmissions >= MAX_FORM_SUBMISSIONS) {
-        const firstSubmissionTime = Date.now() - 24 * 60 * 60 * 1000; // Dummy value for example
+        const firstSubmissionTime = Date.now() - 24 * 60 * 60 * 1000;
         const resetTime = firstSubmissionTime + 24 * 60 * 60 * 1000;
         const timeLeft = Math.ceil((resetTime - Date.now()) / (60 * 60 * 1000));
         throw new Error(
@@ -612,7 +689,10 @@ const ContactModel = () => {
           recaptchaToken,
           submissionTime: new Date().toISOString(),
           submissionCount: currentSubmissions + 1,
-          verificationMethod: emailVerificationSent ? "email" : "sms",
+          verificationMethod: {
+            email: emailVerified,
+            whatsapp: whatsappVerified,
+          },
         },
       };
 
@@ -683,11 +763,11 @@ const ContactModel = () => {
 
           {/* Progress Steps */}
           <div className="flex justify-between mb-2 relative">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3, 4, 5].map((step) => (
               <div
                 key={step}
                 className="flex flex-col items-center z-10"
-                style={{ width: `${100 / 4}%` }}
+                style={{ width: `${100 / 5}%` }}
               >
                 <div
                   className={`w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center 
@@ -701,13 +781,14 @@ const ContactModel = () => {
                   {step === 2 && "Service Details"}
                   {step === 3 && "Project Brief"}
                   {step === 4 && "Verification"}
+                  {step === 5 && "Confirmation"}
                 </span>
               </div>
             ))}
             <div className="absolute top-3.5 sm:top-5 left-8 right-8 h-1 bg-gray-200 -z-1">
               <div
                 className="h-full bg-blue-600 transition-all duration-300"
-                style={{ width: `${(currentStage - 1) * 33.33}%` }}
+                style={{ width: `${(currentStage - 1) * 25}%` }}
               ></div>
             </div>
           </div>
@@ -744,12 +825,14 @@ const ContactModel = () => {
                 <div className="space-y-2 sm:space-y-4">
                   <div>
                     <label
+                      htmlFor="name-input"
                       className={`block text-sm font-medium mb-1 ${isFieldInvalid("personalInfo", "name", formData.personalInfo.name) ? "text-red-600" : "text-gray-700"}`}
                     >
                       Full Name*
                     </label>
                     <input
                       type="text"
+                      id="name-input"
                       value={formData.personalInfo.name}
                       onChange={(e) =>
                         handleInputChange(
@@ -767,11 +850,13 @@ const ContactModel = () => {
                   </div>
                   <div>
                     <label
+                      htmlFor="email-input"
                       className={`block text-sm font-medium mb-1 ${isFieldInvalid("personalInfo", "email", formData.personalInfo.email) ? "text-red-600" : "text-gray-700"}`}
                     >
                       Email*
                     </label>
                     <input
+                      id="email-input"
                       type="email"
                       value={formData.personalInfo.email}
                       onChange={(e) =>
@@ -1081,202 +1166,486 @@ const ContactModel = () => {
               )}
 
               {currentStage === 4 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {emailVerified
-                      ? "WhatsApp Verification"
-                      : "Email Verification"}
-                  </h3>
+                <div className="space-y-2">
+                  {/* reCAPTCHA */}
+                  <div className="mb-4">
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={recaptchaSiteKey}
+                      onChange={handleRecaptchaChange}
+                      onExpired={handleRecaptchaExpired}
+                      onErrored={handleRecaptchaError}
+                    />
+                    {recaptchaExpired && (
+                      <p className="text-sm text-red-500 mt-1">
+                        reCAPTCHA verification expired. Please verify again.
+                      </p>
+                    )}
+                  </div>
+                  {emailVerified && whatsappVerified ? (
+                    // Both verifications completed - show success cards
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200 flex items-center">
+                        <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-medium text-green-800">
+                            Email Verified
+                          </h3>
+                          <p className="text-sm text-green-600">
+                            {formData.personalInfo.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200 flex items-center">
+                        <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-medium text-green-800">
+                            WhatsApp Verified
+                          </h3>
+                          <p className="text-sm text-green-600">
+                            {formData.personalInfo.phone}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      {/* Email Verification Block */}
+                      {!emailVerified ? (
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-700">
+                            {`We'll send a 6-digit code to`}{" "}
+                            {formData.personalInfo.email}
+                          </p>
 
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    {/* reCAPTCHA */}
-                    <div className="mb-4">
-                      <ReCAPTCHA
-                        ref={recaptchaRef}
-                        sitekey={recaptchaSiteKey}
-                        onChange={handleRecaptchaChange}
-                      />
+                          {emailVerificationSent ? (
+                            <>
+                              <div className="flex justify-center gap-3 mb-4">
+                                {[...Array(6)].map((_, i) => (
+                                  <div key={i} className="relative w-12 h-12">
+                                    <input
+                                      type="text"
+                                      inputMode="numeric"
+                                      maxLength={1}
+                                      value={userEnteredCode[i] || ""}
+                                      onChange={(e) => handleOtpChange(e, i)}
+                                      onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                                      data-index={i}
+                                      className="w-full h-full text-2xl text-center font-medium text-gray-900 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all"
+                                    />
+                                    {!userEnteredCode[i] && (
+                                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="w-0.5 h-6 bg-blue-400 animate-pulse" />
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex justify-between items-center">
+                                <button
+                                  type="button"
+                                  onClick={resendVerification}
+                                  disabled={resendCooldown > 0}
+                                  className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                                >
+                                  {resendCooldown > 0
+                                    ? `Resend in ${resendCooldown}s`
+                                    : "Resend Code"}
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={verifyEmailCode}
+                                  disabled={
+                                    userEnteredCode.length !== 6 ||
+                                    verificationInProgress ||
+                                    !isHumanVerified
+                                  }
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                  {verificationInProgress ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    "Verify Email"
+                                  )}
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => sendVerification("email")}
+                              disabled={
+                                verificationInProgress || !isHumanVerified
+                              }
+                              className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center disabled:opacity-50"
+                            >
+                              {verificationInProgress ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              ) : (
+                                <Mail className="h-4 w-4 mr-2" />
+                              )}
+                              Send Email Verification Code
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        /* WhatsApp Verification Block */
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-700">
+                            {`We've sent a 6-digit code to your WhatsApp`}:{" "}
+                            {formData.personalInfo.phone}
+                          </p>
+
+                          <div className="flex justify-center gap-3 mb-4">
+                            {[...Array(6)].map((_, i) => (
+                              <div key={i} className="relative w-12 h-12">
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  maxLength={1}
+                                  value={whatsappOtp[i] || ""}
+                                  onChange={(e) =>
+                                    handleWhatsappOtpChange(e, i)
+                                  }
+                                  onKeyDown={(e) =>
+                                    handleWhatsappOtpKeyDown(e, i)
+                                  }
+                                  data-whatsapp-index={i}
+                                  className="w-full h-full text-2xl text-center font-medium text-gray-900 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all"
+                                />
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <button
+                              type="button"
+                              onClick={resendWhatsappVerification}
+                              disabled={whatsappResendCooldown > 0}
+                              className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                            >
+                              {whatsappResendCooldown > 0
+                                ? `Resend in ${whatsappResendCooldown}s`
+                                : "Resend Code"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={verifyWhatsappCode}
+                              disabled={
+                                whatsappOtp.length !== 6 ||
+                                verificationInProgress ||
+                                !isHumanVerified
+                              }
+                              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              {verificationInProgress ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Verify WhatsApp"
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Verification Status */}
+                  {emailVerified && whatsappVerified
+                    ? null
+                    : statusMessage && (
+                        <div
+                          className={`p-3 rounded-md ${
+                            statusMessage.type === "error"
+                              ? "bg-red-50 text-red-600"
+                              : "bg-green-50 text-green-600"
+                          }`}
+                        >
+                          <div className="flex items-center">
+                            {statusMessage.type === "error" ? (
+                              <AlertCircle className="h-5 w-5 mr-2" />
+                            ) : (
+                              <CheckCircle className="h-5 w-5 mr-2" />
+                            )}
+                            <span>
+                              {statusMessage.text.includes("Too many requests")
+                                ? "You've tried too many times. Please wait 5 minutes and try again."
+                                : statusMessage.text}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                </div>
+              )}
+
+              {currentStage === 5 && (
+                <div className="space-y-2 max-h-[50vh] overflow-y-auto scroll-smooth">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                      Ready to Submit
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Please review your information below before submitting.
+                      Our team will contact you within 24 hours.
+                    </p>
+                  </div>
+
+                  {/* Personal Info Card */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                      <h4 className="font-medium text-gray-800 flex items-center">
+                        <User className="w-4 h-4 mr-2 text-gray-500" />
+                        Personal Information
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStage(1)}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Full Name</span>
+                        <span className="text-sm font-medium">
+                          {formData.personalInfo.name}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Email</span>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-1">
+                            {formData.personalInfo.email}
+                          </span>
+                          {emailVerified && (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">WhatsApp</span>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-1">
+                            {formData.personalInfo.phone}
+                          </span>
+                          {whatsappVerified && (
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Service Details Card */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                      <h4 className="font-medium text-gray-800 flex items-center">
+                        <Settings className="w-4 h-4 mr-2 text-gray-500" />
+                        Service Details
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStage(2)}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">
+                          Service Type
+                        </span>
+                        <span className="text-sm font-medium">
+                          {
+                            service_client_data.find(
+                              (s) =>
+                                s.slug === formData.serviceDetails.serviceType
+                            )?.label
+                          }
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">
+                          Budget Range
+                        </span>
+                        <span className="text-sm font-medium">
+                          {formData.serviceDetails.budget === "custom"
+                            ? "Custom"
+                            : selectedServiceBudget.find(
+                                (b) =>
+                                  b.value === formData.serviceDetails.budget
+                              )?.label}
+                        </span>
+                      </div>
+                      {isCustomBudget() && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">
+                            Budget Details
+                          </span>
+                          <span className="text-sm font-medium">
+                            {formData.projectBrief.budgetDetails}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">
+                          Project Timeline
+                        </span>
+                        <span className="text-sm font-medium">
+                          {formData.serviceDetails.timeline === "custom"
+                            ? "Custom"
+                            : selectedServiceTimeline.find(
+                                (t) =>
+                                  t.value === formData.serviceDetails.timeline
+                              )?.label}
+                        </span>
+                      </div>
+                      {isCustomTimeline() && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-500">
+                            Timeline Details
+                          </span>
+                          <span className="text-sm font-medium">
+                            {formData.projectBrief.timelineDetails}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Project Brief Card */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center">
+                      <h4 className="font-medium text-gray-800 flex items-center">
+                        <FileText className="w-4 h-4 mr-2 text-gray-500" />
+                        Project Brief
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStage(3)}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-500 mb-1">
+                          Description
+                        </h5>
+                        <p className="text-sm text-gray-800 whitespace-pre-line">
+                          {formData.projectBrief.description}
+                        </p>
+                      </div>
+                      {formData.projectBrief.referenceLinks && (
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500 mb-1">
+                            Reference Links
+                          </h5>
+                          <p className="text-sm text-blue-600 break-all">
+                            {formData.projectBrief.referenceLinks}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-gray-800">Coupon Code</h3>
+                      {!isCoupon ? (
+                        <button
+                          type="button"
+                          onClick={() => setIsCoupon(true)}
+                          className="text-sm text-blue-600 hover:text-blue-800"
+                        >
+                          + Add Coupon
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={removeCoupon}
+                          className="text-sm text-red-600 hover:text-red-800 flex items-center"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Remove
+                        </button>
+                      )}
                     </div>
 
-                    {/* Email Verification Block */}
-                    {!emailVerified ? (
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-700">
-                          {`We'll send a 6-digit code to`}{" "}
-                          {formData.personalInfo.email}
-                        </p>
-
-                        {emailVerificationSent ? (
-                          <>
-                            <div className="flex justify-center gap-3 mb-4">
-                              {[...Array(6)].map((_, i) => (
-                                <div key={i} className="relative w-12 h-12">
-                                  <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={1}
-                                    value={userEnteredCode[i] || ""}
-                                    onChange={(e) => handleOtpChange(e, i)}
-                                    onKeyDown={(e) => handleOtpKeyDown(e, i)}
-                                    data-index={i}
-                                    className="w-full h-full text-2xl text-center font-medium text-gray-900 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all"
-                                  />
-                                  {!userEnteredCode[i] && (
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                      <div className="w-0.5 h-6 bg-blue-400 animate-pulse" />
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="flex justify-between items-center">
+                    {isCoupon && (
+                      <div className="mt-3">
+                        {isCouponValid ? (
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex items-center">
+                            <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                            <span className="text-green-700">
+                              Coupon applied successfully! ({couponCode})
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="sm:flex gap-2 space-y-2 sm:space-y-0">
+                              <input
+                                type="text"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value)}
+                                placeholder="Enter coupon code"
+                                className={`flex-1 w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500`}
+                                disabled={isValidatingCoupon}
+                              />
                               <button
                                 type="button"
-                                onClick={resendVerification}
-                                disabled={resendCooldown > 0}
-                                className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+                                onClick={validateCoupon}
+                                disabled={!couponCode || isValidatingCoupon}
+                                className={`px-4 w-full sm:w-auto py-2 rounded-md text-white ${
+                                  !couponCode || isValidatingCoupon
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-blue-600 hover:bg-blue-700"
+                                }`}
                               >
-                                {resendCooldown > 0
-                                  ? `Resend in ${resendCooldown}s`
-                                  : "Resend Code"}
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={verifyEmailCode}
-                                disabled={
-                                  userEnteredCode.length !== 6 ||
-                                  verificationInProgress
-                                }
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                              >
-                                {verificationInProgress ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                {isValidatingCoupon ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
-                                  "Verify Email"
+                                  "Validate"
                                 )}
                               </button>
                             </div>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => sendVerification("email")}
-                            disabled={verificationInProgress}
-                            className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center"
-                          >
-                            {verificationInProgress ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            ) : (
-                              <Mail className="h-4 w-4 mr-2" />
+                            {couponError && (
+                              <p className="text-sm text-red-600 mt-1">
+                                {couponError}
+                              </p>
                             )}
-                            Send Email Verification Code
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      /* WhatsApp Verification Block */
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-700">
-                          Now please verify your WhatsApp number:{" "}
-                          {formData.personalInfo.phone}
-                        </p>
-
-                        {phoneVerificationSent ? (
-                          <>
-                            <div className="flex justify-center gap-3 mb-4">
-                              {[...Array(6)].map((_, i) => (
-                                <div key={i} className="relative w-12 h-12">
-                                  <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={1}
-                                    value={whatsappOtp[i] || ""}
-                                    onChange={(e) =>
-                                      handleWhatsappOtpChange(e, i)
-                                    }
-                                    onKeyDown={(e) =>
-                                      handleWhatsappOtpKeyDown(e, i)
-                                    }
-                                    data-whatsapp-index={i}
-                                    className="w-full h-full text-2xl text-center font-medium text-gray-900 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-200 outline-none transition-all"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="flex justify-between items-center">
-                              <button
-                                type="button"
-                                onClick={resendWhatsappVerification}
-                                disabled={whatsappResendCooldown > 0}
-                                className="text-sm text-blue-600 hover:text-blue-800 disabled:text-gray-400"
-                              >
-                                {whatsappResendCooldown > 0
-                                  ? `Resend in ${whatsappResendCooldown}s`
-                                  : "Resend Code"}
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={verifyWhatsappCode}
-                                disabled={
-                                  whatsappOtp.length !== 6 ||
-                                  verificationInProgress
-                                }
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                              >
-                                {verificationInProgress ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  "Verify WhatsApp"
-                                )}
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => sendVerification("whatsapp")}
-                            disabled={verificationInProgress}
-                            className="w-full px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center"
-                          >
-                            {verificationInProgress ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            ) : (
-                              <Phone className="h-4 w-4 mr-2" />
-                            )}
-                            Send WhatsApp Verification Code
-                          </button>
+                          </div>
                         )}
                       </div>
                     )}
                   </div>
-
-                  {/* Verification Status */}
-                  {statusMessage && (
-                    <div
-                      className={`p-3 rounded-md ${
-                        statusMessage.type === "error"
-                          ? "bg-red-50 text-red-600"
-                          : "bg-green-50 text-green-600"
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        {statusMessage.type === "error" ? (
-                          <AlertCircle className="h-5 w-5 mr-2" />
-                        ) : (
-                          <CheckCircle className="h-5 w-5 mr-2" />
-                        )}
-                        <span>
-                          {statusMessage.text.includes("Too many requests")
-                            ? "You've tried too many times. Please wait 5 minutes and try again."
-                            : statusMessage.text}
-                        </span>
-                      </div>
+                  {/* Final Verification */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        id="final-confirmation"
+                        checked={isHumanVerified}
+                        disabled={true}
+                        onChange={() => setIsHumanVerified(!isHumanVerified)}
+                        className="mt-1 mr-2"
+                      />
+                      <label
+                        htmlFor="final-confirmation"
+                        className="text-sm text-gray-700"
+                      >
+                        I confirm that all the information provided is accurate
+                        and I agree to be contacted by the team regarding my
+                        project inquiry.
+                      </label>
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
@@ -1295,10 +1664,10 @@ const ContactModel = () => {
                   )}
                 </div>
                 <div>
-                  {currentStage < 4 ? (
+                  {currentStage < 5 ? (
                     <button
                       type="button"
-                      onClick={nextStage}
+                      onClick={(e) => nextStage(e)}
                       disabled={
                         !formValid[`stage${currentStage}`] || isSubmitting
                       }
@@ -1310,8 +1679,8 @@ const ContactModel = () => {
                     >
                       {isSubmitting ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : currentStage === 3 ? (
-                        "Verify"
+                      ) : currentStage === 4 ? (
+                        "Review"
                       ) : (
                         "Continue"
                       )}
@@ -1319,9 +1688,9 @@ const ContactModel = () => {
                   ) : (
                     <button
                       type="submit"
-                      disabled={!formValid.stage4 || isSubmitting}
+                      disabled={!formValid.stage5 || isSubmitting}
                       className={`px-6 py-2 rounded-lg transition-colors flex items-center justify-center min-w-[120px] ${
-                        formValid.stage4
+                        formValid.stage5
                           ? "bg-green-600 text-white hover:bg-green-700"
                           : "bg-gray-300 text-gray-500 cursor-not-allowed"
                       } ${isSubmitting ? "opacity-75" : ""}`}

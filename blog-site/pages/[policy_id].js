@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { policy_data } from "../data/policies_data";
 import { useRouter } from "next/router";
 import HeadSEO from "./components/Reusable/seo_head";
+import Link from "next/link";
 const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
 
 // Utility functions
@@ -79,10 +80,15 @@ const PolicySection = ({ id, title, content, details, index }) => {
 export default function PrivacyPolicy() {
   const router = useRouter();
   const { policy_id } = router.query;
-  const policy = policy_data[policy_id];
+  const policy = policy_id ? policy_data[policy_id] : null;
   const [lastUpdated, setLastUpdated] = useState("");
   const [activeSection, setActiveSection] = useState("");
 
+  useEffect(() => {
+    if (policy_id && !policy_data[policy_id]) {
+      router.replace("/404");
+    }
+  }, [policy_id, router]);
   useEffect(() => {
     setLastUpdated(formatDate(new Date()));
 
@@ -143,16 +149,8 @@ export default function PrivacyPolicy() {
   }, 100);
 
   if (!policy) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 text-center">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-          Policy Not Found
-        </h1>
-        <p className="mt-4 text-gray-600 dark:text-gray-300">
-          The requested policy could not be found.
-        </p>
-      </div>
-    );
+    router.replace("/404");
+    return null;
   }
 
   return (
