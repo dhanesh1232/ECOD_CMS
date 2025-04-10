@@ -1,13 +1,13 @@
 "use client";
-import { nav_list } from "../../data/nav_link";
+import { nav_list } from "@/data/nav_link";
 import { ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-import { searchData } from "../../data/search_data";
+import { searchData } from "@/data/search_data";
 import Image from "next/image";
-import { policy_data } from "../../data/policies_data";
+import { policy_data } from "@/data/policies_data";
 const HeaderSection = ({ theme, toggleTheme }) => {
   const router = useRouter();
   const [navScrolled, setNavScrolled] = useState(false);
@@ -16,53 +16,27 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [instantResults, setInstantResults] = useState([]);
-  const [openDropDesk, setOpenDropDesk] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHomePage, setIsHomePage] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
+
+  const [dropDown, setDropDown] = useState({
+    desktop: null,
+    mobile: null,
+  });
 
   const searchInputRef = useRef(null);
-  const mobileMenuRef = useRef(null);
   const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
   const dropdownRefs = useRef({});
 
-  const handleDropClicked = useCallback(
-    (label) => {
-      if (openDropDesk === label) {
-        setOpenDropDesk(null);
-      } else {
-        setOpenDropDesk(label);
-      }
-    },
-    [openDropDesk]
-  );
-
-  // Add this useEffect hook for click-outside functionality
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (openDropDesk) {
-        // Get all dropdown elements
-        const dropdownElements = Object.values(dropdownRefs.current).filter(
-          Boolean
-        );
-
-        // Check if click is outside of all dropdown elements
-        const isClickOutside = dropdownElements.every(
-          (element) => element && !element.contains(event.target)
-        );
-
-        if (isClickOutside) {
-          setOpenDropDesk(null);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [openDropDesk]);
+  // Handle dropdown state
+  const handleDropdownToggle = useCallback((type, label) => {
+    console.log(`Dropdown ${type} toggled: ${label}`);
+    setDropDown((prev) => ({
+      ...prev,
+      [type]: prev[type] === label ? null : label,
+    }));
+  }, []);
 
   // Track if we're on homepage
   useEffect(() => {
@@ -117,7 +91,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
   // Reset UI on route change
   useEffect(() => {
     const handleRouteChange = () => {
-      setOpenDropDesk(null);
+      setSearchQuery("");
+      setInstantResults([]);
+      setShowSearch(false);
       setIsMobileMenuOpen(false);
       setShowSearch(false);
       document.body.style.overflow = "";
@@ -185,10 +161,6 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     setShowSearch(false);
   }, []);
 
-  const handleDropdownToggle = useCallback((label) => {
-    setOpenDropDesk((prev) => (prev === label ? null : label));
-  }, []);
-
   // Search submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -237,23 +209,47 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!dropDown.desktop) return;
+
+      // Check if clicked element is a dropdown trigger
+      const isTrigger = event.target.closest("[aria-expanded]");
+      if (isTrigger) return;
+
+      // Check if clicked inside any dropdown
+      const clickedInside = Object.values(dropdownRefs.current).some(
+        (el) => el && el.contains(event.target)
+      );
+
+      if (!clickedInside) {
+        setDropDown({
+          ...dropDown,
+          desktop: null,
+          mobile: null,
+        });
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [dropDown]);
   // Render function for dropdown items
   const renderDropdownItems = (subpages) => {
     return subpages.map((subpage, ind) => (
       <motion.li
         key={subpage.label}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.1, delay: ind * 0.05 }}
-        exit={{ opacity: 0, x: -20 }}
-        whileHover={{ x: 1 }}
+        initial={{ opacity: 0, x: -20, rotateY: -10 }}
+        animate={{ opacity: 1, x: 0, rotateY: 0 }}
+        transition={{ duration: 0.1, delay: ind * 0.05, ease: "easeInOut" }}
+        exit={{ opacity: 0, x: -20, rotateY: -10 }}
+        className="rounded-lg overflow-hidden"
       >
         <Link
           href={subpage.slug}
-          className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-gray-700/50 rounded transition-colors"
+          className="block px-4 py-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-blue-700/70 rounded transition transform ease-in-out duration-300"
           onClick={() => {
             setIsMobileMenuOpen(false);
-            setOpenDropDesk(null);
           }}
         >
           {subpage.label}
@@ -268,7 +264,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
         ref={headerRef}
         className={`fixed top-0 ${router.pathname === "/preview" ? "z-0" : "z-50"} z-20 w-full py-3 px-4 transition-all duration-300 ${
           isScrolled
-            ? "bg-white/10 dark:bg-gray-900/10 backdrop-blur-sm border-b border-white/10 dark:border-gray-800"
+            ? "bg-white/5 dark:bg-gray-900/5 backdrop-blur-sm"
             : "backdrop-blur-sm"
         }`}
       >
@@ -325,7 +321,6 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     whileHover="hover"
                     initial="initial"
                     animate="animate"
-                    onClick={() => handleDropClicked(item.label)}
                     ref={(el) => (dropdownRefs.current[item.label] = el)}
                   >
                     {item.subpages ? (
@@ -339,18 +334,25 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                                 : "text-white/90"
                               : "text-gray-800"
                           } dark:text-gray-200 hover:text-blue-300 dark:hover:text-blue-400 transition-colors`}
-                          aria-expanded={openDropDesk === item.label}
+                          aria-expanded={dropDown.desktop === item.label}
+                          aria-haspopup="true"
+                          aria-controls={`dropdown-${item.label}`}
+                          onClick={() =>
+                            handleDropdownToggle("desktop", item.label)
+                          }
                         >
                           {item.label}
                           <ChevronDown
                             className={`w-4 h-4 transition-transform ${
-                              openDropDesk === item.label ? "rotate-180" : ""
+                              dropDown.desktop === item.label
+                                ? "rotate-180"
+                                : ""
                             }`}
                           />
                         </button>
 
                         <AnimatePresence>
-                          {openDropDesk === item.label && (
+                          {dropDown.desktop === item.label && (
                             <motion.ul
                               className="absolute left-0 top-10 mt-0 w-64 overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
                               initial={{ opacity: 0, y: -20 }}
@@ -596,7 +598,6 @@ const HeaderSection = ({ theme, toggleTheme }) => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            ref={mobileMenuRef}
             className="fixed inset-0 top-[var(--header-height)] z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg md:hidden overflow-y-auto"
             style={{
               boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1)",
@@ -608,7 +609,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="p-5 safe-area-padding flex flex-col w-full h-full justify-between">
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {nav_list.map((item) => (
                   <motion.li
                     key={item.label}
@@ -620,29 +621,36 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     {item.subpages ? (
                       <>
                         <button
-                          onClick={() => handleDropdownToggle(item.label)}
-                          className="w-full flex items-center justify-between p-4 text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-xl transition-colors"
+                          className="w-full flex items-center justify-between p-3 text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-xl transition-colors"
                           style={{
                             backdropFilter: "blur(10px)",
                           }}
-                          aria-expanded={openDropDesk === item.label}
+                          aria-expanded={dropDown.mobile === item.label}
+                          aria-haspopup="true"
+                          aria-controls={`dropdown-${item.label}`}
+                          onClick={() => {
+                            handleDropdownToggle("mobile", item.label);
+                          }}
                         >
                           <span className="font-medium">{item.label}</span>
                           <ChevronDown
-                            className={`w-5 h-5 transition-transform ${
-                              openDropDesk === item.label ? "rotate-180" : ""
+                            className={`w-5 h-5 transition transform ${
+                              dropDown.mobile === item.label ? "rotate-180" : ""
                             }`}
                           />
                         </button>
 
                         <AnimatePresence>
-                          {openDropDesk === item.label && (
+                          {dropDown.mobile === item.label && (
                             <motion.ul
-                              className="pl-4 space-y-2 mt-1"
+                              className="ml-4 mt-1 p-1 space-y-2 ease-in-out transform transition duration-150 rounded-md"
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: "auto" }}
                               exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.2 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              style={{
+                                pointerEvents: "auto",
+                              }}
                             >
                               {renderDropdownItems(item.subpages)}
                             </motion.ul>
@@ -652,7 +660,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                     ) : (
                       <Link
                         href={item.href}
-                        className="block p-4 text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-xl transition-colors font-medium"
+                        className="block p-3 text-gray-800 dark:text-gray-200 hover:bg-white/30 dark:hover:bg-gray-800/60 rounded-xl transition-colors font-medium"
                         style={{
                           backdropFilter: "blur(10px)",
                         }}
@@ -664,7 +672,9 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                   </motion.li>
                 ))}
               </ul>
-              <div className="flex items-center justify-around flex-wrap gap-2 transition-all ease-in-out duration-300">
+              <div
+                className={`flex items-center justify-around flex-wrap ${dropDown.mobile && "pb-5"} my-5 gap-2 transition-all ease-in-out duration-300`}
+              >
                 {policy_data.policy_links.slice(0, 3).map((item, ind) => {
                   const href_link = `/policy/${item.toLowerCase().replace(/\s/g, "-")}`;
                   return (

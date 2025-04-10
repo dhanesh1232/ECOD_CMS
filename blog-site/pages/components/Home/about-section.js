@@ -225,7 +225,7 @@ const AboutSection = () => {
                   initial={{ scale: 0 }}
                   animate={timelineInView ? { scale: 1 } : {}}
                   transition={{ duration: 0.4, delay: index * 0.15 }}
-                  className="absolute left-0 md:left-1/2 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center transform -translate-x-1/2 z-10"
+                  className="absolute left-0 md:left-[48.5%] w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center transform -translate-x-1/2 z-10"
                 >
                   <span className="text-white font-bold">{index + 1}</span>
                 </motion.div>
