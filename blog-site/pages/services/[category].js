@@ -426,7 +426,7 @@ const CategoryServices = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`${category === "web-development" ? "w-full" : "max-w-7xl"}mx-auto px-4 sm:px-6 py-8 bg-white dark:bg-gray-900 transition-colors duration-200`}
+        className={`${category === "web-development" ? "w-full" : "max-w-7xl"} mx-auto px-4 sm:px-6 py-8 bg-white dark:bg-gray-900 transition-colors duration-200`}
       >
         <BackAndForward
           back="/services"

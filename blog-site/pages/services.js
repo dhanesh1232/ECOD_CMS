@@ -931,7 +931,7 @@ export default function ServicesGrid() {
         }}
       />
 
-      <div className="container mx-auto px-4 sm:px-6 py-12 bg-background text-foreground">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 bg-background text-foreground">
         <BackAndForward forward="/services/web-development" />
 
         <motion.div

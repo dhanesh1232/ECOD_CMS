@@ -36,10 +36,6 @@ import dynamic from "next/dynamic";
 import ScrollToTopButton from "./components/Reusable/back-top-top";
 import { useInView } from "react-intersection-observer";
 
-const AnimatedCursor = dynamic(
-  () => import("./components/Reusable/AnimatedCursor"),
-  { ssr: false }
-);
 const FloatingParticles = dynamic(
   () => import("./components/Reusable/FloatingParticles"),
   { ssr: false }
@@ -547,9 +543,6 @@ export default function PortfolioPage({ theme, toggleTheme }) {
 
       {/* Animated Background */}
       <AnimatedBackgroundGradient />
-
-      {/* Custom Animated Cursor */}
-      <AnimatedCursor />
 
       {/* Scroll Indicator */}
       <motion.div
