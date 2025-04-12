@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { FaWhatsapp, FaRegClock, FaStar, FaChevronRight } from "react-icons/fa";
 import { IoMdCheckmarkCircle } from "react-icons/io";
 
@@ -115,7 +116,9 @@ const HeroSection = () => {
             >
               <div className="flex -space-x-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <img
+                  <Image
+                    height={100}
+                    width={100}
                     key={i}
                     src={`https://randomuser.me/api/portraits/${
                       i % 2 === 0 ? "men" : "women"

@@ -249,7 +249,7 @@ const Price = () => {
               <div className="border-t border-gray-200 px-6 py-6 bg-white">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-                    What's included
+                    {`What's included`}
                   </h4>
                   <div className="text-xs text-gray-500">
                     {plan.features.filter((f) => f.included !== false).length}{" "}

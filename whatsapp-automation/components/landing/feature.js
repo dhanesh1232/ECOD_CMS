@@ -79,8 +79,8 @@ export default function FeatureSection() {
             <span className="text-green-600">WhatsApp Automation</span>
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
-            Fully compliant with WhatsApp's Business Policy and packed with
-            enterprise-grade capabilities
+            {`Fully compliant with WhatsApp's Business Policy and packed with
+            enterprise-grade capabilities`}
           </p>
         </motion.div>
 
