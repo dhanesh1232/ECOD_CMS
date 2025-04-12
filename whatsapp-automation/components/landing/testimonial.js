@@ -70,7 +70,7 @@ const Testimonials = () => {
               className="relative group"
             >
               {/* Card */}
-              <div className="absolute inset-0 bg-gradient-to-br rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 from-green-50 to-blue-50 transform group-hover:scale-105 transition-transform duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br rounded-2xl opacity-0 group-hover:opacity-100 from-green-50 to-blue-50 transform group-hover:scale-105 transition-transform duration-300"></div>
 
               <div className="relative h-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100 group-hover:border-transparent transition-all duration-300 z-10">
                 {/* Rating */}
