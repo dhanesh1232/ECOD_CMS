@@ -1,5 +1,11 @@
 import { motion } from "framer-motion";
-import { FaCheck, FaWhatsapp, FaPlay } from "react-icons/fa";
+import {
+  FaCheck,
+  FaWhatsapp,
+  FaPlay,
+  FaFacebookMessenger,
+  FaInstagram,
+} from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { useState } from "react";
 
@@ -8,7 +14,7 @@ const DemoSection = () => {
 
   const features = [
     "No-code automation builder with drag-and-drop interface",
-    "Official WhatsApp Business API integration",
+    "Official WhatsApp, Facebook & Instagram integrations",
     "Enterprise-grade security & GDPR compliance",
     "Real-time analytics with custom reporting",
     "AI-powered response suggestions",
@@ -16,9 +22,9 @@ const DemoSection = () => {
   ];
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden bg-white dark:bg-gray-900">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 opacity-50"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 opacity-50"></div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
@@ -29,16 +35,24 @@ const DemoSection = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <span className="inline-block px-3 py-1 text-sm font-semibold text-green-600 bg-green-100 rounded-full mb-4">
+            <span className="inline-block px-3 py-1 text-sm font-semibold text-green-600 bg-green-100 dark:bg-green-800 dark:text-green-300 rounded-full mb-4">
               Product Demo
             </span>
-            <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 sm:text-5xl">
-              See the Power of <span className="text-green-600">WhatsApp</span>{" "}
-              Automation
+            <h2 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl">
+              Social Media Automation for{" "}
+              <span className="text-green-600 dark:text-green-400">
+                WhatsApp
+              </span>
+              ,{" "}
+              <span className="text-blue-600 dark:text-blue-400">Facebook</span>
+              , and{" "}
+              <span className="text-pink-500 dark:text-pink-400">
+                Instagram
+              </span>
             </h2>
-            <p className="mt-4 text-base md:text-xl text-gray-600">
-              Discover how businesses automate conversations to boost sales by
-              35% and reduce support costs by 50%.
+            <p className="mt-4 text-base md:text-xl text-gray-600 dark:text-gray-300">
+              Discover how brands automate customer conversations to boost sales
+              by 35% and reduce support costs by 50%.
             </p>
 
             <ul className="mt-8 space-y-4">
@@ -52,11 +66,13 @@ const DemoSection = () => {
                   className="flex items-start"
                 >
                   <div className="flex-shrink-0 mt-1">
-                    <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
-                      <FaCheck className="h-3 w-3 text-green-600" />
+                    <div className="h-6 w-6 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
+                      <FaCheck className="h-3 w-3 text-green-600 dark:text-green-300" />
                     </div>
                   </div>
-                  <span className="ml-3 text-gray-700">{item}</span>
+                  <span className="ml-3 text-gray-700 dark:text-gray-200">
+                    {item}
+                  </span>
                 </motion.li>
               ))}
             </ul>
@@ -72,9 +88,9 @@ const DemoSection = () => {
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="px-8 py-4 bg-white text-gray-800 border border-gray-300 font-bold rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2"
+                className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 font-bold rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2"
               >
-                <FaWhatsapp className="text-green-600" />
+                <FaWhatsapp className="text-green-600 dark:text-green-400" />
                 Book a Live Demo
               </motion.button>
             </div>
@@ -92,7 +108,6 @@ const DemoSection = () => {
               className="relative aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden shadow-2xl cursor-pointer transform hover:scale-[1.02] transition-transform duration-300"
               onClick={() => setShowVideo(true)}
             >
-              {/* Thumbnail image would go here */}
               <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
                 <div className="text-center p-8 text-white">
                   <div className="relative mx-auto mb-6">
@@ -103,9 +118,9 @@ const DemoSection = () => {
                     </div>
                   </div>
                   <h3 className="text-2xl font-bold">
-                    WhatsApp Automation Demo
+                    Watch Automation in Action
                   </h3>
-                  <p className="mt-2 opacity-90">Click to watch (2:34 min)</p>
+                  <p className="mt-2 opacity-90">Click to play (2:34 min)</p>
                 </div>
               </div>
             </div>
@@ -114,8 +129,8 @@ const DemoSection = () => {
             <div className="mt-6 grid grid-cols-3 gap-4 text-center">
               {[
                 { value: "35%", label: "Sales Increase" },
-                { value: "50%", label: "Cost Reduction" },
-                { value: "24/7", label: "Availability" },
+                { value: "50%", label: "Support Cost Reduction" },
+                { value: "24/7", label: "Customer Availability" },
               ].map((stat, i) => (
                 <motion.div
                   key={i}
@@ -123,12 +138,14 @@ const DemoSection = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 + i * 0.1 }}
                   viewport={{ once: true }}
-                  className="bg-white p-4 rounded-lg shadow-sm"
+                  className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm"
                 >
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-gray-600">{stat.label}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {stat.label}
+                  </p>
                 </motion.div>
               ))}
             </div>

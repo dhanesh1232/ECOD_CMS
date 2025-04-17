@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import {
   FaCheck,
   FaWhatsapp,
+  FaFacebook,
+  FaInstagram,
   FaShieldAlt,
   FaChartLine,
   FaRobot,
@@ -12,88 +14,197 @@ import {
   FaDatabase,
   FaSyncAlt,
   FaUserCog,
+  FaChevronDown,
+  FaChevronUp,
+  FaSearch,
 } from "react-icons/fa";
-import Tooltip from "./tooltip"; // You'll need to create this component
+import { IoMdSend } from "react-icons/io";
+import { RiCustomerService2Fill } from "react-icons/ri";
+import Tooltip from "./tooltip";
 
 const Price = () => {
   const [billingCycle, setBillingCycle] = useState("monthly");
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [expandedPlan, setExpandedPlan] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    // This effect ensures the UI updates when billingCycle changes
-    setIsAnnual(billingCycle === "annual");
-  }, [billingCycle]);
+  const isAnnual = billingCycle === "annual";
 
   const pricingPlans = [
     {
+      id: "starter",
       name: "Starter",
-      monthlyPrice: 19,
-      annualPrice: 15, // 20% off
-      description: "For small businesses getting started with automation",
-      features: [
-        { text: "500 messages/month", tooltip: "Extra messages at $0.02 each" },
-        { text: "1 WhatsApp number", included: true },
-        { text: "Basic auto-responses", included: true },
-        { text: "5 automation workflows", included: true },
-        { text: "Email support (48h response)", included: true },
-        { text: "Basic analytics dashboard", included: true },
-        { text: "Business hours support", included: true },
-        { text: "Message templates", included: false },
-        { text: "CRM integration", included: false },
-        { text: "API access", included: false },
-      ],
-      cta: "Start Free Trial",
-      mostPopular: false,
-    },
-    {
-      name: "Business",
-      monthlyPrice: 49,
-      annualPrice: 39, // 20% off
-      description: "For growing teams needing advanced features",
+      monthlyPrice: 29,
+      annualPrice: 23,
+      description: "Ideal for solopreneurs and small businesses",
       features: [
         {
-          text: "2,000 messages/month",
-          tooltip: "Extra messages at $0.015 each",
+          text: "500 messages/month",
+          tooltip: "Extra messages at $0.03 each",
+          category: "messaging",
         },
-        { text: "3 WhatsApp numbers", included: true },
-        { text: "Advanced workflows", included: true },
-        { text: "Unlimited automation rules", included: true },
-        { text: "Priority email support (24h response)", included: true },
-        { text: "Advanced analytics", included: true },
-        { text: "CRM integrations", included: true },
-        { text: "24/5 chat support", included: true },
-        { text: "Team collaboration tools", included: true },
-        { text: "Message templates", included: true },
-        { text: "Basic API access", included: true },
-        { text: "Webhook integrations", included: false },
+        {
+          text: "1 WhatsApp number + 1 FB/IG account",
+          included: true,
+          category: "accounts",
+        },
+        {
+          text: "Basic auto-replies",
+          included: true,
+          category: "automation",
+        },
+        {
+          text: "5 automation workflows",
+          included: true,
+          category: "automation",
+        },
+        {
+          text: "48h email support",
+          included: true,
+          category: "support",
+        },
+        {
+          text: "Basic analytics",
+          included: true,
+          category: "analytics",
+        },
+        {
+          text: "Content scheduler",
+          included: false,
+          category: "content",
+        },
+        {
+          text: "CRM integration",
+          included: false,
+          category: "integrations",
+        },
       ],
-      cta: "Most Popular",
-      mostPopular: true,
+      cta: "Start 14-Day Trial",
+      mostPopular: false,
+      bestFor: "Under 1k followers",
     },
     {
+      id: "business",
+      name: "Business",
+      monthlyPrice: 79,
+      annualPrice: 63,
+      description: "For growing brands and digital agencies",
+      features: [
+        {
+          text: "3,000 messages/month",
+          tooltip: "Extra messages at $0.025 each",
+          category: "messaging",
+        },
+        {
+          text: "3 WhatsApp numbers + 5 FB/IG accounts",
+          included: true,
+          category: "accounts",
+        },
+        {
+          text: "AI-powered replies",
+          included: true,
+          category: "automation",
+        },
+        {
+          text: "Unlimited workflows",
+          included: true,
+          category: "automation",
+        },
+        {
+          text: "24/5 chat support",
+          included: true,
+          category: "support",
+        },
+        {
+          text: "Advanced analytics",
+          included: true,
+          category: "analytics",
+        },
+        {
+          text: "Multi-platform scheduler",
+          included: true,
+          category: "content",
+        },
+        {
+          text: "Zapier integration",
+          included: true,
+          category: "integrations",
+        },
+        {
+          text: "Team collaboration",
+          included: true,
+          category: "collaboration",
+        },
+        {
+          text: "Basic API access",
+          included: true,
+          category: "integrations",
+        },
+      ],
+      cta: "Get Started",
+      mostPopular: true,
+      bestFor: "1k-50k followers",
+    },
+    {
+      id: "enterprise",
       name: "Enterprise",
       monthlyPrice: null,
       annualPrice: null,
-      description: "For large businesses with high-volume needs",
+      description: "For large brands and high-volume agencies",
       features: [
         {
-          text: "10,000+ messages/month",
-          tooltip: "Volume discounts available",
+          text: "15,000+ messages/month",
+          tooltip: "Custom pricing based on volume",
+          category: "messaging",
         },
-        { text: "10+ WhatsApp numbers", included: true },
-        { text: "AI-powered responses", included: true },
-        { text: "Custom workflow development", included: true },
-        { text: "Dedicated account manager", included: true },
-        { text: "24/7 phone support", included: true },
-        { text: "SLA guarantees", included: true },
-        { text: "Onboarding specialist", included: true },
-        { text: "Custom reporting", included: true },
-        { text: "Full API access", included: true },
-        { text: "Webhook integrations", included: true },
-        { text: "White-label options", included: true },
+        {
+          text: "10+ WhatsApp numbers + Unlimited FB/IG",
+          included: true,
+          category: "accounts",
+        },
+        {
+          text: "Custom AI chatbot",
+          included: true,
+          category: "automation",
+        },
+        {
+          text: "Dedicated workflow engineer",
+          included: true,
+          category: "automation",
+        },
+        {
+          text: "24/7 priority support",
+          included: true,
+          category: "support",
+        },
+        {
+          text: "Custom analytics dashboard",
+          included: true,
+          category: "analytics",
+        },
+        {
+          text: "Bulk content scheduling",
+          included: true,
+          category: "content",
+        },
+        {
+          text: "Full API access",
+          included: true,
+          category: "integrations",
+        },
+        {
+          text: "SOC 2 compliance",
+          included: true,
+          category: "security",
+        },
+        {
+          text: "Dedicated account manager",
+          included: true,
+          category: "support",
+        },
       ],
-      cta: "Contact Sales",
+      cta: "Book Demo",
       mostPopular: false,
+      bestFor: "50k+ followers",
     },
   ];
 
@@ -101,386 +212,446 @@ const Price = () => {
     return monthlyPrice * 12 - annualPrice * 12;
   };
 
+  const toggleExpand = (planId) => {
+    setExpandedPlan(expandedPlan === planId ? null : planId);
+  };
+
+  const filteredPlans = pricingPlans.map((plan) => ({
+    ...plan,
+    features: plan.features.filter((feature) =>
+      feature.text.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+  }));
+
+  const featureCategories = [
+    { id: "messaging", name: "Messaging" },
+    { id: "accounts", name: "Accounts" },
+    { id: "automation", name: "Automation" },
+    { id: "support", name: "Support" },
+    { id: "analytics", name: "Analytics" },
+    { id: "content", name: "Content" },
+    { id: "integrations", name: "Integrations" },
+    { id: "security", name: "Security" },
+  ];
+
   return (
-    <section id="pricing" className="bg-gray-50 py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+    <section id="pricing" className="bg-gray-900 py-20 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Hero Header */}
+        <div className="text-center mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl md:text-4xl font-extrabold text-gray-900 sm:text-5xl"
+            transition={{ duration: 0.6 }}
+            className="text-3xl md:text-5xl font-extrabold text-white mb-4"
           >
-            Transparent Pricing That Scales With You
+            Social Media Automation{" "}
+            <span className="text-blue-400">Done Right</span>
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-xl text-gray-300 max-w-3xl mx-auto"
           >
-            Start free for 14 days. No credit card required. Cancel anytime.
+            Manage WhatsApp, Facebook, and Instagram from one powerful dashboard
+            with AI-powered automation.
           </motion.p>
         </div>
 
-        {/* Enhanced Pricing Tabs */}
+        {/* Platform Showcase */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-8 mb-16"
+        >
+          {[
+            {
+              icon: <FaWhatsapp className="text-4xl text-green-500" />,
+              name: "WhatsApp",
+              color: "green",
+            },
+            {
+              icon: <FaFacebook className="text-4xl text-blue-500" />,
+              name: "Facebook",
+              color: "blue",
+            },
+            {
+              icon: <FaInstagram className="text-4xl text-pink-500" />,
+              name: "Instagram",
+              color: "pink",
+            },
+          ].map((platform, i) => (
+            <div
+              key={i}
+              className={`bg-gray-800 p-6 rounded-xl shadow-lg w-full sm:w-auto flex-1 min-w-[200px] border-t-4 border-${platform.color}-500`}
+            >
+              <div className="flex flex-col items-center">
+                <div className="mb-4">{platform.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {platform.name}
+                </h3>
+                <ul className="text-gray-300 text-sm space-y-2">
+                  <li className="flex items-center">
+                    <FaCheck className="mr-2 text-green-500" /> Auto-replies
+                  </li>
+                  <li className="flex items-center">
+                    <FaCheck className="mr-2 text-green-500" /> Message routing
+                  </li>
+                  <li className="flex items-center">
+                    <FaCheck className="mr-2 text-green-500" /> Analytics
+                  </li>
+                </ul>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Pricing Toggle */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-12 flex flex-col items-center"
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-col items-center mb-12"
         >
-          <div className="inline-flex bg-white p-1 rounded-lg shadow-sm">
+          <div className="relative inline-flex items-center bg-gray-800 rounded-full p-1 shadow-inner">
             <button
               onClick={() => setBillingCycle("monthly")}
-              className={`px-6 py-3 text-sm font-medium rounded-md ${
-                billingCycle === "monthly"
-                  ? "bg-green-600 text-white shadow-md"
-                  : "text-gray-700 hover:bg-gray-100"
+              className={`px-6 py-3 text-sm font-medium rounded-full transition-all ${
+                !isAnnual
+                  ? "bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
-              Monthly
+              Monthly Billing
             </button>
             <button
               onClick={() => setBillingCycle("annual")}
-              className={`px-6 py-3 text-sm font-medium rounded-md ${
-                billingCycle === "annual"
-                  ? "bg-green-600 text-white shadow-md"
-                  : "text-gray-700 hover:bg-gray-100"
+              className={`px-6 py-3 text-sm font-medium rounded-full transition-all ${
+                isAnnual
+                  ? "bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg"
+                  : "text-gray-300 hover:text-white"
               }`}
             >
-              Annual (Save 20%)
+              Annual Billing (Save 20%)
             </button>
           </div>
+
           {isAnnual && (
-            <div className="mt-4 bg-green-50 text-green-800 px-4 py-2 rounded-lg flex items-center">
-              <FaRegLightbulb className="mr-2" />
-              <span>
-                You save $
-                {calculateSavings(
-                  pricingPlans[0].monthlyPrice,
-                  pricingPlans[0].annualPrice
-                )}
-                -$
-                {calculateSavings(
-                  pricingPlans[1].monthlyPrice,
-                  pricingPlans[1].annualPrice
-                )}{" "}
-                per year with annual billing!
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mt-4 bg-blue-900/50 text-blue-100 px-4 py-3 rounded-lg flex items-center border border-blue-800 backdrop-blur-sm"
+            >
+              <FaRegLightbulb className="mr-2 text-yellow-300" />
+              <span className="text-sm">
+                <span className="font-semibold">Pro Tip:</span> Save $
+                {calculateSavings(29, 23)}-${calculateSavings(79, 63)} annually
               </span>
-            </div>
+            </motion.div>
           )}
         </motion.div>
 
-        {/* Enhanced Pricing Cards */}
-        <div className="mt-16 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {pricingPlans.map((plan, index) => (
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+          {filteredPlans.map((plan, index) => (
             <motion.div
-              key={index}
+              key={plan.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+              transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
               whileHover={{ y: -5 }}
-              className={`relative rounded-xl shadow-lg overflow-hidden transition-all duration-300 ${
+              className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
                 plan.mostPopular
-                  ? "ring-2 ring-green-500 transform scale-[1.02]"
-                  : "border border-gray-200"
+                  ? "ring-2 ring-blue-400 shadow-xl"
+                  : "border border-gray-700 shadow-lg"
               }`}
             >
               {plan.mostPopular && (
-                <div className="absolute top-0 right-0 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                  MOST POPULAR
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-blue-600 to-blue-400 text-white text-xs font-bold px-4 py-2 rounded-bl-lg shadow-md">
+                  RECOMMENDED
                 </div>
               )}
 
               <div
-                className={`px-6 py-8 ${
-                  plan.mostPopular ? "bg-green-50" : "bg-white"
+                className={`p-8 ${
+                  plan.mostPopular ? "bg-gray-800" : "bg-gray-800"
                 }`}
               >
-                <h3 className="text-2xl font-bold text-gray-900">
-                  {plan.name}
-                </h3>
-                <p className="mt-2 text-gray-600">{plan.description}</p>
-
-                <div className="mt-6 flex items-baseline">
-                  {plan.monthlyPrice ? (
-                    <>
-                      <span className="text-4xl font-extrabold text-gray-900">
-                        ${isAnnual ? plan.annualPrice : plan.monthlyPrice}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3
+                      className={`text-2xl font-bold ${
+                        plan.mostPopular ? "text-white" : "text-white"
+                      }`}
+                    >
+                      {plan.name}
+                    </h3>
+                    <p className="mt-1 text-gray-300">{plan.description}</p>
+                    <div className="mt-2">
+                      <span className="inline-block bg-gray-700 text-blue-300 text-xs px-2 py-1 rounded">
+                        Best for: {plan.bestFor}
                       </span>
-                      <span className="ml-1 text-lg font-medium text-gray-600">
-                        /month
-                      </span>
-                      {isAnnual && (
-                        <span className="ml-2 text-sm text-gray-500 line-through">
-                          ${plan.monthlyPrice}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-xl sm:text-2xl md:text-4xl font-extrabold text-gray-900">
-                      Custom Pricing
-                    </span>
+                    </div>
+                  </div>
+                  {plan.id === "enterprise" && (
+                    <div className="bg-blue-900/30 text-blue-300 p-2 rounded-lg">
+                      <RiCustomerService2Fill size={24} />
+                    </div>
                   )}
                 </div>
 
-                {isAnnual && plan.monthlyPrice && (
-                  <div className="mt-2 text-green-600 text-sm font-medium">
-                    <FaSyncAlt className="inline mr-1" />
-                    Billed annually at ${plan.annualPrice * 12}
-                  </div>
-                )}
+                <div className="mt-6">
+                  {plan.monthlyPrice ? (
+                    <div className="flex items-end">
+                      <span className="text-4xl font-extrabold text-white">
+                        ${isAnnual ? plan.annualPrice : plan.monthlyPrice}
+                      </span>
+                      <span className="ml-2 text-lg font-medium text-gray-300">
+                        /month
+                      </span>
+                      {isAnnual && (
+                        <span className="ml-3 text-sm text-gray-400 line-through">
+                          ${plan.monthlyPrice}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-white">
+                      Custom Pricing
+                    </div>
+                  )}
+
+                  {isAnnual && plan.monthlyPrice && (
+                    <div className="mt-2 text-blue-300 text-sm flex items-center">
+                      <FaSyncAlt className="mr-1" />
+                      <span>Billed annually at ${plan.annualPrice * 12}</span>
+                    </div>
+                  )}
+                </div>
 
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className={`mt-8 w-full py-3 px-6 rounded-lg font-bold ${
+                  className={`mt-6 w-full py-3 px-6 rounded-lg font-bold transition-all ${
                     plan.mostPopular
-                      ? "bg-green-600 hover:bg-green-700 text-white shadow-md"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                      ? "bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white shadow-lg"
+                      : "bg-gray-700 hover:bg-gray-600 text-white"
                   }`}
                 >
                   {plan.cta}
                 </motion.button>
+
+                <button
+                  onClick={() => toggleExpand(plan.id)}
+                  className="mt-4 w-full flex items-center justify-center text-sm text-blue-400 hover:text-blue-300"
+                >
+                  {expandedPlan === plan.id ? (
+                    <>
+                      <span>Show less</span>
+                      <FaChevronUp className="ml-1" />
+                    </>
+                  ) : (
+                    <>
+                      <span>See all features</span>
+                      <FaChevronDown className="ml-1" />
+                    </>
+                  )}
+                </button>
               </div>
 
-              {/* Enhanced What's Included Section */}
-              <div className="border-t border-gray-200 px-6 py-6 bg-white">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-                    {`What's included`}
-                  </h4>
-                  <div className="text-xs text-gray-500">
-                    {plan.features.filter((f) => f.included !== false).length}{" "}
-                    of {plan.features.length} features
+              {/* Features List */}
+              <div
+                className={`border-t border-gray-700 ${
+                  expandedPlan === plan.id ? "max-h-[1000px]" : "max-h-0"
+                } overflow-hidden transition-all duration-300`}
+              >
+                <div className="p-6 bg-gray-900">
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {featureCategories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        className={`text-xs px-3 py-1 rounded-full ${
+                          searchTerm === cat.id
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                        }`}
+                        onClick={() => setSearchTerm(cat.id)}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
                   </div>
-                </div>
 
-                <ul className="mt-6 space-y-3">
-                  {plan.features.map((feature, i) => (
-                    <li
-                      key={i}
-                      className={`flex items-start group ${
-                        feature.included === false ? "opacity-50" : ""
-                      }`}
-                    >
-                      {feature.included !== false ? (
-                        <FaCheck className="flex-shrink-0 h-5 w-5 text-green-500 mt-0.5" />
-                      ) : (
-                        <span className="flex-shrink-0 h-5 w-5 text-gray-300 mt-0.5">
-                          •
-                        </span>
-                      )}
-                      <span className="ml-3 text-gray-700">
-                        {feature.text}
-                        {feature.tooltip && (
-                          <Tooltip content={feature.tooltip}>
-                            <FaInfoCircle className="ml-1.5 inline text-gray-400 group-hover:text-gray-600 transition-colors cursor-pointer" />
-                          </Tooltip>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                  <ul className="space-y-3">
+                    {plan.features.length > 0 ? (
+                      plan.features.map((feature, i) => (
+                        <li
+                          key={i}
+                          className={`flex items-start group ${
+                            feature.included === false ? "opacity-50" : ""
+                          }`}
+                        >
+                          {feature.included !== false ? (
+                            <FaCheck className="flex-shrink-0 h-5 w-5 text-blue-500 mt-0.5" />
+                          ) : (
+                            <span className="flex-shrink-0 h-5 w-5 text-gray-600 mt-0.5">
+                              •
+                            </span>
+                          )}
+                          <span className="ml-3 text-gray-300">
+                            {feature.text}
+                            {feature.tooltip && (
+                              <Tooltip content={feature.tooltip}>
+                                <FaInfoCircle className="ml-1.5 inline text-gray-500 group-hover:text-gray-400 transition-colors cursor-pointer" />
+                              </Tooltip>
+                            )}
+                          </span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400 text-center py-4">
+                        No features match your search
+                      </li>
+                    )}
+                  </ul>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Feature Comparison Table */}
-        <div className="mt-20 bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="p-6 md:p-8">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 text-center">
-              Detailed Feature Comparison
-            </h3>
-            <div className="mt-8 overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="pb-4 text-left font-semibold text-gray-900">
-                      Feature
-                    </th>
-                    {pricingPlans.map((plan, i) => (
-                      <th
-                        key={i}
-                        className="pb-4 text-sm md:text-base text-center font-semibold text-gray-900"
-                      >
-                        {plan.name}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    "WhatsApp Numbers",
-                    "Monthly Messages",
-                    "Automation Workflows",
-                    "CRM Integration",
-                    "API Access",
-                    "Support Response Time",
-                    "Analytics Dashboard",
-                    "Team Collaboration",
-                    "Custom Reporting",
-                    "Dedicated Account Manager",
-                  ].map((feature, rowIndex) => (
-                    <tr key={rowIndex} className="border-b border-gray-100">
-                      <td className="py-4 text-sm text-gray-700">{feature}</td>
-                      {pricingPlans.map((plan, colIndex) => {
-                        // This is simplified - you'd want to map features to actual plan features
-                        const hasFeature =
-                          (feature === "WhatsApp Numbers" &&
-                            (plan.name === "Starter"
-                              ? 1
-                              : plan.name === "Business"
-                              ? 3
-                              : "10+")) ||
-                          (feature === "Monthly Messages" &&
-                            (plan.name === "Starter"
-                              ? "500"
-                              : plan.name === "Business"
-                              ? "2,000"
-                              : "10,000+")) ||
-                          // Add other feature mappings...
-                          false;
-
-                        return (
-                          <td key={colIndex} className="py-4 text-center">
-                            {typeof hasFeature === "boolean" ? (
-                              hasFeature ? (
-                                <FaCheck className="mx-auto text-green-500" />
-                              ) : (
-                                <span className="text-gray-300">—</span>
-                              )
-                            ) : (
-                              <span className="text-sm font-medium">
-                                {hasFeature}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Enterprise Features */}
-        <div className="mt-20 bg-white rounded-xl shadow-md overflow-hidden">
+        {/* Enterprise CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-xl border border-gray-700 mb-20"
+        >
           <div className="grid md:grid-cols-2">
-            <div className="p-8 md:p-12">
-              <h3 className="text-2xl font-bold text-gray-900">
-                Enterprise Solutions
+            <div className="p-10">
+              <h3 className="text-2xl font-bold text-white mb-4">
+                Enterprise-Grade Social Automation
               </h3>
-              <p className="mt-4 text-gray-600">
-                Custom solutions for large organizations with complex
+              <p className="text-gray-300 mb-6">
+                Custom solutions for agencies and brands with complex
                 requirements.
               </p>
-              <ul className="mt-6 space-y-4">
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
                 {[
                   {
-                    text: "Dedicated infrastructure",
-                    icon: <FaDatabase className="mr-2 text-green-500" />,
+                    icon: <FaShieldAlt className="text-blue-400" />,
+                    text: "SOC 2 Compliance",
                   },
                   {
-                    text: "Custom SLAs with 99.9% uptime",
-                    icon: <FaShieldAlt className="mr-2 text-green-500" />,
+                    icon: <FaUsers className="text-blue-400" />,
+                    text: "Dedicated Team",
                   },
                   {
-                    text: "Volume discounts for high message volumes",
-                    icon: <FaChartLine className="mr-2 text-green-500" />,
+                    icon: <FaDatabase className="text-blue-400" />,
+                    text: "Custom Infrastructure",
                   },
                   {
-                    text: "White-label options for branding",
-                    icon: <FaRobot className="mr-2 text-green-500" />,
-                  },
-                  {
-                    text: "Compliance consulting (GDPR, HIPAA)",
-                    icon: <FaUserCog className="mr-2 text-green-500" />,
-                  },
-                  {
-                    text: "On-site training sessions",
-                    icon: <FaUsers className="mr-2 text-green-500" />,
+                    icon: <FaChartLine className="text-blue-400" />,
+                    text: "Volume Discounts",
                   },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start">
-                    {item.icon}
-                    <span className="text-gray-700">{item.text}</span>
-                  </li>
+                  <div key={i} className="flex items-center">
+                    <div className="mr-3 text-xl">{item.icon}</div>
+                    <span className="text-gray-300">{item.text}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
+
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="mt-8 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold shadow-md"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="bg-white text-gray-900 hover:bg-gray-100 px-6 py-3 rounded-lg font-bold flex items-center shadow-md"
               >
-                Request Enterprise Demo
+                <IoMdSend className="mr-2" />
+                Request Custom Proposal
               </motion.button>
             </div>
-            <div className="bg-gray-50 p-8 md:p-12 flex items-center justify-center">
-              <div className="text-center max-w-md">
-                <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
-                  <FaWhatsapp className="h-8 w-8 text-green-600" />
+            <div className="bg-gray-900 p-10 flex items-center">
+              <div>
+                <div className="flex items-center mb-6">
+                  <div className="flex -space-x-2">
+                    <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                      <FaWhatsapp />
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                      <FaFacebook />
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-pink-500 flex items-center justify-center text-white">
+                      <FaInstagram />
+                    </div>
+                  </div>
+                  <span className="ml-4 text-white font-medium">
+                    Unified Social Inbox
+                  </span>
                 </div>
-                <h4 className="mt-6 text-lg font-medium text-gray-900">
-                  WhatsApp Business API Solutions
-                </h4>
-                <p className="mt-2 text-gray-600">
-                  As an official WhatsApp Business Solution Provider, we offer:
-                </p>
-                <ul className="mt-4 space-y-2 text-sm text-gray-600 text-left">
-                  <li className="flex items-start">
-                    <FaCheck className="flex-shrink-0 h-4 w-4 text-green-500 mt-0.5 mr-2" />
-                    <span>Direct API onboarding</span>
-                  </li>
-                  <li className="flex items-start">
-                    <FaCheck className="flex-shrink-0 h-4 w-4 text-green-500 mt-0.5 mr-2" />
-                    <span>Higher messaging limits</span>
-                  </li>
-                  <li className="flex items-start">
-                    <FaCheck className="flex-shrink-0 h-4 w-4 text-green-500 mt-0.5 mr-2" />
-                    <span>Green tick verification assistance</span>
-                  </li>
+
+                <ul className="space-y-4">
+                  {[
+                    "Multi-team collaboration",
+                    "AI-powered sentiment analysis",
+                    "Custom reporting dashboards",
+                    "Automated compliance checks",
+                    "White-label client portals",
+                    "API-first architecture",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center">
+                      <div className="h-6 w-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
+                        <FaCheck className="text-blue-400 text-xs" />
+                      </div>
+                      <span className="text-gray-300">{item}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Enhanced CTA */}
+        {/* Final CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-20 text-center"
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="text-center"
         >
-          <h3 className="text-2xl font-bold text-gray-900">
-            Need help choosing a plan?
+          <h3 className="text-2xl font-bold text-white mb-4">
+            Ready to Transform Your Social Media Management?
           </h3>
-          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-            Our experts will analyze your business needs and recommend the
-            perfect solution.
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            Join 5,000+ businesses automating their social media communications.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg text-lg font-bold shadow-md"
+              className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg flex items-center justify-center"
             >
-              Chat with Sales
+              <FaRobot className="mr-2" />
+              Start Free Trial
             </motion.button>
+
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 px-8 py-3 rounded-lg text-lg font-bold flex items-center justify-center gap-2 shadow-sm"
+              className="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 px-8 py-4 rounded-lg text-lg font-bold flex items-center justify-center shadow-sm"
             >
-              <FaWhatsapp className="text-green-600" />
-              WhatsApp Support
+              <RiCustomerService2Fill className="mr-2" />
+              Live Demo
             </motion.button>
           </div>
+
+          <p className="mt-6 text-gray-400 text-sm">
+            No credit card required • 14-day free trial • Cancel anytime
+          </p>
         </motion.div>
       </div>
     </section>

@@ -2,42 +2,61 @@
 
 import {
   FaWhatsapp,
+  FaFacebook,
+  FaInstagram,
   FaChevronDown,
   FaBars,
   FaTimes,
   FaUser,
   FaSearch,
+  FaRobot,
+  FaChartLine,
+  FaEnvelope,
+  FaMoon,
+  FaSun,
+  FaTools,
+  FaBook,
+  FaVideo,
+  FaUsers,
 } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import Logo from "../logo";
+import { useSession } from "next-auth/react";
+import { useDarkMode } from "@/context/context";
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { darkMode, toggleDarkMode } = useDarkMode();
   const navRef = useRef(null);
+  const menuRef = useRef(null);
+  const searchRef = useRef(null);
   const pathname = usePathname();
 
-  // Enhanced scroll effect with requestAnimationFrame
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   useEffect(() => {
-    let lastScrollY = window.scrollY;
-    let ticking = false;
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [router, status]);
 
-    const updateScrollState = () => {
-      setIsScrolled(lastScrollY > 50);
-      ticking = false;
-    };
-
+  // Handle scroll effect
+  useEffect(() => {
     const handleScroll = () => {
-      lastScrollY = window.scrollY;
-      if (!ticking) {
-        window.requestAnimationFrame(updateScrollState);
-        ticking = true;
+      const scroll = window.scrollY > 50;
+      if (scroll) {
+        setMobileMenuOpen(false);
+        setIsScrolled(window.scrollY > 50);
       }
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -47,308 +66,288 @@ export default function Navigation() {
     const handleClickOutside = (event) => {
       if (navRef.current && !navRef.current.contains(event.target)) {
         setActiveDropdown(null);
+      }
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMobileMenuOpen(false);
+      }
+      if (
+        searchOpen &&
+        searchRef.current &&
+        !searchRef.current.contains(event.target)
+      ) {
         setSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [searchOpen]);
 
-  // Menu items
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  const platformItems = [
+    {
+      name: "WhatsApp API",
+      icon: <FaWhatsapp className="text-green-500 dark:text-green-400" />,
+      href: "/product/whatsapp-api",
+    },
+    {
+      name: "Facebook Messenger",
+      icon: <FaFacebook className="text-blue-600 dark:text-blue-400" />,
+      href: "/product/facebook-messenger",
+    },
+    {
+      name: "Instagram Direct",
+      icon: <FaInstagram className="text-pink-600 dark:text-pink-400" />,
+      href: "/product/instagram-direct",
+    },
+  ];
+
   const menuItems = [
     {
-      name: "Features",
+      name: "Platforms",
+      submenu: platformItems.map((platform) => ({
+        ...platform,
+        icon: platform.icon,
+      })),
+    },
+    {
+      name: "Pricing",
+      href: "/pricing",
+      highlight: true,
+    },
+    {
+      name: "Tools",
       submenu: [
-        { name: "Auto-Responder", href: "/features/auto-responder" },
-        { name: "AI Chatbots", href: "/features/chatbots" },
-        { name: "Broadcast Messaging", href: "/features/broadcasts" },
-        { name: "Advanced Analytics", href: "/features/analytics" },
+        {
+          name: "Chatbot Builder",
+          href: "/tools/chatbot-builder",
+          icon: <FaRobot className="text-purple-500" />,
+        },
+        {
+          name: "Workflow Automation",
+          href: "/tools/workflows",
+          icon: <FaTools className="text-purple-500" />,
+        },
+        {
+          name: "Analytics Dashboard",
+          href: "/tools/analytics",
+          icon: <FaChartLine className="text-purple-500" />,
+        },
+        {
+          name: "API & Integrations",
+          href: "/tools/api",
+          icon: <FaEnvelope className="text-purple-500" />,
+        },
       ],
     },
-    { name: "Pricing", href: "/pricing" },
     {
       name: "Resources",
       submenu: [
-        { name: "Documentation", href: "/docs" },
-        { name: "API Reference", href: "/api" },
-        { name: "Tutorials", href: "/tutorials" },
-        { name: "Case Studies", href: "/case-studies" },
+        {
+          name: "Documentation",
+          href: "/resources/docs",
+          icon: <FaBook className="text-blue-500" />,
+        },
+        {
+          name: "Video Tutorials",
+          href: "/resources/tutorials",
+          icon: <FaVideo className="text-blue-500" />,
+        },
+        {
+          name: "Blog & News",
+          href: "/resources/blog",
+          icon: <FaEnvelope className="text-blue-500" />,
+        },
+        {
+          name: "Community Forum",
+          href: "/resources/community",
+          icon: <FaUsers className="text-blue-500" />,
+        },
       ],
     },
-    { name: "Contact", href: "/contact" },
   ];
 
-  // Smoother animation variants
-  const navVariants = {
-    hidden: { y: -100, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 25,
-        stiffness: 120,
-        mass: 0.5,
-      },
-    },
+  const handleSearch = (e) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      // Implement search functionality
+      console.log("Searching for:", searchQuery);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
   };
 
-  const dropdownVariants = {
-    hidden: { opacity: 0, y: -10, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        damping: 30,
-        stiffness: 400,
-        mass: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      y: -10,
-      scale: 0.95,
-      transition: {
-        duration: 0.12,
-      },
-    },
-  };
-
-  const mobileMenuVariants = {
-    hidden: { height: 0, opacity: 0 },
-    visible: {
-      height: "auto",
-      opacity: 1,
-      transition: {
-        type: "spring",
-        damping: 30,
-        stiffness: 80,
-        mass: 0.5,
-      },
-    },
-    exit: {
-      height: 0,
-      opacity: 0,
-      transition: {
-        duration: 0.15,
-      },
-    },
-  };
-
+  if (status === "authenticated") {
+    return null;
+  }
   return (
     <motion.header
-      initial="hidden"
-      animate="visible"
-      variants={navVariants}
-      className={`w-full bg-white/95 backdrop-blur-sm z-50 sticky top-0 ${
-        isScrolled ? "shadow-sm py-2" : "py-3"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", damping: 25 }}
+      className={`sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm transition-all ${
+        isScrolled ? "py-2" : "py-3"
       }`}
-      style={{
-        willChange: "transform, opacity",
-        transition: "box-shadow 0.2s ease, padding 0.2s ease",
-      }}
       ref={navRef}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          className={`flex justify-between items-center transition-all ${
-            isScrolled ? "h-14" : "h-16"
-          }`}
-        >
-          {/* Mobile menu button */}
-          <div className="flex lg:hidden items-center">
-            <motion.button
-              whileTap={{ scale: 0.92 }}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-green-600 focus:outline-none"
+        <div className="flex items-center justify-between h-14">
+          {/* Mobile menu button (left side) */}
+          <div className="flex items-center md:hidden">
+            <button
               aria-label="Toggle menu"
-              transition={{ type: "spring", stiffness: 500 }}
+              className="p-2 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? (
-                <FaTimes className="h-6 w-6" />
-              ) : (
-                <FaBars className="h-6 w-6" />
-              )}
-            </motion.button>
+              {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+            </button>
           </div>
 
-          {/* Logo - centered on mobile */}
-          <div className="flex flex-1 justify-center lg:justify-start">
-            <motion.a
-              href="/"
-              className="flex items-center"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400 }}
-            >
-              <motion.div
-                animate={{
-                  rotate: isScrolled ? 0 : [0, 5, -5, 0],
-                  scale: isScrolled ? 0.9 : 1,
-                }}
-                transition={{
-                  rotate: { duration: 1.8, repeat: Infinity, repeatDelay: 10 },
-                  scale: { type: "spring", stiffness: 400 },
-                }}
-              >
-                <FaWhatsapp className="text-green-500 h-8 w-8" />
-              </motion.div>
-              <motion.span
-                className={`ml-3 font-bold text-gray-800 ${
-                  isScrolled ? "text-lg" : "text-xl"
-                }`}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                WhatsAuto
-                <span className="text-xs bg-green-100 text-green-800 ml-2 px-2 py-0.5 rounded-full">
-                  PRO
-                </span>
-              </motion.span>
-            </motion.a>
+          {/* Logo (centered on mobile) */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 md:relative md:left-0 md:transform-none flex items-center">
+            <Link href="/" aria-label="Home">
+              <Logo />
+            </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-2">
+          {/* Desktop Navigation (hidden on mobile) */}
+          <div className="hidden md:flex items-center space-x-1">
             {menuItems.map((item) => (
               <div key={item.name} className="relative">
                 {item.submenu ? (
                   <>
-                    <motion.button
-                      suppressHydrationWarning
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
+                    <button
+                      aria-expanded={activeDropdown === item.name}
+                      aria-haspopup="true"
                       onClick={() =>
                         setActiveDropdown(
                           activeDropdown === item.name ? null : item.name
                         )
                       }
-                      className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        pathname.startsWith(`/${item.name.toLowerCase()}`)
-                          ? "text-green-600 bg-green-50/50"
-                          : "text-gray-700 hover:text-green-600 hover:bg-gray-100/50"
+                      className={`flex items-center px-2 lg:px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        activeDropdown === item.name
+                          ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                          : "hover:bg-gray-100/50 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
                       }`}
-                      transition={{ type: "spring", stiffness: 400 }}
                     >
                       {item.name}
-                      <motion.span
-                        animate={{
-                          rotate: activeDropdown === item.name ? 180 : 0,
-                        }}
-                        transition={{ type: "spring", stiffness: 500 }}
-                      >
-                        <FaChevronDown className="ml-1 h-3 w-3" />
-                      </motion.span>
-                    </motion.button>
+                      <FaChevronDown
+                        className={`ml-1 h-3 w-3 transition-transform ${
+                          activeDropdown === item.name ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
 
                     <AnimatePresence>
                       {activeDropdown === item.name && (
                         <motion.div
-                          variants={dropdownVariants}
-                          initial="hidden"
-                          animate="visible"
-                          exit="exit"
-                          className="absolute left-0 mt-1 w-56 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-gray-100 overflow-hidden"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute left-0 mt-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
                         >
                           {item.submenu.map((subItem) => (
-                            <motion.a
+                            <Link
                               key={subItem.name}
                               href={subItem.href}
-                              className={`block px-4 py-2.5 text-sm transition-colors ${
-                                pathname === subItem.href
-                                  ? "bg-green-50 text-green-600"
-                                  : "text-gray-700 hover:bg-gray-50 hover:text-green-600"
-                              }`}
-                              whileHover={{
-                                x: 3,
-                                transition: {
-                                  type: "spring",
-                                  stiffness: 600,
-                                },
-                              }}
+                              className="flex items-center px-4 py-3 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
-                              {subItem.name}
-                            </motion.a>
+                              <span className="mr-3">{subItem.icon}</span>
+                              <span className="text-gray-800 dark:text-gray-200">
+                                {subItem.name}
+                              </span>
+                            </Link>
                           ))}
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </>
                 ) : (
-                  <motion.a
+                  <Link
                     href={item.href}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      pathname === item.href
-                        ? "text-green-600 bg-green-50/50"
-                        : "text-gray-700 hover:text-green-600 hover:bg-gray-100/50"
+                      item.highlight
+                        ? "text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
                     }`}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{ type: "spring", stiffness: 400 }}
                   >
                     {item.name}
-                  </motion.a>
+                  </Link>
                 )}
               </div>
             ))}
           </div>
 
           {/* Right side elements */}
-          <div className="flex items-center space-x-3">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-gray-700 hover:text-green-600 rounded-full hidden sm:block"
-              aria-label="Search"
-              transition={{ type: "spring", stiffness: 500 }}
-            >
-              <FaSearch className="h-5 w-5" />
-            </motion.button>
+          <div className="flex items-center space-x-1 md:relative absolute right-1">
+            <div ref={searchRef} className="relative">
+              <button
+                aria-label="Search"
+                onClick={() => {
+                  setSearchOpen(!searchOpen);
+                  if (!searchOpen) {
+                    setTimeout(
+                      () => searchRef.current?.querySelector("input")?.focus(),
+                      100
+                    );
+                  }
+                }}
+                className={`p-2 rounded-full transition-colors ${
+                  searchOpen
+                    ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                }`}
+              >
+                <FaSearch />
+              </button>
 
-            <AnimatePresence>
-              {searchOpen && (
-                <motion.div
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 200 }}
-                  exit={{ opacity: 0, width: 0 }}
-                  className="origin-right overflow-hidden"
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    className="w-full px-3 py-1.5 border-b border-gray-200 focus:outline-none focus:border-green-500 bg-transparent"
-                    autoFocus
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+              <AnimatePresence>
+                {searchOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 200 }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={handleSearch}
+                      className="w-full px-3 py-2 bg-transparent text-gray-800 dark:text-gray-200 focus:outline-none"
+                      autoFocus
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-            <motion.a
-              href="/login"
-              className="hidden md:flex items-center text-gray-700 hover:text-green-600 px-3 py-1.5 text-sm font-medium transition-colors"
-              whileHover={{ x: 2 }}
-              transition={{ type: "spring", stiffness: 400 }}
+            <button
+              aria-label="Toggle dark mode"
+              onClick={toggleDarkMode}
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded-full transition-colors"
             >
-              <FaUser className="mr-1.5 h-4 w-4" />
+              {darkMode ? <FaSun /> : <FaMoon />}
+            </button>
+
+            <Link
+              href="/auth/login"
+              className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-50 hover:dark:text-gray-300 hover:text-gray-500 transition-all"
+            >
+              <FaUser className="mr-2" />
               Login
-            </motion.a>
-
-            <motion.button
-              className={`bg-gradient-to-r hidden sm:block from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-medium ${
-                isScrolled ? "px-4 py-1.5 text-sm" : "px-5 py-2 text-sm"
-              } shadow-md hover:shadow-lg transition-all`}
-              whileHover={{
-                scale: 1.03,
-                boxShadow: "0 4px 12px rgba(16, 185, 129, 0.25)",
-              }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400 }}
+            </Link>
+            <Link
+              href="/auth/register"
+              className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-lg shadow-sm transition-all"
             >
               Get Started
-            </motion.button>
+            </Link>
           </div>
         </div>
       </div>
@@ -357,119 +356,85 @@ export default function Navigation() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            variants={mobileMenuVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="lg:hidden bg-white border-t border-gray-100 overflow-hidden"
+            ref={menuRef}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 overflow-hidden"
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
               {menuItems.map((item) => (
-                <div key={item.name} className="relative">
+                <div key={item.name}>
                   {item.submenu ? (
                     <>
-                      <motion.button
-                        whileTap={{ scale: 0.98 }}
+                      <button
                         onClick={() =>
                           setActiveDropdown(
-                            activeDropdown === `mobile-${item.name}`
-                              ? null
-                              : `mobile-${item.name}`
+                            activeDropdown === item.name ? null : item.name
                           )
                         }
-                        className="flex w-full items-center justify-between px-4 py-3 text-base font-medium rounded-lg"
-                        transition={{ type: "spring", stiffness: 400 }}
+                        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                       >
-                        <span
-                          className={
-                            pathname.startsWith(`/${item.name.toLowerCase()}`)
-                              ? "text-green-600"
-                              : "text-gray-700 hover:text-green-600"
-                          }
-                        >
-                          {item.name}
-                        </span>
-                        <motion.span
-                          animate={{
-                            rotate:
-                              activeDropdown === `mobile-${item.name}`
-                                ? 180
-                                : 0,
-                          }}
-                          transition={{ type: "spring", stiffness: 500 }}
-                        >
-                          <FaChevronDown className="ml-1 h-4 w-4" />
-                        </motion.span>
-                      </motion.button>
+                        {item.name}
+                        <FaChevronDown
+                          className={`ml-1 h-3 w-3 transition-transform ${
+                            activeDropdown === item.name ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
 
-                      <AnimatePresence>
-                        {activeDropdown === `mobile-${item.name}` && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="pl-6 space-y-1 overflow-hidden"
-                            transition={{ type: "spring", stiffness: 300 }}
-                          >
-                            {item.submenu.map((subItem) => (
-                              <motion.a
-                                key={subItem.name}
-                                href={subItem.href}
-                                className={`block px-4 py-2.5 text-base font-medium rounded-lg ${
-                                  pathname === subItem.href
-                                    ? "bg-green-50 text-green-600"
-                                    : "text-gray-600 hover:text-green-600 hover:bg-gray-50"
-                                }`}
-                                initial={{ x: -10, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                transition={{
-                                  delay: 0.1,
-                                  type: "spring",
-                                  stiffness: 400,
-                                }}
-                              >
+                      {activeDropdown === item.name && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="pl-6 space-y-1"
+                        >
+                          {item.submenu.map((subItem) => (
+                            <Link
+                              key={subItem.name}
+                              href={subItem.href}
+                              className="flex items-center px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                            >
+                              <span className="mr-3">{subItem.icon}</span>
+                              <span className="text-gray-700 dark:text-gray-300">
                                 {subItem.name}
-                              </motion.a>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                              </span>
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
                     </>
                   ) : (
-                    <motion.a
+                    <Link
                       href={item.href}
-                      className={`block px-4 py-3 text-base font-medium rounded-lg ${
-                        pathname === item.href
-                          ? "bg-green-50 text-green-600"
-                          : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+                      className={`block px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                        item.highlight
+                          ? "text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                       }`}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 400 }}
                     >
                       {item.name}
-                    </motion.a>
+                    </Link>
                   )}
                 </div>
               ))}
 
-              <div className="pt-2 border-t border-gray-100">
-                <motion.a
-                  href="/login"
-                  className="block w-full px-4 py-3 text-center text-base font-medium text-gray-700 hover:text-green-600 rounded-lg"
-                  whileHover={{ backgroundColor: "#f3f4f6" }}
-                  transition={{ type: "spring", stiffness: 300 }}
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                <Link
+                  href="/auth/login"
+                  className="block w-full px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
                   Login
-                </motion.a>
-                <motion.a
-                  href="/signup"
-                  className="block w-full px-4 py-3 mt-1 text-center text-base font-medium text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-lg shadow-sm"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400 }}
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="block w-full px-4 py-3 mt-1 text-center text-sm font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-lg transition-colors"
                 >
                   Get Started
-                </motion.a>
+                </Link>
               </div>
             </div>
           </motion.div>
