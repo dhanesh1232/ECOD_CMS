@@ -81,6 +81,22 @@ const userSchema = new mongoose.Schema(
       default: "",
       select: false,
     },
+    // OTP Verification (for phone/email)
+    otp: {
+      code: {
+        type: String,
+        select: false,
+      },
+      expiresAt: {
+        type: Date,
+        select: false,
+      },
+      attempts: {
+        type: Number,
+        default: 0,
+        select: false,
+      },
+    },
 
     // Subscription Plans (Initially minimal, expanded later)
     subscription: {

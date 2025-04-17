@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import User from "@/models/User";
 import connectDB from "@/config/db";
-import bcrypt from "bcryptjs";
+import { sendPasswordChangeConfirmation } from "@/lib/mail";
 
 export async function PUT(request) {
   try {
     await connectDB();
-    const { email, password, otp } = await request.json();
+    const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -15,12 +15,7 @@ export async function PUT(request) {
       );
     }
 
-    const user = await User.findOne({
-      email,
-      resetPasswordToken: otp,
-      resetPasswordExpires: { $gt: Date.now() },
-    });
-
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return NextResponse.json(
         { message: "Invalid or expired OTP" },
@@ -28,14 +23,12 @@ export async function PUT(request) {
       );
     }
 
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+    user.password = password.trim();
     user.isPasswordSet = true;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+    user.isOAuthUser = false;
     await user.save();
 
+    await sendPasswordChangeConfirmation(email);
     return NextResponse.json(
       { message: "Password changed successfully" },
       { status: 200 }

@@ -218,6 +218,7 @@ const FormPage = () => {
   const [isMount, setIsMount] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState({ text: "", type: "" });
+  const [countdown, setCountdown] = useState(0);
 
   const [state, setState] = useState({
     name: "",
@@ -259,6 +260,18 @@ const FormPage = () => {
       requireSpecialChar: true,
     });
 
+  const startCountdown = () => {
+    setCountdown(30);
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
   // Check session status and redirect if authenticated
   useEffect(() => {
     if (status === "authenticated") {
@@ -512,7 +525,7 @@ const FormPage = () => {
               name: state.name,
             }),
           });
-
+          startCountdown();
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || "Failed to send OTP");
 
@@ -585,14 +598,16 @@ const FormPage = () => {
 
   const handleResendOTP = useCallback(async () => {
     setIsLoading(true);
+    if (countdown > 0) return;
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "PUT",
+      const res = await fetch("/api/auth/verification", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: state.email }),
+        body: JSON.stringify({ email: state.email, name: state.name }),
       });
+      startCountdown();
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to resend OTP");
 
@@ -613,8 +628,30 @@ const FormPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [state.email]);
+  }, [state.email, state.name, countdown]);
+  const handleResendReset = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: state.email, name: state.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to send OTP");
 
+      setAuthMessage({
+        text: "Verification code re-sent to your email",
+        type: "success",
+      });
+    } catch (error) {
+      setErrorState((prev) => ({
+        ...prev,
+        emailOtp: error.message || "Failed to resend code. Please try again.",
+      }));
+    }
+  }, [state]);
   const handlePasswordReset = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -629,7 +666,7 @@ const FormPage = () => {
           shouldReturn = true;
         } else {
           const res = await fetch("/api/auth/forgot-password", {
-            method: "PUT",
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
@@ -640,7 +677,6 @@ const FormPage = () => {
 
           setState((prev) => ({
             ...prev,
-            emailCode: data.otp,
             forgotStep: 2,
           }));
           setAuthMessage({
@@ -649,16 +685,29 @@ const FormPage = () => {
           });
         }
       }
-
       // Step 2: Validate OTP
       if (state.forgotStep === 2) {
-        const otpError = validateOTP(state.emailOtp);
-        if (otpError) {
-          errors.emailOtp = otpError;
-          shouldReturn = true;
-        } else {
-          setState((prev) => ({ ...prev, forgotStep: 3 }));
-        }
+        console.log(state.emailOtp);
+        const otp = state.emailOtp.join("");
+        console.log(otp);
+        const res = await fetch("/api/auth/verify-otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: state.email, otp: otp }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to send OTP");
+
+        setState((prev) => ({
+          ...prev,
+          forgotStep: 3,
+        }));
+        setAuthMessage({
+          text: "Verification code sent to your email",
+          type: "success",
+        });
       }
 
       // Step 3: Validate new password
@@ -714,7 +763,6 @@ const FormPage = () => {
     state.newPassword,
     state.confirmNewPassword,
     validateEmail,
-    validateOTP,
     validatePassword,
     validateConfirmPassword,
   ]);
@@ -823,7 +871,7 @@ const FormPage = () => {
       default:
         return "Submit";
     }
-  }, [pathname, isLoading, state.forgotStep]);
+  }, [pathname, isLoading, state.registerStep, state.forgotStep]);
 
   const renderFormFields = useCallback(() => {
     if (pathname === "/auth/forgot-password") {
@@ -877,11 +925,19 @@ const FormPage = () => {
               />
               <button
                 type="button"
-                className="text-sm text-blue-600 focus:outline-none focus:underline dark:text-blue-400 hover:underline mt-2 disabled:opacity-50"
-                onClick={handleResendOTP}
-                disabled={isLoading}
+                className={`text-sm focus:outline-none mt-2 ${
+                  isLoading || countdown > 0
+                    ? "text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                    : "text-blue-600 dark:text-blue-400 hover:underline focus:underline"
+                } transition-colors`}
+                onClick={handleResendReset}
+                disabled={isLoading || countdown > 0}
               >
-                {`Didn't receive code? Resend`}
+                {isLoading
+                  ? "Sending..."
+                  : countdown > 0
+                  ? `Resend available in ${countdown}s`
+                  : "Didn't receive code? Resend"}
               </button>
               {authMessage.type === "success" && (
                 <SuccessText message={authMessage.text} />
@@ -1231,7 +1287,9 @@ const FormPage = () => {
     handleOptChange,
     handleOtpKeyDown,
     handleResendOTP,
+    countdown,
     router,
+    handleResendReset,
     updatePassword,
   ]);
 
@@ -1289,44 +1347,47 @@ const FormPage = () => {
           >
             {renderFormFields()}
 
-            {((pathname === "/auth/forgot-password" && state.forgotStep < 4) ||
-              (pathname === "/auth/login" && !authMessage.text) ||
-              (pathname === "/auth/register" && !state.success_message)) && (
-              <div
-                className={`w-full flex items-center ${
-                  pathname === "/auth/forgot-password" && state.forgotStep > 1
-                    ? "justify-between"
-                    : "justify-end"
-                }`}
-              >
-                {pathname === "/auth/forgot-password" &&
-                  state.forgotStep > 1 && (
-                    <button
-                      type="button"
-                      className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 rounded-md py-2 px-6 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:text-gray-100 dark:hover:text-gray-200 transition-colors"
-                      onClick={handlePreviousStep}
-                      disabled={isLoading}
-                    >
-                      Previous
-                    </button>
-                  )}
+            <div
+              className={`w-full flex items-center ${
+                pathname === "/auth/forgot-password" && state.forgotStep > 1
+                  ? "justify-between"
+                  : "justify-end"
+              }`}
+            >
+              {/* Show "Previous" button only for forgot-password step > 1 */}
+              {pathname === "/auth/forgot-password" && state.forgotStep > 1 && (
                 <button
-                  type="submit"
+                  type="button"
+                  className="border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 rounded-md py-2 px-6 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:text-gray-100 dark:hover:text-gray-200 transition-colors"
+                  onClick={handlePreviousStep}
                   disabled={isLoading}
-                  className={`${
-                    pathname !== "/auth/forgot-password"
-                      ? "w-full py-2.5"
-                      : "py-2.5 sm:py-2 px-8"
-                  } rounded-lg font-medium text-sm sm:text-base text-white ${
-                    isLoading
-                      ? "bg-green-500 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
-                  } transition-all duration-200 flex items-center justify-center active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400`}
                 >
-                  {renderButtonText()}
+                  Previous
                 </button>
-              </div>
-            )}
+              )}
+
+              {/* Show Submit button for all pages except forgot-password when finished */}
+              {!(
+                pathname === "/auth/forgot-password" && state.forgotStep >= 4
+              ) &&
+                !(pathname === "/auth/register" && state.success_message) && (
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`${
+                      pathname !== "/auth/forgot-password"
+                        ? "w-full py-2.5"
+                        : "py-2.5 sm:py-2 px-8"
+                    } rounded-lg font-medium text-sm sm:text-base text-white ${
+                      isLoading
+                        ? "bg-green-500 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
+                    } transition-all duration-200 flex items-center justify-center active:scale-95 focus:outline-none focus:ring-2 focus:ring-green-400`}
+                  >
+                    {renderButtonText()}
+                  </button>
+                )}
+            </div>
 
             {pathname !== "/auth/forgot-password" &&
               !state.success_message &&

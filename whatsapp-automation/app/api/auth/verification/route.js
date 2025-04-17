@@ -1,8 +1,9 @@
 // /api/auth/send-otp/route.js
 import { NextResponse } from "next/server";
-import { generateOTP, sendVerificationEmail } from "@/lib/authHelpers";
+import { generateOTP } from "@/lib/authHelpers";
 import User from "@/models/User";
 import connectDB from "@/config/db";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export async function POST(request) {
   try {

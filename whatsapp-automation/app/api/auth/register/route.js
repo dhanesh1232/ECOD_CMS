@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import User from "@/models/User";
 import connectDB from "@/config/db";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail } from "@/lib/mail";
 
 export async function POST(request) {
   try {
@@ -28,26 +29,23 @@ export async function POST(request) {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
-        { message: "Email already in use" },
+        { message: "Email already in use please login" },
         { status: 409 }
       );
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create new user
     const newUser = new User({
       name,
       email,
-      password: hashedPassword,
-      isVerified: true, // Mark as verified since OTP was verified
+      password: password.trim(),
+      isVerified: true,
       isOAuthUser: false,
       isPasswordSet: true,
     });
 
     await newUser.save();
-
+    await sendWelcomeEmail(email, name);
     return NextResponse.json(
       {
         success: true,

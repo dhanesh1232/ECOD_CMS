@@ -12,12 +12,20 @@ import {
   FiGlobe,
   FiUsers,
   FiHelpCircle,
+  FiKey,
+  FiCreditCard,
+  FiBell,
 } from "react-icons/fi";
 export const userMenuItems = [
   {
     icon: <FiUser className="mr-2" />,
     label: "Profile",
     action: "/dashboard/profile",
+  },
+  {
+    icon: <FiKey className="mr-2" />,
+    label: "Change Password",
+    action: "/dashboard/change-password",
   },
   {
     icon: <FiSettings className="mr-2" />,
@@ -34,7 +42,7 @@ export const userMenuItems = [
 export const chatbotMenuItems = [
   {
     icon: <LayoutDashboard className="mr-2" size={16} />,
-    label: "Dashboard",
+    label: "Overview",
     action: "/dashboard",
   },
   {
@@ -53,11 +61,6 @@ export const chatbotMenuItems = [
     action: "/dashboard/knowledge-base",
   },
   {
-    icon: <FiBarChart2 className="mr-2" />,
-    label: "Analytics",
-    action: "/dashboard/analytics",
-  },
-  {
     icon: <FiZap className="mr-2" />,
     label: "Automations",
     action: "/dashboard/automations",
@@ -73,12 +76,37 @@ export const chatbotMenuItems = [
     action: "/dashboard/contacts",
   },
   {
-    icon: <FiSettings className="mr-2" />,
+    icon: <FiBarChart2 className="mr-2" />,
+    label: "Analytics",
+    action: "/dashboard/analytics",
+  },
+  {
+    icon: <FiUsers className="mr-2" />, // Integrations
+    label: "Integrations",
+    action: "/dashboard/integrations",
+  },
+  {
+    icon: <FiCreditCard className="mr-2" />, // Billing
+    label: "Billing",
+    action: "/dashboard/billing",
+  },
+  {
+    icon: <FiBell className="mr-2" />, // Notifications
+    label: "Notifications",
+    action: "/dashboard/notifications",
+  },
+  {
+    icon: <FiCode className="mr-2" />, // API Access
+    label: "API Access",
+    action: "/dashboard/api-access",
+  },
+  {
+    icon: <FiSettings className="mr-2" />, // Settings
     label: "Settings",
     action: "/dashboard/settings",
   },
   {
-    icon: <FiHelpCircle className="mr-2" />,
+    icon: <FiHelpCircle className="mr-2" />, // Help Center
     label: "Help Center",
     action: "/dashboard/help",
   },

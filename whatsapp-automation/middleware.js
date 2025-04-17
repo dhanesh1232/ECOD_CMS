@@ -13,7 +13,7 @@ export async function middleware(request) {
 
   // Protect dashboard routes
   if (pathname.startsWith("/dashboard") && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   return NextResponse.next();
@@ -21,5 +21,5 @@ export async function middleware(request) {
 
 // Define protected routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/login", "/auth/register"],
+  matcher: ["/dashboard/:path*", "/auth/login", "/auth/register", "/:path*"],
 };

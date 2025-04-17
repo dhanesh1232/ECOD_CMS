@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import User from "@/models/User";
 import connectDB from "@/config/db";
 import bcrypt from "bcryptjs";
+import { sendLoginNotification } from "@/lib/mail";
 
 export async function POST(request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request) {
     }
 
     const user = await User.findOne({ email }).select("+password");
-
+    console.log(user);
     if (!user) {
       return NextResponse.json(
         { message: "No account found with this email" },
@@ -38,7 +39,7 @@ export async function POST(request) {
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
     if (!isMatch) {
       return NextResponse.json(
         { message: "Incorrect password" },
@@ -46,15 +47,9 @@ export async function POST(request) {
       );
     }
 
-    if (!user.isVerified) {
-      return NextResponse.json(
-        { message: "Please verify your email first" },
-        { status: 403 }
-      );
-    }
-
     user.lastLogin = new Date();
     await user.save();
+    await sendLoginNotification(email, "Email/Password");
 
     return NextResponse.json({
       message: "Login successful",

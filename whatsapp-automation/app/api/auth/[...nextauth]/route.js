@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import User from "@/models/User";
 import connectDB from "@/config/db";
 import bcrypt from "bcryptjs";
+import { sendLoginNotification } from "@/lib/mail";
 
 export const authOptions = {
   providers: [
@@ -52,6 +53,10 @@ export const authOptions = {
         // Update last login
         user.lastLogin = new Date();
         await user.save();
+        // Send login notification (don't await to avoid blocking login)
+        sendLoginNotification(user.email, "Google").catch((error) =>
+          console.error("Login email failed:", error)
+        );
 
         return {
           id: user._id,
@@ -96,6 +101,10 @@ export const authOptions = {
               }
             );
           }
+          // Send login notification (don't await to avoid blocking login)
+          sendLoginNotification(user.email, "Email/Password").catch((error) =>
+            console.error("Login email failed:", error)
+          );
           return true;
         } catch (error) {
           console.error("Google signIn error:", error);
@@ -145,6 +154,8 @@ export const authOptions = {
     },
   },
   debug: process.env.NODE_ENV === "development",
+  trustHost: true,
+  useSecureCookies: process.env.NODE_ENV === "production", // Only use HTTPS in production
 };
 
 const handler = NextAuth(authOptions);
