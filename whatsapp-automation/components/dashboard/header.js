@@ -1,7 +1,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
+import { FiChevronDown, FiMenu } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Logo from "../logo";
 import LetterAvatar from "../profile/user-icon";
