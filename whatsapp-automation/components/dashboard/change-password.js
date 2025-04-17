@@ -310,7 +310,7 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50">
+    <div className="max-w-lg mx-auto bg-white dark:bg-gray-800">
       <AnimatePresence mode="wait">
         {step === "setPassword" ? (
           <motion.div

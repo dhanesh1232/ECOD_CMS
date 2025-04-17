@@ -20,12 +20,12 @@ export const userMenuItems = [
   {
     icon: <FiUser className="mr-2" />,
     label: "Profile",
-    action: "/dashboard/profile",
+    action: "/dashboard/settings?tab=profile",
   },
   {
     icon: <FiKey className="mr-2" />,
     label: "Change Password",
-    action: "/dashboard/change-password",
+    action: "/dashboard/settings?tab=security",
   },
   {
     icon: <FiSettings className="mr-2" />,
@@ -81,7 +81,7 @@ export const chatbotMenuItems = [
     action: "/dashboard/analytics",
   },
   {
-    icon: <FiUsers className="mr-2" />, // Integrations
+    icon: <FiUsers className="mr-2" />,
     label: "Integrations",
     action: "/dashboard/integrations",
   },

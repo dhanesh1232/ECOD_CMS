@@ -35,10 +35,10 @@ const LetterAvatar = ({ letter, size = "md", className = "" }) => {
   const text = defaultColors[colorIndex][1];
 
   const sizeClasses = {
-    sm: "w-8 h-8 text-sm",
-    md: "w-10 h-10 text-base",
-    lg: "w-12 h-12 text-lg",
-    xl: "w-14 h-14 text-xl",
+    sm: "w-4 h-4 md:w-6 md:h-6 text-xs md:text-sm",
+    md: "w-6 md:w-8 h-6 md:h-8 text-sm md:text-base",
+    lg: "w-8 md:w-10 h-8 md:h-10 text-base md:text-lg",
+    xl: "md:w-14 md:h-14 w-10 h-10 text-lg md:text-xl",
   };
 
   return (

@@ -153,7 +153,7 @@ const Header = () => {
           )}
 
           <div className="flex items-center gap-2">
-            <NotificationButton />
+            <NotificationButton size="md" />
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -187,7 +187,7 @@ const Header = () => {
                 <motion.div
                   animate={{ rotate: showUserMenu ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
-                  className="ml-1 text-gray-500 dark:text-gray-400"
+                  className="ml-1 hidden sm:block text-gray-500 dark:text-gray-400"
                 >
                   <FiChevronDown className="w-4 h-4" />
                 </motion.div>

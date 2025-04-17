@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
 
@@ -27,7 +28,7 @@ const initialNotifications = [
   },
 ];
 
-const NotificationButton = () => {
+const NotificationButton = ({ size = "md" }) => {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showHighlight, setShowHighlight] = useState(true);
   const [showPop, setShowPop] = useState(false);
@@ -80,15 +81,17 @@ const NotificationButton = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative *:transition *:ease-in-out *:duration-150 *:transform">
       <button
         onClick={handleClick}
         ref={buttonRef}
         className="relative flex items-center justify-center p-2 bg-gray-800 dark:bg-gray-900 rounded-full hover:bg-gray-700 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out"
       >
-        <FiBell className="text-white dark:text-gray-200 text-lg" />
+        <FiBell
+          className={`text-white dark:text-gray-200 text-sm sm:text-base md:text-lg`}
+        />
         {showHighlight && unreadCount > 0 && (
-          <span className="absolute top-0 right-0 block w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+          <span className="absolute top-0 right-0 block md:w-2.5 sm:w-2 w-1.5 h-1.5 sm:h-2 md:h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
         )}
       </button>
 
@@ -97,15 +100,23 @@ const NotificationButton = () => {
           ref={popRef}
           className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-md shadow-lg overflow-hidden z-10 border border-gray-200 dark:border-gray-700"
         >
-          <div className="p-3 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-            <h3 className="font-medium text-gray-800 dark:text-gray-100">
-              Notifications
-            </h3>
-            {unreadCount > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs bg-indigo-500 text-white rounded-full">
-                {unreadCount} new
-              </span>
-            )}
+          <div className="p-3 bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex items-center justify-between">
+            <div className="">
+              <h3 className="font-medium text-gray-800 dark:text-gray-100">
+                Notifications
+              </h3>
+              {unreadCount > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-indigo-500 text-white rounded-full">
+                  {unreadCount} new
+                </span>
+              )}
+            </div>
+            <Link
+              href="/dashboard/notifications"
+              className="hover:underline hover:text-blue-700 text-gray-800 dark:text-gray-200"
+            >
+              View All
+            </Link>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
