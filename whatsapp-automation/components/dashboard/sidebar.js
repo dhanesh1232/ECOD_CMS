@@ -6,25 +6,15 @@ import LetterAvatar from "../profile/user-icon";
 import { useEffect, useRef, useState } from "react";
 import { chatbotMenuItems, userMenuItems } from "@/data/usage";
 import { useRouter } from "next/navigation";
-import { FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { FiChevronUp } from "react-icons/fi";
 
 const Sidebar = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({});
   const [activeMenuItem, setActiveMenuItem] = useState(null);
   const userMenuRef = useRef();
   const avatarButtonRef = useRef();
-
-  // Initialize all sections as expanded by default
-  useEffect(() => {
-    const initialExpandedState = {};
-    chatbotMenuItems.forEach((section, index) => {
-      initialExpandedState[index] = true;
-    });
-    setExpandedSections(initialExpandedState);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -42,101 +32,51 @@ const Sidebar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleSection = (index) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
-  };
-
   return (
     <div className="hidden md:flex md:w-64 flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-colors duration-300">
       {/* Logo Section */}
       <div className="p-6 pb-4">
         <Link href="/dashboard">
-          <motion.div
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex items-center"
-          >
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Logo />
           </motion.div>
         </Link>
       </div>
 
       {/* Menu Items */}
-      <div className="flex-1 px-2 py-2 space-y-1 overflow-y-auto">
-        {chatbotMenuItems.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="mb-4">
-            {/* Section Header */}
-            {section.section && (
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className="flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer"
-                onClick={() => toggleSection(sectionIndex)}
+      <ul className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+        {chatbotMenuItems.map((item, index) => {
+          const isActive = activeMenuItem === index;
+          return (
+            <motion.li
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`px-4 py-2 text-sm rounded-lg cursor-pointer flex items-center transition-all duration-200 ${
+                isActive
+                  ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              onClick={() => {
+                router.push(item.action);
+                setActiveMenuItem(index);
+              }}
+            >
+              <span
+                className={`mr-3 ${
+                  isActive ? "text-blue-500" : "text-gray-500"
+                }`}
               >
-                <span>{section.section}</span>
-                <motion.div
-                  animate={{ rotate: expandedSections[sectionIndex] ? 90 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <FiChevronRight size={14} />
-                </motion.div>
-              </motion.div>
-            )}
-
-            {/* Section Items */}
-            <AnimatePresence>
-              {expandedSections[sectionIndex] && (
-                <motion.ul
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="space-y-1"
-                >
-                  {section.items.map((item, itemIndex) => {
-                    const isActive =
-                      activeMenuItem === `${sectionIndex}-${itemIndex}`;
-                    return (
-                      <motion.li
-                        key={itemIndex}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: itemIndex * 0.03 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-3 py-2.5 text-sm rounded-lg cursor-pointer flex items-center transition-all duration-200 ${
-                          isActive
-                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-200 font-medium"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        }`}
-                        onClick={() => {
-                          router.push(item.action);
-                          setActiveMenuItem(`${sectionIndex}-${itemIndex}`);
-                        }}
-                        title={item.description}
-                      >
-                        <span
-                          className={`mr-3 ${
-                            isActive
-                              ? "text-blue-500"
-                              : "text-gray-500 dark:text-gray-400"
-                          }`}
-                        >
-                          {item.icon}
-                        </span>
-                        <span className="truncate">{item.label}</span>
-                      </motion.li>
-                    );
-                  })}
-                </motion.ul>
-              )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </div>
+                {item.icon}
+              </span>
+              {item.label}
+            </motion.li>
+          );
+        })}
+      </ul>
 
       {/* User Profile Section */}
       <div className="p-4 border-t border-gray-100 dark:border-gray-800 transition-colors duration-300">
@@ -149,7 +89,6 @@ const Sidebar = () => {
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center justify-between w-full p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
             aria-label="User menu"
-            aria-expanded={showUserMenu}
           >
             <div className="flex items-center space-x-3">
               <LetterAvatar
@@ -161,8 +100,8 @@ const Sidebar = () => {
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate max-w-[120px]">
                   {session?.user.name}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">
-                  {session?.user.email}
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {session?.user.email?.split("@")[0]}
                 </p>
               </div>
             </div>
@@ -170,7 +109,7 @@ const Sidebar = () => {
               animate={{ rotate: showUserMenu ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <FiChevronDown className="text-gray-500 dark:text-gray-400" />
+              <FiChevronUp className="text-gray-500" />
             </motion.div>
           </motion.button>
 
@@ -193,7 +132,7 @@ const Sidebar = () => {
                       transition={{ delay: index * 0.05 }}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      className="px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer flex items-center"
+                      className="px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/50 cursor-pointer flex items-center"
                       onClick={() => {
                         if (item.action === "logout") {
                           signOut({ callbackUrl: "/" });
@@ -202,11 +141,8 @@ const Sidebar = () => {
                         }
                         setShowUserMenu(false);
                       }}
-                      title={item.description}
                     >
-                      <span className="mr-3 text-gray-500 dark:text-gray-400">
-                        {item.icon}
-                      </span>
+                      <span className="mr-3 text-gray-500">{item.icon}</span>
                       {item.label}
                     </motion.li>
                   ))}

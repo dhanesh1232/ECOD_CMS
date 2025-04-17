@@ -28,7 +28,7 @@ const defaultColors = [
   ["bg-yellow-300", "text-gray-800"],
 ];
 
-const LetterAvatar = ({ letter, size = "md" }) => {
+const LetterAvatar = ({ letter, size = "md", className = "" }) => {
   const charCode = letter?.charCodeAt(0) || 0;
   const colorIndex = charCode % defaultColors.length;
   const bg = defaultColors[colorIndex][0];
@@ -43,9 +43,9 @@ const LetterAvatar = ({ letter, size = "md" }) => {
 
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.95 }}
-      className={`${bg} ${text} ${sizeClasses[size]} border rounded-full flex items-center justify-center font-bold`}
+      className={`${bg} ${text} ${sizeClasses[size]} border-none rounded-full flex items-center justify-center font-bold ${className}`}
     >
       {letter?.toUpperCase() || "?"}
     </motion.div>

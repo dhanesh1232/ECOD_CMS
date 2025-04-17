@@ -1,13 +1,14 @@
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { FiChevronDown, FiMenu } from "react-icons/fi";
+import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Logo from "../logo";
 import LetterAvatar from "../profile/user-icon";
 import { chatbotMenuItems, userMenuItems } from "@/data/usage";
 import { FaMoon, FaSun } from "react-icons/fa";
 import { useDarkMode } from "@/context/context";
+import NotificationButton from "./notification";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -152,6 +153,7 @@ const Header = () => {
           )}
 
           <div className="flex items-center gap-2">
+            <NotificationButton />
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -180,7 +182,7 @@ const Header = () => {
                 <LetterAvatar
                   letter={`${session?.user?.name?.charAt(0) || "U"}`}
                   size="md"
-                  className="ring-2 ring-blue-400 dark:ring-blue-600"
+                  className="ring-2 ring-blue-600"
                 />
                 <motion.div
                   animate={{ rotate: showUserMenu ? 180 : 0 }}

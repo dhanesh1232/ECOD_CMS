@@ -91,19 +91,9 @@ export const chatbotMenuItems = [
     action: "/dashboard/billing",
   },
   {
-    icon: <FiBell className="mr-2" />, // Notifications
-    label: "Notifications",
-    action: "/dashboard/notifications",
-  },
-  {
     icon: <FiCode className="mr-2" />, // API Access
     label: "API Access",
     action: "/dashboard/api-access",
-  },
-  {
-    icon: <FiSettings className="mr-2" />, // Settings
-    label: "Settings",
-    action: "/dashboard/settings",
   },
   {
     icon: <FiHelpCircle className="mr-2" />, // Help Center
