@@ -4,31 +4,31 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { blog_services } from "../../data/blog_data";
-import { allBlogs } from "../../data/blog_data";
-import { PaginationControls } from "../../hooks/pagination-control";
+import { blog_services } from "@/data/blog_data";
+import { allBlogs } from "@/data/blog_data";
+import { PaginationControls } from "@/hooks/pagination-control";
 
 // Dynamic imports with loading states
 const CategorySelector = dynamic(
-  () => import("../components/Reusable/CategorySelector"),
+  () => import("@/components/Reusable/CategorySelector"),
   {
     loading: () => (
       <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
     ),
   }
 );
-const BlogCard = dynamic(() => import("../components/BlogCard"), {
+const BlogCard = dynamic(() => import("@/components/BlogCard"), {
   loading: () => (
     <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
   ),
 });
-const SearchComponent = dynamic(() => import("../components/Reusable/search"), {
+const SearchComponent = dynamic(() => import("@/components/Reusable/search"), {
   loading: () => (
     <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
   ),
 });
 const BackAndForward = dynamic(
-  () => import("../components/Reusable/back-forw"),
+  () => import("@/components/Reusable/back-forw"),
   {
     loading: () => (
       <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />

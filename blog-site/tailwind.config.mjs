@@ -9,6 +9,10 @@ export default {
   theme: {
     extend: {
       keyframes: {
+        draw: {
+          "0%": { strokeDashoffset: "120" },
+          "100%": { strokeDashoffset: "0" },
+        },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(10px)" },
@@ -19,6 +23,7 @@ export default {
         },
       },
       animation: {
+        draw: "draw 0.8s linear infinite",
         float: "float 2s ease-in-out infinite",
         shine: "shine 5s linear infinite",
       },

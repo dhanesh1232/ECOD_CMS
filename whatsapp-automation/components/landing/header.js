@@ -39,15 +39,6 @@ export default function Navigation() {
   const searchRef = useRef(null);
   const pathname = usePathname();
 
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [router, status]);
-
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -179,9 +170,13 @@ export default function Navigation() {
     }
   };
 
-  if (status === "authenticated") {
-    return null;
-  }
+  const getAuthUrl = (type) => {
+    // Don't set callback for auth pages to prevent loops
+    if (pathname.startsWith("/auth")) {
+      return `/auth/${type}`;
+    }
+    return `/auth/${type}?callbackUrl=${encodeURIComponent(pathname)}`;
+  };
   return (
     <motion.header
       initial={{ y: -100, opacity: 0 }}
@@ -336,14 +331,14 @@ export default function Navigation() {
             </button>
 
             <Link
-              href="/auth/login"
+              href={getAuthUrl("login")}
               className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-50 hover:dark:text-gray-300 hover:text-gray-500 transition-all"
             >
               <FaUser className="mr-2" />
               Login
             </Link>
             <Link
-              href="/auth/register"
+              href={getAuthUrl("register")}
               className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-lg shadow-sm transition-all"
             >
               Get Started
@@ -424,13 +419,13 @@ export default function Navigation() {
 
               <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
                 <Link
-                  href="/auth/login"
+                  href={getAuthUrl("login")}
                   className="block w-full px-4 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/auth/register"
+                  href={getAuthUrl("register")}
                   className="block w-full px-4 py-3 mt-1 text-center text-sm font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-lg transition-colors"
                 >
                   Get Started

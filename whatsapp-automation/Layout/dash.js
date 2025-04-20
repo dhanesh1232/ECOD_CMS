@@ -27,12 +27,6 @@ const DashboardLayout = ({ children }) => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/");
-    }
-  }, [status, router]);
-
-  useEffect(() => {
     const checkPasswordSet = async () => {
       try {
         const res = await fetch("/api/user");
@@ -63,7 +57,7 @@ const DashboardLayout = ({ children }) => {
   }, [status, router]);
 
   const handlePasswordSetSuccess = () => {
-    router.replace("/dashboard", { scroll: false });
+    router.replace("/", { scroll: false });
     setShowPasswordModal(false);
     setPasswordStatus((prev) => ({ ...prev, isSet: true }));
   };
@@ -74,10 +68,6 @@ const DashboardLayout = ({ children }) => {
         <LoadingSpinner size="lg" />
       </div>
     );
-  }
-
-  if (status === "unauthenticated") {
-    return null;
   }
 
   return (
@@ -92,7 +82,7 @@ const DashboardLayout = ({ children }) => {
           {/* Header */}
           <Header />
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+          <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>
         </div>

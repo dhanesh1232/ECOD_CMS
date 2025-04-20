@@ -10,19 +10,10 @@ import DashboardLayout from "@/Layout/dash";
 const AuthWrapper = ({ children }) => {
   const { data: session, status } = useSession();
   const [isMount, setIsMount] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     setIsMount(true);
   }, []);
-
-  useEffect(() => {
-    if (!isMount) return;
-    if (status === "authenticated" && !pathname.startsWith("/dashboard")) {
-      router.push("/dashboard");
-    }
-  }, [status, router, isMount, pathname]);
 
   if (!isMount || status === "loading") {
     return (

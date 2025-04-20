@@ -34,6 +34,7 @@ const chatSchema = new mongoose.Schema({
   },
 });
 
-const Chat = mongoose.model("Chat", chatSchema);
+// ✅ Check if model already exists before defining
+const Chat = mongoose.models.Chat || mongoose.model("Chat", chatSchema);
 
 export default Chat;

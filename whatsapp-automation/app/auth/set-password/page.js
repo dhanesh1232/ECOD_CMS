@@ -13,22 +13,6 @@ export default function SetPasswordPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [status, router]);
-
-  useEffect(() => {
-    if (status === "loading") return;
-
-    if (!session?.user?.isOAuthUser || session?.user?.isPasswordSet) {
-      router.push("/dashboard");
-    } else {
-      setIsChecking(false);
-    }
-  }, [session, status, router]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -46,7 +30,7 @@ export default function SetPasswordPage() {
         email: session?.user?.email,
         password,
       });
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       setError(err.response?.data?.message || "Error setting password");
       setLoading(false);
@@ -55,9 +39,6 @@ export default function SetPasswordPage() {
 
   if (status === "loading" || isChecking) {
     return null; // Show nothing while checking
-  }
-  if (status === "authenticated") {
-    return null;
   }
 
   return (

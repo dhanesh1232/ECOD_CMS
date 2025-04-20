@@ -1,84 +1,118 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useState, useEffect, useMemo } from "react";
+import {
+  createContext,
+  useCallback,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import Head from "next/head";
-import LoaderSpinner from "@/pages/components/Reusable/Spinner/spinner";
+import LoaderSpinner from "@/components/Reusable/Spinner/spinner";
 import PropTypes from "prop-types";
 import PortfolioPage from "../pages/portfolio";
 import PageNotFound from "@/pages/404";
-import OverlayPages from "@/pages/components/Overlay/overy-pages";
+import OverlayPages from "@/components/Overlay/overy-pages";
 
-const Footer = dynamic(() => import("@/pages/components/footer"), {
-  ssr: false,
-});
-const HeaderSection = dynamic(() => import("@/pages/components/header"), {
-  ssr: false,
-});
-const LowerContent = dynamic(() => import("@/pages/components/lower-content"), {
-  ssr: false,
+// Create context for theme and loading states
+export const AppContext = createContext({
+  theme: "light",
+  toggleTheme: () => {},
+  isLoading: true,
+  routeChanging: false,
 });
 
+// Dynamic imports for better code splitting
+const Footer = dynamic(() => import("@/components/footer"), { ssr: false });
+const HeaderSection = dynamic(() => import("@/components/header"), {
+  ssr: false,
+});
+
+// Animation frames for loading indicator
 const loadingFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 const Layout = ({ children }) => {
   const router = useRouter();
   const { category } = router.query;
+
+  // State management
   const [theme, setTheme] = useState("light");
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [routeChanging, setRouteChanging] = useState(false);
   const [titleFrame, setTitleFrame] = useState(0);
-  const isPortfolioPage = router.pathname === "/portfolio";
-  const isPreviewPage = router.pathname === "/preview";
-  const isServiceWebPage = category === "web-development";
-  const isNotFound = router.pathname === "/404";
-  const { isHomePage, layoutClasses } = useMemo(() => {
-    const isHome = router.pathname === "/";
-    return {
-      isHomePage: isHome,
-      layoutClasses: isHome ? "" : "mt-16",
-    };
-  }, [router.pathname]);
 
-  // Route change handlers
+  // Memoized route checks
+  const {
+    isPortfolioPage,
+    isPreviewPage,
+    isServiceWebPage,
+    isNotFound,
+    isHomePage,
+    layoutClasses,
+  } = useMemo(
+    () => ({
+      isPortfolioPage: router.pathname === "/portfolio",
+      isPreviewPage: router.pathname === "/preview",
+      isServiceWebPage: category === "web-development",
+      isNotFound: router.pathname === "/404",
+      isHomePage: router.pathname === "/",
+      layoutClasses: router.pathname === "/" ? "" : "mt-16",
+    }),
+    [router.pathname, category]
+  );
+
+  // Route change handlers with performance optimization
   useEffect(() => {
-    const handleStart = () => {
-      setRouteChanging(true);
-      window.scrollTo(0, 0);
-    };
-    const handleComplete = () => {
-      setRouteChanging(false);
+    const handleRouteChange = (type) => {
+      const handlers = {
+        start: () => {
+          setRouteChanging(true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        },
+        complete: () => setRouteChanging(false),
+        error: () => setRouteChanging(false),
+      };
+      return handlers[type];
     };
 
-    router.events.on("routeChangeStart", handleStart);
-    router.events.on("routeChangeComplete", handleComplete);
-    router.events.on("routeChangeError", handleComplete);
+    router.events.on("routeChangeStart", handleRouteChange("start"));
+    router.events.on("routeChangeComplete", handleRouteChange("complete"));
+    router.events.on("routeChangeError", handleRouteChange("error"));
 
     return () => {
-      router.events.off("routeChangeStart", handleStart);
-      router.events.off("routeChangeComplete", handleComplete);
-      router.events.off("routeChangeError", handleComplete);
+      router.events.off("routeChangeStart", handleRouteChange("start"));
+      router.events.off("routeChangeComplete", handleRouteChange("complete"));
+      router.events.off("routeChangeError", handleRouteChange("error"));
     };
-  }, [router]);
+  }, [router.events]);
 
-  // Theme and mount initialization
+  // Theme and mount initialization with system preference detection
   useEffect(() => {
     setIsMounted(true);
+
+    // Get saved theme or detect system preference
     const savedTheme =
       localStorage.getItem("theme") ||
       (window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light");
+
     setTheme(savedTheme);
     document.documentElement.classList.toggle("dark", savedTheme === "dark");
 
+    // Handle page load with fallback timeout
     const handleLoad = () => setIsLoading(false);
 
     if (document.readyState === "complete") {
       handleLoad();
     } else {
       window.addEventListener("load", handleLoad);
-      const timer = setTimeout(handleLoad, 1000);
+      const timer = setTimeout(() => {
+        handleLoad();
+        window.removeEventListener("load", handleLoad);
+      }, 1500);
+
       return () => {
         window.removeEventListener("load", handleLoad);
         clearTimeout(timer);
@@ -86,7 +120,7 @@ const Layout = ({ children }) => {
     }
   }, []);
 
-  // Theme persistence
+  // Theme persistence with localStorage
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem("theme", theme);
@@ -94,7 +128,7 @@ const Layout = ({ children }) => {
     }
   }, [theme, isMounted]);
 
-  // Loading animations
+  // Loading animations with cleanup
   useEffect(() => {
     if (!isMounted || isLoading || routeChanging) {
       const interval = setInterval(() => {
@@ -102,26 +136,33 @@ const Layout = ({ children }) => {
       }, 200);
 
       return () => clearInterval(interval);
-    } else {
-      document.title = "ECOD";
     }
   }, [isMounted, isLoading, routeChanging]);
 
+  // Dynamic document title updates
   useEffect(() => {
     if (!isMounted || isLoading || routeChanging) {
       document.title = `Loading ${loadingFrames[titleFrame]}`;
+    } else {
+      document.title = "ECOD";
     }
   }, [titleFrame, isMounted, isLoading, routeChanging]);
 
+  // Memoized theme toggle function
   const toggleTheme = useCallback(() => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
   }, []);
 
+  // Early returns for special pages
   if (!isMounted || isLoading || routeChanging) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+      <div className="w-full h-screen flex items-center justify-center bg-white/50 dark:bg-gray-900/50">
         <Head>
           <title>Loading {loadingFrames[titleFrame]}</title>
+          <meta
+            name="theme-color"
+            content={theme === "dark" ? "#000000" : "#ffffff"}
+          />
         </Head>
         <LoaderSpinner size="lg" />
       </div>
@@ -139,17 +180,28 @@ const Layout = ({ children }) => {
       </div>
     );
   }
+
   if (isNotFound) {
     return <PageNotFound />;
   }
+
+  // Context value for app-wide state
+  const contextValue = {
+    theme,
+    toggleTheme,
+    isLoading,
+    routeChanging,
+  };
+
   return (
-    <>
+    <AppContext.Provider value={contextValue}>
       <Head>
         <meta
           name="theme-color"
           content={theme === "dark" ? "#000000" : "#ffffff"}
         />
       </Head>
+
       <div
         data-testid="root"
         className={`w-full flex flex-col relative transition-colors duration-300 ${
@@ -163,12 +215,12 @@ const Layout = ({ children }) => {
         <div
           className={`${layoutClasses} z-0 flex flex-col md:flex-row flex-1 overflow-x-hidden`}
         >
-          {/* Left sidebar - hidden on home and preview pages */}
+          {/* Left sidebar - conditionally rendered */}
           {!isHomePage && !isPreviewPage && !isServiceWebPage && (
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
 
-          {/* Main content - full width on preview page */}
+          {/* Main content area */}
           <main
             id="main-content"
             className={`flex-1 flex flex-col items-center ${
@@ -176,20 +228,18 @@ const Layout = ({ children }) => {
             }`}
           >
             {children}
-            {!isPreviewPage && <LowerContent />}
           </main>
 
-          {/* Right sidebar - hidden on home and preview pages */}
+          {/* Right sidebar - conditionally rendered */}
           {!isHomePage && !isPreviewPage && !isServiceWebPage && (
             <aside className="hidden lg:block lg:w-[12.5%] sticky top-16 h-[calc(100vh-4rem)]" />
           )}
         </div>
-        <>
-          <Footer />
-          <OverlayPages />
-        </>
+
+        <Footer />
+        <OverlayPages />
       </div>
-    </>
+    </AppContext.Provider>
   );
 };
 

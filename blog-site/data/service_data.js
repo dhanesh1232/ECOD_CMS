@@ -283,6 +283,7 @@ export const eco_services = [
     emoji: "✨",
     stats: "98% Client Satisfaction",
     badge: "Popular",
+    category: "development",
   },
   {
     label: "Google | Meta Ads",
@@ -297,6 +298,7 @@ export const eco_services = [
     emoji: "📈",
     stats: "3-5x ROI Average",
     badge: "Trending",
+    category: "marketing",
   },
   {
     label: "SEO Optimization",
@@ -311,6 +313,7 @@ export const eco_services = [
     emoji: "🔍",
     stats: "85% Traffic Increase",
     badge: "Essential",
+    category: "marketing",
   },
   {
     label: "Social Media Marketing",
@@ -325,6 +328,7 @@ export const eco_services = [
     emoji: "👍",
     stats: "2M+ Impressions",
     badge: "Engaging",
+    category: "marketing",
   },
   {
     label: "Shopify Optimization",
@@ -339,6 +343,7 @@ export const eco_services = [
     emoji: "💰",
     stats: "40% Conversion Boost",
     badge: "Hot",
+    category: "ecommerce",
   },
   {
     label: "Content Marketing",
@@ -353,6 +358,7 @@ export const eco_services = [
     emoji: "📖",
     stats: "5x Engagement",
     badge: "Viral",
+    category: "marketing",
   },
   {
     label: "Email Marketing",
@@ -367,6 +373,7 @@ export const eco_services = [
     emoji: "✉️",
     stats: "30% Open Rate",
     badge: "Effective",
+    category: "marketing",
   },
 ]; //
 export const shopify_services_data = [
@@ -400,15 +407,6 @@ export const shopify_services_data = [
     darkColor: "from-green-400 to-green-500",
   },
   {
-    icon: <Smartphone className="w-8 h-8 text-red-600 dark:text-red-400" />,
-    title: "Mobile Optimization",
-    link: "/shopify/mobile-optimization",
-    description:
-      "Ensure flawless performance and user experience on all mobile devices.",
-    color: "from-red-500 to-red-600",
-    darkColor: "from-red-400 to-red-500",
-  },
-  {
     icon: <Rocket className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />,
     title: "Performance Boost",
     link: "/shopify/performance-optimization",
@@ -416,15 +414,6 @@ export const shopify_services_data = [
       "Speed up your store with advanced optimization techniques for better conversions.",
     color: "from-yellow-500 to-yellow-600",
     darkColor: "from-yellow-400 to-yellow-500",
-  },
-  {
-    icon: <Shield className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />,
-    title: "Security Enhancements",
-    link: "/shopify/security",
-    description:
-      "Protect your store with advanced security measures and fraud prevention.",
-    color: "from-indigo-500 to-indigo-600",
-    darkColor: "from-indigo-400 to-indigo-500",
   },
   {
     icon: <BarChart2 className="w-8 h-8 text-pink-600 dark:text-pink-400" />,

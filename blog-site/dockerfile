@@ -1,32 +1,21 @@
-# Stage 1: Build the application
+# Stage 1: Build
 FROM node:18-alpine AS builder
-
 WORKDIR /app
-
-# Copy package files first for better caching
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 RUN npm ci
-
-# Copy the rest of the files
 COPY . .
-
 RUN npm run build
 
-# Stage 2: Production image
-FROM node:18-alpine AS production
-
+# Stage 2: Run
+FROM node:18-alpine
 WORKDIR /app
-
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Copy required files from builder
-COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/next.config.mjs ./
 
 EXPOSE 3000
-
-# The entry point is now in the standalone directory
-CMD ["node", "server.js"]
+CMD ["npm", "start"]  
+# This runs 'next start' from package.json

@@ -1,45 +1,47 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import HeadSEO from "./components/Reusable/seo_head";
+import HeadSEO from "@/components/Reusable/seo_head";
+import LowerContent from "@/components/lower-content";
+import AutoScrollTags from "@/components/Home/scroll-section";
 
-const AboutSection = dynamic(() => import("./components/Home/about-section"), {
+const AboutSection = dynamic(() => import("@/components/Home/about-section"), {
   srr: false,
 });
-const HomeBlog = dynamic(() => import("./components/Home/blog-section"), {
+const HomeBlog = dynamic(() => import("@/components/Home/blog-section"), {
   ssr: false,
 });
-const HeroSection = dynamic(() => import("./components/Home/hero-section"), {
+const HeroSection = dynamic(() => import("@/components/Home/hero-section"), {
   ssr: false,
 });
 const OurServices = dynamic(
-  () => import("./components/Home/services-section"),
+  () => import("@/components/Home/services-section"),
   {
     ssr: false,
   }
 );
 const ShopifySection = dynamic(
-  () => import("./components/Home/shopify-section"),
+  () => import("@/components/Home/shopify-section"),
   {
     ssr: false,
   }
 );
 const DigitalMarketing = dynamic(
-  () => import("./components/Home/digi-mark-section"),
+  () => import("@/components/Home/digi-mark-section"),
   {
     ssr: false,
   }
 );
 const Testimonials = dynamic(
-  () => import("./components/Home/client-testi-section"),
+  () => import("@/components/Home/client-testi-section"),
   {
     ssr: false,
   }
 );
-const ECODFaqs = dynamic(() => import("./components/Home/faq-section"), {
+const ECODFaqs = dynamic(() => import("@/components/Home/faq-section"), {
   ssr: false,
 });
-const CallToAction = dynamic(() => import("./components/Home/call-to-action"), {
+const CallToAction = dynamic(() => import("@/components/Home/call-to-action"), {
   ssr: false,
 });
 
@@ -104,6 +106,7 @@ export default function Home() {
       <div className="w-full" data-testid="home-container">
         {/* Hero Section */}
         <HeroSection />
+        <AutoScrollTags />
         {/*About Section*/}
         <AboutSection />
         {/* Services Overview */}
@@ -120,6 +123,7 @@ export default function Home() {
         <ECODFaqs />
         {/* Call to Action */}
         <CallToAction />
+        <LowerContent />
       </div>
     </>
   );

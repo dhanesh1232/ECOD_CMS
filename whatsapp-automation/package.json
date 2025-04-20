@@ -38,7 +38,8 @@
     "recharts": "^2.15.2",
     "sonner": "^2.0.3",
     "swr": "^2.3.3",
-    "twilio": "^5.5.2"
+    "twilio": "^5.5.2",
+    "use-debounce": "^10.0.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

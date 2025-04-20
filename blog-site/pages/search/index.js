@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/router";
 import { useEffect, useState, useMemo } from "react";
-import { searchData } from "../../data/search_data";
+import { searchData } from "@/data/search_data";
 import Link from "next/link";
 import { Search, Loader2 } from "lucide-react";
 import Image from "next/image";
-import BackAndForward from "../components/Reusable/back-forw";
+import BackAndForward from "@/components/Reusable/back-forw";
 
 const SearchPage = () => {
   const router = useRouter();

@@ -8,15 +8,6 @@ const LoginPage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [status, router]);
-
-  if (status === "authenticated") {
-    return null;
-  }
   return <FormPage />;
 };
 

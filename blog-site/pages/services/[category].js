@@ -5,7 +5,7 @@ import {
   allCategories,
   services_ecod,
   adPerformanceData,
-} from "../../data/service_data";
+} from "@/data/service_data";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -45,16 +45,15 @@ import {
   PolarRadiusAxis,
   Radar,
 } from "recharts";
+import LowerContent from "@/components/lower-content";
 
 // Components
-const ServiceCard = dynamic(() => import("../components/serviceCard"));
+const ServiceCard = dynamic(() => import("@/components/serviceCard"));
 const CategorySelector = dynamic(
-  () => import("../components/Reusable/CategorySelector")
+  () => import("@/components/Reusable/CategorySelector")
 );
-const SearchComponent = dynamic(() => import("../components/Reusable/search"));
-const BackAndForward = dynamic(
-  () => import("../components/Reusable/back-forw")
-);
+const SearchComponent = dynamic(() => import("@/components/Reusable/search"));
+const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
 
 // Custom components
 const MetricCard = ({ title, value, change, icon, color }) => (
@@ -731,6 +730,7 @@ const CategoryServices = () => {
           </div>
         </div>
       </motion.div>
+      <LowerContent />
     </>
   );
 };

@@ -1,11 +1,11 @@
-import "../styles/globals.css";
+import "@/styles/globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import LoaderSpinner from "./components/Reusable/Spinner/spinner";
+import LoaderSpinner from "@/components/Reusable/Spinner/spinner";
 
 // Dynamic import for Layout with no loading component (we'll handle loading globally)
 const Layout = dynamic(() => import("@/Layout/layout"), { ssr: false });

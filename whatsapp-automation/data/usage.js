@@ -1,4 +1,5 @@
-import { LayoutDashboard } from "lucide-react";
+import { Home, LayoutDashboard } from "lucide-react";
+import { FaRobot } from "react-icons/fa";
 
 import {
   FiLogOut,
@@ -6,7 +7,6 @@ import {
   FiSettings,
   FiMessageSquare,
   FiCode,
-  FiDatabase,
   FiBarChart2,
   FiZap,
   FiGlobe,
@@ -14,23 +14,22 @@ import {
   FiHelpCircle,
   FiKey,
   FiCreditCard,
-  FiBell,
 } from "react-icons/fi";
 export const userMenuItems = [
   {
     icon: <FiUser className="mr-2" />,
     label: "Profile",
-    action: "/dashboard/settings?tab=profile",
+    action: "/settings?tab=profile",
   },
   {
     icon: <FiKey className="mr-2" />,
     label: "Change Password",
-    action: "/dashboard/settings?tab=security",
+    action: "/settings?tab=security",
   },
   {
     icon: <FiSettings className="mr-2" />,
     label: "Settings",
-    action: "/dashboard/settings",
+    action: "/settings",
   },
   {
     icon: <FiLogOut className="mr-2" />,
@@ -41,6 +40,11 @@ export const userMenuItems = [
 
 export const chatbotMenuItems = [
   {
+    icon: <Home size={16} className="mr-2" />,
+    label: "Home",
+    action: "/",
+  },
+  {
     icon: <LayoutDashboard className="mr-2" size={16} />,
     label: "Overview",
     action: "/dashboard",
@@ -48,56 +52,56 @@ export const chatbotMenuItems = [
   {
     icon: <FiMessageSquare className="mr-2" />,
     label: "Conversations",
-    action: "/dashboard/conversations",
+    action: "/conversations",
   },
   {
     icon: <FiCode className="mr-2" />,
     label: "Flows Builder",
-    action: "/dashboard/flows",
+    action: "/flows",
   },
   {
-    icon: <FiDatabase className="mr-2" />,
-    label: "Knowledge Base",
-    action: "/dashboard/knowledge-base",
+    icon: <FaRobot className="mr-2" />,
+    label: "Chat Bot",
+    action: "/chat",
   },
   {
     icon: <FiZap className="mr-2" />,
     label: "Automations",
-    action: "/dashboard/automations",
+    action: "/automations",
   },
   {
     icon: <FiGlobe className="mr-2" />,
     label: "Channels",
-    action: "/dashboard/channels",
+    action: "/channels",
   },
   {
     icon: <FiUsers className="mr-2" />,
     label: "Contacts",
-    action: "/dashboard/contacts",
+    action: "/contacts",
   },
   {
     icon: <FiBarChart2 className="mr-2" />,
     label: "Analytics",
-    action: "/dashboard/analytics",
+    action: "/analytics",
   },
   {
     icon: <FiUsers className="mr-2" />,
     label: "Integrations",
-    action: "/dashboard/integrations",
+    action: "/integrations",
   },
   {
     icon: <FiCreditCard className="mr-2" />, // Billing
     label: "Billing",
-    action: "/dashboard/billing",
+    action: "/billing",
   },
   {
     icon: <FiCode className="mr-2" />, // API Access
     label: "API Access",
-    action: "/dashboard/api-access",
+    action: "/api-access",
   },
   {
     icon: <FiHelpCircle className="mr-2" />, // Help Center
     label: "Help Center",
-    action: "/dashboard/help",
+    action: "/help",
   },
 ];

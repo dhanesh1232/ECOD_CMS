@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
-import { policy_data } from "../data/policies_data";
+import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
-import HeadSEO from "./components/Reusable/seo_head";
+import HeadSEO from "@/components/Reusable/seo_head";
 import Link from "next/link";
-const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
+const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
 
 // Utility functions
 const formatDate = (date) => {

@@ -1,10 +1,9 @@
-import { eco_services } from "../data/service_data";
+import { eco_services } from "@/data/service_data";
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import HeadSEO from "./components/Reusable/seo_head";
+import HeadSEO from "@/components/Reusable/seo_head";
 import {
   Rocket,
   Search,
@@ -20,9 +19,6 @@ import {
   Smartphone,
   Mail,
   ShoppingCart,
-  PenTool,
-  Eye,
-  ArrowUpRight,
   User,
 } from "lucide-react";
 import { Bar, Pie } from "react-chartjs-2";
@@ -36,6 +32,8 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
+import LowerContent from "@/components/lower-content";
+import { usePathname, useRouter } from "next/navigation";
 
 // Register ChartJS components
 ChartJS.register(
@@ -161,7 +159,7 @@ const useRealtimeStats = () => {
   return stats;
 };
 
-const ServiceCard = dynamic(() => import("./components/serviceCard"), {
+const ServiceCard = dynamic(() => import("@/components/serviceCard"), {
   loading: () => (
     <div className="h-full bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
       <div className="aspect-[4/3] bg-gray-200 dark:bg-gray-700 animate-pulse" />
@@ -174,7 +172,7 @@ const ServiceCard = dynamic(() => import("./components/serviceCard"), {
   ),
 });
 
-const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
+const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
 
 // Enhanced NoResults component with animation
 const NoResults = ({ onClearSearch }) => (
@@ -208,50 +206,49 @@ const NoResults = ({ onClearSearch }) => (
   </motion.div>
 );
 
-const handleContactModel = () => {
-  const clickData = {
-    timestamp: new Date().toISOString(),
-    modelOpen: true,
-  };
-  // Save the individual click
-  localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
-};
 // Enhanced CallToAction with gradient animation
-const CallToAction = () => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2 }}
-    className="mt-24"
-  >
-    <div className="relative max-w-4xl mx-auto rounded-3xl overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 animate-gradient-x" />
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-      <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white/10 blur-3xl" />
-      <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-purple-500/20 blur-3xl" />
+const CallToAction = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const handleContactModel = () => {
+    router.push(`${pathname}?modal=contact-bid`, { scroll: false });
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      className="mt-24"
+    >
+      <div className="relative max-w-4xl mx-auto rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 animate-gradient-x" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+        <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full bg-purple-500/20 blur-3xl" />
 
-      <div className="relative z-10 p-8 sm:p-12">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-center sm:text-left">
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              Ready to Transform Your Business?
-            </h3>
-            <p className="text-blue-100 max-w-md">
-              Let our experts craft a custom solution tailored to your unique
-              needs.
-            </p>
+        <div className="relative z-10 p-8 sm:p-12">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="text-center sm:text-left">
+              <h3 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                Ready to Transform Your Business?
+              </h3>
+              <p className="text-blue-100 max-w-md">
+                Let our experts craft a custom solution tailored to your unique
+                needs.
+              </p>
+            </div>
+            <button
+              onClick={handleContactModel}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 hover:text-blue-700 font-semibold rounded-lg hover:bg-gray-50 hover:scale-105 transition-all shadow-lg whitespace-nowrap"
+            >
+              <Rocket className="w-5 h-5" /> Get Started
+            </button>
           </div>
-          <button
-            onClick={handleContactModel}
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 hover:text-blue-700 font-semibold rounded-lg hover:bg-gray-50 hover:scale-105 transition-all shadow-lg whitespace-nowrap"
-          >
-            <Rocket className="w-5 h-5" /> Get Started
-          </button>
         </div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // ServiceStats component with interactive charts
 const ServiceStats = ({ stats }) => {
@@ -999,6 +996,7 @@ export default function ServicesGrid() {
 
         <CallToAction />
       </div>
+      <LowerContent />
     </>
   );
 }

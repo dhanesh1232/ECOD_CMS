@@ -20,37 +20,37 @@ import {
   FaHandshake,
   FaLightbulb,
 } from "react-icons/fa";
-import { experties_data } from "../data/shopify";
+import { experties_data } from "@/data/shopify";
 
 // Dynamic imports with better loading states
-const TeamMemberCard = dynamic(() => import("./components/About/team"), {
+const TeamMemberCard = dynamic(() => import("@/components/About/team"), {
   loading: () => (
     <div className="h-80 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl animate-pulse" />
   ),
 });
 const BackAndForward = dynamic(
-  () => import("./components/Reusable/back-forw"),
+  () => import("@/components/Reusable/back-forw"),
   {
     loading: () => (
       <div className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
     ),
   }
 );
-const CompanyIntro = dynamic(() => import("./components/About/intro"), {
+const CompanyIntro = dynamic(() => import("@/components/About/intro"), {
   loading: () => (
     <div className="h-96 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl animate-pulse" />
   ),
 });
 const ServiceSection = dynamic(
-  () => import("./components/About/about-services"),
+  () => import("@/components/About/about-services"),
   {
     loading: () => (
       <div className="h-[500px] bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl animate-pulse" />
     ),
   }
 );
-const Buttons = dynamic(() => import("./components/Reusable/buttons"));
-const HeadSEO = dynamic(() => import("./components/Reusable/seo_head"));
+const Buttons = dynamic(() => import("@/components/Reusable/buttons"));
+const HeadSEO = dynamic(() => import("@/components/Reusable/seo_head"));
 
 const About = () => {
   const router = useRouter();
@@ -172,7 +172,6 @@ const About = () => {
       <div className="w-full bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <BackAndForward forward="/contact" />
-          <hr className="my-6 border-gray-200 dark:border-gray-700" />
 
           {/* Hero Section */}
           <motion.section
@@ -180,7 +179,7 @@ const About = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true, margin: "0px 0px -100px 0px" }}
-            className="text-center mb-16"
+            className="text-center mt-4 mb-16"
           >
             <motion.h1
               initial={{ opacity: 0 }}
@@ -189,8 +188,37 @@ const About = () => {
               className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"
             >
               Building the Future of{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600">
-                Ecommerce
+              <span className="relative inline-block">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+                  Ecommerce
+                </span>
+                <svg
+                  className="absolute bottom-0 left-0 w-full h-3 overflow-visible"
+                  viewBox="0 0 100 10"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M0,8 C20,2 50,12 80,4 L100,10"
+                    stroke="url(#gradient)"
+                    strokeWidth="2"
+                    fill="none"
+                    strokeDasharray="120"
+                    strokeDashoffset="120"
+                    className="animate-[draw_2s_linear_infinite]"
+                  />
+                  <defs>
+                    <linearGradient
+                      id="gradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop offset="0%" stopColor="#8b5cf6" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </span>
             </motion.h1>
             <motion.p
@@ -336,7 +364,7 @@ const About = () => {
             </div>
           </section>
 
-          {/* Team Section */}
+          {/* Team Section 
           <section className="mt-20">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -366,7 +394,7 @@ const About = () => {
                 </motion.div>
               ))}
             </div>
-          </section>
+          </section>*/}
 
           {/* Testimonials */}
           <section className="mt-20 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl p-8 sm:p-12 text-white overflow-hidden relative">

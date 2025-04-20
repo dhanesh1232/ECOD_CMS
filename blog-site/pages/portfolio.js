@@ -33,11 +33,11 @@ import {
   experiences,
 } from "@/data/web_data";
 import dynamic from "next/dynamic";
-import ScrollToTopButton from "./components/Reusable/back-top-top";
+import ScrollToTopButton from "@/components/Reusable/back-top-top";
 import { useInView } from "react-intersection-observer";
 
 const FloatingParticles = dynamic(
-  () => import("./components/Reusable/FloatingParticles"),
+  () => import("@/components/Reusable/FloatingParticles"),
   { ssr: false }
 );
 

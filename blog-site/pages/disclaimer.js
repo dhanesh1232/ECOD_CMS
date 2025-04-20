@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { Mail, Phone, MapPin, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
-const HeadSEO = dynamic(() => import("./components/Reusable/seo_head"));
-const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
+const HeadSEO = dynamic(() => import("@/components/Reusable/seo_head"));
+const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
 
 const contact = {
   address: "Tirupati, Andhra Pradesh, India",

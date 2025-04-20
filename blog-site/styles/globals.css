@@ -53,6 +53,7 @@
   * {
     @apply outline-none ring-0;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -66,6 +67,7 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+
 @media (prefers-color-scheme: light) {
   :root {
     --foreground-rgb: 0, 0, 0;
@@ -76,12 +78,9 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
   font-family: Arial, Helvetica, sans-serif;
   height: 100dvh;
   bottom: 0;
@@ -92,36 +91,46 @@ body {
   -ms-overflow-style: none;
   overflow: auto;
 }
-body > * {
+
+body>* {
   @apply transition-all ease-in-out duration-150;
 }
 
 /*Header Mobile Menu Scrollbar */
 /* Custom scrollbar styles */
 .scrollbar::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
+  width: 8px;
+  /* Width of the scrollbar */
 }
 
 .scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Color of the track */
-  border-radius: 4px; /* Rounded corners for the track */
+  background: #f1f1f1;
+  /* Color of the track */
+  border-radius: 4px;
+  /* Rounded corners for the track */
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  background: #888; /* Color of the thumb */
-  border-radius: 4px; /* Rounded corners for the thumb */
+  background: #888;
+  /* Color of the thumb */
+  border-radius: 4px;
+  /* Rounded corners for the thumb */
 }
 
 .scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #555; /* Color of the thumb on hover */
+  background: #555;
+  /* Color of the thumb on hover */
 }
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -135,6 +144,7 @@ body > * {
 .glitch {
   position: relative;
 }
+
 .glitch::before,
 .glitch::after {
   content: attr(data-text);
@@ -144,39 +154,85 @@ body > * {
   width: 100%;
   height: 100%;
 }
+
 .glitch::before {
   color: #0ff;
   z-index: -1;
   animation: glitch-effect 3s infinite;
 }
+
 .glitch::after {
   color: #f0f;
   z-index: -2;
   animation: glitch-effect 2s infinite reverse;
 }
+
 .glitch-active::before {
   animation: glitch-effect 0.3s infinite;
 }
+
 .glitch-active::after {
   animation: glitch-effect 0.5s infinite reverse;
 }
+
 @keyframes glitch-effect {
   0% {
     transform: translate(0);
   }
+
   20% {
     transform: translate(-3px, 3px);
   }
+
   40% {
     transform: translate(-3px, -3px);
   }
+
   60% {
     transform: translate(3px, 3px);
   }
+
   80% {
     transform: translate(3px, -3px);
   }
+
   100% {
     transform: translate(0);
   }
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+  display: inline-block;
+}
+
+/* For smoother rendering */
+.animate-marquee div {
+  display: inline-flex;
+  will-change: transform;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* For smoother rendering */
+[style*="--animation-duration"] div {
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }

@@ -1,15 +1,17 @@
 "use client";
 
-import { useRouter } from "next/router";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { services_list_ecod } from "../../../data/service_data";
-import Buttons from "../../../pages/components/Reusable/buttons";
+import { services_list_ecod } from "@/data/service_data";
+import Buttons from "@/components/Reusable/buttons";
+import LowerContent from "@/components/lower-content";
+import { usePathname, useRouter } from "next/navigation";
 
 const ServicePost = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { category, href } = router.query;
   const [isLoading, setIsLoading] = useState(true);
   const [content, setContent] = useState(null);
@@ -174,12 +176,7 @@ const ServicePost = () => {
   }
 
   const handleContactModel = () => {
-    const clickData = {
-      timestamp: new Date().toISOString(),
-      modelOpen: true,
-    };
-    // Save the individual click
-    localStorage.setItem(`contactModelClick`, JSON.stringify(clickData));
+    router.push(`${pathname}?modal=contact-bid`, { scroll: false });
   };
 
   return (
@@ -385,6 +382,7 @@ const ServicePost = () => {
           }
         `}</style>
       </main>
+      <LowerContent />
     </>
   );
 };

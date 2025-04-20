@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import HeadSEO from "./components/Reusable/seo_head";
+import HeadSEO from "@/components/Reusable/seo_head";
 import {
   FiMapPin,
   FiPhone,
@@ -15,7 +15,7 @@ import {
 import { FaLinkedin, FaInstagram, FaFacebook, FaTwitter } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
+const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
 
 const contact = {
   address: "Tirupati, Andhra Pradesh, India",

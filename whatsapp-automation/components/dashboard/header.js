@@ -1,7 +1,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { FiChevronDown, FiMenu } from "react-icons/fi";
+import { FiChevronDown, FiMenu, FiPlus } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import Logo from "../logo";
 import LetterAvatar from "../profile/user-icon";
@@ -17,10 +17,37 @@ const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showChatbotMenu, setShowChatbotMenu] = useState(false);
   const [activeRoute, setActiveRoute] = useState(null);
+  const [userBots, setUserBots] = useState([]); // State to store user's bots
   const userMenuRef = useRef();
   const chatbotMenuRef = useRef();
   const avatarButtonRef = useRef();
   const chatbotButtonRef = useRef();
+
+  // Mock function to fetch user bots - replace with your actual API call
+  useEffect(() => {
+    const fetchUserBots = async () => {
+      // Replace this with your actual API call to get user's bots
+      const bots = [
+        { id: "1", name: "Support Bot", path: "/chat/support" },
+        { id: "2", name: "Sales Bot", path: "/chat/sales" },
+      ];
+      setUserBots(bots);
+    };
+
+    fetchUserBots();
+  }, []);
+
+  const handleCreateBot = () => {
+    // Replace this with your actual bot creation logic
+    const newBot = {
+      id: `${userBots.length + 1}`,
+      name: `Bot ${userBots.length + 1}`,
+      path: `/chat/bot-${userBots.length + 1}`,
+    };
+    setUserBots([...userBots, newBot]);
+    router.push(newBot.path);
+    setShowChatbotMenu(false);
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -100,38 +127,117 @@ const Header = () => {
                     </p>
                   </div>
 
-                  <ul className="px-1">
-                    {chatbotMenuItems.map((item, index) => (
-                      <motion.li
-                        key={index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`px-4 my-1 py-2 text-sm cursor-pointer flex items-center rounded-md transition-colors ${
-                          activeRoute === index
-                            ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                        }`}
-                        onClick={() => {
-                          router.push(item.action);
-                          setActiveRoute(index);
-                          setShowChatbotMenu(false);
-                        }}
-                      >
-                        <span
-                          className={`mr-3 ${
+                  <ul className="px-1 max-h-[470px] overflow-y-auto">
+                    {chatbotMenuItems.map((item, index) => {
+                      // Special handling for the Chat Bot item to show user's bots
+                      if (item.label === "Chat Bot") {
+                        return (
+                          <div key={index}>
+                            <motion.li
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.05 }}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className={`px-4 my-1 py-2 text-sm cursor-pointer flex items-center rounded-md transition-colors ${
+                                activeRoute === index
+                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                              }`}
+                              onClick={() => {
+                                router.push(item.action);
+                                setActiveRoute(index);
+                                setShowChatbotMenu(false);
+                              }}
+                            >
+                              <span
+                                className={`mr-3 ${
+                                  activeRoute === index
+                                    ? "text-blue-500"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {item.icon}
+                              </span>
+                              {item.label}
+                            </motion.li>
+
+                            {/* User's Bots List */}
+                            <div className="ml-8 mb-1 space-y-1">
+                              {userBots.map((bot) => {
+                                const isBotActive =
+                                  window.location.pathname === bot.path;
+                                return (
+                                  <motion.div
+                                    key={bot.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className={`px-3 py-1.5 text-xs rounded-md cursor-pointer flex items-center transition-all ${
+                                      isBotActive
+                                        ? "bg-blue-50 dark:bg-blue-800/30 text-blue-600 dark:text-blue-300"
+                                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                    }`}
+                                    onClick={() => {
+                                      router.push(bot.path);
+                                      setShowChatbotMenu(false);
+                                    }}
+                                  >
+                                    <span className="truncate">{bot.name}</span>
+                                  </motion.div>
+                                );
+                              })}
+
+                              {/* Create Bot Button */}
+                              <motion.button
+                                onClick={handleCreateBot}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="flex items-center justify-center w-full px-3 py-1.5 mt-1 text-xs text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                              >
+                                <FiPlus className="mr-1" size={12} />
+                                Create Bot
+                              </motion.button>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Regular menu items
+                      return (
+                        <motion.li
+                          key={index}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={`px-4 my-1 py-2 text-sm cursor-pointer flex items-center rounded-md transition-colors ${
                             activeRoute === index
-                              ? "text-blue-500"
-                              : "text-gray-500"
+                              ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                           }`}
+                          onClick={() => {
+                            router.push(item.action);
+                            setActiveRoute(index);
+                            setShowChatbotMenu(false);
+                          }}
                         >
-                          {item.icon}
-                        </span>
-                        {item.label}
-                      </motion.li>
-                    ))}
+                          <span
+                            className={`mr-3 ${
+                              activeRoute === index
+                                ? "text-blue-500"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {item.icon}
+                          </span>
+                          {item.label}
+                        </motion.li>
+                      );
+                    })}
                   </ul>
                 </motion.div>
               )}

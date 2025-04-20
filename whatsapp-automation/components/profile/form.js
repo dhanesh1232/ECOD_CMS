@@ -275,7 +275,7 @@ const FormPage = () => {
   // Check session status and redirect if authenticated
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard");
+      router.replace("/");
     }
   }, [status, router]);
 
@@ -411,7 +411,7 @@ const FormPage = () => {
     setIsLoading(true);
     try {
       const result = await signIn("google", {
-        callbackUrl: "/dashboard",
+        callbackUrl: "/",
         redirect: false,
       });
 
@@ -470,7 +470,7 @@ const FormPage = () => {
         redirect: false,
         email: state.email,
         password: state.password,
-        callbackUrl: "/dashboard",
+        callbackUrl: "/",
       });
 
       if (result?.error) {
@@ -482,7 +482,7 @@ const FormPage = () => {
         router.push(result.url);
       } else {
         // Fallback redirect
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (error) {
       setAuthMessage({

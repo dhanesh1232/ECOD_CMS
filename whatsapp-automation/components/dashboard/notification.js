@@ -112,7 +112,7 @@ const NotificationButton = ({ size = "md" }) => {
               )}
             </div>
             <Link
-              href="/dashboard/notifications"
+              href="/notifications"
               className="hover:underline hover:text-blue-700 text-gray-800 dark:text-gray-200"
             >
               View All

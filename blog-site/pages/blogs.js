@@ -1,30 +1,30 @@
 "use client";
 
-import { blog_services, allBlogs } from "../data/blog_data";
+import { blog_services, allBlogs } from "@/data/blog_data";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Search, BookOpen } from "lucide-react";
 import { useRouter } from "next/router";
-import HeadSEO from "./components/Reusable/seo_head";
+import HeadSEO from "@/components/Reusable/seo_head";
 import { motion, AnimatePresence } from "framer-motion";
-import { PaginationControls } from "../hooks/pagination-control";
-import { usePagination } from "../hooks/use-pagination";
+import { PaginationControls } from "@/hooks/pagination-control";
+import { usePagination } from "@/hooks/use-pagination";
 
 const CategorySelector = dynamic(
-  () => import("./components/Reusable/CategorySelector"),
+  () => import("@/components/Reusable/CategorySelector"),
   {
     loading: () => (
       <div className="h-12 bg-gray-200/50 dark:bg-gray-800/50 rounded-lg animate-pulse" />
     ),
   }
 );
-const BlogCard = dynamic(() => import("./components/BlogCard"), {
+const BlogCard = dynamic(() => import("@/components/BlogCard"), {
   loading: () => (
     <div className="h-80 bg-gray-200/50 dark:bg-gray-800/50 rounded-lg animate-pulse" />
   ),
 });
-const BackAndForward = dynamic(() => import("./components/Reusable/back-forw"));
-const SearchComponent = dynamic(() => import("./components/Reusable/search"));
+const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
+const SearchComponent = dynamic(() => import("@/components/Reusable/search"));
 
 const BlogPosts = () => {
   const router = useRouter();
@@ -41,7 +41,7 @@ const BlogPosts = () => {
       .filter((blog) => blog)
       .slice(0, 9);
     setFewBlogs(filteredBlogs);
-  }, [blog_services, allBlogs]);
+  }, []);
 
   const filteredBlogs = blogs.filter(
     (blog) =>

@@ -1,8 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import {
   FaWhatsapp,
   FaPhoneAlt,
@@ -18,18 +15,6 @@ import {
 } from "react-icons/fi";
 
 const FooterSection = () => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [router, status]);
-
-  if (status === "authenticated") {
-    return null;
-  }
   return (
     <footer className="bg-gray-900 dark:bg-gray-800 text-gray-300 dark:text-gray-200 transition-colors duration-300">
       {/* Main Footer Content */}

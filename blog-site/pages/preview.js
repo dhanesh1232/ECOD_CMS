@@ -1,4 +1,4 @@
-import { ArrowUpRight, Expand, Shrink } from "lucide-react";
+import { Expand, Shrink } from "lucide-react";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import {
