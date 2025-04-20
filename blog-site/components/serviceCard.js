@@ -25,8 +25,10 @@ const ServiceCard = ({ service }) => {
   };
 
   // Build navigation link
-  const nav_link = service.category ? `${service.href}` : service.href;
-
+  const nav_link = service.category
+    ? `/service/${service.category}/${service.href}`
+    : service.href;
+  console.log(service);
   return (
     <Link
       href={nav_link}

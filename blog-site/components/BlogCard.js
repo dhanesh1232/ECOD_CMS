@@ -105,7 +105,7 @@ const BlogCard = ({ blog, featured = false }) => {
         <div className="p-5">
           {/* Category and date */}
           <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400">
+            <span className="text-xs font-medium bg-blue-600 text-white px-2.5 py-1 rounded-full bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400">
               {formatCategory(blog.category)}
             </span>
             <span className="flex items-center text-xs text-gray-500 dark:text-gray-400">
@@ -145,7 +145,7 @@ const BlogCard = ({ blog, featured = false }) => {
                     className="object-cover"
                   />
                 ) : (
-                  <span className="text-xs font-medium">
+                  <span className="text-xs font-medium w-full h-full bg-pink-600 text-white flex items-center justify-center">
                     {blog.author.name.charAt(0).toUpperCase()}
                   </span>
                 )}

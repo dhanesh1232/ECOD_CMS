@@ -6,7 +6,6 @@ import dynamic from "next/dynamic";
 import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
 import HeadSEO from "@/components/Reusable/seo_head";
-import Link from "next/link";
 const BackAndForward = dynamic(() => import("@/components/Reusable/back-forw"));
 
 // Utility functions
@@ -186,43 +185,44 @@ export default function PrivacyPolicy() {
         ]}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full">
         <BackAndForward forward="/contact" />
-        <hr className="my-6 border-gray-200 dark:border-gray-700" />
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 mt-4 relative">
           {/* Table of Contents - Sticky Sidebar */}
-          <div className="lg:w-1/4 lg:sticky lg:top-24 lg:self-start lg:h-screen">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Table of Contents
-              </h2>
-              <nav className="space-y-2 h-auto">
-                {policy.sections.map((section, index) => (
-                  <a
-                    key={section.id}
-                    href={`#${section.id}`}
-                    onClick={(e) => handleScroll(e, section.id)}
-                    className={`block px-3 py-2 rounded-md transition-colors ${
-                      activeSection === section.id
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <span className="mr-2 text-sm font-medium">
-                        {index + 1}.
-                      </span>
-                      {section.title}
-                    </div>
-                  </a>
-                ))}
-              </nav>
+          <div className="w-full lg:w-64 flex-shrink-0 lg:sticky lg:top-6 lg:self-start lg:overflow-y-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Table of Contents
+                </h2>
+                <nav className="space-y-2">
+                  {policy.sections.map((section, index) => (
+                    <a
+                      key={section.id}
+                      href={`#${section.id}`}
+                      onClick={(e) => handleScroll(e, section.id)}
+                      className={`block px-3 py-2 rounded-md transition-colors ${
+                        activeSection === section.id
+                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+                          : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="mr-2 text-sm font-medium">
+                          {index + 1}.
+                        </span>
+                        {section.title}
+                      </div>
+                    </a>
+                  ))}
+                </nav>
+              </div>
             </div>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:w-3/4">
+          {/* Main Content - Scrollable Area */}
+          <div className="flex-1 min-w-0 lg:pt-1">
             <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center">
                 {policy.title}

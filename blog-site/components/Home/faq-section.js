@@ -23,7 +23,7 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
     <motion.div
       ref={conRef}
       data-testid="faq-container"
-      initial={{ opacity: 0, y: 20, scale: 0.85 }}
+      initial={{ opacity: 0, y: 10, scale: 0.9 }}
       animate={inConView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{
         duration: 0.3,
@@ -66,7 +66,7 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
 
         <div className="flex justify-between items-center gap-4 relative z-10">
           <h3
-            className={`text-lg md:text-xl font-semibold text-gray-800/90 dark:text-gray-100/90 text-left ${
+            className={`text-base sm:text-lg md:text-xl font-semibold text-gray-800/90 dark:text-gray-100/90 text-left ${
               isOpen
                 ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
                 : "group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600"
@@ -108,7 +108,7 @@ const FAQItem = ({ item, index, isOpen, onClick, animationDelay }) => {
             >
               <div
                 ref={contentRef}
-                className="pt-4 text-gray-600/90 dark:text-gray-300/90 text-left prose dark:prose-invert prose-p:my-3 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline hover:prose-a:no-underline"
+                className="pt-4 text-gray-600/90 dark:text-gray-300/90 text-left prose dark:prose-invert sm:text-base text-sm prose-p:my-3 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:underline hover:prose-a:no-underline"
                 dangerouslySetInnerHTML={{ __html: item.answer }}
               />
             </motion.div>
@@ -260,13 +260,13 @@ const ECODFaqs = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.3 }}
           className="text-center mb-16"
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.98, opacity: 0 }}
             animate={inView ? { scale: 1, opacity: 1 } : {}}
             transition={{ delay: 0.2 }}
             className="inline-flex items-center px-4 py-2 rounded-full bg-white/80 dark:bg-blue-900/50 backdrop-blur-md text-blue-600 dark:text-blue-300 text-sm font-medium mb-6 border border-blue-200/30 dark:border-blue-700/30 shadow-inner"

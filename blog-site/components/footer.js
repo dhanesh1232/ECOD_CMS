@@ -499,7 +499,7 @@ const Footer = () => {
                         ? "View our portfolio website"
                         : `Follow us on ${name}`
                     }
-                    className={`flex flex-col items-center group w-16 h-16 rounded-2xl justify-center transition-all relative overflow-hidden backdrop-blur-sm border ${
+                    className={`flex flex-col items-center group w-10 h-10 rounded-full justify-center transition-all relative overflow-hidden backdrop-blur-sm border ${
                       isPortfolio
                         ? "border-blue-500/50 hover:border-blue-400/70 bg-blue-500/10 hover:bg-blue-500/20"
                         : "border-gray-700/50 hover:border-gray-600/50 bg-gray-800/50 hover:bg-gray-700/50"
@@ -525,13 +525,13 @@ const Footer = () => {
 
           {/* Legal Links with Better Structure */}
           <motion.div
-            className="mb-10"
+            className="my-2"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             viewport={{ once: true }}
           >
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
+            <div className="flex flex-wrap justify-center gap-x-2 gap-y-1 text-sm">
               {policy_data.policy_links.map((link, index) => {
                 const href_link = link
                   .toLowerCase()
@@ -545,7 +545,7 @@ const Footer = () => {
                     aria-label={`View our ${link}`}
                   >
                     {link}
-                    <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-green-400 group-hover:w-4/5 group-hover:left-[10%] transition-all duration-300"></span>
+                    <span className="absolute bottom-2 left-1/2 w-0 h-0.5 bg-green-400 group-hover:w-4/5 group-hover:left-[10%] transition-all duration-300"></span>
                   </Link>
                 );
               })}
@@ -560,12 +560,13 @@ const Footer = () => {
             transition={{ delay: 0.7 }}
             viewport={{ once: true }}
           >
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-800/50 backdrop-blur-sm rounded-xl p-5 mx-auto border border-gray-700/30 max-w-4xl">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-1 bg-gray-800/50 backdrop-blur-sm rounded-xl p-2 mx-auto border border-gray-700/30 max-w-4xl">
               <div className="flex items-center gap-3">
                 <TrustSVG width={30} height={36} color="#6B7280" />
                 <span className="text-gray-400 text-sm md:text-base">
-                  &copy; {new Date().getFullYear()} ECOD Digital. All rights
-                  reserved.
+                  &copy; {new Date().getFullYear()}{" "}
+                  <span className="text-indigo-600 font-extrabold">ECOD</span>{" "}
+                  Digital. All rights reserved.
                 </span>
               </div>
               <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm">

@@ -150,13 +150,17 @@ const CategoryBlogs = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-6xl mx-auto px-4 sm:px-6 py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 min-h-screen"
+        className="max-w-6xl mx-auto px-4 sm:px-6 py-12 dark:bg-gray-900 transition-colors duration-300 min-h-screen"
       >
         <BackAndForward back="/blogs" forward="/contact" />
-        <hr className="my-4 border-gray-300 dark:border-gray-600" />
 
-        <div className="my-6 w-full">
+        <div className="my-2 w-full flex sm:flex-row flex-col items-center">
           <CategorySelector page="/blogs" services={blog_services} />
+          <SearchComponent
+            filterSearch={handleSearch}
+            searchValue={searchTerm}
+            placeholder={`Search in ${currentCategory?.name || "blogs"}...`}
+          />
         </div>
 
         <motion.div
@@ -180,13 +184,7 @@ const CategoryBlogs = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className="mb-10"
-        >
-          <SearchComponent
-            filterSearch={handleSearch}
-            searchValue={searchTerm}
-            placeholder={`Search in ${currentCategory?.name || "blogs"}...`}
-          />
-        </motion.div>
+        ></motion.div>
 
         {filteredBlogs.length > 0 ? (
           <>

@@ -29,9 +29,15 @@ const HomeBlog = () => {
   const [blogs, setFewBlogs] = useState([]);
 
   // Create inView refs for each section
-  const [headerRef, headerInView] = useInView({ threshold: 0.1 });
-  const [swiperRefInView, swiperInView] = useInView({ threshold: 0.1 });
-  const [ctaRef, ctaInView] = useInView({ threshold: 0.1 });
+  const [headerRef, headerInView] = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
+  const [swiperRefInView, swiperInView] = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+  });
+  const [ctaRef, ctaInView] = useInView({ threshold: 0.1, triggerOnce: true });
 
   useEffect(() => {
     const filteredBlogs = blog_services
@@ -43,7 +49,7 @@ const HomeBlog = () => {
       .slice(0, 9);
 
     setFewBlogs(filteredBlogs);
-  }, [blog_services, allBlogs]);
+  }, []);
 
   if (!blogs || !Array.isArray(blogs) || blogs.length === 0) {
     return (
@@ -101,9 +107,9 @@ const HomeBlog = () => {
       {/* Swiper Container */}
       <motion.div
         ref={swiperRefInView}
-        initial={{ opacity: 0, y: 20, scale: 0.9 }}
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={swiperInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         className="relative max-w-7xl mx-auto px-4"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -193,11 +199,11 @@ const HomeBlog = () => {
           {blogs.map((blog, index) => (
             <SwiperSlide key={index}>
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={swiperInView ? { opacity: 1, scale: 1 } : {}}
                 transition={{
-                  duration: 0.5,
-                  ease: "easeOut",
+                  duration: 0.3,
+                  ease: "easeInOut",
                   delay: index * 0.1,
                 }}
                 className="h-full rounded-xl overflow-hidden bg-white/80 dark:bg-gray-800/70 backdrop-blur-md shadow-lg border border-gray-200/50 dark:border-gray-700/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group"
@@ -225,7 +231,7 @@ const HomeBlog = () => {
                   {/* Featured Badge */}
                   {blog.featured && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
                       animate={swiperInView ? { opacity: 1, scale: 1 } : {}}
                       transition={{ delay: index * 0.1 + 0.2 }}
                       className="absolute top-4 right-4"

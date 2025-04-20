@@ -504,7 +504,7 @@ const OurServices = () => {
 
         {/* Analytics Section */}
         <div
-          className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl p-2 sm:p-8 shadow-xl border border-gray-200/60 dark:border-gray-700/40 relative overflow-hidden mb-20"
+          className="bg-white/80 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl p-2 sm:p-8 shadow border-gray-200/60 dark:border-gray-700/40 relative overflow-hidden mb-20"
           ref={analyticsRef}
         >
           {/* Glass texture */}

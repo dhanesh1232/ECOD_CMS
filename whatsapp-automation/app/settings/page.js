@@ -90,7 +90,7 @@ export default function SettingsPage() {
         )}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-6 w-full">
         {/* Sidebar - Fixed Position */}
         <div className="w-full lg:w-64 flex-shrink-0 lg:h-full lg:sticky lg:top-0 lg:overflow-y-auto lg:pt-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">

@@ -12,27 +12,8 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   Cell,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
 } from "recharts";
-import {
-  Rocket,
-  ArrowRight,
-  Clock,
-  RefreshCw,
-  Activity,
-  Zap,
-  TrendingUp,
-  BarChart2,
-  LineChart,
-} from "lucide-react";
+import { Rocket, ArrowRight, Clock, RefreshCw, Activity } from "lucide-react";
 import { enhancedBenefits, generateTrafficData } from "@/data/service_data";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -223,7 +204,7 @@ const GrowYourBusiness = () => {
               <Rocket className="w-4 h-4 mr-2" /> Digital Transformation
             </motion.span>
 
-            <h2 className="text-4xl sm:text-5xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
               Accelerate Your Business Growth
               <motion.span
                 initial={{ scale: 0.8 }}
@@ -243,7 +224,7 @@ const GrowYourBusiness = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.1, ease: "easeInOut" }}
-              className="mt-6 text-xl text-blue-100/90 max-w-3xl mx-auto backdrop-blur-sm"
+              className="mt-6 text-base md:text-xl text-blue-100/90 max-w-3xl mx-auto backdrop-blur-sm"
             >
               From stunning digital experiences to data-driven marketing, we
               craft solutions that attract, engage, and convert your audience.
@@ -262,11 +243,11 @@ const GrowYourBusiness = () => {
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
               <div>
-                <h3 className="text-2xl font-bold text-white/90 mb-2">
+                <h3 className="text-xl md:text-2xl font-bold text-white/90 mb-2">
                   Business Growth Metrics
                 </h3>
                 <div className="flex items-center space-x-3">
-                  <p className="text-blue-200/90">
+                  <p className="text-blue-200/90 text-base sm:text-lg md:text-xl">
                     Real-time performance tracking
                   </p>
                   {isLoading && (

@@ -7,7 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import { services_list_ecod } from "@/data/service_data";
 import Buttons from "@/components/Reusable/buttons";
 import LowerContent from "@/components/lower-content";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 
 const ServicePost = () => {
   const router = useRouter();
@@ -191,7 +192,7 @@ const ServicePost = () => {
         <meta property="og:description" content={getDescription()} />
         <meta property="og:type" content="service" />
       </Head>
-      <main className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+      <main className="min-h-screen max-w-6xl bg-white dark:bg-gray-900 transition-colors duration-200">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center min-h-screen p-6">
             <div className="animate-pulse flex flex-col items-center space-y-4">
@@ -209,7 +210,7 @@ const ServicePost = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="max-w-4xl mx-auto px-4 sm:px-6 py-12"
+            className="max-w-6xl mx-auto px-4 sm:px-6 py-12"
           >
             <button
               onClick={() => router.back()}

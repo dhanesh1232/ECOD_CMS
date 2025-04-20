@@ -464,39 +464,6 @@ export const shopifyServicesContent = {
       },
     ],
   },
-  "mobile-optimization": {
-    title: "Mobile Commerce Optimization",
-    seoTitle: "Mobile Shopify Optimization | Dominate Mobile Traffic",
-    description: "Dominate the 68% of traffic coming from mobile devices",
-    seoDescription:
-      "Thumb-friendly mobile optimization with AMP support and device-specific loading. 45-day performance guarantee.",
-    keywords: ["mobile shopify", "responsive design", "mobile conversions"],
-    icon: "/icons/mobile.svg",
-    heroImage: "/images/mobile-hero.jpg",
-    content: [
-      {
-        sectionTitle: "Mobile-First Design Principles",
-        caseStudy: {
-          client: "Beauty Brand",
-          results: [
-            { metric: "Bounce rate", before: "72%", after: "41%" },
-            { metric: "Pages/session", before: "2.1", after: "3.8" },
-            { metric: "Conversions", change: "+89%" },
-          ],
-          techniques: [
-            {
-              name: "Floating action buttons",
-              icon: "/icons/tap.svg",
-            },
-            {
-              name: "Swipeable galleries",
-              icon: "/icons/swipe.svg",
-            },
-          ],
-        },
-      },
-    ],
-  },
   "performance-optimization": {
     title: "Store Performance Tuning",
     seoTitle: "Shopify Speed Optimization | 90+ Lighthouse Scores",
@@ -524,33 +491,6 @@ export const shopifyServicesContent = {
           {
             name: "JavaScript bundle splitting",
             icon: "/icons/js.svg",
-          },
-        ],
-      },
-    ],
-  },
-  security: {
-    title: "Ecommerce Security",
-    seoTitle: "Shopify Security | PCI Compliance & Fraud Prevention",
-    description: "Protect your store and customer data",
-    seoDescription:
-      "Complete Shopify security with SSL, 2FA, and fraud prevention systems. Ongoing monitoring included.",
-    keywords: ["shopify security", "pci compliance", "fraud prevention"],
-    icon: "/icons/security.svg",
-    heroImage: "/images/security-hero.jpg",
-    content: [
-      {
-        sectionTitle: "Comprehensive Security Framework",
-        features: [
-          {
-            name: "SSL configuration",
-            detail: "256-bit encryption",
-            icon: "/icons/ssl.svg",
-          },
-          {
-            name: "Fraud analysis",
-            detail: "Real-time order scoring",
-            icon: "/icons/fraud.svg",
           },
         ],
       },

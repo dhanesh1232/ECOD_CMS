@@ -21,12 +21,12 @@ export const PaginationControls = ({
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ delay: 0.4 }}
-      className="flex flex-col sm:flex-row justify-between items-center mt-12 gap-4"
+      className="flex flex-row justify-between items-center mt-12 gap-4"
     >
       <button
         onClick={handlePrevPage}
         disabled={currentPage === 1}
-        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+        className={`flex items-center gap-2 px-3 md:px-6 py-1.5 md:py-3 rounded-lg text-sm font-medium transition-all ${
           currentPage === 1
             ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
             : "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg"
@@ -52,7 +52,7 @@ export const PaginationControls = ({
             <button
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
-              className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
+              className={`md:w-10 w-8 h-8 md:h-10 flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
                 currentPage === pageNum
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -68,7 +68,7 @@ export const PaginationControls = ({
       <button
         onClick={handleNextPage}
         disabled={currentPage === totalPages}
-        className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+        className={`flex items-center gap-2 px-3 md:px-6 py-1.5 md:py-3 rounded-lg text-sm font-medium transition-all ${
           currentPage === totalPages
             ? "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed"
             : "bg-blue-600 text-white hover:bg-blue-500 hover:shadow-lg"

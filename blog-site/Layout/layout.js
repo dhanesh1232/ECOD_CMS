@@ -213,7 +213,7 @@ const Layout = ({ children }) => {
         <HeaderSection theme={theme} toggleTheme={toggleTheme} />
 
         <div
-          className={`${layoutClasses} z-0 flex flex-col md:flex-row flex-1 overflow-x-hidden`}
+          className={`${layoutClasses} z-0 flex flex-col md:flex-row bg-gray-50 flex-1 overflow-x-hidden`}
         >
           {/* Left sidebar - conditionally rendered */}
           {!isHomePage && !isPreviewPage && !isServiceWebPage && (

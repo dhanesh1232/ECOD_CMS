@@ -668,7 +668,7 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                 className={`flex items-center justify-around flex-wrap ${dropDown.mobile && "pb-5"} my-5 gap-2 transition-all ease-in-out duration-300`}
               >
                 {policy_data.policy_links.slice(0, 3).map((item, ind) => {
-                  const href_link = `/policy/${item.toLowerCase().replace(/\s/g, "-")}`;
+                  const href_link = `/${item.toLowerCase().replace(/\s/g, "-")}`;
                   return (
                     <Link
                       key={ind}

@@ -364,54 +364,6 @@ export const navItems = [
   { id: "contact", label: "Contact" },
 ];
 
-// Social links
-export const socialLinks = [
-  {
-    icon: <FiGithub />,
-    label: "GitHub",
-    link: "https://github.com/yourusername",
-  },
-  {
-    icon: <FiLinkedin />,
-    label: "LinkedIn",
-    link: "https://linkedin.com/in/yourprofile",
-  },
-  {
-    icon: <FiTwitter />,
-    label: "Twitter",
-    link: "https://twitter.com/yourhandle",
-  },
-];
-export const experiences = [
-  {
-    id: 1,
-    role: "Full Stack Developer",
-    company: "Tech Solutions Inc.",
-    duration: "2021 - Present",
-    description:
-      "Developed and maintained web applications using React, Node.js, and MongoDB. Led a team of 3 developers to deliver e-commerce solutions.",
-    icon: <FiCode className="text-blue-500" />,
-  },
-  {
-    id: 2,
-    role: "Digital Marketing Specialist",
-    company: "Digital Growth Agency",
-    duration: "2019 - 2021",
-    description:
-      "Managed Google and Facebook ad campaigns with $50k+ monthly budget. Increased client ROI by 35% through data-driven optimizations.",
-    icon: <FiBarChart2 className="text-blue-500" />,
-  },
-  {
-    id: 3,
-    role: "Web Developer Intern",
-    company: "WebCraft Studios",
-    duration: "2018 - 2019",
-    description:
-      "Built responsive websites for small businesses. Learned fundamentals of web development and digital marketing.",
-    icon: <FiGlobe className="text-blue-500" />,
-  },
-];
-
 import { v4 as uuidv4 } from "uuid";
 // Offer data
 export const offers = [
@@ -660,3 +612,58 @@ export const getRandomOffer = () => {
     expiresAt: new Date(Date.now() + offer.validityDays * 24 * 60 * 60 * 1000),
   };
 };
+
+export const contact_data = {
+  name: "Dhanesh M",
+  email: "dhaneshreddy980@gmail.com",
+  linked_id: "https://www.linkedin.com/in/mekalthuru-dhanesh-5baa9323b/",
+  git_hub: "https://github.com/dhanesh1232",
+  x: "",
+};
+// Social links
+export const socialLinks = [
+  {
+    icon: <FiGithub />,
+    label: "GitHub",
+    link: `${contact_data.git_hub}`,
+  },
+  {
+    icon: <FiLinkedin />,
+    label: "LinkedIn",
+    link: `${contact_data.linked_id}`,
+  },
+  {
+    icon: <FiTwitter />,
+    label: "Twitter",
+    link: "https://twitter.com/yourhandle",
+  },
+];
+export const experiences = [
+  {
+    id: 1,
+    role: "Full Stack Developer",
+    company: "Freelance Project",
+    duration: "2022 - Present",
+    description:
+      "Led development of scalable web applications using React, Node.js, and MongoDB. Delivered complete e-commerce platforms, integrated secure payment systems, and optimized performance for SEO and mobile responsiveness.",
+    icon: <FiCode className="text-blue-500" />,
+  },
+  {
+    id: 2,
+    role: "Digital Marketing Specialist",
+    company: "Freelance/Contract Work",
+    duration: "2021 - 2022",
+    description:
+      "Managed high-budget Google and Facebook ad campaigns with over $50k in monthly spend. Increased client ROI by 35% through strategic targeting, creative optimization, and performance tracking. Also supported email marketing and funnel optimization.",
+    icon: <FiBarChart2 className="text-blue-500" />,
+  },
+  {
+    id: 3,
+    role: "Web Developer Intern",
+    company: "Volunteer Project",
+    duration: "2022 - 2023",
+    description:
+      "Contributed to building responsive websites for non-profit and small local businesses. Developed skills in HTML, CSS, JavaScript, and WordPress. Gained foundational experience in both web development and digital marketing.",
+    icon: <FiGlobe className="text-blue-500" />,
+  },
+];

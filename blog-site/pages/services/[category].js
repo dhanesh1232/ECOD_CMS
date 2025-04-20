@@ -10,7 +10,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Search,
   ChevronRight,

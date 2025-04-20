@@ -19,9 +19,9 @@ const Buttons = dynamic(() => import("@/components/Reusable/buttons"));
 const fadeInUp = {
   hidden: {
     opacity: 0,
-    scale: 0.92,
+    scale: 0.98,
     filter: "blur(4px)",
-    y: 20,
+    y: 10,
   },
   visible: {
     opacity: 1,
@@ -35,7 +35,7 @@ const fadeInUp = {
   },
   exit: {
     opacity: 0,
-    scale: 0.95,
+    scale: 0.98,
     transition: {
       duration: 0.2,
       ease: "easeInOut",

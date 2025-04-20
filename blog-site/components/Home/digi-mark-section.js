@@ -11,7 +11,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Area,
   ReferenceLine,
 } from "recharts";
 import { generateMarketingData } from "@/data/service_data";
@@ -450,12 +449,9 @@ const DigitalMarketing = () => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Buttons
-                  first_nav="/services/web-development"
-                  first_label="Get Started"
                   second_label="Book Consultation"
                   buttonActionTwo={handleContactModel}
                   icon={true}
-                  first_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/90 hover:bg-white text-blue-600 hover:text-blue-700 font-semibold rounded-lg hover:scale-105 transition-transform ease-in-out backdrop-blur-sm"
                   second_styles="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white/80 hover:border-white text-white hover:bg-white/10 font-semibold rounded-lg hover:scale-105 transition-transform backdrop-blur-sm"
                 />
               </div>
