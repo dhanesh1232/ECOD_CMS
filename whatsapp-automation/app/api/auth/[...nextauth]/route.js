@@ -237,7 +237,7 @@ export const authOptions = {
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production" ? "ecod-whatsapp-automation.vercel.app" : undefined
+        domain: process.env.NODE_ENV === "production" ? "ecod-whatsapp-automation.vercel.app" : undefined,
         maxAge: 30 * 24 * 60 * 60, // 30 days
       },
     },
