@@ -14,53 +14,47 @@ const PUBLIC_ROUTES = [
   "/assets",
 ];
 
-const EXCLUDED_ROUTES = [
-  "/api",
-  "/_next/static",
-  "/_next/image",
-  "/favicon.ico",
-];
-
 export async function middleware(request) {
   const { pathname, origin } = request.nextUrl;
 
-  if (EXCLUDED_ROUTES.some((route) => pathname.startsWith(route))) {
+  // Skip middleware for excluded paths
+  if (
+    pathname.startsWith('/api') || 
+    pathname.startsWith('/_next') || 
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/images') ||
+    pathname.startsWith('/assets')
+  ) {
     return NextResponse.next();
   }
 
   const token = await getToken({
     req: request,
-    secure: process.env.NODE_ENV === "production",
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
+    secret: process.env.NEXTAUTH_SECRET,
+    secureCookie: process.env.NODE_ENV === 'production',
   });
 
   const isPublicRoute = PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  console.log("1", token);
-  // Handle authenticated users
+  // If authenticated
   if (token) {
-    if (isPublicRoute) {
-      return NextResponse.redirect(new URL("/", origin));
-    }
-    if (pathname.startsWith("/auth")) {
-      return NextResponse.redirect(new URL("/", origin));
+    // Redirect away from auth/public routes to home
+    if (isPublicRoute || pathname.startsWith('/auth')) {
+      return NextResponse.redirect(new URL('/', origin));
     }
     return NextResponse.next();
   }
-
-  // Handle unauthenticated users
-  if (!token) {
-    if (isPublicRoute) return NextResponse.next();
-    if (pathname.startsWith("/auth/login")) return NextResponse.next();
-    return NextResponse.redirect(new URL("/en", origin));
+  // If not authenticated
+  else {
+    // Allow access to public routes
+    if (isPublicRoute) {
+      return NextResponse.next();
+    }
+    // Redirect to login for private routes
+    return NextResponse.redirect(new URL('/auth/login', origin));
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
