@@ -41,9 +41,10 @@ export async function middleware(request) {
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
+  console.log("1", token);
   // Handle authenticated users
   if (token) {
-    if (isPublicRoute && !pathname.startsWith("/auth/callback")) {
+    if (isPublicRoute) {
       return NextResponse.redirect(new URL("/", origin));
     }
     if (pathname.startsWith("/auth")) {
