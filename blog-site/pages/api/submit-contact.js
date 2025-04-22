@@ -1,6 +1,9 @@
 import dbConnect from "./lib/mongodb";
 import ContactSubmission from "./models/project-contact";
-import { sendConfirmationEmail } from "./lib/mailer"; // Adjust path if needed
+import {
+  sendConfirmationEmail,
+  sendOwnerNotificationEmail,
+} from "./lib/mailer"; // Adjust path if needed
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -66,6 +69,7 @@ export default async function handler(req, res) {
         metadata,
       }
     );
+    await sendOwnerNotificationEmail(formData, metadata);
 
     return res.status(200).json({
       success: true,
