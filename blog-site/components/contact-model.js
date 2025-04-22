@@ -669,11 +669,11 @@ const ContactModel = ({ onClose }) => {
       }
 
       setSubmitSuccess(true);
-      const params = new URLSearchParams(searchParams);
-      params.delete("modal");
-      router.push(`${pathname}`);
       // Reset form after delay
       setTimeout(() => {
+        const params = new URLSearchParams(searchParams);
+        params.delete("modal");
+        router.push(`${pathname}`);
         handleClose();
         setFormData({
           personalInfo: { name: "", email: "", phone: "" },

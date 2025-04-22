@@ -1,5 +1,4 @@
-const { SERVICE_SLUGS } = require("@/data/service_data");
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const ContactSubmissionSchema = new Schema(
@@ -45,7 +44,6 @@ const ContactSubmissionSchema = new Schema(
     serviceType: {
       type: String,
       required: [true, "Service type is required"],
-      enum: SERVICE_SLUGS,
     },
     budget: {
       type: String,
@@ -90,7 +88,7 @@ const ContactSubmissionSchema = new Schema(
         default: false,
       },
       verificationMethod: {
-        type: String,
+        type: Object,
         enum: ["email", "whatsapp"],
         required: true,
       },
@@ -155,14 +153,8 @@ const ContactSubmissionSchema = new Schema(
 
 // Indexes
 ContactSubmissionSchema.index({ email: 1 });
-ContactSubmissionSchema.index({ serviceType: 1 });
 ContactSubmissionSchema.index({ status: 1 });
 ContactSubmissionSchema.index({ createdAt: -1 });
-
-// Virtuals
-ContactSubmissionSchema.virtual("isHighPriority").get(function () {
-  return ["seo", "web-development"].includes(this.serviceType);
-});
 
 ContactSubmissionSchema.virtual("formattedDate").get(function () {
   return this.createdAt.toLocaleString("en-US", {
@@ -189,11 +181,6 @@ ContactSubmissionSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
-
-// Static methods
-ContactSubmissionSchema.statics.findByService = function (serviceType) {
-  return this.find({ serviceType: serviceType.toLowerCase() });
-};
 
 // Instance methods
 ContactSubmissionSchema.methods.logStatusChange = function (newStatus, note) {

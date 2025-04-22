@@ -27,10 +27,6 @@ export default async function handler(req, res) {
       });
     }
 
-    const exist = await ContactSubmission.findOne({
-      email: formData.personalInfo.email,
-    });
-
     const parsedFormFingerprint =
       typeof metadata.formFingerprint === "string"
         ? JSON.parse(metadata.formFingerprint)

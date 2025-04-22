@@ -127,30 +127,16 @@ export const sendConfirmationEmail = async (
 
     const isFollowUp = type === "followup";
     const subjectLine = isFollowUp
-      ? `Your ${service} Service Request Update, ${userName}`
-      : `Thank you for your ${service} inquiry, ${userName}!`;
+      ? `Your ${service.replace("-", " ")} Service Request Update, ${userName}`
+      : `Thank you for your ${service.replace("-", " ")} inquiry, ${userName}!`;
 
     const headerTitle = isFollowUp
       ? "Update on Your Service Request"
-      : "Thank You for Your SEO Project Inquiry";
+      : `Thank You for Your ${service.replace("-", " ")} Project Inquiry`;
 
     const introMessage = isFollowUp
-      ? `We appreciate your continued interest in our ${service} services. This is a follow-up regarding your previous request.`
-      : `Thank you for reaching out to us about your <strong>SEO project</strong> with a budget of <strong>${submissionData.formData.serviceDetails.budget}</strong>. We've received your details and our team will review them shortly.`;
-
-    const steps = isFollowUp
-      ? `
-        <li>Our strategy team is currently reviewing your previous request.</li>
-        <li>We’ll update you within 24-48 hours with next steps.</li>
-        <li>If we need further clarification, we’ll reach out immediately.</li>
-        <li>You’ll receive a proposal or timeline update soon.</li>
-      `
-      : `
-        <li>Our SEO specialist will review your requirements within 24 hours</li>
-        <li>We'll prepare a customized SEO strategy for your 3-month timeline</li>
-        <li>You'll receive a detailed proposal with our recommendations</li>
-        <li>We'll schedule a call to discuss the plan and answer your questions</li>
-      `;
+      ? `We appreciate your continued interest in our ${service.replace("-", " ")} services. This is a follow-up regarding your previous request.`
+      : `Thank you for reaching out to us about your <strong>${service.replace("-", " ")} project</strong> with a budget of <strong>${submissionData.formData.serviceDetails.budget}</strong>. We've received your details and our team will review them shortly.`;
 
     const mailOptions = {
       from: `"ECOD Service" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
@@ -175,7 +161,7 @@ export const sendConfirmationEmail = async (
             <!-- Header -->
             <div class="gradient-bg py-6 text-white text-center">
               <h1 class="text-2xl font-bold">ECOD DIGITAL SERVICES</h1>
-              <p class="text-lg mt-1">${headerTitle}</p>
+              <p class="text-lg mt-1 capitalize">${headerTitle}</p>
             </div>
             
             <!-- Body -->
@@ -200,17 +186,9 @@ export const sendConfirmationEmail = async (
               ${formatServiceDetails(submissionData.formData.serviceDetails)}
               ${formatProjectBrief(submissionData.formData.projectBrief)}
               
-              <!-- Next Steps -->
-              <div class="mt-6 bg-gray-50 p-4 rounded-lg">
-                <h3 class="font-semibold text-lg mb-2 text-blue-600">Next Steps</h3>
-                <ol class="list-decimal pl-6 space-y-1 text-sm">
-                  ${steps}
-                </ol>
-              </div>
-              
               <!-- Footer -->
               <div class="mt-6 pt-4 border-t border-gray-300 text-sm text-gray-600">
-                <p>If you have any questions, feel free to reach out at <a href="mailto:seo@ecodservice.com" class="text-blue-500 hover:underline">seo@ecodservice.com</a> or call +1 (800) 123-4567.</p>
+                <p>If you have any questions, feel free to reach out at <a href="mailto:ecod.service@gamil.com" class="text-blue-500 hover:underline">ecod.service@gamil.com</a> or call +1 (800) 123-4567.</p>
               </div>
             </div>
             
