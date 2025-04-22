@@ -50,9 +50,8 @@ export async function middleware(request) {
     if (pathname.startsWith("/auth/login")) {
       return NextResponse.next();
     }
-    const loginUrl = new URL("/auth/login", origin);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    const fallbackUrl = new URL("/en", origin);
+    return NextResponse.redirect(fallbackUrl);
   }
 
   // Redirect authenticated users away from auth pages

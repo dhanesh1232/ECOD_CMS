@@ -82,17 +82,17 @@ export default function Navigation() {
     {
       name: "WhatsApp API",
       icon: <FaWhatsapp className="text-green-500 dark:text-green-400" />,
-      href: "/product/whatsapp-api",
+      href: "/en/product/whatsapp-api",
     },
     {
       name: "Facebook Messenger",
       icon: <FaFacebook className="text-blue-600 dark:text-blue-400" />,
-      href: "/product/facebook-messenger",
+      href: "/en/product/facebook-messenger",
     },
     {
       name: "Instagram Direct",
       icon: <FaInstagram className="text-pink-600 dark:text-pink-400" />,
-      href: "/product/instagram-direct",
+      href: "/en/product/instagram-direct",
     },
   ];
 
@@ -106,7 +106,7 @@ export default function Navigation() {
     },
     {
       name: "Pricing",
-      href: "/pricing",
+      href: "/en/pricing",
       highlight: true,
     },
     {
@@ -114,22 +114,22 @@ export default function Navigation() {
       submenu: [
         {
           name: "Chatbot Builder",
-          href: "/tools/chatbot-builder",
+          href: "/en/tools/chatbot-builder",
           icon: <FaRobot className="text-purple-500" />,
         },
         {
           name: "Workflow Automation",
-          href: "/tools/workflows",
+          href: "/en/tools/workflows",
           icon: <FaTools className="text-purple-500" />,
         },
         {
           name: "Analytics Dashboard",
-          href: "/tools/analytics",
+          href: "/en/tools/analytics",
           icon: <FaChartLine className="text-purple-500" />,
         },
         {
           name: "API & Integrations",
-          href: "/tools/api",
+          href: "/en/tools/api",
           icon: <FaEnvelope className="text-purple-500" />,
         },
       ],
@@ -139,22 +139,22 @@ export default function Navigation() {
       submenu: [
         {
           name: "Documentation",
-          href: "/resources/docs",
+          href: "/en/resources/docs",
           icon: <FaBook className="text-blue-500" />,
         },
         {
           name: "Video Tutorials",
-          href: "/resources/tutorials",
+          href: "/en/resources/tutorials",
           icon: <FaVideo className="text-blue-500" />,
         },
         {
           name: "Blog & News",
-          href: "/resources/blog",
+          href: "/en/resources/blog",
           icon: <FaEnvelope className="text-blue-500" />,
         },
         {
           name: "Community Forum",
-          href: "/resources/community",
+          href: "/en/resources/community",
           icon: <FaUsers className="text-blue-500" />,
         },
       ],

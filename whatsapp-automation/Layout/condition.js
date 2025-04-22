@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Landing from "./landing";
 import { SessionProvider, useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import DashboardLayout from "@/Layout/dash";
 
