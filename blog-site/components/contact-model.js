@@ -14,6 +14,7 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import { service_client_data } from "@/data/service_data";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE;
 
@@ -32,6 +33,9 @@ const MAX_FORM_SUBMISSIONS = 10;
 const RESEND_COOLDOWN = 60; // seconds
 
 const ContactModel = ({ onClose }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   // State management
   const [currentStage, setCurrentStage] = useState(1);
   const formRef = useRef(null);
@@ -101,10 +105,22 @@ const ContactModel = ({ onClose }) => {
   const timerRef = useRef(null);
 
   // Enhanced reCAPTCHA handlers
-  const handleRecaptchaChange = useCallback((token) => {
-    setRecaptchaToken(token);
-    setIsHumanVerified(!!token);
-    setRecaptchaExpired(false);
+  const handleRecaptchaChange = useCallback(async (token) => {
+    try {
+      const res = await fetch("/api/verify-captcha/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await res.json();
+      setRecaptchaToken(token);
+      setIsHumanVerified(data.success);
+      setRecaptchaExpired(false);
+    } catch (error) {
+      console.error("CAPTCHA verification failed", error);
+      setIsHumanVerified(false);
+    }
   }, []);
 
   const handleRecaptchaExpired = useCallback(() => {
@@ -653,11 +669,12 @@ const ContactModel = ({ onClose }) => {
       }
 
       setSubmitSuccess(true);
-
+      const params = new URLSearchParams(searchParams);
+      params.delete("modal");
+      router.push(`${pathname}`);
       // Reset form after delay
       setTimeout(() => {
         handleClose();
-        onClose;
         setFormData({
           personalInfo: { name: "", email: "", phone: "" },
           serviceDetails: { serviceType: "", budget: "", timeline: "" },
@@ -1496,7 +1513,7 @@ const ContactModel = ({ onClose }) => {
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                  {/*<div className="mt-4 p-4 border rounded-lg bg-gray-50">
                     <div className="flex items-center justify-between">
                       <h3 className="font-medium text-gray-800">Coupon Code</h3>
                       {!isCoupon ? (
@@ -1565,7 +1582,7 @@ const ContactModel = ({ onClose }) => {
                         )}
                       </div>
                     )}
-                  </div>
+                  </div>*/}
                   {/* Final Verification */}
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div className="flex items-start">

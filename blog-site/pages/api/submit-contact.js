@@ -24,6 +24,10 @@ export default async function handler(req, res) {
       });
     }
 
+    const exist = await ContactSubmission.findOne({
+      email: formData.personalInfo.email,
+    });
+
     const parsedFormFingerprint =
       typeof metadata.formFingerprint === "string"
         ? JSON.parse(metadata.formFingerprint)
@@ -41,9 +45,9 @@ export default async function handler(req, res) {
       budgetDetails: formData.projectBrief.budgetDetails || undefined,
       timelineDetails: formData.projectBrief.timelineDetails || undefined,
       verification: {
-        emailVerified: formData.verificationMethod.email || false,
-        whatsappVerified: formData.verificationMethod.whatsapp || false,
-        verificationMethod: { ...formData.verificationMethod } || {},
+        emailVerified: metadata.verificationMethod.email || false,
+        whatsappVerified: metadata.verificationMethod.whatsapp || false,
+        verificationMethod: { ...metadata.verificationMethod } || {},
       },
       metadata: {
         ...metadata,
@@ -53,10 +57,15 @@ export default async function handler(req, res) {
       notes: [],
     });
 
-    await sendConfirmationEmail(newSubmission.email, newSubmission.name, {
-      formData,
-      metadata,
-    });
+    await sendConfirmationEmail(
+      newSubmission.email,
+      newSubmission.name,
+      formData.serviceDetails.serviceType,
+      {
+        formData,
+        metadata,
+      }
+    );
 
     return res.status(200).json({
       success: true,

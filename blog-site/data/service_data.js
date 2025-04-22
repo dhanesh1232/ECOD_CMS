@@ -2367,3 +2367,4 @@ export const service_client_data = [
     ],
   },
 ];
+export const SERVICE_SLUGS = service_client_data.map((s) => s.slug);

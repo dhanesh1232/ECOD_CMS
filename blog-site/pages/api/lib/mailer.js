@@ -83,7 +83,9 @@ export const sendVerificationEmail = async (
 export const sendConfirmationEmail = async (
   toEmail,
   userName,
-  submissionData
+  service,
+  submissionData,
+  type = "new" // "new" | "followup"
 ) => {
   try {
     const formatServiceDetails = (details) => {
@@ -91,9 +93,9 @@ export const sendConfirmationEmail = async (
         <div class="mb-4">
           <h3 class="font-semibold text-lg mb-2 text-blue-600">Service Details</h3>
           <ul class="list-disc pl-5">
-            <li><strong>Service Type:</strong> ${details.serviceType ? details.serviceType.toUpperCase() : "Not specified"}</li>
+            <li><strong>Service Type:</strong> ${details.serviceType?.toUpperCase() || "Not specified"}</li>
             <li><strong>Budget Range:</strong> ${details.budget || "Not specified"}</li>
-            <li><strong>Estimated Timeline:</strong> ${details.timeline.replace("-", " ") || "Not specified"}</li>
+            <li><strong>Estimated Timeline:</strong> ${details.timeline?.replace("-", " ") || "Not specified"}</li>
           </ul>
         </div>
       `;
@@ -106,118 +108,118 @@ export const sendConfirmationEmail = async (
           <p class="text-gray-700 mb-3">${brief.description || "No detailed description provided"}</p>
           ${
             brief.referenceLinks
-              ? `
-            <div class="mt-2">
-              <strong>Reference Links:</strong> 
-              <a href="${brief.referenceLinks}" target="_blank" class="text-blue-500 hover:underline">View Reference</a>
-            </div>
-          `
+              ? `<div class="mt-2"><strong>Reference Links:</strong> <a href="${brief.referenceLinks}" target="_blank" class="text-blue-500 hover:underline">View Reference</a></div>`
               : ""
           }
           ${
             brief.budgetDetails
-              ? `
-            <div class="mt-2">
-              <strong>Budget Notes:</strong> ${brief.budgetDetails}
-            </div>
-          `
+              ? `<div class="mt-2"><strong>Budget Notes:</strong> ${brief.budgetDetails}</div>`
               : ""
           }
           ${
             brief.timelineDetails
-              ? `
-            <div class="mt-2">
-              <strong>Timeline Notes:</strong> ${brief.timelineDetails}
-            </div>
-          `
+              ? `<div class="mt-2"><strong>Timeline Notes:</strong> ${brief.timelineDetails}</div>`
               : ""
           }
         </div>
       `;
     };
 
+    const isFollowUp = type === "followup";
+    const subjectLine = isFollowUp
+      ? `Your ${service} Service Request Update, ${userName}`
+      : `Thank you for your ${service} inquiry, ${userName}!`;
+
+    const headerTitle = isFollowUp
+      ? "Update on Your Service Request"
+      : "Thank You for Your SEO Project Inquiry";
+
+    const introMessage = isFollowUp
+      ? `We appreciate your continued interest in our ${service} services. This is a follow-up regarding your previous request.`
+      : `Thank you for reaching out to us about your <strong>SEO project</strong> with a budget of <strong>${submissionData.formData.serviceDetails.budget}</strong>. We've received your details and our team will review them shortly.`;
+
+    const steps = isFollowUp
+      ? `
+        <li>Our strategy team is currently reviewing your previous request.</li>
+        <li>We’ll update you within 24-48 hours with next steps.</li>
+        <li>If we need further clarification, we’ll reach out immediately.</li>
+        <li>You’ll receive a proposal or timeline update soon.</li>
+      `
+      : `
+        <li>Our SEO specialist will review your requirements within 24 hours</li>
+        <li>We'll prepare a customized SEO strategy for your 3-month timeline</li>
+        <li>You'll receive a detailed proposal with our recommendations</li>
+        <li>We'll schedule a call to discuss the plan and answer your questions</li>
+      `;
+
     const mailOptions = {
       from: `"ECOD Service" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
       to: toEmail,
-      subject: `Thank you for your SEO service inquiry, ${userName}!`,
+      subject: subjectLine,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Thank You</title>
             <script src="https://cdn.tailwindcss.com"></script>
-            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
             <style>
                 .gradient-bg {
                     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
                 }
-                .gradient-btn {
-                    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-                }
             </style>
         </head>
-        <body class="font-['Poppins'] bg-gray-50">
-            <div class="max-w-2xl mx-auto my-5">
-                <!-- Header -->
-                <div class="gradient-bg py-8 px-6 text-center text-white rounded-t-xl">
-                    <div class="text-3xl font-bold mb-2">ECOD DIGITAL SERVICES</div>
-                    <h2 class="text-2xl font-semibold">Thank You for Your SEO Project Inquiry</h2>
-                </div>
-                
-                <!-- Content -->
-                <div class="bg-white px-8 py-8 rounded-b-xl shadow-lg">
-                    <!-- Greeting -->
-                    <p class="text-lg mb-5">Hello ${userName},</p>
-                    
-                    <p class="mb-6 text-gray-700">Thank you for reaching out to us about your <strong class="font-semibold">SEO project</strong> with a budget of <strong>${submissionData.formData.serviceDetails.budget}</strong>. We've received your details and our team will review them shortly.</p>
-                    
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                        <p class="text-blue-700 font-medium">Your submission was received on ${new Date(submissionData.metadata.submissionTime).toLocaleString()}.</p>
-                    </div>
-                    
-                    <!-- Personal Info -->
-                    <div class="mb-4">
-                        <h3 class="font-semibold text-lg mb-2 text-blue-600">Your Contact Information</h3>
-                        <ul class="list-disc pl-5">
-                            <li><strong>Name:</strong> ${submissionData.formData.personalInfo.name}</li>
-                            <li><strong>Email:</strong> ${submissionData.formData.personalInfo.email}</li>
-                            <li><strong>Phone:</strong> ${submissionData.formData.personalInfo.phone}</li>
-                        </ul>
-                    </div>
-                    
-                    ${formatServiceDetails(submissionData.formData.serviceDetails)}
-                    ${formatProjectBrief(submissionData.formData.projectBrief)}
-                    
-                    <!-- Next Steps -->
-                    <div class="mt-6 bg-gray-50 p-4 rounded-lg">
-                        <h3 class="font-semibold text-lg mb-2 text-blue-600">Our Next Steps</h3>
-                        <ol class="list-decimal pl-5 space-y-2">
-                            <li>Our SEO specialist will review your requirements within 24 hours</li>
-                            <li>We'll prepare a customized SEO strategy for your 3-month timeline</li>
-                            <li>You'll receive a detailed proposal with our recommendations</li>
-                            <li>We'll schedule a call to discuss the plan and answer your questions</li>
-                        </ol>
-                    </div>
-                    
-                    <!-- Support -->
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <p class="text-sm text-gray-600">For immediate assistance, call us at +1 (800) 123-4567 or email <a href="mailto:seo@ecodservice.com" class="text-blue-500 hover:underline">seo@ecodservice.com</a>.</p>
-                    </div>
-                </div>
-                
-                <!-- Footer -->
-                <div class="text-center py-6 text-sm text-gray-500 mt-4">
-                    <p>&copy; ${new Date().getFullYear()} ECO Digital Services. All rights reserved.</p>
-                    <p class="mt-1">Submitted from IP: ${submissionData.metadata.ipAddress} (India)</p>
-                    <div class="flex justify-center space-x-4 mt-2">
-                        <a href="#" class="text-blue-500 hover:underline">Privacy Policy</a>
-                        <span>|</span>
-                        <a href="#" class="text-blue-500 hover:underline">Terms of Service</a>
-                    </div>
-                </div>
+        <body class="font-[Poppins] bg-gray-100">
+          <div class="max-w-2xl mx-auto my-6 bg-white rounded-xl shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="gradient-bg py-6 text-white text-center">
+              <h1 class="text-2xl font-bold">ECOD DIGITAL SERVICES</h1>
+              <p class="text-lg mt-1">${headerTitle}</p>
             </div>
+            
+            <!-- Body -->
+            <div class="px-8 py-6">
+              <p class="text-lg mb-4">Hello ${userName},</p>
+              <p class="text-gray-700 mb-4">${introMessage}</p>
+              
+              <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                <p class="text-blue-700"><strong>Submitted:</strong> ${new Date(submissionData.metadata.submissionTime).toLocaleString()}</p>
+              </div>
+              
+              <!-- Contact Info -->
+              <div class="mb-4">
+                <h3 class="font-semibold text-lg mb-2 text-blue-600">Your Contact Information</h3>
+                <ul class="list-disc pl-5 text-sm">
+                  <li><strong>Name:</strong> ${submissionData.formData.personalInfo.name}</li>
+                  <li><strong>Email:</strong> ${submissionData.formData.personalInfo.email}</li>
+                  <li><strong>Phone:</strong> ${submissionData.formData.personalInfo.phone}</li>
+                </ul>
+              </div>
+              
+              ${formatServiceDetails(submissionData.formData.serviceDetails)}
+              ${formatProjectBrief(submissionData.formData.projectBrief)}
+              
+              <!-- Next Steps -->
+              <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-lg mb-2 text-blue-600">Next Steps</h3>
+                <ol class="list-decimal pl-6 space-y-1 text-sm">
+                  ${steps}
+                </ol>
+              </div>
+              
+              <!-- Footer -->
+              <div class="mt-6 pt-4 border-t border-gray-300 text-sm text-gray-600">
+                <p>If you have any questions, feel free to reach out at <a href="mailto:seo@ecodservice.com" class="text-blue-500 hover:underline">seo@ecodservice.com</a> or call +1 (800) 123-4567.</p>
+              </div>
+            </div>
+            
+            <!-- Footer Bottom -->
+            <div class="bg-gray-50 py-4 text-center text-xs text-gray-500">
+              <p>&copy; ${new Date().getFullYear()} ECOD Digital Services. All rights reserved.</p>
+              <p>Submitted from IP: ${submissionData.metadata.ipAddress || "Unknown"}</p>
+            </div>
+          </div>
         </body>
         </html>
       `,
@@ -231,6 +233,7 @@ export const sendConfirmationEmail = async (
   }
 };
 
+//Gift Coupon mails
 export const sendCouponEmail = async ({
   to,
   userName,
@@ -330,6 +333,92 @@ export const existingCouponEmail = async ({
     return true;
   } catch (emailError) {
     console.error("Email sending failed:", emailError);
+    return false;
+  }
+};
+
+export const sendOwnerNotificationEmail = async (formData, metadata) => {
+  const { personalInfo, serviceDetails, projectBrief } = formData;
+
+  const mailOptions = {
+    from: `"ECOD Notifications" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
+    to: process.env.NEXT_PUBLIC_ADMIN_EMAIL, // Add this to your .env
+    subject: `📩 New ${serviceDetails.serviceType} Service Request from ${personalInfo.name}`,
+    html: `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>New Submission Notification</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gray-100 font-sans">
+      <div class="max-w-2xl mx-auto my-6 bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="bg-blue-600 text-white p-6">
+          <h1 class="text-2xl font-bold">New Service Request Submitted</h1>
+          <p class="text-sm mt-1">Check the details below</p>
+        </div>
+        <div class="p-6 space-y-4 text-gray-800">
+          <h2 class="text-lg font-semibold text-blue-600">Client Details</h2>
+          <ul class="list-disc pl-5">
+            <li><strong>Name:</strong> ${personalInfo.name}</li>
+            <li><strong>Email:</strong> ${personalInfo.email}</li>
+            <li><strong>Phone:</strong> ${personalInfo.phone}</li>
+          </ul>
+
+          <h2 class="text-lg font-semibold text-blue-600">Service Information</h2>
+          <ul class="list-disc pl-5">
+            <li><strong>Service Type:</strong> ${serviceDetails.serviceType}</li>
+            <li><strong>Budget:</strong> ${serviceDetails.budget}</li>
+            <li><strong>Timeline:</strong> ${serviceDetails.timeline.replace("-", " ")}</li>
+          </ul>
+
+          <h2 class="text-lg font-semibold text-blue-600">Project Brief</h2>
+          <p>${projectBrief.description}</p>
+
+          ${
+            projectBrief.referenceLinks
+              ? `<p><strong>Reference:</strong> <a href="${projectBrief.referenceLinks}" class="text-blue-500 underline" target="_blank">View Link</a></p>`
+              : ""
+          }
+
+          ${
+            projectBrief.budgetDetails
+              ? `<p><strong>Budget Notes:</strong> ${projectBrief.budgetDetails}</p>`
+              : ""
+          }
+
+          ${
+            projectBrief.timelineDetails
+              ? `<p><strong>Timeline Notes:</strong> ${projectBrief.timelineDetails}</p>`
+              : ""
+          }
+
+          <div class="pt-4 border-t border-gray-200 text-sm text-gray-500">
+            <p><strong>Submitted on:</strong> ${new Date(
+              metadata.submissionTime
+            ).toLocaleString()}</p>
+            <p><strong>IP Address:</strong> ${metadata.ipAddress}</p>
+            <p><strong>Form Fingerprint:</strong> ${JSON.stringify(
+              metadata.formFingerprint
+            ).slice(0, 50)}...</p>
+          </div>
+        </div>
+        <div class="bg-gray-50 text-center py-4 text-sm text-gray-600">
+          <p>ECOD Project Submission Notifier</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (err) {
+    console.error("Failed to send owner notification email:", err);
     return false;
   }
 };

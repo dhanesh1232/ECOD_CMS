@@ -1,3 +1,4 @@
+const { SERVICE_SLUGS } = require("@/data/service_data");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -44,7 +45,7 @@ const ContactSubmissionSchema = new Schema(
     serviceType: {
       type: String,
       required: [true, "Service type is required"],
-      enum: ["seo", "web-development", "design", "marketing", "other"],
+      enum: SERVICE_SLUGS,
     },
     budget: {
       type: String,
@@ -89,7 +90,7 @@ const ContactSubmissionSchema = new Schema(
         default: false,
       },
       verificationMethod: {
-        type: Object,
+        type: String,
         enum: ["email", "whatsapp"],
         required: true,
       },
@@ -203,9 +204,8 @@ ContactSubmissionSchema.methods.logStatusChange = function (newStatus, note) {
   this.status = newStatus;
 };
 
-const ContactSubmission = mongoose.model(
-  "ContactSubmission",
-  ContactSubmissionSchema
-);
+const ContactSubmission =
+  mongoose.models.ContactSubmission ||
+  mongoose.model("ContactSubmission", ContactSubmissionSchema);
 
 module.exports = ContactSubmission;
