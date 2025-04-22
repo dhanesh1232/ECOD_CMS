@@ -31,6 +31,14 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
+  // Get authentication token
+  const token = await getToken({ req: request });
+
+  // Redirect authenticated users away from public routes (like /en)
+  if (token && (pathname === "/en" || pathname === "/en/")) {
+    return NextResponse.redirect(new URL("/", origin));
+  }
+
   // Check if current route is public
   const isPublicRoute = PUBLIC_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
@@ -40,9 +48,6 @@ export async function middleware(request) {
   if (isPublicRoute) {
     return NextResponse.next();
   }
-
-  // Get authentication token
-  const token = await getToken({ req: request });
 
   // Redirect unauthenticated users to login
   if (!token) {
