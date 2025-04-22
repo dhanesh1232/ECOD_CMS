@@ -118,11 +118,11 @@ const StickyContactButton = ({
         {isChatOpen && (
           <motion.div
             ref={chatRef}
-            initial={{ opacity: 0, x: 100, scale: 0.8 }}
+            initial={{ opacity: 0, x: 100, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 100, scale: 0.9 }}
             transition={{ duration: 0.5 }}
-            className="absolute bottom-full right-0 mb-4 w-56 sm:w-72 md:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+            className="absolute bottom-10 right-0 mb-4 w-56 sm:w-72 md:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
           >
             <div className="p-4 bg-indigo-600 text-white flex justify-between items-center">
               <h3 className="font-medium">Contact Us</h3>
@@ -296,7 +296,7 @@ const StickyContactButton = ({
           onMouseLeave={() => !isMobile && setIsHovered(false)}
           whileHover={!isMobile ? { y: -3 } : {}}
           whileTap={{ scale: 0.96 }}
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={pulse ? { opacity: 1, scale: 1 } : {}}
           transition={{
             duration: 0.5,

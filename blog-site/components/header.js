@@ -231,10 +231,10 @@ const HeaderSection = ({ theme, toggleTheme }) => {
     return subpages.map((subpage, ind) => (
       <motion.li
         key={subpage.label}
-        initial={{ opacity: 0, x: -20, rotateY: -10 }}
-        animate={{ opacity: 1, x: 0, rotateY: 0 }}
-        transition={{ duration: 0.1, delay: ind * 0.05, ease: "easeInOut" }}
-        exit={{ opacity: 0, x: -20, rotateY: -10 }}
+        initial={{ opacity: 0, x: -100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, delay: ind * 0.08, ease: "easeInOut" }}
+        exit={{ opacity: 0, x: -100 }}
         className="rounded-lg overflow-hidden"
       >
         <Link
@@ -346,11 +346,11 @@ const HeaderSection = ({ theme, toggleTheme }) => {
                         <AnimatePresence>
                           {dropDown.desktop === item.label && (
                             <motion.ul
-                              className="absolute left-0 top-10 mt-0 w-64 overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
-                              initial={{ opacity: 0, y: -20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -20 }}
-                              transition={{ ease: "easeInOut", duration: 0.2 }}
+                              className="absolute left-0 top-10 mt-0 p-1 w-64 overflow-hidden bg-white dark:bg-gray-800 backdrop-blur-xl shadow-xl rounded-lg py-2 z-20 border border-white/20 dark:border-gray-700"
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ ease: "easeInOut", duration: 0.5 }}
                               style={{
                                 pointerEvents: "auto",
                               }}

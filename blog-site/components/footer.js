@@ -12,6 +12,7 @@ import {
   FaHeadset,
   FaPhoneAlt,
   FaStar,
+  FaUserTie,
 } from "react-icons/fa";
 import { policy_data } from "@/data/policies_data";
 import { useRouter } from "next/router";
@@ -185,6 +186,18 @@ const Footer = () => {
               We create digital experiences that transform businesses and drive
               growth through innovative solutions.
             </p>
+
+            {/* Founder Section */}
+            <div className="flex items-center gap-3 p-3 bg-gray-800/30 rounded-lg border border-gray-700/50">
+              <div className="p-2 bg-green-500/10 rounded-full">
+                <FaUserTie className="text-green-400" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-300">Founded by</p>
+                <p className="font-medium text-white">Dhanesh</p>
+              </div>
+            </div>
+
             <motion.div
               whileHover="hover"
               variants={itemVariants}

@@ -157,9 +157,10 @@ export default function AutoScrollTags({
 
   return (
     <section
-      className="bg-gray-100/50 dark:bg-gray-950/80 py-3 overflow-hidden w-full border-b border-gray-200/50 dark:border-gray-800/50 backdrop-blur-sm"
+      className="relative bg-gradient-to-b from-gray-50/80 to-gray-100/50 dark:from-gray-900/90 dark:to-gray-950/80 py-6 overflow-hidden w-full border-t border-b border-gray-200/30 dark:border-gray-800/30 backdrop-blur-lg"
       ref={containerRef}
     >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/5 via-transparent to-transparent opacity-20 pointer-events-none"></div>
       <div
         className="relative w-full"
         style={{

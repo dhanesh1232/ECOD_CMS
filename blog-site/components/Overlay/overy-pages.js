@@ -17,12 +17,10 @@ const OverlayPages = () => {
   // Handle initial load and URL changes
   useEffect(() => {
     const modal = searchParams.get("modal");
-    console.log(modal);
     setShowFeedback(modal);
   }, [searchParams]);
 
   const handleCloseFeedback = () => {
-    console.log("model close");
     setShowFeedback("");
     // Remove the modal parameter while keeping other query params
     const params = new URLSearchParams(searchParams);

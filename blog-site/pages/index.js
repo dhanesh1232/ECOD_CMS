@@ -4,14 +4,11 @@ import { useEffect } from "react";
 import HeadSEO from "@/components/Reusable/seo_head";
 import LowerContent from "@/components/lower-content";
 import AutoScrollTags from "@/components/Home/scroll-section";
+import HeroSection from "@/components/Home/hero-section";
+import AboutSection from "@/components/Home/about-section";
 
-const AboutSection = dynamic(() => import("@/components/Home/about-section"), {
-  srr: false,
-});
+//Heavy Components
 const HomeBlog = dynamic(() => import("@/components/Home/blog-section"), {
-  ssr: false,
-});
-const HeroSection = dynamic(() => import("@/components/Home/hero-section"), {
   ssr: false,
 });
 const OurServices = dynamic(
