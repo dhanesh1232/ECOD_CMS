@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { FaHeadset, FaLock, FaChartLine, FaShieldAlt } from "react-icons/fa";
 

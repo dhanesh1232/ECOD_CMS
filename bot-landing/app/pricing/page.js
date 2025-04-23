@@ -3,8 +3,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
 import Image from "next/image";
-import PieChart from "@/components/landing/pie_chart";
-import BarChart from "@/components/landing/bar_chart";
+import PieChart from "@/components/pie_chart";
+import BarChart from "@/components/bar_chart";
 
 const PricingPage = () => {
   const [billingCycle, setBillingCycle] = useState("monthly");

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,7 +8,6 @@ import {
   FaFacebook,
   FaInstagram,
 } from "react-icons/fa";
-import { IoMdMoon, IoMdSunny } from "react-icons/io";
 
 const Faq = () => {
   const [activeIndex, setActiveIndex] = useState(null);

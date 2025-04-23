@@ -8,8 +8,6 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Bar, Pie } from "react-chartjs-2";
 import {
@@ -36,8 +34,6 @@ ChartJS.register(
 );
 
 const InstagramAutomation = () => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
   // Enhanced pricing with countdown timer
   const [timeLeft, setTimeLeft] = useState({
     hours: 8,

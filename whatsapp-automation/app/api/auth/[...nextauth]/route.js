@@ -86,7 +86,7 @@ export const authOptions = {
           };
         } catch (error) {
           console.error("Credentials auth error:", error);
-          throw error; // Re-throw to show error on login page
+          throw error;
         }
       },
     }),
@@ -105,10 +105,11 @@ export const authOptions = {
           const existingUser = await User.findOne({ email: user.email });
 
           if (!existingUser) {
-            // Create new OAuth user
+            // Create new OAuth user with Google ID
             await User.create({
               name: user.name,
               email: user.email,
+              googleId: account.providerAccountId, // Store Google ID
               isOAuthUser: true,
               isPasswordSet: false,
               oauthProvider: "google",
@@ -118,18 +119,19 @@ export const authOptions = {
               avatar: profile.picture,
             });
           } else {
-            // Update existing user
-            await User.updateOne(
-              { email: user.email },
-              {
-                $set: {
-                  lastLogin: new Date(),
-                  lastLoginIP: getClientIP(),
-                  isVerified: true,
-                  avatar: profile.picture || existingUser.avatar,
-                },
-              }
-            );
+            // Update existing user with Google ID if not set
+            const updateData = {
+              lastLogin: new Date(),
+              lastLoginIP: getClientIP(),
+              isVerified: true,
+              avatar: profile.picture || existingUser.avatar,
+            };
+
+            if (!existingUser.googleId) {
+              updateData.googleId = account.providerAccountId;
+            }
+
+            await User.updateOne({ email: user.email }, { $set: updateData });
           }
 
           // Send login notification
@@ -173,11 +175,16 @@ export const authOptions = {
       // Fetch fresh user data from database
       try {
         await connectDB();
-        const dbUser = await User.findOne({ email: session.user.email });
+        const dbUser = await User.findOne({
+          $or: [{ _id: session.user.id }, { googleId: session.user.id }],
+        });
+
         if (dbUser) {
           session.user.isOAuthUser = dbUser.isOAuthUser;
           session.user.isPasswordSet = dbUser.isPasswordSet;
           session.user.avatar = dbUser.avatar;
+          // Ensure session ID matches the database ID
+          session.user.id = dbUser._id.toString();
         }
       } catch (error) {
         console.error("Session DB error:", error);
@@ -186,9 +193,7 @@ export const authOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
@@ -201,19 +206,25 @@ export const authOptions = {
   },
   events: {
     async signOut({ token }) {
-      // Log logout event
       try {
         await connectDB();
-        await User.updateOne(
-          { _id: token.sub },
-          { $set: { lastLogout: new Date() } }
-        );
+
+        // Find user by either MongoDB _id or Google ID
+        const user = await User.findOne({
+          $or: [{ _id: token.sub }, { googleId: token.sub }],
+        });
+
+        if (user) {
+          await User.updateOne(
+            { _id: user._id }, // Use the found user's _id
+            { $set: { lastLogout: new Date() } }
+          );
+        }
       } catch (error) {
         console.error("Logout tracking error:", error);
       }
     },
     async linkAccount({ user, account, profile }) {
-      // Handle account linking
       if (account.provider === "google") {
         await connectDB();
         await User.updateOne(
@@ -222,6 +233,7 @@ export const authOptions = {
             $set: {
               isOAuthUser: true,
               oauthProvider: "google",
+              googleId: account.providerAccountId,
               avatar: profile.picture,
             },
           }
@@ -255,7 +267,6 @@ export const authOptions = {
   },
 };
 
-// Helper function to get client IP
 function getClientIP() {
   // Implement your IP detection logic
   return "unknown";

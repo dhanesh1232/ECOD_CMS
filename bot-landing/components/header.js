@@ -21,12 +21,12 @@ import {
 } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Logo from "../logo";
-import { useSession } from "next-auth/react";
+import Logo from "./logo";
 import { useDarkMode } from "@/context/context";
 
+const redirect_url = process.env.REDIRECT_LOGIN_URL || "https://localhost:3000";
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -82,17 +82,17 @@ export default function Navigation() {
     {
       name: "WhatsApp API",
       icon: <FaWhatsapp className="text-green-500 dark:text-green-400" />,
-      href: "/en/product/whatsapp-api",
+      href: "/product/whatsapp-api",
     },
     {
       name: "Facebook Messenger",
       icon: <FaFacebook className="text-blue-600 dark:text-blue-400" />,
-      href: "/en/product/facebook-messenger",
+      href: "/product/facebook-messenger",
     },
     {
       name: "Instagram Direct",
       icon: <FaInstagram className="text-pink-600 dark:text-pink-400" />,
-      href: "/en/product/instagram-direct",
+      href: "/product/instagram-direct",
     },
   ];
 
@@ -106,7 +106,7 @@ export default function Navigation() {
     },
     {
       name: "Pricing",
-      href: "/en/pricing",
+      href: "/pricing",
       highlight: true,
     },
     {
@@ -114,22 +114,22 @@ export default function Navigation() {
       submenu: [
         {
           name: "Chatbot Builder",
-          href: "/en/tools/chatbot-builder",
+          href: "/tools/chatbot-builder",
           icon: <FaRobot className="text-purple-500" />,
         },
         {
           name: "Workflow Automation",
-          href: "/en/tools/workflows",
+          href: "/tools/workflows",
           icon: <FaTools className="text-purple-500" />,
         },
         {
           name: "Analytics Dashboard",
-          href: "/en/tools/analytics",
+          href: "/tools/analytics",
           icon: <FaChartLine className="text-purple-500" />,
         },
         {
           name: "API & Integrations",
-          href: "/en/tools/api",
+          href: "/tools/api",
           icon: <FaEnvelope className="text-purple-500" />,
         },
       ],
@@ -139,22 +139,22 @@ export default function Navigation() {
       submenu: [
         {
           name: "Documentation",
-          href: "/en/resources/docs",
+          href: "/resources/docs",
           icon: <FaBook className="text-blue-500" />,
         },
         {
           name: "Video Tutorials",
-          href: "/en/resources/tutorials",
+          href: "/resources/tutorials",
           icon: <FaVideo className="text-blue-500" />,
         },
         {
           name: "Blog & News",
-          href: "/en/resources/blog",
+          href: "/resources/blog",
           icon: <FaEnvelope className="text-blue-500" />,
         },
         {
           name: "Community Forum",
-          href: "/en/resources/community",
+          href: "/resources/community",
           icon: <FaUsers className="text-blue-500" />,
         },
       ],
@@ -171,11 +171,22 @@ export default function Navigation() {
   };
 
   const getAuthUrl = (type) => {
-    // Don't set callback for auth pages to prevent loops
-    if (pathname.startsWith("/auth")) {
-      return `/auth/${type}`;
+    try {
+      const baseUrl =
+        process.env.NODE_ENV === "production"
+          ? process.env.REDIRECT_LOGIN_URL || "https://yourproductiondomain.com"
+          : "http://localhost:3000";
+
+      if (pathname.startsWith("/auth")) {
+        return `${baseUrl}/auth/${type}`;
+      }
+      return `${baseUrl}/auth/${type}?callbackUrl=${encodeURIComponent(
+        pathname
+      )}`;
+    } catch (error) {
+      console.error("Error generating auth URL:", error);
+      return "/auth/login"; // Fallback URL
     }
-    return `/auth/${type}?callbackUrl=${encodeURIComponent(pathname)}`;
   };
   return (
     <motion.header
@@ -332,6 +343,7 @@ export default function Navigation() {
 
             <Link
               href={getAuthUrl("login")}
+              target="__blank"
               className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-50 hover:dark:text-gray-300 hover:text-gray-500 transition-all"
             >
               <FaUser className="mr-2" />
@@ -339,6 +351,7 @@ export default function Navigation() {
             </Link>
             <Link
               href={getAuthUrl("register")}
+              target="__blank"
               className="hidden md:flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 rounded-lg shadow-sm transition-all"
             >
               Get Started

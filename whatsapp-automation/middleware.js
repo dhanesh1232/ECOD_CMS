@@ -1,33 +1,34 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC_ROUTES = [
-  "/en",
-  "/en/",
-  "/en/product",
-  "/en/pricing",
+// Routes that don't require authentication
+const AUTH_ROUTES = [
   "/auth",
-  "/_next",
-  "/favicon.ico",
-  "/api/auth",
-  "/images",
-  "/assets",
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
 ];
 
+// Static files and API routes that should be excluded from middleware
 const EXCLUDED_ROUTES = [
-  "/api",
+  "/api/auth", // NextAuth.js API routes
   "/_next/static",
   "/_next/image",
   "/favicon.ico",
+  "/images",
+  "/assets",
 ];
 
 export async function middleware(request) {
   const { pathname, origin } = request.nextUrl;
 
+  // Skip middleware for excluded routes
   if (EXCLUDED_ROUTES.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }
 
+  // Get the authentication token
   const token = await getToken({
     req: request,
     secure: process.env.NODE_ENV === "production",
@@ -37,17 +38,14 @@ export async function middleware(request) {
         : "next-auth.session-token",
   });
 
-  const isPublicRoute = PUBLIC_ROUTES.some(
+  const isAuthRoute = AUTH_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  console.log("1", token);
   // Handle authenticated users
   if (token) {
-    if (isPublicRoute) {
-      return NextResponse.redirect(new URL("/", origin));
-    }
-    if (pathname.startsWith("/auth")) {
+    // Redirect authenticated users away from auth routes to home
+    if (isAuthRoute) {
       return NextResponse.redirect(new URL("/", origin));
     }
     return NextResponse.next();
@@ -55,9 +53,12 @@ export async function middleware(request) {
 
   // Handle unauthenticated users
   if (!token) {
-    if (isPublicRoute) return NextResponse.next();
-    if (pathname.startsWith("/auth/login")) return NextResponse.next();
-    return NextResponse.redirect(new URL("/en", origin));
+    // Allow access to auth routes
+    if (isAuthRoute) {
+      return NextResponse.next();
+    }
+    // Redirect all other requests to login
+    return NextResponse.redirect(new URL("/auth/login", origin));
   }
 
   return NextResponse.next();
