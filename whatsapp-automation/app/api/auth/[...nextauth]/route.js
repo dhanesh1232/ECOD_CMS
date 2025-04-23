@@ -5,6 +5,7 @@ import User from "@/models/User";
 import connectDB from "@/config/db";
 import bcrypt from "bcryptjs";
 import { sendLoginNotification } from "@/lib/mail";
+import mongoose from "mongoose";
 
 export const authOptions = {
   providers: [
@@ -175,8 +176,17 @@ export const authOptions = {
       // Fetch fresh user data from database
       try {
         await connectDB();
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(
+          session.user.id
+        );
+
         const dbUser = await User.findOne({
-          $or: [{ _id: session.user.id }, { googleId: session.user.id }],
+          $or: [
+            ...(isValidObjectId
+              ? [{ _id: new mongoose.Types.ObjectId(session.user.id) }]
+              : []),
+            { googleId: session.user.id },
+          ],
         });
 
         if (dbUser) {
@@ -202,7 +212,6 @@ export const authOptions = {
     signIn: "/auth/login",
     signOut: "/auth/logout",
     error: "/auth/error",
-    newUser: "/auth/set-password",
   },
   events: {
     async signOut({ token }) {
