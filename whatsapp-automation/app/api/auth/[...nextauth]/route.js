@@ -208,11 +208,7 @@ export const authOptions = {
       return baseUrl;
     },
   },
-  pages: {
-    signIn: "/auth/login",
-    signOut: "/auth/logout",
-    error: "/auth/error",
-  },
+  pages: undefined,
   events: {
     async signOut({ token }) {
       try {
