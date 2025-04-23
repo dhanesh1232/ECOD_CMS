@@ -26,7 +26,6 @@ import Link from "next/link";
 import Logo from "./logo";
 import { useDarkMode } from "@/context/context";
 
-const redirect_url = process.env.REDIRECT_LOGIN_URL || "https://localhost:3000";
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -174,7 +173,8 @@ export default function Navigation() {
     try {
       const baseUrl =
         process.env.NODE_ENV === "production"
-          ? process.env.REDIRECT_LOGIN_URL || "https://yourproductiondomain.com"
+          ? process.env.REDIRECT_LOGIN_URL ||
+            "https://ecod-whatsapp-automation.vercel.app"
           : "http://localhost:3000";
 
       if (pathname.startsWith("/auth")) {
