@@ -137,7 +137,7 @@ export const authOptions = {
 
           // Send login notification
           sendLoginNotification({
-            email: user.email,
+            email: existingUser.email,
             method: "Google",
             ip: getClientIP(),
             timestamp: new Date(),
@@ -208,7 +208,11 @@ export const authOptions = {
       return baseUrl;
     },
   },
-  pages: undefined,
+  pages: {
+    signIn: "/auth/login",
+    signOut: "/auth/logout",
+    error: "/auth/error",
+  },
   events: {
     async signOut({ token }) {
       try {
