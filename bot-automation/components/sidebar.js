@@ -21,6 +21,8 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { signOut } from "next-auth/react";
+import { Key, User } from "lucide-react";
 
 export const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -31,6 +33,22 @@ export const SideBar = () => {
   const navRef = useRef(null);
   const pathname = usePathname();
   const router = useRouter();
+  const [userProfile, setUserProfile] = useState(false);
+  const profileRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setUserProfile(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Check for mobile view
   useEffect(() => {
@@ -143,8 +161,7 @@ export const SideBar = () => {
   };
 
   const handleLogout = () => {
-    console.log("Logging out...");
-    router.push("/login");
+    signOut();
   };
 
   const handleNavItemClick = () => {
@@ -154,6 +171,9 @@ export const SideBar = () => {
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
     setHoveredItem(null); // Clear any hover states when toggling
+    if (collapsed === true) {
+      setUserProfile(false);
+    }
   };
 
   // Mobile menu toggle button (shown only on mobile)
@@ -287,7 +307,7 @@ export const SideBar = () => {
       </AnimatePresence>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-indigo-700">
+      <div className="p-4 border-t border-indigo-700 relative" ref={profileRef}>
         <div className="flex items-center space-x-3 relative">
           {user.avatar ? (
             <Image
@@ -304,7 +324,10 @@ export const SideBar = () => {
           )}
           {!collapsed && (
             <>
-              <div className="flex-1 min-w-0">
+              <div
+                className="flex-1 min-w-0 cursor-pointer"
+                onClick={() => setUserProfile(!userProfile)}
+              >
                 <p className="font-medium truncate">{user.name}</p>
                 <p className="text-xs text-indigo-300 truncate">{user.role}</p>
               </div>
@@ -316,15 +339,37 @@ export const SideBar = () => {
                 >
                   <FiLogOut size={18} />
                 </button>
-                {user.unreadNotifications > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                    {user.unreadNotifications}
-                  </span>
-                )}
               </div>
             </>
           )}
         </div>
+        <AnimatePresence>
+          {userProfile && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              transition={{ ease: "easeInOut", duration: 0.2 }}
+              className="absolute left-4 bottom-16 mt-2 px-1 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-100 dark:border-gray-700"
+            >
+              <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
+                <User className="w-4 h-4" />
+                <span>Profile</span>
+              </div>
+              <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
+                <Key className="w-4 h-4" />
+                <span>Change Password</span>
+              </div>
+              <div
+                onClick={() => signOut()}
+                className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
+              >
+                <FiLogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

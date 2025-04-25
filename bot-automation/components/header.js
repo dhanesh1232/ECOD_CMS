@@ -7,6 +7,7 @@ import { FiLogOut } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./logo";
+import { signOut } from "next-auth/react";
 
 export function Header() {
   const pathname = usePathname();
@@ -100,7 +101,10 @@ export function Header() {
                   <Key className="w-4 h-4" />
                   <span>Change Password</span>
                 </div>
-                <div className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
+                <div
+                  onClick={() => signOut()}
+                  className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
+                >
                   <FiLogOut className="w-4 h-4" />
                   <span>Logout</span>
                 </div>
