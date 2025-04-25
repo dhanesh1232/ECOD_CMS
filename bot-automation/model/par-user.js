@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,22 +18,32 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       validate: [validator.isEmail, "Please provide a valid email"],
-      index: true,
+      immutable: true,
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: [8, "Password must be at least 8 characters"],
-      select: false, // Never return password in queries
+      select: false,
     },
     phone: {
       type: String,
+      unique: true,
+      sparse: true,
       validate: {
         validator: function (v) {
-          return validator.isMobilePhone(v, "any", { strictMode: false });
+          return !v || validator.isMobilePhone(v, "any", { strictMode: false });
         },
         message: "Please provide a valid phone number",
       },
+    },
+    requiresProfileCompletion: {
+      type: Boolean,
+      default: false,
+    },
+    provider: {
+      type: String,
+      enum: ["credentials", "google", "facebook"],
+      default: "credentials",
     },
     isVerified: {
       type: Boolean,
@@ -49,21 +60,52 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
+    verificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    lastVerificationAttempt: {
+      type: Date,
+      select: false,
+    },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt fields
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        // Remove sensitive information when converting to JSON
+        delete ret.password;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpires;
+        delete ret.verificationAttempts;
+        delete ret.lastVerificationAttempt;
+        return ret;
+      },
+    },
+    toObject: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        // Remove sensitive information when converting to object
+        delete ret.password;
+        delete ret.passwordResetToken;
+        delete ret.passwordResetExpires;
+        delete ret.verificationAttempts;
+        delete ret.lastVerificationAttempt;
+        return ret;
+      },
+    },
   }
 );
 
-// Middleware to hash password before saving
+// Enhanced password hashing with stronger salt
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
   try {
-    // Hash password with cost of 12
-    this.password = await bcrypt.hash(this.password, 12);
+    // Hash password with cost of 14 (higher than default for better security)
+    this.password = await bcrypt.hash(this.password, 14);
     next();
   } catch (err) {
     next(err);
@@ -74,19 +116,16 @@ userSchema.pre("save", async function (next) {
 userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
-  this.passwordChangedAt = Date.now() - 1000; // Ensure token is created after
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
 // Instance method to check password
-userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
-) {
-  return await bcrypt.compare(candidatePassword, userPassword);
+userSchema.methods.correctPassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to check if password was changed after token was issued
+// Enhanced method to check if password was changed after token was issued
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
@@ -98,7 +137,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return false;
 };
 
-// Instance method to create password reset token
+// Enhanced password reset token generation
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
 
@@ -117,6 +156,20 @@ userSchema.statics.isEmailTaken = async function (email, excludeUserId) {
   const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
   return !!user;
 };
+
+// Static method to check if phone is taken
+userSchema.statics.isPhoneTaken = async function (phone, excludeUserId) {
+  if (!phone) return false;
+  const user = await this.findOne({ phone, _id: { $ne: excludeUserId } });
+  return !!user;
+};
+
+userSchema.index({ email: 1, phone: 1 });
+userSchema.index({ createdAt: -1 });
+
+// Add any compound indexes that aren't covered by the unique fields
+// For example, if you need to query by both role and isVerified frequently:
+userSchema.index({ role: 1, isVerified: 1 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 

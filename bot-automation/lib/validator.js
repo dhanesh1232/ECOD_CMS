@@ -36,6 +36,7 @@ export function validatePhone(phone) {
 }
 export function ValidateTerms(terms) {
   if (!terms) return "Please accept terms to process";
+  return null;
 }
 
 export function validateAll({ email, password, name, phone, terms }) {

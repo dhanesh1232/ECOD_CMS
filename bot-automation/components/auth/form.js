@@ -20,10 +20,6 @@ import {
   FiAlertCircle,
   FiArrowLeft,
 } from "react-icons/fi";
-
-const isMobileDevice = () => {
-  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-};
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
   tabs: [
@@ -106,11 +102,9 @@ const FORM_CONFIG = {
       icon: <FiPhone />,
       validation: {
         required: true,
-        minLength: 8,
       },
       errorMessages: {
         required: "Phone number is required",
-        minLength: "Phone number is too short",
       },
     },
     password: {
@@ -275,7 +269,7 @@ export default function FormComponent() {
     terms: false,
     showPassword: false,
     showConfirmPassword: false,
-    registered: true,
+    registered: false,
     isSendForgot: false,
     isPasswordReset: false,
   });
@@ -300,13 +294,34 @@ export default function FormComponent() {
     }
   }, [errorParam]);
 
-  const handleClickOpenMail = () => {
-    if (isMobileDevice()) {
-      // Try to open Gmail app (Android)
-      window.location.href = "googlegmail://";
-    } else {
-      // Open Gmail in browser (Laptop/Desktop)
+  const handleClickOpenGmail = () => {
+    console.log(navigator);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(userAgent);
+    const isAndroid = /Android/i.test(userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+
+    const fallbackToWebGmail = () => {
       window.open("https://mail.google.com/mail/u/0/#inbox", "_blank");
+    };
+
+    try {
+      if (isMobile || isAndroid || isIOS) {
+        const timeout = setTimeout(() => {
+          fallbackToWebGmail();
+        }, 8000); // If app doesn't open within 800ms, fallback
+        // Try opening Gmail app
+        const now = new Date().getTime();
+        window.location.href = "googlegmail://";
+        // Optional: prevent fallback if user leaves the page (app opened)
+        window.onblur = () => clearTimeout(timeout);
+      } else {
+        // Desktop
+        fallbackToWebGmail();
+      }
+    } catch (error) {
+      console.error("Error opening Gmail app:", error);
+      fallbackToWebGmail();
     }
   };
 
@@ -406,23 +421,33 @@ export default function FormComponent() {
 
     try {
       if (pageKey === "login") {
-        const result = await signIn("credentials", {
-          email: formState.email,
-          phone: formState.phone,
-          password: formState.password,
-          remember: formState.remember,
-          redirect: false,
-          callbackUrl,
-        });
+        try {
+          const credentials = {
+            password: formState.password,
+            remember: formState.remember,
+            redirect: false,
+            callbackUrl,
+          };
+          if (activeTab === "EMAIL") {
+            credentials.email = formState.email;
+          } else {
+            credentials.phone = formState.phone;
+          }
+          const result = await signIn("credentials", credentials);
 
-        if (result?.error) {
-          setError(
-            result.error === "CredentialsSignin"
-              ? "Invalid email or password"
-              : result.error
-          );
-        } else {
-          router.push(callbackUrl);
+          if (result?.error) {
+            const errorMessage =
+              {
+                CredentialsSignin: "Invalid credentials",
+                Default: "Login failed. Please try again.",
+              }[result.error] || "Unknown error occurred";
+
+            setError(errorMessage);
+          } else {
+            router.push(callbackUrl);
+          }
+        } catch (error) {
+          setError("An unexpected error occurred");
         }
       } else if (pageKey === "register") {
         const { phone, email, name, password, terms } = formState;
@@ -434,7 +459,7 @@ export default function FormComponent() {
           },
           body: JSON.stringify({ phone, email, name, password, terms }),
         });
-
+        console.log(res);
         const data = await res.json();
         if (!res.ok) {
           setError(data.message || "Registration failed");
@@ -465,7 +490,8 @@ export default function FormComponent() {
         }
       } else if (pageKey === "reset-password") {
         const token = searchParams.get("token");
-        if (!token) {
+        const email = searchParams.get("email");
+        if (!token || !email) {
           setError("Invalid password reset link");
           return;
         }
@@ -477,6 +503,7 @@ export default function FormComponent() {
           },
           body: JSON.stringify({
             token,
+            email,
             password: formState.password,
           }),
         });
@@ -508,22 +535,27 @@ export default function FormComponent() {
 
     if (type === "checkbox") {
       return (
-        <div className="flex items-start pt-1" key={label}>
-          <div className="flex items-center h-3 w-3 sm:h-5 sm:w-5">
-            <input
-              id={field}
-              name={field}
-              type="checkbox"
-              checked={value}
-              required={fieldConfig.validation?.required}
-              onChange={handleChange}
-              className="h-3 w-3 sm:h-5 sm:w-5 rounded dark:border-gray-600 border-gray-300 dark:bg-gray-700 bg-gray-100 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900"
-            />
-          </div>
-          <div className="ml-3 text-xs sm:text-sm">
-            <label htmlFor={field} className="dark:text-gray-300 text-gray-700">
-              {label}
-            </label>
+        <div key={label}>
+          <div className="flex items-start pt-1">
+            <div className="flex items-center h-3 w-3 sm:h-5 sm:w-5">
+              <input
+                id={field}
+                name={field}
+                type="checkbox"
+                checked={value}
+                required={fieldConfig.validation?.required}
+                onChange={handleChange}
+                className="h-3 w-3 sm:h-5 sm:w-5 rounded dark:border-gray-600 border-gray-300 dark:bg-gray-700 bg-gray-100 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900"
+              />
+            </div>
+            <div className="ml-3 text-xs sm:text-sm">
+              <label
+                htmlFor={field}
+                className="dark:text-gray-300 text-gray-700"
+              >
+                {label}
+              </label>
+            </div>
           </div>
           {error && (
             <p className="text-xs text-red-500 dark:text-red-400 mt-1">
@@ -626,12 +658,12 @@ export default function FormComponent() {
               error
                 ? "border-red-500 dark:border-red-500"
                 : "dark:border-gray-700 border-gray-200"
-            } rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all`}
+            } rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all`}
           />
-          {isPassword && (
+          {isPassword && value && (
             <button
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500 dark:hover:text-gray-200 transition-colors"
+              className="absolute inset-y-0 outline-none focus:outline-none right-0 focus:text-blue-600 flex items-center pr-3 text-gray-400 hover:text-gray-500 dark:hover:text-gray-200 transition-colors"
               onClick={() =>
                 setFormState((prev) => ({
                   ...prev,
@@ -803,22 +835,43 @@ export default function FormComponent() {
                   </button>
                 </p>
               )}
-              {/* Back button for forgot password success */}
-              {pageKey === "forgot-password" && formState.isSendForgot && (
-                <button
-                  onClick={() => router.push("/auth/login")}
-                  className="bg-blue-500 hover:bg-blue-600 w-full py-2 rounded-md text-white"
+              {((pageKey === "register" && formState.registered) ||
+                (pageKey === "forgot-password" && formState.isSendForgot)) && (
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleClickOpenGmail}
+                  className="flex items-center w-full mt-4 justify-center py-1.5 px-4 gap-2 dark:bg-gray-800 bg-gray-100 dark:text-gray-300 text-gray-700 rounded-lg transition-all hover:shadow-md dark:hover:bg-gray-700 hover:bg-gray-200"
                 >
-                  Back To Login
-                </button>
-              )}
-              {pageKey === "register" && formState.registered && (
-                <button
-                  onClick={handleClickOpenMail}
-                  className="bg-blue-500 hover:bg-blue-600 w-full py-3 rounded-md text-white justify-center items-center flex mt-4"
-                >
-                  <FiMail size={18} />
-                </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    x="0px"
+                    y="0px"
+                    width="40"
+                    height="40"
+                    viewBox="0 0 48 48"
+                  >
+                    <path
+                      fill="#4caf50"
+                      d="M45,16.2l-5,2.75l-5,4.75L35,40h7c1.657,0,3-1.343,3-3V16.2z"
+                    ></path>
+                    <path
+                      fill="#1e88e5"
+                      d="M3,16.2l3.614,1.71L13,23.7V40H6c-1.657,0-3-1.343-3-3V16.2z"
+                    ></path>
+                    <polygon
+                      fill="#e53935"
+                      points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17"
+                    ></polygon>
+                    <path
+                      fill="#c62828"
+                      d="M3,12.298V16.2l10,7.5V11.2L9.876,8.859C9.132,8.301,8.228,8,7.298,8h0C4.924,8,3,9.924,3,12.298z"
+                    ></path>
+                    <path
+                      fill="#fbc02d"
+                      d="M45,12.298V16.2l-10,7.5V11.2l3.124-2.341C38.868,8.301,39.772,8,40.702,8h0 C43.076,8,45,9.924,45,12.298z"
+                    ></path>
+                  </svg>
+                </motion.button>
               )}
             </div>
           </motion.div>
@@ -979,7 +1032,7 @@ export default function FormComponent() {
         </motion.form>
 
         {/* Alternative Auth Options */}
-        {pageKey === "login" && (
+        {(pageKey === "login" || pageKey === "register") && (
           <>
             <motion.div
               className="w-full relative my-3"

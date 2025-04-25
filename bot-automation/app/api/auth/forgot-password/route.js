@@ -1,5 +1,7 @@
+import { PasswordResetLinkGenerator } from "@/lib/helper";
+import { generateStrongVerificationCode } from "@/lib/validator";
+import ForgotTemp from "@/model/for-temp";
 import { NextResponse } from "next/server";
-
 const { default: dbConnect } = require("@/config/dbconnect");
 const { default: User } = require("@/model/par-user");
 
@@ -8,7 +10,10 @@ export async function POST(req) {
     await dbConnect();
     const body = await req.json();
     const { email } = body;
-    console.log(email);
+    const exist = await ForgotTemp.findOne({ email });
+    if (exist) {
+      await ForgotTemp.deleteOne({ email });
+    }
     const user = await User.findOne({ email });
     if (!user) {
       return NextResponse.json(
@@ -16,9 +21,13 @@ export async function POST(req) {
         { status: 400 }
       );
     }
+    const name = user.name;
+    const verificationCode = generateStrongVerificationCode(6);
+    await PasswordResetLinkGenerator(verificationCode, name, email);
+    await ForgotTemp.create({ email, verificationCode });
     return NextResponse.json(
       {
-        message: "Password reset link sent to your email",
+        message: "Password reset link sent to your email ",
       },
       { status: 201 }
     );

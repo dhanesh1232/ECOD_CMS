@@ -1,9 +1,15 @@
 // app/api/register/route.js
 import { NextResponse } from "next/server";
-import { generateStrongVerificationCode, validateAll } from "@/lib/validator";
+import {
+  generateStrongVerificationCode,
+  validateAll,
+  validateEmail,
+} from "@/lib/validator";
 import { VerificationMail } from "@/lib/helper";
 import dbConnect from "@/config/dbconnect";
 import UserTemp from "@/model/user-temp";
+import User from "@/model/par-user";
+
 export async function POST(request) {
   try {
     await dbConnect();
@@ -15,7 +21,13 @@ export async function POST(request) {
     if (hasErrors) {
       return NextResponse.json({ errors }, { status: 400 });
     }
-
+    const user = await User.findOne({ email });
+    if (user) {
+      return NextResponse.json(
+        { message: "User already exist please login" },
+        { status: 400 }
+      );
+    }
     //Temp Creation
     const verificationCode = generateStrongVerificationCode(6);
     await VerificationMail(verificationCode, email);
@@ -33,6 +45,32 @@ export async function POST(request) {
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
+    );
+  }
+}
+export async function PUT(req) {
+  try {
+    const body = await req.json();
+    const { email } = body;
+    const error = validateEmail(email);
+    if (error) {
+      return NextResponse.json(
+        { message: "Please enter valid email" },
+        { status: 400 }
+      );
+    }
+
+    const verificationCode = generateStrongVerificationCode(6);
+    await VerificationMail(verificationCode, email);
+    const user = await UserTemp.findOne({ email });
+    user.verificationCode = verificationCode;
+    await user.save();
+  } catch (err) {
+    return NextResponse.json(
+      {
+        message: "Resend failed please try again later",
+      },
+      { status: 400 }
     );
   }
 }
