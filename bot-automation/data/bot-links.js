@@ -6,8 +6,17 @@ import {
   FiHelpCircle,
   FiHome,
   FiFileText,
+  FiBook,
+  FiLifeBuoy,
+  FiCpu,
+  FiBarChart2,
+  FiKey,
+  FiCreditCard,
+  FiLock,
+  FiUser,
 } from "react-icons/fi";
 import { AiOutlineRobot } from "react-icons/ai";
+import { PaintBucket, Plug } from "lucide-react";
 const user = {
   name: "John Doe",
   role: "Admin",
@@ -60,5 +69,97 @@ export const navItems = [
     icon: <FiHelpCircle size={20} />,
     label: "Help Center",
     href: "/help",
+  },
+];
+
+export const settingsNavItems = [
+  {
+    id: "account",
+    category: "Account",
+    icon: <FiUser className="w-4 h-4" />,
+    items: [
+      {
+        name: "Profile",
+        href: "/settings/profile",
+        icon: <FiUser className="w-4 h-4" />,
+      },
+      {
+        name: "Password & Security",
+        href: "/settings/security",
+        icon: <FiLock className="w-4 h-4" />,
+      },
+      {
+        name: "Billing & Plans",
+        href: "/settings/billing",
+        icon: <FiCreditCard className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    id: "workspace",
+    category: "Workspace",
+    icon: <FiUsers className="w-4 h-4" />,
+    items: [
+      {
+        name: "Team Members",
+        href: "/settings/team",
+        icon: <FiUsers className="w-4 h-4" />,
+      },
+      {
+        name: "API Keys",
+        href: "/settings/api",
+        icon: <FiKey className="w-4 h-4" />,
+      },
+      {
+        name: "Usage Analytics",
+        href: "/settings/analytics",
+        icon: <FiBarChart2 className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    id: "chatbot",
+    category: "Chatbot",
+    icon: <FiCpu className="w-4 h-4" />,
+    items: [
+      {
+        name: "Appearance",
+        href: "/settings/appearance",
+        icon: <PaintBucket className="w-4 h-4" />,
+      },
+      {
+        name: "Behavior",
+        href: "/settings/behavior",
+        icon: <FiSettings className="w-4 h-4" />,
+      },
+      {
+        name: "Integrations",
+        href: "/settings/integrations",
+        icon: <Plug className="w-4 h-4" />,
+      },
+      {
+        name: "Training Data",
+        href: "/settings/training",
+        icon: <FiCpu className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    id: "support",
+    category: "Support",
+    icon: <FiLifeBuoy className="w-4 h-4" />,
+    items: [
+      {
+        name: "Documentation",
+        href: "https://docs.yourchatbot.com",
+        icon: <FiBook className="w-4 h-4" />,
+        external: true,
+      },
+      {
+        name: "Contact Support",
+        href: "/settings/support",
+        icon: <FiLifeBuoy className="w-4 h-4" />,
+      },
+    ],
   },
 ];

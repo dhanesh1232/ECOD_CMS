@@ -2,13 +2,16 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDarkMode } from "@/context/context";
-import { ChevronDown, Bell, Sun, Moon, User, Key } from "lucide-react";
+import { ChevronDown, Bell, Sun, Moon, User, Lock } from "lucide-react";
 import { FiLogOut } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./logo";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export function Header() {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -28,6 +31,16 @@ export function Header() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  // Escape key handler
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
   const renderTitle = () => {
@@ -80,8 +93,14 @@ export function Header() {
             onClick={toggleProfileMenu}
             className="relative flex items-center space-x-2 group focus:outline-none"
           >
-            <div className="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium text-sm transition hover:opacity-90">
-              JD
+            <div className="sm:w-10 w-8 h-8 sm:h-10 rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center flex-shrink-0">
+              <span className="font-medium text-xs sm:text-sm text-indigo-100 dark:text-indigo-200">
+                {session?.user?.name
+                  .split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
             </div>
             <ChevronDown
               className={`w-4 h-4 text-gray-600 dark:text-gray-300 transform transition-transform duration-200 ${
@@ -100,14 +119,20 @@ export function Header() {
                 transition={{ ease: "easeInOut", duration: 0.2 }}
                 className="absolute right-0 sm:-right-4 mt-2 px-1 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-100 dark:border-gray-700"
               >
-                <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
+                <Link
+                  href="/settings/profile"
+                  className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
+                >
                   <User className="w-4 h-4" />
-                  <span>Profile</span>
-                </div>
-                <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
-                  <Key className="w-4 h-4" />
-                  <span>Change Password</span>
-                </div>
+                  <span className="text-sm">{session?.user?.name}</span>
+                </Link>
+                <Link
+                  href="/settings/security"
+                  className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Security</span>
+                </Link>
                 <div
                   onClick={handleSignOut}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"

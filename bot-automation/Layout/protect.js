@@ -90,7 +90,7 @@ export default function ProtectLayout({ children }) {
         <SideBar />
         <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
           <Header />
-          <main className="flex-1 overflow-y-auto bg-white dark:bg-gray-700 transition-colors ease-in-out duration-300">
+          <main className="flex-1 bg-white dark:bg-gray-700 transition-colors ease-in-out duration-300">
             {children}
           </main>
         </div>

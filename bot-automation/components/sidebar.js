@@ -1,30 +1,17 @@
 "use client";
 
-import {
-  FiMessageSquare,
-  FiSettings,
-  FiUsers,
-  FiPieChart,
-  FiLogOut,
-  FiPlus,
-  FiChevronsRight,
-  FiHelpCircle,
-  FiHome,
-  FiFileText,
-  FiMenu,
-  FiX,
-} from "react-icons/fi";
+import { FiLogOut, FiPlus, FiChevronsRight, FiMenu, FiX } from "react-icons/fi";
 import { AiOutlineRobot } from "react-icons/ai";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Key, User } from "lucide-react";
+import { Lock, User } from "lucide-react";
 import { navItems } from "@/data/bot-links";
+import { useSession } from "next-auth/react";
 
 export const SideBar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { data: session } = useSession();
   const [hoveredItem, setHoveredItem] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -35,6 +22,44 @@ export const SideBar = () => {
   const searchParams = useSearchParams();
   const [userProfile, setUserProfile] = useState(false);
   const profileRef = useRef();
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebarCollapsed");
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", JSON.stringify(collapsed));
+  }, [collapsed]);
+
+  // 3. Mobile handling (separate from localStorage logic)
+  useEffect(() => {
+    const checkIfMobile = () => window.innerWidth < 768;
+    const mobile = checkIfMobile();
+    setIsMobile(mobile);
+
+    // On mobile, always collapse (override localStorage)
+    if (mobile) {
+      setCollapsed(true);
+    }
+
+    const handleResize = () => {
+      const newMobile = checkIfMobile();
+      setIsMobile(newMobile);
+      if (newMobile) {
+        setCollapsed(true);
+      } else {
+        // When switching back to desktop, restore localStorage value
+        const saved = localStorage.getItem("sidebarCollapsed");
+        if (saved !== null) setCollapsed(JSON.parse(saved));
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -46,21 +71,6 @@ export const SideBar = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-  // Check for mobile view
-  useEffect(() => {
-    const checkIfMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
-        setCollapsed(true); // Collapse by default on mobile
-      }
-    };
-
-    checkIfMobile();
-    window.addEventListener("resize", checkIfMobile);
-    return () => window.removeEventListener("resize", checkIfMobile);
   }, []);
 
   // Close mobile menu when clicking outside
@@ -80,14 +90,6 @@ export const SideBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMobile, mobileMenuOpen]);
 
-  // Sample user data
-  const user = {
-    name: "John Doe",
-    role: "Admin",
-    initials: "JD",
-    avatar: null,
-  };
-
   const handleMouseEnter = (itemId, event) => {
     if (!collapsed || isMobile) return;
 
@@ -97,7 +99,6 @@ export const SideBar = () => {
       top: rect.top + window.scrollY,
       left: rect.right + 8,
     });
-    console.log(itemId);
     setHoveredItem(itemId);
   };
 
@@ -122,21 +123,41 @@ export const SideBar = () => {
   };
 
   const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-    setHoveredItem(null); // Clear any hover states when toggling
-    if (collapsed === true) {
+    const newCollapsed = !collapsed;
+    setCollapsed(newCollapsed);
+    setHoveredItem(null);
+    if (newCollapsed) {
       setUserProfile(false);
     }
   };
+
+  // Escape key handler
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setUserProfile(false);
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
 
   // Mobile menu toggle button (shown only on mobile)
   const MobileMenuButton = () => (
     <button
       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-      className="fixed bottom-4 right-4 z-40 p-3 bg-indigo-600 text-white rounded-full shadow-lg md:hidden transition-transform hover:scale-105"
+      className="fixed bottom-4 right-4 z-40 p-3 bg-indigo-600 dark:bg-indigo-700 text-white rounded-full shadow-lg md:hidden transition-all hover:scale-105 active:scale-95 ring-2 ring-white/10 hover:ring-white/20"
       aria-label="Toggle menu"
     >
-      {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+      {mobileMenuOpen ? (
+        <FiX
+          size={24}
+          className="transform transition-transform duration-200"
+        />
+      ) : (
+        <FiMenu
+          size={24}
+          className="transform transition-transform duration-200"
+        />
+      )}
     </button>
   );
 
@@ -149,20 +170,27 @@ export const SideBar = () => {
         type: "spring",
         damping: 25,
         stiffness: 120,
-        duration: 1.8,
+        duration: 0.5,
         ease: "easeInOut",
       }}
       exit={isMobile ? { x: -300 } : {}}
-      className={`flex flex-col h-screen backdrop-blur-md bg-indigo-900/80 dark:bg-gray-900/90 text-white shadow-xl ${
+      className={`flex flex-col h-screen backdrop-blur-lg bg-indigo-800/90 dark:bg-gray-900/95 text-white shadow-xl ${
         collapsed ? "w-20" : "w-64"
-      } ${isMobile ? "fixed z-30" : "relative"}`}
+      } ${
+        isMobile ? "fixed z-30" : "relative"
+      } border-r border-indigo-700/50 dark:border-gray-800`}
       ref={navRef}
     >
       {/* Logo Section */}
-      <div className="p-4 py-5 flex items-center justify-between border-b border-indigo-700 relative">
+      <div className="p-4 py-4 flex items-center justify-between border-b border-indigo-700/50 dark:border-gray-800 relative">
         {!collapsed && (
-          <Link href="/" className="flex items-center space-x-2">
-            <AiOutlineRobot size={24} className="text-indigo-300" />
+          <Link href="/" className="flex items-center space-x-2 group">
+            <div className="p-2 bg-indigo-600 dark:bg-indigo-700 rounded-lg group-hover:bg-indigo-500 dark:group-hover:bg-indigo-600 transition-colors">
+              <AiOutlineRobot
+                size={24}
+                className="text-indigo-100 dark:text-indigo-200"
+              />
+            </div>
             <span className="text-xl font-bold whitespace-nowrap text-white dark:text-gray-100">
               ChatBot Studio
             </span>
@@ -170,19 +198,24 @@ export const SideBar = () => {
         )}
         {collapsed && (
           <div className="w-full flex justify-center">
-            <AiOutlineRobot size={24} className="text-indigo-300" />
+            <div className="p-2 bg-indigo-600 dark:bg-indigo-700 rounded-lg">
+              <AiOutlineRobot
+                size={24}
+                className="text-indigo-100 dark:text-indigo-200"
+              />
+            </div>
           </div>
         )}
         {!isMobile && (
           <button
             onClick={toggleSidebar}
-            className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 text-indigo-900 dark:text-gray-50 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-transform hover:scale-110"
+            className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 text-indigo-800 dark:text-gray-50 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all hover:scale-110 active:scale-95"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <FiChevronsRight
               size={16}
-              className={`text-indigo-900 transition-all ease-in-out duration-150 dark:text-gray-50 ${
-                collapsed ? "" : "rotate-180"
+              className={`text-indigo-800 dark:text-gray-50 transition-transform duration-300 ${
+                collapsed ? "rotate-0" : "rotate-180"
               }`}
             />
           </button>
@@ -195,15 +228,15 @@ export const SideBar = () => {
           onClick={handleCreateNew}
           className={`w-full flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-2.5 rounded-lg font-medium transition-all ${
             collapsed ? "px-2.5" : "px-4"
-          } hover:shadow-md active:scale-95`}
+          } hover:shadow-md active:scale-[0.98] shadow-sm shadow-indigo-900/30 dark:shadow-indigo-900/50`}
         >
-          <FiPlus size={18} />
+          <FiPlus size={18} className="flex-shrink-0" />
           {!collapsed && <span>New Chatbot</span>}
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-700 scrollbar-track-indigo-900/50">
+      <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-600/50 scrollbar-track-transparent">
         <ul className="space-y-1 p-2">
           {navItems.map((item) => (
             <li key={item.id}>
@@ -216,20 +249,28 @@ export const SideBar = () => {
                 onClick={handleNavItemClick}
                 className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
                   pathname === item.href
-                    ? "bg-indigo-700 dark:bg-indigo-800 text-white"
-                    : "hover:bg-indigo-800/70 dark:hover:bg-gray-800 text-indigo-100 dark:text-gray-300"
+                    ? "bg-indigo-700/90 dark:bg-indigo-800/90 text-white shadow-inner shadow-indigo-900/30"
+                    : "hover:bg-indigo-700/50 dark:hover:bg-gray-800/80 text-indigo-100 dark:text-gray-300"
                 } ${collapsed ? "justify-center" : ""}`}
               >
                 <span className="flex-shrink-0 relative">
-                  {item.icon}
+                  {React.cloneElement(item.icon, {
+                    className: `${
+                      pathname === item.href
+                        ? "text-indigo-100 dark:text-indigo-200"
+                        : "text-indigo-300 dark:text-gray-400"
+                    } ${item.icon.props.className || ""}`,
+                  })}
                   {item.badge && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-indigo-800/90 dark:ring-gray-900/90">
                       {item.badge > 9 ? "9+" : item.badge}
                     </span>
                   )}
                 </span>
                 {!collapsed && (
-                  <span className="truncate flex-1">{item.label}</span>
+                  <span className="truncate flex-1 font-medium">
+                    {item.label}
+                  </span>
                 )}
               </Link>
             </li>
@@ -245,49 +286,57 @@ export const SideBar = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.15 }}
-            className="fixed z-50 px-3 py-2 bg-gray-800 dark:bg-gray-900 text-white text-sm rounded shadow-lg whitespace-nowrap pointer-events-none"
+            className="fixed z-10 px-3 py-2 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded shadow-lg whitespace-nowrap pointer-events-none border border-gray-700 dark:border-gray-600"
             style={{
               top: `${tooltipPosition.top}px`,
               left: `${tooltipPosition.left}px`,
             }}
           >
             {navItems.find((item) => item.id === hoveredItem)?.label}
+            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-800 dark:bg-gray-700 transform rotate-45 border-l border-t border-gray-700 dark:border-gray-600" />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* User Profile */}
-      <div className="p-4 border-t border-indigo-700 relative" ref={profileRef}>
+      <div
+        className="p-4 border-t border-indigo-700/50 dark:border-gray-800 relative"
+        ref={profileRef}
+      >
         <div className="flex items-center space-x-3 relative">
-          {user.avatar ? (
-            <Image
-              src={user.avatar}
-              alt={user.name}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center flex-shrink-0">
-              <span className="font-medium">{user.initials}</span>
-            </div>
-          )}
+          <div className="w-10 h-10 rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center flex-shrink-0 border-2 border-indigo-500/30 dark:border-gray-700">
+            <span className="font-medium text-indigo-100 dark:text-indigo-200">
+              {session?.user?.name
+                ?.split(" ")
+                .map((word) => word[0])
+                .join("")
+                .toUpperCase()}
+            </span>
+          </div>
+
           {!collapsed && (
             <>
               <div
                 className="flex-1 min-w-0 cursor-pointer"
                 onClick={() => setUserProfile(!userProfile)}
               >
-                <p className="font-medium truncate">{user.name}</p>
-                <p className="text-xs text-indigo-300 truncate">{user.role}</p>
+                <p className="font-medium truncate text-white dark:text-gray-100">
+                  {session?.user?.name}
+                </p>
+                <p className="text-xs text-indigo-300/90 dark:text-indigo-400/90 truncate">
+                  {session?.user?.role}
+                </p>
               </div>
               <div className="relative">
                 <button
                   onClick={handleLogout}
-                  className="p-1.5 rounded-lg hover:bg-indigo-800 dark:hover:bg-gray-700 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-indigo-700/50 dark:hover:bg-gray-700 transition-colors"
                   aria-label="Logout"
                 >
-                  <FiLogOut size={18} />
+                  <FiLogOut
+                    size={18}
+                    className="text-indigo-200 dark:text-gray-300"
+                  />
                 </button>
               </div>
             </>
@@ -299,20 +348,26 @@ export const SideBar = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
-              transition={{ ease: "easeInOut", duration: 0.2 }}
-              className="absolute left-4 bottom-16 mt-2 px-1 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-100 dark:border-gray-700"
+              transition={{ ease: "easeInOut", duration: 0.3 }}
+              className="absolute left-4 bottom-[74px] mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-200 dark:border-gray-700"
             >
-              <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
-                <User className="w-4 h-4" />
-                <span>Profile</span>
-              </div>
-              <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors">
-                <Key className="w-4 h-4" />
-                <span>Change Password</span>
-              </div>
+              <Link
+                href="/settings/profile"
+                className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
+              >
+                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm">{session?.user?.name}</span>
+              </Link>
+              <Link
+                href="/settings/security"
+                className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
+              >
+                <Lock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span>Security</span>
+              </Link>
               <div
                 onClick={handleLogout}
-                className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
+                className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
               >
                 <FiLogOut className="w-4 h-4" />
                 <span>Logout</span>
@@ -327,7 +382,7 @@ export const SideBar = () => {
   return (
     <>
       {/* Desktop Sidebar (always visible) */}
-      <div className="hidden md:block">
+      <div className="hidden md:block z-50">
         <SidebarContent />
       </div>
 
@@ -340,7 +395,7 @@ export const SideBar = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black bg-opacity-50 z-20"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20"
                 onClick={() => setMobileMenuOpen(false)}
               />
             )}

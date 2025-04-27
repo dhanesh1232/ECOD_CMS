@@ -77,17 +77,20 @@ const handleGoogleSignIn = async ({ user, profile }) => {
         email: profile.email,
         provider: "google",
         isVerified: true,
+        role: "user",
         requiresProfileCompletion: true,
       });
       user.id = newUser._id.toString();
+      user.role = newUser.role;
       user.requiresProfileCompletion = newUser.requiresProfileCompletion;
       await NewSignupGoogleMail(profile.name, profile.email);
+      return newUser;
     } else {
       Object.assign(user, {
         id: existingUser._id.toString(),
         requiresProfileCompletion: existingUser.requiresProfileCompletion,
         phone: existingUser.phone,
-        role: existingUser.role,
+        role: existingUser.role || "user",
       });
 
       if (!existingUser.name && profile.name) {
@@ -95,6 +98,7 @@ const handleGoogleSignIn = async ({ user, profile }) => {
         await existingUser.save();
         console.log("Updated name for existing user");
       }
+      return existingUser;
     }
   } catch (error) {
     handleError("Google sign-in", error);
@@ -117,7 +121,7 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session: updateSession }) {
       if (user) {
         token = {
           ...token,
@@ -125,9 +129,14 @@ export const authOptions = {
           name: user.name,
           email: user.email,
           phone: user.phone,
-          role: user.role,
+          role: user.role || "user",
           provider: account?.provider || "credentials",
           requiresProfileCompletion: user.requiresProfileCompletion ?? false,
+        };
+      } else if (trigger === "update" && updateSession?.user) {
+        token = {
+          ...token,
+          ...updateSession.user,
         };
       }
       return token;
@@ -138,9 +147,10 @@ export const authOptions = {
         name: token.name,
         email: token.email,
         phone: token.phone,
-        role: token.role,
+        role: token.role || "user",
         provider: token.provider,
         requiresProfileCompletion: token.requiresProfileCompletion,
+        image: token.picture,
       };
       return session;
     },
@@ -150,7 +160,8 @@ export const authOptions = {
       try {
         if (account.provider === "google") {
           await sendLoginAlertEmail(profile.name, profile.email);
-          await handleGoogleSignIn({ user, profile });
+          const updateUser = await handleGoogleSignIn({ user, profile });
+          user.role = updateUser?.role || "user";
         } else {
           await sendLoginAlertEmail(user.name, user.email);
         }
