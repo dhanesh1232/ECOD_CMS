@@ -21,6 +21,7 @@
     "crypto": "^1.0.1",
     "crypto-js": "^4.2.0",
     "framer-motion": "^12.6.5",
+    "google-libphonenumber": "^3.2.40",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "libphonenumber-js": "^1.12.7",
@@ -37,6 +38,7 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
+    "react-password-strength-bar": "^0.4.1",
     "react-phone-number-input": "^3.4.12",
     "react-toastify": "^11.0.5",
     "reactflow": "^11.11.4",
@@ -45,7 +47,8 @@
     "swr": "^2.3.3",
     "twilio": "^5.5.2",
     "use-debounce": "^10.0.4",
-    "validator": "^13.15.0"
+    "validator": "^13.15.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

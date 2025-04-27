@@ -1,6 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import ProfileCompletion from "./profile";
 
 const OverLayComponent = () => {
   const [isShown, setIsShown] = useState("");
@@ -10,20 +11,21 @@ const OverLayComponent = () => {
     const pop = searchParams.get("profile");
     if (pop) {
       setIsShown(pop);
+    } else {
+      setIsShown("");
     }
-    console.log(pop);
   }, [searchParams]);
   const renderOverlay = () => {
-    if (isShown.startsWith("update_")) {
-      console.log("Update profile info");
+    if (isShown.startsWith("update_req")) {
+      return <ProfileCompletion />;
     }
-    return "Onverly Component";
+    return null;
   };
   if (!isShown) {
     return null;
   }
   return (
-    <div className="fixed z-50 inset-0 w-full h-screen bg-gray-950/50">
+    <div className="fixed z-50 inset-0 w-full h-screen bg-gray-950/50 flex items-center justify-center">
       {renderOverlay()}
     </div>
   );

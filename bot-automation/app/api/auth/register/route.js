@@ -21,7 +21,9 @@ export async function POST(request) {
     if (hasErrors) {
       return NextResponse.json({ errors }, { status: 400 });
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+      $or: [{ email }, { phone }],
+    });
     if (user) {
       return NextResponse.json(
         { message: "User already exist please login" },

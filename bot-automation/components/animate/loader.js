@@ -1,14 +1,14 @@
 const LoaderThreeDots = ({
   size = 16,
-  color = "bg-slate-600",
+  color = "bg-blue-500",
   speed = "normal",
   spacing = 20,
 }) => {
   // Animation speed configuration
   const speedConfig = {
-    slow: "animate-ping-slow",
-    normal: "animate-ping-normal",
-    fast: "animate-ping-fast",
+    slow: 1800,
+    normal: 1200,
+    fast: 600,
   };
 
   // Size mapping to Tailwind classes
@@ -20,35 +20,29 @@ const LoaderThreeDots = ({
     24: "w-6 h-6",
   };
 
-  // Spacing mapping
-  const spacingClasses = {
-    4: "space-x-1",
-    8: "space-x-2",
-    12: "space-x-3",
-    16: "space-x-4",
-  };
+  // Get animation duration based on speed
+  const duration = speedConfig[speed] || speedConfig.normal;
 
   return (
     <div className="w-full h-screen flex items-center justify-center">
       <div
-        className={`flex items-center justify-center ${
-          spacingClasses[spacing] || `space-x-[${spacing}px]`
-        } h-20`}
+        className="flex items-center justify-center h-20"
+        style={{ gap: `${spacing}px` }}
       >
-        <div
-          className={`${sizeClasses[size] || `w-[${size}px] h-[${size}px]`} 
-          rounded-full ${color} ${speedConfig[speed]} 
-          [animation-delay:-0.4s]`}
-        ></div>
-        <div
-          className={`${sizeClasses[size] || `w-[${size}px] h-[${size}px]`} 
-          rounded-full ${color} ${speedConfig[speed]} 
-          [animation-delay:-0.2s]`}
-        ></div>
-        <div
-          className={`${sizeClasses[size] || `w-[${size}px] h-[${size}px]`} 
-          rounded-full ${color} ${speedConfig[speed]}`}
-        ></div>
+        {[0, 1, 2].map((index) => (
+          <div
+            key={index}
+            className={`${sizeClasses[size] || `w-[${size}px] h-[${size}px]`} 
+              rounded-full ${color} relative shadow-lg`}
+            style={{
+              animation: `dot-pulse ${duration}ms cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+              animationDelay: `${index * (duration / 3)}ms`,
+            }}
+          >
+            {/* Optional inner glow */}
+            <div className="absolute inset-0 rounded-full opacity-30 animate-pulse" />
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -4,19 +4,38 @@ import AIFormWrapper from "@/components/auth/wrapper";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Logo from "@/components/logo";
+import { decryptData } from "@/utils/encryption";
 
 const VerifyAccount = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get("email");
-  const code = searchParams.get("code");
+  const [state, setState] = useState({
+    email: "",
+    code: "",
+  });
 
   const [isVerify, setIsVerify] = useState(false);
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [error, setError] = useState(null);
   const inputRefs = useRef([]);
 
+  useEffect(() => {
+    const email = searchParams.get("email");
+    const code = searchParams.get("code");
+    if (email && code) {
+      const enCode = decryptData(decodeURIComponent(code));
+      const enMail = decryptData(decodeURIComponent(email));
+      setState({
+        code: enCode,
+        email: enMail,
+      });
+    } else {
+      router.push("/auth/register");
+    }
+  }, [searchParams, router]);
+
   const handleVerify = useCallback(async () => {
+    const { email, code } = state;
     if (!code || !email) {
       setError("Verification link is incomplete");
       return;
@@ -25,27 +44,24 @@ const VerifyAccount = () => {
     try {
       setIsVerify(true);
       setError(null);
-
       const res = await fetch("/api/auth/verify-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, email }),
+        body: JSON.stringify({ email, code }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Store verification success in session storage
-        sessionStorage.setItem("accountVerified", "true");
-        router.push("/auth/login?verified=true");
+        router.push("/auth/login");
       } else {
         setError(data.message || "Verification failed");
 
         // Handle specific error cases
         if (data.errorType === "PHONE_EXISTS") {
-          router.push("/auth/signup?error=phone_exists");
+          router.push("/auth/login");
         } else if (data.errorType === "DUPLICATE_KEY") {
-          router.push(`/auth/login?email=${encodeURIComponent(email)}`);
+          router.push(`/auth/login`);
         }
       }
     } catch (err) {
@@ -54,19 +70,19 @@ const VerifyAccount = () => {
     } finally {
       setIsVerify(false);
     }
-  }, [code, email, router]);
+  }, [state, router]);
 
   useEffect(() => {
-    if (code?.length === 6) {
-      setOtp(code.split(""));
+    if (state.code?.length === 6) {
+      setOtp(state.code.split(""));
     }
-  }, [code]);
+  }, [state]);
 
   useEffect(() => {
-    if (code && email) {
+    if (state.code && state.email) {
       handleVerify();
     }
-  }, [code, email, handleVerify]);
+  }, [state, handleVerify]);
   const handleResend = () => {};
   return (
     <AIFormWrapper>
@@ -91,7 +107,7 @@ const VerifyAccount = () => {
             <label className="text-white text-sm">Email</label>
             <input
               readOnly
-              value={email || ""}
+              value={state.email || ""}
               className="rounded w-full p-2 text-blue-500 bg-gray-100 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 outline-none"
             />
           </div>

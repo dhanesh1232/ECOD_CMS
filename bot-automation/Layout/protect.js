@@ -2,53 +2,94 @@
 
 import { SideBar } from "@/components/sidebar";
 import { Header } from "@/components/header";
-import { useCallback, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CryptoJS from "crypto-js";
 import OverLayComponent from "@/components/overlay/overlay";
+import { signOut } from "next-auth/react";
 
 export default function ProtectLayout({ children }) {
-  const { data: session, status } = useSession();
-
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isChecking, setIsChecking] = useState(true);
+  const encryptionCache = useRef(new Map());
+  const initialCheckDone = useRef(false);
 
   const SECRET_KEY = process.env.NEXTAUTH_SECRET || "ecodify-dns-key";
-  const encryptData = useCallback(
+
+  const stableEncrypt = useCallback(
     (data) => {
-      return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+      if (!data) return "";
+      if (encryptionCache.current.has(data)) {
+        return encryptionCache.current.get(data);
+      }
+      const encrypted = CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+      encryptionCache.current.set(data, encrypted);
+      return encrypted;
     },
     [SECRET_KEY]
   );
 
-  useEffect(() => {
-    const checkProfileComplete = async () => {
+  const checkProfileComplete = useCallback(async () => {
+    setIsChecking(true);
+    try {
       const res = await fetch("/api/profile/user-info");
       const data = await res.json();
-      console.log(data);
-      if (data.requiresProfileCompletion) {
-        const encryptedName = encryptData(data.name);
-        router.push(
-          `${pathname}?profile=update_req_${encodeURIComponent(encryptedName)}`,
-          { scroll: false }
-        );
+      if (!res.ok && data.message.includes("not")) {
+        console.log("user not found");
+        alert("User not found please register");
+        await signOut();
+      } else {
+        if (data.requiresProfileCompletion) {
+          const encryptedName = stableEncrypt(data.name);
+          const newParams = new URLSearchParams(searchParams);
+          newParams.set(
+            "profile",
+            `update_req_${encodeURIComponent(encryptedName)}`
+          );
+
+          router.push(`settings/?${newParams.toString()}`, { scroll: false });
+        } else {
+          const hasProfileParam = searchParams.has("profile");
+          if (hasProfileParam) {
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete("profile");
+            router.replace(`${pathname}?${newParams.toString()}`);
+          }
+        }
       }
-    };
-    checkProfileComplete();
-  }, [pathname, router, encryptData]);
+    } catch (error) {
+      console.error("Profile check failed:", error);
+    } finally {
+      setIsChecking(false);
+      initialCheckDone.current = true;
+    }
+  }, [stableEncrypt, searchParams, router, pathname]);
+
+  // Fixed useEffect hooks
+  useEffect(() => {
+    if (!initialCheckDone.current) {
+      checkProfileComplete();
+    }
+  }, [checkProfileComplete, pathname, searchParams]); // Add dependencies here
+
+  if (isChecking) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100/30 dark:bg-gray-900/30">
+        <div className="animate-pulse text-xl text-gray-600 dark:text-gray-400">
+          Verifying profile...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-        {/* Sidebar Navigation */}
         <SideBar />
-
-        {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header with user controls */}
           <Header />
-
-          {/* Main Content */}
           <main className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-950 transition-colors duration-300">
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>

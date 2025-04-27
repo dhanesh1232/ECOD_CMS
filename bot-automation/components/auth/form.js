@@ -20,6 +20,7 @@ import {
   FiAlertCircle,
   FiArrowLeft,
 } from "react-icons/fi";
+import { decryptData } from "@/utils/encryption";
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
   tabs: [
@@ -211,19 +212,6 @@ const FORM_CONFIG = {
         </svg>
       ),
     },
-    {
-      id: "facebook",
-      name: "Facebook",
-      icon: (
-        <svg
-          className="w-5 h-5 text-[#1877F2]"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
-        </svg>
-      ),
-    },
   ],
 };
 
@@ -277,11 +265,49 @@ export default function FormComponent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(errorParam || "");
   const [isMounted, setIsMounted] = useState(false);
-
+  const [count, setCount] = useState(5);
+  const [verify, setVerify] = useState({
+    token: "",
+    email: "",
+  });
   useEffect(() => {
     setIsMounted(true);
     return () => setIsMounted(false);
   }, []);
+
+  useEffect(() => {
+    if (formState.isPasswordReset) {
+      setCount(5);
+      const timer = setInterval(() => {
+        setCount((prev) => Math.max(prev - 1, 0));
+      });
+      return () => clearInterval(timer);
+    }
+  }, [formState.isPasswordReset]);
+
+  useEffect(() => {
+    if (formState.isPasswordReset) {
+      if (count === 0) {
+        setFormState((prev) => ({ ...prev, isPasswordReset: false }));
+        router.push("/auth/login");
+      }
+    }
+  }, [router, count, formState.isPasswordReset]);
+
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const email = searchParams.get("email");
+    if (token && email) {
+      const enCode = decryptData(decodeURIComponent(token));
+      const enMail = decryptData(decodeURIComponent(email));
+      if ((enCode, enMail)) {
+        setVerify({
+          token: enCode,
+          email: enMail,
+        });
+      }
+    }
+  }, [searchParams]);
 
   // Handle error from query params
   useEffect(() => {
@@ -422,32 +448,38 @@ export default function FormComponent() {
     try {
       if (pageKey === "login") {
         try {
+          // Prepare credentials
           const credentials = {
             password: formState.password,
             remember: formState.remember,
             redirect: false,
             callbackUrl,
           };
+          // Add email or phone based on active tab
           if (activeTab === "EMAIL") {
             credentials.email = formState.email;
           } else {
             credentials.phone = formState.phone;
           }
+          // Perform the sign-in attempt
           const result = await signIn("credentials", credentials);
-
           if (result?.error) {
-            const errorMessage =
-              {
-                CredentialsSignin: "Invalid credentials",
-                Default: "Login failed. Please try again.",
-              }[result.error] || "Unknown error occurred";
-
+            // Handle errors returned from signIn
+            let errorMessage = "Invalid credentials. Please try again.";
+            if (result.error === "CredentialsSignin") {
+              errorMessage =
+                "Invalid email/phone or password. Please check your input's, register please you don't have account";
+            } else if (result.error === "TooManyRequests") {
+              errorMessage = "Too many login attempts. Please try again later.";
+            }
             setError(errorMessage);
           } else {
             router.push(callbackUrl);
           }
         } catch (error) {
-          setError("An unexpected error occurred");
+          // Log any unexpected errors and display a generic error message
+          console.error("Login Error:", error);
+          setError("An unexpected error occurred. Please try again.");
         }
       } else if (pageKey === "register") {
         const { phone, email, name, password, terms } = formState;
@@ -489,8 +521,7 @@ export default function FormComponent() {
           }));
         }
       } else if (pageKey === "reset-password") {
-        const token = searchParams.get("token");
-        const email = searchParams.get("email");
+        const { token, email } = verify;
         if (!token || !email) {
           setError("Invalid password reset link");
           return;
@@ -1051,7 +1082,7 @@ export default function FormComponent() {
             </motion.div>
 
             <motion.div
-              className="w-full grid grid-cols-2 gap-3"
+              className="w-full grid grid-cols-1 gap-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}

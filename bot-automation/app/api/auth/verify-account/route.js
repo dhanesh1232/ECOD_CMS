@@ -3,6 +3,7 @@ import UserTemp from "@/model/user-temp";
 import User from "@/model/par-user";
 import { NextResponse } from "next/server";
 import rateLimit from "@/utils/rate-limit";
+import { AccountVerificationCompletedMail } from "@/lib/helper";
 
 // Configure rate limiting (5 attempts per hour per IP)
 const limiter = rateLimit({
@@ -138,6 +139,7 @@ export async function POST(req) {
         phone: tempUser.phone,
         isVerified: true,
       });
+      await AccountVerificationCompletedMail(newUser.name, newUser.email);
 
       await newUser.save({ session });
       await UserTemp.deleteOne({ email }).session(session);

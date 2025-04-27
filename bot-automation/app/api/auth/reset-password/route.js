@@ -1,7 +1,7 @@
 import dbConnect from "@/config/dbconnect";
+import { PasswordResetSuccessfulMail } from "@/lib/helper";
 import ForgotTemp from "@/model/for-temp";
 import User from "@/model/par-user";
-import bcrypt from "bcryptjs";
 
 const { NextResponse } = require("next/server");
 
@@ -34,12 +34,10 @@ export async function POST(req) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Update password
-    existingUser.password = hashedPassword;
+    existingUser.password = password;
     await existingUser.save();
+    await PasswordResetSuccessfulMail(existingUser.name, existingUser.email);
 
     // Optionally delete the temp token after use
     await ForgotTemp.deleteOne({ email });
