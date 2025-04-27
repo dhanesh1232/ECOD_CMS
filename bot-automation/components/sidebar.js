@@ -21,6 +21,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Key, User } from "lucide-react";
+import { navItems } from "@/data/bot-links";
 
 export const SideBar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -86,54 +87,6 @@ export const SideBar = () => {
     initials: "JD",
     avatar: null,
   };
-
-  const navItems = [
-    { id: "home", icon: <FiHome size={20} />, label: "Home", href: "/" },
-    {
-      id: "dashboard",
-      icon: <FiPieChart size={20} />,
-      label: "Dashboard",
-      href: "/dashboard",
-      badge: 5,
-    },
-    {
-      id: "chatbots",
-      icon: <AiOutlineRobot size={20} />,
-      label: "My Chatbots",
-      href: "/chatbots",
-    },
-    {
-      id: "conversations",
-      icon: <FiMessageSquare size={20} />,
-      label: "Conversations",
-      href: "/conversations",
-      badge: 12,
-    },
-    {
-      id: "templates",
-      icon: <FiFileText size={20} />,
-      label: "Templates",
-      href: "/templates",
-    },
-    {
-      id: "contacts",
-      icon: <FiUsers size={20} />,
-      label: "Contacts",
-      href: "/contacts",
-    },
-    {
-      id: "settings",
-      icon: <FiSettings size={20} />,
-      label: "Settings",
-      href: "/settings",
-    },
-    {
-      id: "help",
-      icon: <FiHelpCircle size={20} />,
-      label: "Help Center",
-      href: "/help",
-    },
-  ];
 
   const handleMouseEnter = (itemId, event) => {
     if (!collapsed || isMobile) return;
