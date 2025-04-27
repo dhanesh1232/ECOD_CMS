@@ -55,7 +55,7 @@ export function Header() {
       <div className="flex items-center space-x-4">
         {/* Notifications */}
         <button
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-0 transition"
           title="Notifications"
         >
           <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
@@ -64,7 +64,7 @@ export function Header() {
         {/* Toggle Theme */}
         <button
           onClick={toggleDarkMode}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none transition-all"
           title="Toggle Theme"
         >
           {darkMode ? (
