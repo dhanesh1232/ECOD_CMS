@@ -45,16 +45,16 @@ export default function ProtectLayout({ children }) {
           const encryptedName = stableEncrypt(data.name);
           const newParams = new URLSearchParams(searchParams);
           newParams.set(
-            "profile",
+            "model",
             `update_req_${encodeURIComponent(encryptedName)}`
           );
 
           router.push(`settings/?${newParams.toString()}`, { scroll: false });
         } else {
-          const hasProfileParam = searchParams.has("profile");
+          const hasProfileParam = searchParams.has("model");
           if (hasProfileParam) {
             const newParams = new URLSearchParams(searchParams);
-            newParams.delete("profile");
+            newParams.delete("model");
             router.replace(`${pathname}?${newParams.toString()}`);
           }
         }
@@ -88,10 +88,10 @@ export default function ProtectLayout({ children }) {
     <>
       <div className="flex h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
         <SideBar />
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6 bg-white dark:bg-gray-950 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto">{children}</div>
+          <main className="flex-1 overflow-y-auto bg-white h-full dark:bg-gray-950 transition-all ease-in-out duration-300">
+            {children}
           </main>
         </div>
       </div>

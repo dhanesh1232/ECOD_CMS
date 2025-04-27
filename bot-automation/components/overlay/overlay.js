@@ -2,13 +2,14 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import ProfileCompletion from "./profile";
+import LogoutRelay from "./logout";
 
 const OverLayComponent = () => {
   const [isShown, setIsShown] = useState("");
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const pop = searchParams.get("profile");
+    const pop = searchParams.get("model");
     if (pop) {
       setIsShown(pop);
     } else {
@@ -18,6 +19,8 @@ const OverLayComponent = () => {
   const renderOverlay = () => {
     if (isShown.startsWith("update_req")) {
       return <ProfileCompletion />;
+    } else if (isShown.startsWith("confirm_logout")) {
+      return <LogoutRelay />;
     }
     return null;
   };

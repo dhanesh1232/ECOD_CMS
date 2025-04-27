@@ -67,7 +67,7 @@ const ProfileCompletion = () => {
   useEffect(() => {
     if (redirectCounter === 0) {
       const params = new URLSearchParams(searchParams);
-      params.delete("profile");
+      params.delete("model");
       router.replace(`${pathname}?${params.toString()}`);
     }
   }, [redirectCounter, searchParams, pathname, router]);

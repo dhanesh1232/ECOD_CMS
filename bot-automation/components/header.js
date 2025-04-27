@@ -1,16 +1,17 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDarkMode } from "@/context/context";
-import { ChevronDown, Bell, Search, Sun, Moon, User, Key } from "lucide-react";
+import { ChevronDown, Bell, Sun, Moon, User, Key } from "lucide-react";
 import { FiLogOut } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./logo";
-import { signOut } from "next-auth/react";
 
 export function Header() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const profileRef = useRef();
@@ -36,6 +37,12 @@ export function Header() {
 
   const toggleProfileMenu = () => {
     setMenuOpen((prev) => !prev); // Toggle the state
+  };
+  const handleSignOut = () => {
+    if (menuOpen) setMenuOpen(false);
+    const params = new URLSearchParams(searchParams);
+    params.set("model", `confirm_logout`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -102,7 +109,7 @@ export function Header() {
                   <span>Change Password</span>
                 </div>
                 <div
-                  onClick={() => signOut()}
+                  onClick={handleSignOut}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
                   <FiLogOut className="w-4 h-4" />

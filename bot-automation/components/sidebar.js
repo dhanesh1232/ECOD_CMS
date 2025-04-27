@@ -7,7 +7,6 @@ import {
   FiPieChart,
   FiLogOut,
   FiPlus,
-  FiChevronsLeft,
   FiChevronsRight,
   FiHelpCircle,
   FiHome,
@@ -17,11 +16,10 @@ import {
 } from "react-icons/fi";
 import { AiOutlineRobot } from "react-icons/ai";
 import { useState, useRef, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { signOut } from "next-auth/react";
 import { Key, User } from "lucide-react";
 
 export const SideBar = () => {
@@ -33,6 +31,7 @@ export const SideBar = () => {
   const navRef = useRef(null);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userProfile, setUserProfile] = useState(false);
   const profileRef = useRef();
 
@@ -42,9 +41,7 @@ export const SideBar = () => {
         setUserProfile(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -88,7 +85,6 @@ export const SideBar = () => {
     role: "Admin",
     initials: "JD",
     avatar: null,
-    unreadNotifications: 3,
   };
 
   const navItems = [
@@ -148,6 +144,7 @@ export const SideBar = () => {
       top: rect.top + window.scrollY,
       left: rect.right + 8,
     });
+    console.log(itemId);
     setHoveredItem(itemId);
   };
 
@@ -161,7 +158,10 @@ export const SideBar = () => {
   };
 
   const handleLogout = () => {
-    signOut();
+    if (userProfile) setUserProfile(false);
+    const params = new URLSearchParams(searchParams);
+    params.set("model", `confirm_logout`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleNavItemClick = () => {
@@ -196,7 +196,7 @@ export const SideBar = () => {
         type: "spring",
         damping: 25,
         stiffness: 120,
-        duration: 0.3,
+        duration: 1.8,
         ease: "easeInOut",
       }}
       exit={isMobile ? { x: -300 } : {}}
@@ -226,17 +226,12 @@ export const SideBar = () => {
             className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 text-indigo-900 dark:text-gray-50 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-transform hover:scale-110"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? (
-              <FiChevronsRight
-                className="text-indigo-900 dark:text-gray-50"
-                size={16}
-              />
-            ) : (
-              <FiChevronsLeft
-                className="text-indigo-900 dark:text-gray-50"
-                size={16}
-              />
-            )}
+            <FiChevronsRight
+              size={16}
+              className={`text-indigo-900 transition-all ease-in-out duration-150 dark:text-gray-50 ${
+                collapsed ? "" : "rotate-180"
+              }`}
+            />
           </button>
         )}
       </div>
@@ -261,7 +256,9 @@ export const SideBar = () => {
             <li key={item.id}>
               <Link
                 href={item.href}
-                onMouseEnter={(e) => handleMouseEnter(item.id, e)}
+                onMouseEnter={(e) => {
+                  handleMouseEnter(item.id, e);
+                }}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleNavItemClick}
                 className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
@@ -361,7 +358,7 @@ export const SideBar = () => {
                 <span>Change Password</span>
               </div>
               <div
-                onClick={() => signOut()}
+                onClick={handleLogout}
                 className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
               >
                 <FiLogOut className="w-4 h-4" />
