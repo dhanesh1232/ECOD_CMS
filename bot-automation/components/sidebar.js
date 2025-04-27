@@ -174,7 +174,7 @@ export const SideBar = () => {
         ease: "easeInOut",
       }}
       exit={isMobile ? { x: -300 } : {}}
-      className={`flex flex-col h-screen backdrop-blur-lg bg-indigo-800/90 dark:bg-gray-900/95 text-white shadow-xl ${
+      className={`flex flex-col h-full backdrop-blur-lg bg-indigo-800/90 dark:bg-gray-900/95 text-white shadow-xl ${
         collapsed ? "w-20" : "w-64"
       } ${
         isMobile ? "fixed z-30" : "relative"
