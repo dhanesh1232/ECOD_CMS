@@ -26,7 +26,7 @@ const authorizeCredentials = async (credentials) => {
 
     // Find user with email or phone
     const user = await User.findOne({ $or: [{ email }, { phone }] })
-      .select("+password")
+      .select("+password +phone +image +role")
       .lean();
 
     if (!user?.password) {
@@ -41,9 +41,14 @@ const authorizeCredentials = async (credentials) => {
     }
 
     return {
-      ...user,
       id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      phone: user.phone || null, // Ensure phone is included
+      image: user.image || null, // Ensure image is included
+      role: user.role || "user", // Default role if not set
       requiresProfileCompletion: user.requiresProfileCompletion ?? false,
+      provider: "credentials",
     };
   } catch (error) {
     handleError("Credentials authentication", error);
@@ -72,33 +77,58 @@ const handleGoogleSignIn = async ({ user, profile }) => {
     const existingUser = await User.findOne({ email: profile.email });
 
     if (!existingUser) {
+      console.log(profile); //google has returned picture but picture not save in db, i trying do many ways, unale to save googel provided image
       const newUser = await User.create({
         name: profile.name,
         email: profile.email,
         provider: "google",
         isVerified: true,
         role: "user",
+        image: profile.picture, // Save Google profile picture
         requiresProfileCompletion: true,
       });
       user.id = newUser._id.toString();
       user.role = newUser.role;
       user.requiresProfileCompletion = newUser.requiresProfileCompletion;
       await NewSignupGoogleMail(profile.name, profile.email);
-      return newUser;
+      console.log(newUser);
+      return {
+        id: newUser._id.toString(),
+        name: newUser.name,
+        email: newUser.email,
+        image: newUser.image,
+        role: newUser.role,
+        requiresProfileCompletion: newUser.requiresProfileCompletion,
+        provider: "google",
+      };
     } else {
       Object.assign(user, {
         id: existingUser._id.toString(),
         requiresProfileCompletion: existingUser.requiresProfileCompletion,
         phone: existingUser.phone,
+        image: existingUser.image || profile.picture,
         role: existingUser.role || "user",
       });
 
-      if (!existingUser.name && profile.name) {
-        existingUser.name = profile.name;
-        await existingUser.save();
-        console.log("Updated name for existing user");
-      }
-      return existingUser;
+      const updates = {
+        image: profile.picture, // Always update with latest Google picture
+        name: profile.name, // Always update with latest Google name
+        lastLogin: new Date(),
+      };
+
+      await User.updateOne({ _id: existingUser._id }, updates);
+
+      return {
+        id: existingUser._id.toString(),
+        name: existingUser.name || profile.name,
+        email: existingUser.email,
+        phone: existingUser.phone || null,
+        image: existingUser.image,
+        role: existingUser.role || "user",
+        requiresProfileCompletion:
+          existingUser.requiresProfileCompletion ?? false,
+        provider: "google",
+      };
     }
   } catch (error) {
     handleError("Google sign-in", error);
@@ -122,13 +152,14 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user, account, trigger, session: updateSession }) {
-      if (user) {
+      if (user && account) {
         token = {
           ...token,
           sub: user.id,
           name: user.name,
           email: user.email,
           phone: user.phone,
+          image: user.image,
           role: user.role || "user",
           provider: account?.provider || "credentials",
           requiresProfileCompletion: user.requiresProfileCompletion ?? false,
@@ -146,11 +177,11 @@ export const authOptions = {
         id: token.sub,
         name: token.name,
         email: token.email,
-        phone: token.phone,
+        phone: token.phone || null,
         role: token.role || "user",
         provider: token.provider,
         requiresProfileCompletion: token.requiresProfileCompletion,
-        image: token.picture,
+        image: token.image || token.picture,
       };
       return session;
     },
@@ -160,8 +191,17 @@ export const authOptions = {
       try {
         if (account.provider === "google") {
           await sendLoginAlertEmail(profile.name, profile.email);
-          const updateUser = await handleGoogleSignIn({ user, profile });
-          user.role = updateUser?.role || "user";
+          const userData = await handleGoogleSignIn({ user, profile });
+          Object.assign(user, {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            image: userData.image,
+            role: userData.role,
+            requiresProfileCompletion: userData.requiresProfileCompletion,
+            provider: userData.provider,
+          });
         } else {
           await sendLoginAlertEmail(user.name, user.email);
         }
@@ -172,7 +212,7 @@ export const authOptions = {
   },
   pages: {
     signIn: "/auth/login",
-    newUser: "/settings?profile",
+    newUser: "/settings?model",
   },
 };
 

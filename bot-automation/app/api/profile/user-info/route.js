@@ -11,7 +11,7 @@ export async function GET(req) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     const email = session?.user?.email;
-    const user = await User.findOne({ email }).select("-password");
+    const user = await User.findOne({ email }).select("+password +image");
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });

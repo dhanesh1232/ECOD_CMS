@@ -32,32 +32,34 @@ export default function ProtectLayout({ children }) {
   );
 
   const checkProfileComplete = useCallback(async () => {
+    if (initialCheckDone.current) return;
+
     setIsChecking(true);
     try {
       const res = await fetch("/api/profile/user-info");
       const data = await res.json();
-      if (!res.ok && data.message.includes("not")) {
-        console.log("user not found");
-        alert("User not found please register");
-        await signOut();
-      } else {
-        if (data.requiresProfileCompletion) {
-          const encryptedName = stableEncrypt(data.name);
-          const newParams = new URLSearchParams(searchParams);
-          newParams.set(
-            "model",
-            `update_req_${encodeURIComponent(encryptedName)}`
-          );
 
-          router.push(`settings/?${newParams.toString()}`, { scroll: false });
-        } else {
-          const hasProfileParam = searchParams.has("model");
-          if (hasProfileParam) {
-            const newParams = new URLSearchParams(searchParams);
-            newParams.delete("model");
-            router.replace(`${pathname}?${newParams.toString()}`);
-          }
+      if (!res.ok && data.message.includes("not")) {
+        await signOut({ redirect: true, callbackUrl: "/auth/login" });
+        return;
+      }
+
+      if (data.requiresProfileCompletion) {
+        const encryptedName = stableEncrypt(data.name);
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set(
+          "model",
+          `update_req_${encodeURIComponent(encryptedName)}`
+        );
+
+        if (!pathname.startsWith("/settings")) {
+          router.push(`/settings?${newParams.toString()}`, { scroll: false });
+          return;
         }
+      } else if (searchParams.has("model")) {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete("model");
+        router.replace(`${pathname}?${newParams.toString()}`);
       }
     } catch (error) {
       console.error("Profile check failed:", error);
@@ -67,12 +69,9 @@ export default function ProtectLayout({ children }) {
     }
   }, [stableEncrypt, searchParams, router, pathname]);
 
-  // Fixed useEffect hooks
   useEffect(() => {
-    if (!initialCheckDone.current) {
-      checkProfileComplete();
-    }
-  }, [checkProfileComplete, pathname, searchParams]); // Add dependencies here
+    checkProfileComplete();
+  }, [checkProfileComplete]);
 
   if (isChecking) {
     return (
@@ -90,7 +89,7 @@ export default function ProtectLayout({ children }) {
         <SideBar />
         <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
           <Header />
-          <main className="flex-1 bg-white dark:bg-gray-700 transition-colors ease-in-out duration-300">
+          <main className="flex-1 bg-white overflow-hidden overflow-y-auto dark:bg-gray-700 transition-colors ease-in-out duration-300">
             {children}
           </main>
         </div>

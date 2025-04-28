@@ -144,7 +144,7 @@ export const SideBar = () => {
   const MobileMenuButton = () => (
     <button
       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-      className="fixed bottom-4 right-4 z-40 p-3 bg-indigo-600 dark:bg-indigo-700 text-white rounded-full shadow-lg md:hidden transition-all hover:scale-105 active:scale-95 ring-2 ring-white/10 hover:ring-white/20"
+      className="fixed bottom-4 right-8 z-40 p-3 bg-indigo-600 dark:bg-indigo-700 text-white rounded-full shadow-lg md:hidden transition-all hover:scale-105 active:scale-95 ring-2 ring-white/10 hover:ring-white/20"
       aria-label="Toggle menu"
     >
       {mobileMenuOpen ? (
@@ -184,7 +184,11 @@ export const SideBar = () => {
       {/* Logo Section */}
       <div className="p-4 py-4 flex items-center justify-between border-b border-indigo-700/50 dark:border-gray-800 relative">
         {!collapsed && (
-          <Link href="/" className="flex items-center space-x-2 group">
+          <Link
+            href="/"
+            prefetch={true}
+            className="flex items-center space-x-2 group"
+          >
             <div className="p-2 bg-indigo-600 dark:bg-indigo-700 rounded-lg group-hover:bg-indigo-500 dark:group-hover:bg-indigo-600 transition-colors">
               <AiOutlineRobot
                 size={24}
@@ -238,43 +242,51 @@ export const SideBar = () => {
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-600/50 scrollbar-track-transparent">
         <ul className="space-y-1 p-2">
-          {navItems.map((item) => (
-            <li key={item.id}>
-              <Link
-                href={item.href}
-                onMouseEnter={(e) => {
-                  handleMouseEnter(item.id, e);
-                }}
-                onMouseLeave={handleMouseLeave}
-                onClick={handleNavItemClick}
-                className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
-                  pathname === item.href
-                    ? "bg-indigo-700/90 dark:bg-indigo-800/90 text-white shadow-inner shadow-indigo-900/30"
-                    : "hover:bg-indigo-700/50 dark:hover:bg-gray-800/80 text-indigo-100 dark:text-gray-300"
-                } ${collapsed ? "justify-center" : ""}`}
-              >
-                <span className="flex-shrink-0 relative">
-                  {React.cloneElement(item.icon, {
-                    className: `${
-                      pathname === item.href
-                        ? "text-indigo-100 dark:text-indigo-200"
-                        : "text-indigo-300 dark:text-gray-400"
-                    } ${item.icon.props.className || ""}`,
-                  })}
-                  {item.badge && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-indigo-800/90 dark:ring-gray-900/90">
-                      {item.badge > 9 ? "9+" : item.badge}
+          {navItems.map((item) => {
+            // Check if current path matches exactly or is a subroute
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+
+            return (
+              <li key={item.id}>
+                <Link
+                  prefetch={true}
+                  href={item.href}
+                  onMouseEnter={(e) => {
+                    handleMouseEnter(item.id, e);
+                  }}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={handleNavItemClick}
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? "bg-indigo-700/90 dark:bg-indigo-800/90 text-white shadow-inner shadow-indigo-900/30"
+                      : "hover:bg-indigo-700/50 dark:hover:bg-gray-800/80 text-indigo-100 dark:text-gray-300"
+                  } ${collapsed ? "justify-center" : ""}`}
+                >
+                  <span className="flex-shrink-0 relative">
+                    {React.cloneElement(item.icon, {
+                      className: `${
+                        isActive
+                          ? "text-indigo-100 dark:text-indigo-200"
+                          : "text-indigo-300 dark:text-gray-400"
+                      } ${item.icon.props.className || ""}`,
+                    })}
+                    {item.badge && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-indigo-800/90 dark:ring-gray-900/90">
+                        {item.badge > 9 ? "9+" : item.badge}
+                      </span>
+                    )}
+                  </span>
+                  {!collapsed && (
+                    <span className="truncate flex-1 font-medium">
+                      {item.label}
                     </span>
                   )}
-                </span>
-                {!collapsed && (
-                  <span className="truncate flex-1 font-medium">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
@@ -304,7 +316,10 @@ export const SideBar = () => {
         ref={profileRef}
       >
         <div className="flex items-center space-x-3 relative">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center flex-shrink-0 border-2 border-indigo-500/30 dark:border-gray-700">
+          <div
+            onClick={() => setUserProfile(!userProfile)}
+            className="w-10 h-10 rounded-full bg-indigo-600 cursor-pointer dark:bg-indigo-700 flex items-center justify-center flex-shrink-0 border-2 border-indigo-500/30 dark:border-gray-700"
+          >
             <span className="font-medium text-indigo-100 dark:text-indigo-200">
               {session?.user?.name
                 ?.split(" ")
@@ -323,7 +338,7 @@ export const SideBar = () => {
                 <p className="font-medium truncate text-white dark:text-gray-100">
                   {session?.user?.name}
                 </p>
-                <p className="text-xs text-indigo-300/90 dark:text-indigo-400/90 truncate">
+                <p className="text-xs text-indigo-300/90 capitalize font-bold dark:text-indigo-400/90 truncate">
                   {session?.user?.role}
                 </p>
               </div>
@@ -352,14 +367,16 @@ export const SideBar = () => {
               className="absolute left-4 bottom-[74px] mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-200 dark:border-gray-700"
             >
               <Link
-                href="/settings/profile"
+                prefetch={true}
+                href="/settings/account/profile"
                 className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
               >
                 <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                 <span className="text-sm">{session?.user?.name}</span>
               </Link>
               <Link
-                href="/settings/security"
+                prefetch={true}
+                href="/settings/account/security"
                 className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
               >
                 <Lock className="w-4 h-4 text-gray-500 dark:text-gray-400" />

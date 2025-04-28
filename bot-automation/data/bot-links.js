@@ -16,13 +16,7 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { AiOutlineRobot } from "react-icons/ai";
-import { PaintBucket, Plug } from "lucide-react";
-const user = {
-  name: "John Doe",
-  role: "Admin",
-  initials: "JD",
-  avatar: null,
-};
+import { PaintBucket, Plug, Settings } from "lucide-react";
 
 export const navItems = [
   { id: "home", icon: <FiHome size={20} />, label: "Home", href: "/" },
@@ -74,23 +68,29 @@ export const navItems = [
 
 export const settingsNavItems = [
   {
+    id: "general",
+    category: "General",
+    href: "/settings",
+    icon: <Settings className="w-4 h-4" />,
+  },
+  {
     id: "account",
     category: "Account",
     icon: <FiUser className="w-4 h-4" />,
     items: [
       {
         name: "Profile",
-        href: "/settings/profile",
+        href: "/settings/account/profile",
         icon: <FiUser className="w-4 h-4" />,
       },
       {
         name: "Password & Security",
-        href: "/settings/security",
+        href: "/settings/account/security",
         icon: <FiLock className="w-4 h-4" />,
       },
       {
         name: "Billing & Plans",
-        href: "/settings/billing",
+        href: "/settings/account/billing",
         icon: <FiCreditCard className="w-4 h-4" />,
       },
     ],
@@ -102,17 +102,17 @@ export const settingsNavItems = [
     items: [
       {
         name: "Team Members",
-        href: "/settings/team",
+        href: "/settings/workspace/team",
         icon: <FiUsers className="w-4 h-4" />,
       },
       {
         name: "API Keys",
-        href: "/settings/api",
+        href: "/settings/workspace/api",
         icon: <FiKey className="w-4 h-4" />,
       },
       {
         name: "Usage Analytics",
-        href: "/settings/analytics",
+        href: "/settings/workspace/analytics",
         icon: <FiBarChart2 className="w-4 h-4" />,
       },
     ],
@@ -124,22 +124,22 @@ export const settingsNavItems = [
     items: [
       {
         name: "Appearance",
-        href: "/settings/appearance",
+        href: "/settings/chatbot/appearance",
         icon: <PaintBucket className="w-4 h-4" />,
       },
       {
         name: "Behavior",
-        href: "/settings/behavior",
+        href: "/settings/chatbot/behavior",
         icon: <FiSettings className="w-4 h-4" />,
       },
       {
         name: "Integrations",
-        href: "/settings/integrations",
+        href: "/settings/chatbot/integrations",
         icon: <Plug className="w-4 h-4" />,
       },
       {
         name: "Training Data",
-        href: "/settings/training",
+        href: "/settings/chatbot/training",
         icon: <FiCpu className="w-4 h-4" />,
       },
     ],
@@ -159,6 +159,7 @@ export const settingsNavItems = [
         name: "Contact Support",
         href: "/settings/support",
         icon: <FiLifeBuoy className="w-4 h-4" />,
+        external: true,
       },
     ],
   },

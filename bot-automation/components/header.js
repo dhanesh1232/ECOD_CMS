@@ -120,14 +120,14 @@ export function Header() {
                 className="absolute right-0 sm:-right-4 mt-2 px-1 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-100 dark:border-gray-700"
               >
                 <Link
-                  href="/settings/profile"
+                  href="/settings/account/profile"
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
                   <User className="w-4 h-4" />
                   <span className="text-sm">{session?.user?.name}</span>
                 </Link>
                 <Link
-                  href="/settings/security"
+                  href="/settings/account/security"
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
                   <Lock className="w-4 h-4" />

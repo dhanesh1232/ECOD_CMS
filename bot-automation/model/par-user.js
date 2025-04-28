@@ -25,6 +25,30 @@ const userSchema = new mongoose.Schema(
       minlength: [8, "Password must be at least 8 characters"],
       select: false,
     },
+    image: {
+      type: String,
+      default: "",
+      validate: {
+        validator: function (v) {
+          return (
+            !v ||
+            validator.isURL(v, {
+              protocols: ["http", "https"],
+              require_protocol: true,
+            })
+          );
+        },
+        message: "Image must be a valid URL",
+      },
+    },
+    company: {
+      type: String,
+      default: "",
+    },
+    website: {
+      type: String,
+      default: "",
+    },
     phone: {
       type: String,
       unique: true,
