@@ -179,7 +179,6 @@ const CodeParticles = () => {
 
 export default function AIFormWrapper({ children }) {
   const [isMounted, setIsMounted] = useState(false);
-  const scanLineRef = useRef();
 
   useEffect(() => {
     setIsMounted(true);
@@ -199,7 +198,7 @@ export default function AIFormWrapper({ children }) {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-black bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 overflow-hidden p-4">
+    <div className="relative h-full flex items-center justify-center dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-black bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 overflow-hidden p-4">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 dark:bg-[url('/grid-pattern.svg')] bg-[url('/grid-pattern-light.svg')] dark:opacity-[0.03] opacity-[0.05]" />
       <CodeParticles />
