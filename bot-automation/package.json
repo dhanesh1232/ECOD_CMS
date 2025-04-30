@@ -20,14 +20,17 @@
     "chart.js": "^4.4.8",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
+    "copy-webpack-plugin": "^13.0.0",
     "crypto": "^1.0.1",
     "crypto-js": "^4.2.0",
     "framer-motion": "^12.6.5",
+    "geoip-lite": "^1.4.10",
     "google-libphonenumber": "^3.2.40",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "libphonenumber-js": "^1.12.7",
     "lucide-react": "^0.487.0",
+    "maxmind": "^4.3.24",
     "mongoose": "^8.13.2",
     "next": "^15.3.0",
     "next-auth": "^4.24.11",
@@ -62,6 +65,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "postcss": "^8.5.3",
-    "tailwindcss": "^3.3.3"
+    "tailwindcss": "^3.3.3",
+    "url": "^0.11.4"
   }
 }

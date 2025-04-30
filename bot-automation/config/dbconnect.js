@@ -24,15 +24,10 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
-      .then((mongoose) => {
-        console.log("✅ MongoDB connected");
-        return mongoose;
-      });
+    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
+      console.log("✅ MongoDB connected");
+      return mongoose;
+    });
   }
 
   cached.conn = await cached.promise;
