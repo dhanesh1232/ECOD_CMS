@@ -1,14 +1,30 @@
 "use client";
 
 import { FiLogOut, FiPlus, FiChevronsRight, FiMenu, FiX } from "react-icons/fi";
-import { AiOutlineRobot } from "react-icons/ai";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, User } from "lucide-react";
 import { navItems } from "@/data/bot-links";
 import { useSession } from "next-auth/react";
+import { createPortal } from "react-dom";
+
+const ChatBotAI = () => (
+  <svg
+    width="20"
+    height="20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    viewBox="0 0 24 24"
+  >
+    <path d="M9 2h6v2h3a2 2 0 0 1 2 2v9a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V6a2 2 0 0 1 2-2h3V2z" />
+    <circle cx="9" cy="10" r="1" />
+    <circle cx="15" cy="10" r="1" />
+    <path d="M8 16h8" strokeLinecap="round" />
+  </svg>
+);
 
 export const SideBar = () => {
   const { data: session } = useSession();
@@ -21,7 +37,9 @@ export const SideBar = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userProfile, setUserProfile] = useState(false);
-  const profileRef = useRef();
+  const profileRef = useRef(null);
+  const tooltipTimeout = useRef(null);
+
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sidebarCollapsed");
@@ -34,198 +52,132 @@ export const SideBar = () => {
     localStorage.setItem("sidebarCollapsed", JSON.stringify(collapsed));
   }, [collapsed]);
 
-  // 3. Mobile handling (separate from localStorage logic)
   useEffect(() => {
-    const checkIfMobile = () => window.innerWidth < 768;
-    const mobile = checkIfMobile();
-    setIsMobile(mobile);
-
-    // On mobile, always collapse (override localStorage)
-    if (mobile) {
-      setCollapsed(true);
-    }
-
+    const checkMobile = () => window.innerWidth < 768;
     const handleResize = () => {
-      const newMobile = checkIfMobile();
-      setIsMobile(newMobile);
-      if (newMobile) {
-        setCollapsed(true);
-      } else {
-        // When switching back to desktop, restore localStorage value
-        const saved = localStorage.getItem("sidebarCollapsed");
-        if (saved !== null) setCollapsed(JSON.parse(saved));
-      }
+      const mobile = checkMobile();
+      setIsMobile(mobile);
+      if (mobile) setCollapsed(true);
+      else
+        setCollapsed(
+          JSON.parse(localStorage.getItem("sidebarCollapsed") || "false")
+        );
     };
 
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const handleTooltip = (itemId, event) => {
+    if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
+
+    if (itemId && event?.currentTarget) {
+      const target = event.currentTarget;
+
+      tooltipTimeout.current = setTimeout(() => {
+        if (!target) return; // just in case
+
+        const rect = target.getBoundingClientRect();
+        setTooltipPosition({
+          top: rect.top + window.scrollY + rect.height / 2,
+          left: rect.right + 12,
+        });
+        setHoveredItem(itemId);
+      }, 150);
+    } else {
+      setHoveredItem(null);
+    }
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setUserProfile(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
     };
   }, []);
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        isMobile &&
-        mobileMenuOpen &&
-        navRef.current &&
-        !navRef.current.contains(event.target)
-      ) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMobile, mobileMenuOpen]);
-
-  const handleMouseEnter = (itemId, event) => {
-    if (!collapsed || isMobile) return;
-
-    const target = event.currentTarget;
-    const rect = target.getBoundingClientRect();
-    setTooltipPosition({
-      top: rect.top + window.scrollY,
-      left: rect.right + 8,
-    });
-    setHoveredItem(itemId);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredItem(null);
-  };
-
   const handleCreateNew = () => {
-    router.push("/chatbots/new");
+    router.push("/new");
     if (isMobile) setMobileMenuOpen(false);
   };
 
   const handleLogout = () => {
-    if (userProfile) setUserProfile(false);
+    setUserProfile(false);
     const params = new URLSearchParams(searchParams);
-    params.set("model", `confirm_logout`);
+    params.set("model", "confirm_logout");
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const handleNavItemClick = () => {
-    if (isMobile) setMobileMenuOpen(false);
-  };
-
-  const toggleSidebar = () => {
-    const newCollapsed = !collapsed;
-    setCollapsed(newCollapsed);
-    setHoveredItem(null);
-    if (newCollapsed) {
-      setUserProfile(false);
-    }
-  };
-
-  // Escape key handler
-  useEffect(() => {
-    const handleEscape = (event) => {
-      if (event.key === "Escape") setUserProfile(false);
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, []);
-
-  // Mobile menu toggle button (shown only on mobile)
-  const MobileMenuButton = () => (
-    <button
-      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-      className="fixed bottom-4 right-8 z-40 p-3 bg-indigo-600 dark:bg-indigo-700 text-white rounded-full shadow-lg md:hidden transition-all hover:scale-105 active:scale-95 ring-2 ring-white/10 hover:ring-white/20"
-      aria-label="Toggle menu"
-    >
-      {mobileMenuOpen ? (
-        <FiX
-          size={24}
-          className="transform transition-transform duration-200"
-        />
-      ) : (
-        <FiMenu
-          size={24}
-          className="transform transition-transform duration-200"
-        />
-      )}
-    </button>
+  const activeNavItem = useMemo(
+    () =>
+      navItems.find(
+        (item) =>
+          pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(`${item.href}/`))
+      ),
+    [pathname]
   );
 
-  // Main sidebar content
+  const MobileOverlay = () =>
+    createPortal(
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20"
+            onClick={() => setMobileMenuOpen(false)}
+            role="presentation"
+          />
+        )}
+      </AnimatePresence>,
+      document.body
+    );
+
   const SidebarContent = () => (
-    <motion.div
-      initial={isMobile ? { x: -300 } : { opacity: 1 }}
-      animate={isMobile ? { x: mobileMenuOpen ? 0 : -300 } : { opacity: 1 }}
-      transition={{
-        type: "spring",
-        damping: 25,
-        stiffness: 120,
-        duration: 0.5,
-        ease: "easeInOut",
-      }}
-      exit={isMobile ? { x: -300 } : {}}
+    <motion.nav
+      initial={isMobile ? { x: -300 } : false}
+      animate={isMobile ? { x: mobileMenuOpen ? 0 : -300 } : {}}
+      transition={{ type: "spring", damping: 20, stiffness: 200 }}
       className={`flex flex-col h-full backdrop-blur-lg bg-indigo-800/90 dark:bg-gray-900/95 text-white shadow-xl ${
         collapsed ? "w-20" : "w-64"
       } ${
         isMobile ? "fixed z-30" : "relative"
       } border-r border-indigo-700/50 dark:border-gray-800`}
       ref={navRef}
+      aria-label="Main navigation"
     >
-      {/* Logo Section */}
-      <div className="p-4 py-4 flex items-center justify-between border-b border-indigo-700/50 dark:border-gray-800 relative">
-        {!collapsed && (
-          <Link
-            href="/"
-            prefetch={true}
-            className="flex items-center space-x-2 group"
-          >
-            <div className="p-2 bg-indigo-600 dark:bg-indigo-700 rounded-lg group-hover:bg-indigo-500 dark:group-hover:bg-indigo-600 transition-colors">
-              <AiOutlineRobot
-                size={24}
-                className="text-indigo-100 dark:text-indigo-200"
-              />
-            </div>
-            <span className="text-xl font-bold whitespace-nowrap text-white dark:text-gray-100">
-              ChatBot Studio
-            </span>
-          </Link>
-        )}
-        {collapsed && (
-          <div className="w-full flex justify-center">
-            <div className="p-2 bg-indigo-600 dark:bg-indigo-700 rounded-lg">
-              <AiOutlineRobot
-                size={24}
-                className="text-indigo-100 dark:text-indigo-200"
-              />
-            </div>
+      {/* Header Section */}
+      <div className="p-4 py-4 flex items-center justify-between border-b border-indigo-700/50 relative">
+        <Link
+          href="/"
+          className={`flex items-center ${
+            collapsed ? "justify-center w-full" : "space-x-2"
+          }`}
+          aria-label="Home"
+        >
+          <div className="p-2 bg-indigo-600 rounded-lg transition-colors">
+            <ChatBotAI />
           </div>
-        )}
+          {!collapsed && (
+            <span className="text-xl font-bold text-white">ECODrIx</span>
+          )}
+        </Link>
         {!isMobile && (
           <button
-            onClick={toggleSidebar}
-            className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 text-indigo-800 dark:text-gray-50 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all hover:scale-110 active:scale-95"
+            onClick={() => setCollapsed(!collapsed)}
+            className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-md border hover:scale-110"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <FiChevronsRight
-              size={16}
-              className={`text-indigo-800 dark:text-gray-50 transition-transform duration-300 ${
-                collapsed ? "rotate-0" : "rotate-180"
+              className={`transition-transform text-gray-950 dark:text-white ${
+                collapsed ? "" : "rotate-180"
               }`}
             />
           </button>
         )}
       </div>
-
       {/* Create New Button */}
       <div className="p-4">
         <button
@@ -239,190 +191,156 @@ export const SideBar = () => {
         </button>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-600/50 scrollbar-track-transparent">
-        <ul className="space-y-1 p-2">
-          {navItems.map((item) => {
-            // Check if current path matches exactly or is a subroute
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+      {/* Navigation Items */}
+      <ul className="flex-1 overflow-y-auto p-2 space-y-1">
+        {navItems.map((item) => {
+          const isActive = item.href === activeNavItem?.href;
+          return (
+            <li key={item.id}>
+              <Link
+                href={item.href}
+                onMouseEnter={(e) => handleTooltip(item.id, e)}
+                onMouseLeave={() => handleTooltip(null)}
+                onClick={() => isMobile && setMobileMenuOpen(false)}
+                className={`flex items-center p-3 rounded-lg transition-colors ${
+                  collapsed ? "justify-center" : "space-x-3"
+                } ${
+                  isActive
+                    ? "bg-indigo-700/90 shadow-inner"
+                    : "hover:bg-indigo-700/50"
+                }`}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {React.cloneElement(item.icon, {
+                  className: `flex-shrink-0 ${
+                    isActive ? "text-indigo-100" : "text-indigo-300"
+                  }`,
+                })}
+                {!collapsed && (
+                  <span className="font-medium truncate">{item.label}</span>
+                )}
+                {isActive && !collapsed && (
+                  <div className="ml-auto w-1 h-6 bg-indigo-300 rounded-full" />
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
 
-            return (
-              <li key={item.id}>
-                <Link
-                  prefetch={true}
-                  href={item.href}
-                  onMouseEnter={(e) => {
-                    handleMouseEnter(item.id, e);
-                  }}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={handleNavItemClick}
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-indigo-700/90 dark:bg-indigo-800/90 text-white shadow-inner shadow-indigo-900/30"
-                      : "hover:bg-indigo-700/50 dark:hover:bg-gray-800/80 text-indigo-100 dark:text-gray-300"
-                  } ${collapsed ? "justify-center" : ""}`}
-                >
-                  <span className="flex-shrink-0 relative">
-                    {React.cloneElement(item.icon, {
-                      className: `${
-                        isActive
-                          ? "text-indigo-100 dark:text-indigo-200"
-                          : "text-indigo-300 dark:text-gray-400"
-                      } ${item.icon.props.className || ""}`,
-                    })}
-                    {item.badge && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center ring-2 ring-indigo-800/90 dark:ring-gray-900/90">
-                        {item.badge > 9 ? "9+" : item.badge}
-                      </span>
-                    )}
-                  </span>
-                  {!collapsed && (
-                    <span className="truncate flex-1 font-medium">
-                      {item.label}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      {/* Floating Tooltip */}
-      <AnimatePresence>
-        {hoveredItem && collapsed && !isMobile && (
-          <motion.div
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            transition={{ duration: 0.15 }}
-            className="fixed z-10 px-3 py-2 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded shadow-lg whitespace-nowrap pointer-events-none border border-gray-700 dark:border-gray-600"
-            style={{
-              top: `${tooltipPosition.top}px`,
-              left: `${tooltipPosition.left}px`,
-            }}
-          >
-            {navItems.find((item) => item.id === hoveredItem)?.label}
-            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-800 dark:bg-gray-700 transform rotate-45 border-l border-t border-gray-700 dark:border-gray-600" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* User Profile */}
+      {/* User Profile Section */}
       <div
-        className="p-4 border-t border-indigo-700/50 dark:border-gray-800 relative"
+        className="p-4 border-t border-indigo-700/50 relative"
         ref={profileRef}
       >
-        <div className="flex items-center space-x-3 relative">
-          <div
+        <div className="flex items-center space-x-3">
+          <button
             onClick={() => setUserProfile(!userProfile)}
-            className="w-10 h-10 rounded-full bg-indigo-600 cursor-pointer dark:bg-indigo-700 flex items-center justify-center flex-shrink-0 border-2 border-indigo-500/30 dark:border-gray-700"
+            className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center border-2 border-indigo-500/30"
+            aria-label="User profile"
           >
-            <span className="font-medium text-indigo-100 dark:text-indigo-200">
+            <span className="font-medium text-indigo-100">
               {session?.user?.name
                 ?.split(" ")
-                .map((word) => word[0])
+                .map((n) => n[0])
                 .join("")
                 .toUpperCase()}
             </span>
-          </div>
-
+          </button>
           {!collapsed && (
             <>
-              <div
-                className="flex-1 min-w-0 cursor-pointer"
-                onClick={() => setUserProfile(!userProfile)}
-              >
-                <p className="font-medium truncate text-white dark:text-gray-100">
-                  {session?.user?.name}
-                </p>
-                <p className="text-xs text-indigo-300/90 capitalize font-bold dark:text-indigo-400/90 truncate">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{session?.user?.name}</p>
+                <p className="text-xs text-indigo-300/90 truncate">
                   {session?.user?.role}
                 </p>
               </div>
-              <div className="relative">
-                <button
-                  onClick={handleLogout}
-                  className="p-1.5 rounded-lg hover:bg-indigo-700/50 dark:hover:bg-gray-700 transition-colors"
-                  aria-label="Logout"
-                >
-                  <FiLogOut
-                    size={18}
-                    className="text-indigo-200 dark:text-gray-300"
-                  />
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="p-1.5 hover:bg-indigo-700/50 rounded-lg"
+                aria-label="Logout"
+              >
+                <FiLogOut className="text-indigo-200" />
+              </button>
             </>
           )}
         </div>
+
+        {/* Profile Dropdown */}
         <AnimatePresence>
-          {userProfile && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              transition={{ ease: "easeInOut", duration: 0.3 }}
-              className="absolute left-4 bottom-[74px] mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-200 dark:border-gray-700"
-            >
-              <Link
-                prefetch={true}
-                href="/settings/account/profile"
-                className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
+          {userProfile &&
+            createPortal(
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="fixed bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2 z-50 border dark:border-gray-700"
+                style={{
+                  top: `${profileRef.current?.getBoundingClientRect().top}px`,
+                  left: `${
+                    (profileRef.current?.getBoundingClientRect().left || 0) + 60
+                  }px`,
+                }}
               >
-                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-sm">{session?.user?.name}</span>
-              </Link>
-              <Link
-                prefetch={true}
-                href="/settings/account/security"
-                className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
-              >
-                <Lock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span>Security</span>
-              </Link>
-              <div
-                onClick={handleLogout}
-                className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700/80 cursor-pointer rounded-md transition-colors"
-              >
-                <FiLogOut className="w-4 h-4" />
-                <span>Logout</span>
-              </div>
-            </motion.div>
-          )}
+                <Link
+                  href="/settings/account/profile"
+                  className="px-4 py-2 flex items-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Profile</span>
+                </Link>
+                <Link
+                  href="/settings/account/security"
+                  className="px-4 py-2 flex items-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Security</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 w-full text-left flex items-center gap-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                >
+                  <FiLogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </motion.div>,
+              document.body
+            )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </motion.nav>
   );
 
   return (
     <>
-      {/* Desktop Sidebar (always visible) */}
-      <div className="hidden md:block z-50">
+      <div className="hidden md:block">
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar (conditionally shown) */}
       {isMobile && (
         <>
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-20"
-                onClick={() => setMobileMenuOpen(false)}
-              />
-            )}
-          </AnimatePresence>
+          <MobileOverlay />
           <SidebarContent />
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden fixed bottom-4 right-8 z-40 p-3 bg-indigo-600 text-white rounded-full shadow-lg"
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
         </>
       )}
 
-      {/* Mobile Menu Toggle Button */}
-      <MobileMenuButton />
+      {/* Floating Tooltip */}
+      {!isMobile && hoveredItem && collapsed && (
+        <div
+          className="fixed z-50 px-3 py-2 bg-gray-800 text-white text-sm rounded shadow-lg pointer-events-none"
+          style={{ ...tooltipPosition }}
+        >
+          {navItems.find((i) => i.id === hoveredItem)?.label}
+          <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45" />
+        </div>
+      )}
     </>
   );
 };

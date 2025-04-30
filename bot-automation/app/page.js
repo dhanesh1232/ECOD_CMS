@@ -3,11 +3,11 @@
 import { useSession } from "next-auth/react";
 
 export default function Home() {
-  const { data: session } = useSession();
-
   return (
-    <div className="bg-white dark:bg-gray-700 w-full h-full">
+    <div className="bg-white flex-col dark:bg-gray-700 w-full flex items-center h-full p-4 sm:p-6">
       <h1>Home</h1>
+      <p>Quick overview, onboarding guide, key stats</p>
+      <span>Recent updates, news, tips</span>
     </div>
   );
 }

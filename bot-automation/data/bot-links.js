@@ -1,10 +1,7 @@
 import {
-  FiMessageSquare,
   FiSettings,
   FiUsers,
-  FiPieChart,
   FiHelpCircle,
-  FiHome,
   FiFileText,
   FiBook,
   FiLifeBuoy,
@@ -15,36 +12,85 @@ import {
   FiLock,
   FiUser,
 } from "react-icons/fi";
-import { AiOutlineRobot } from "react-icons/ai";
 import { PaintBucket, Plug, Settings } from "lucide-react";
 
 export const navItems = [
-  { id: "home", icon: <FiHome size={20} />, label: "Home", href: "/" },
   {
     id: "dashboard",
-    icon: <FiPieChart size={20} />,
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+      >
+        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z" />
+      </svg>
+    ),
     label: "Dashboard",
-    href: "/dashboard",
-    badge: 5,
+    href: "/",
   },
   {
     id: "chatbots",
-    icon: <AiOutlineRobot size={20} />,
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+      >
+        <path d="M9 2h6v2h3a2 2 0 0 1 2 2v9a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V6a2 2 0 0 1 2-2h3V2z" />
+        <circle cx="9" cy="10" r="1" />
+        <circle cx="15" cy="10" r="1" />
+        <path d="M8 16h8" strokeLinecap="round" />
+      </svg>
+    ),
     label: "My Chatbots",
     href: "/chatbots",
   },
   {
-    id: "conversations",
-    icon: <FiMessageSquare size={20} />,
-    label: "Conversations",
-    href: "/conversations",
-    badge: 12,
+    id: "analytics",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+      >
+        <path d="M4 18V6m4 12V10m4 8v-4m4 4V8m4 10V4" />
+      </svg>
+    ),
+    label: "Analytics",
+    href: "/analytics",
   },
   {
-    id: "templates",
+    id: "conversations",
+    icon: (
+      <svg
+        width="20"
+        height="20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+    label: "Conversations",
+    href: "/conversations",
+  },
+  {
+    id: "template",
     icon: <FiFileText size={20} />,
     label: "Templates",
-    href: "/templates",
+    href: "/template",
   },
   {
     id: "contacts",
