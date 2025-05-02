@@ -17,7 +17,7 @@ import { service_client_data } from "@/data/service_data";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE;
-
+const KEY = process.env.NEXT_PUBLIC_IP_KEY;
 // Constants
 const TEMP_EMAIL_DOMAINS = [
   "temp-mail.org",
@@ -164,50 +164,54 @@ const ContactModel = ({ onClose }) => {
   });
 
   // Effects
-  useEffect(() => {
-    // Generate form fingerprint on mount
-    const fingerprint = {
-      screenResolution: `${window.screen.width}x${window.screen.height}`,
-      colorDepth: window.screen.colorDepth,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      plugins: Array.from(navigator.plugins)
-        .map((p) => p.name)
-        .join(","),
-      cookiesEnabled: navigator.cookieEnabled,
-      doNotTrack: navigator.doNotTrack || "unknown",
-      hardwareConcurrency: navigator.hardwareConcurrency || "unknown",
-      language: navigator.language,
-      platform: navigator.platform,
-    };
-    setFormFingerprint(JSON.stringify(fingerprint));
-    setUserAgent(navigator.userAgent);
+  const fetchIPDetails = async () => {
+    try {
+      const ipResponse = await fetch("https://api.ipify.org?format=json");
+      const ipData = await ipResponse.json();
+      const ip = ipData.ip;
 
-    // Get IP address
-    const fetchIP = async () => {
-      try {
-        const response = await fetch("https://api.ipify.org?format=json");
-        const data = await response.json();
-        console.log(fingerprint);
-        setIpAddress(data.ip);
-      } catch (error) {
-        console.error("Error fetching IP:", error);
-        setIpAddress("unknown");
-      }
-    };
+      // Get geolocation details
+      const geoResponse = await fetch(
+        `https://ipinfo.io/${ip}/json?token=${KEY}`
+      );
+      const geoData = await geoResponse.json();
 
-    fetchIP();
+      console.log("IP:", ip);
+      console.log("Geo Info:", geoData);
 
-    // Check submission count from localStorage
-    const submissions = localStorage.getItem("formSubmissions");
-    if (submissions) {
-      setFormSubmissions(parseInt(submissions));
+      // Device type detection
+      const deviceType = /mobile/i.test(navigator.userAgent)
+        ? "Mobile"
+        : "Desktop";
+
+      // Combine the data into your fingerprint
+      const fingerprint = {
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        colorDepth: window.screen.colorDepth,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        plugins: Array.from(navigator.plugins)
+          .map((p) => p.name)
+          .join(","),
+        cookiesEnabled: navigator.cookieEnabled,
+        doNotTrack: navigator.doNotTrack || "unknown",
+        hardwareConcurrency: navigator.hardwareConcurrency || "unknown",
+        language: navigator.language,
+        platform: navigator.platform,
+        country: geoData.country, // Country from IP
+        deviceType: deviceType, // Device type
+      };
+
+      console.log(fingerprint, navigator, ip);
+      setFormFingerprint(JSON.stringify(fingerprint));
+      setIpAddress(ip);
+    } catch (error) {
+      console.error("Error fetching IP or geo data:", error);
+      setIpAddress("unknown");
     }
+  };
 
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef?.current);
-      }
-    };
+  useEffect(() => {
+    fetchIPDetails();
   }, []);
 
   const validateCoupon = async () => {

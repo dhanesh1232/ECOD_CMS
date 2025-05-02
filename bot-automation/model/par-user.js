@@ -3,6 +3,27 @@ import bcrypt from "bcryptjs";
 import validator from "validator";
 import crypto from "crypto";
 import { RateLimiterMongo } from "rate-limiter-flexible";
+import dbConnect from "@/config/dbconnect";
+
+// Rate Limiter Initialization
+let rateLimiter;
+
+const initializeRateLimiter = async () => {
+  if (!rateLimiter) {
+    await dbConnect(); // Ensure connection is ready
+
+    rateLimiter = new RateLimiterMongo({
+      storeClient: mongoose.connection.getClient(),
+      dbName: process.env.DB_NAME,
+      points: 5,
+      duration: 15 * 60,
+      blockDuration: 60 * 60,
+      tableName: "login_rate_limits",
+      inmemoryBlockOnConsumed: true,
+    });
+  }
+  return rateLimiter;
+};
 
 const userSchema = new mongoose.Schema(
   {
@@ -42,6 +63,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin", "moderator"],
       default: "user",
+    },
+    plan: {
+      type: String,
+      enum: ["free", "starter", "pro", "enterprise"],
+      default: "free",
     },
 
     // Security Tracking
@@ -96,18 +122,22 @@ const userSchema = new mongoose.Schema(
     website: {
       type: String,
       validate: {
-        validator: (v) => validator.isURL(v, { require_protocol: true }),
-        message: "Invalid website URL",
+        validator: function (v) {
+          return v === null || v === "" || validator.isURL(v);
+        },
+        message: (props) => `${props.value} is not a valid URL`,
       },
+      default: null,
     },
     phone: {
       type: String,
-      unique: true,
-      sparse: true,
       validate: {
-        validator: (v) => validator.isMobilePhone(v),
-        message: "Invalid phone number",
+        validator: function (v) {
+          return v === null || v === "" || validator.isMobilePhone(v);
+        },
+        message: (props) => `${props.value} is not a valid phone number`,
       },
+      default: null,
     },
 
     // System Flags
@@ -140,19 +170,16 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Initialize rate limiter
-const rateLimiter = new RateLimiterMongo({
-  storeClient: mongoose.connection,
-  dbName: process.env.DB_NAME,
-  points: 5, // 5 attempts
-  duration: 15 * 60, // 15 minutes
-  blockDuration: 60 * 60, // 1 hour block
-  tableName: "login_rate_limits",
-});
-
 // ======================
 // SCHEMA METHODS
 // ======================
+
+userSchema.virtual("subscription", {
+  ref: "Subscription",
+  localField: "_id",
+  foreignField: "user",
+  justOne: true,
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -196,7 +223,7 @@ userSchema.methods = {
     return resetToken;
   },
 
-  // Track login activity using API-based geolocation
+  // Track login activity
   trackLogin: async function (req) {
     try {
       const ip = req.ip;
@@ -260,29 +287,39 @@ userSchema.statics = {
     return !!user;
   },
 
-  // Rate limiter integration
+  // Updated Rate Limiter Method
   consumeLoginRateLimit: async function (email, ip) {
     const rateLimiterKey = `login_${email}_${ip}`;
     try {
-      await rateLimiter.consume(rateLimiterKey);
+      const limiter = await initializeRateLimiter();
+      await limiter.consume(rateLimiterKey);
       return true;
     } catch (rejRes) {
+      if (rejRes instanceof Error) {
+        console.error("Rate limiter error:", rejRes);
+        throw new Error("Login service unavailable. Please try again later.");
+      }
       throw new Error("Too many login attempts. Try again later.");
     }
   },
 
-  // API-based IP location lookup
   getIpLocation: async function (ip) {
     try {
       // Skip API call for localhost or private IPs
       if (ip === "::1" || ip === "127.0.0.1" || ip.startsWith("192.168.")) {
+        console.log("Local IP detected, skipping location lookup");
         return { country: "Local", region: "Local", city: "Local" };
       }
 
+      console.log(`Looking up location for IP: ${ip}`);
       const response = await fetch(`https://ipapi.co/${ip}/json/`);
-      if (!response.ok) throw new Error("IP API request failed");
+      if (!response.ok) {
+        console.error(`IP API request failed with status: ${response.status}`);
+        throw new Error("IP API request failed");
+      }
 
       const data = await response.json();
+      console.log("Location data:", data);
       return {
         country: data.country_name || "Unknown",
         region: data.region || "Unknown",

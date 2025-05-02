@@ -291,3 +291,198 @@ export async function sendLoginAlertEmail(name, email) {
     throw error;
   }
 }
+
+// Add these new functions to your existing email template file
+
+// 🔔 Subscription Expiry Warning
+export async function SubscriptionExpiryWarningMail(user, endDate, plan) {
+  const mailOptions = {
+    ...commonMailOptions,
+    to: user.email,
+    subject: `⚠️ Your ${plan.toUpperCase()} Plan Expires Soon (${endDate.toDateString()})`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto;">
+        <div style="background: #fff3cd; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0; color: #856404;">Plan Expiration Reminder</h2>
+        </div>
+        <div style="padding: 20px; background: white; border-radius: 0 0 8px 8px;">
+          <p>Hi ${user.name},</p>
+          <p>Your <strong>${plan.toUpperCase()}</strong> subscription will expire on 
+          <strong>${endDate.toDateString()}</strong>. To avoid service interruption:</p>
+          
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${baseUrl}/billing" 
+               style="background-color: #ffc107; color: #000; padding: 12px 24px;
+                      text-decoration: none; border-radius: 4px; font-weight: bold;
+                      display: inline-block;">
+              Renew Subscription
+            </a>
+          </div>
+
+          <p>After expiration, you'll be downgraded to our Free plan with basic features.</p>
+          <p style="font-size: 0.9em; color: #6c757d;">
+            Need help? <a href="${baseUrl}/support" style="color: #4F46E5;">Contact our support team</a>
+          </p>
+        </div>
+        ${commonFooter}
+      </div>
+    `,
+    text: `Hi ${
+      user.name
+    },\n\nYour ${plan} plan expires on ${endDate.toDateString()}.\nRenew now: ${baseUrl}/billing\n\nAfter expiration, you'll be downgraded to the Free plan.`,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Subscription expiry email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending subscription expiry email:", error);
+    throw error;
+  }
+}
+
+// 🔄 Subscription Downgrade Notification
+export async function SubscriptionDowngradedMail(user, previousPlan) {
+  const mailOptions = {
+    ...commonMailOptions,
+    to: user.email,
+    subject: "Your Plan Has Been Downgraded to Free",
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto;">
+        <div style="background: #f8d7da; padding: 25px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0; color: #721c24;">Plan Downgrade Notification</h2>
+        </div>
+        <div style="padding: 20px; background: white; border-radius: 0 0 8px 8px;">
+          <p>Hi ${user.name},</p>
+          <p>Your <strong>${previousPlan.toUpperCase()}</strong> subscription has expired and 
+          we've downgraded your account to our <strong>Free Plan</strong>.</p>
+          
+          <div style="background: #f1f5f9; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="margin: 0;">What's changed:</p>
+            <ul style="margin: 10px 0 0 20px;">
+              <li>Limited to 1 chatbot</li>
+              <li>500 monthly messages</li>
+              <li>Basic features only</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${baseUrl}/pricing" 
+               style="background-color: #4F46E5; color: white; padding: 12px 24px;
+                      text-decoration: none; border-radius: 4px; font-weight: bold;
+                      display: inline-block;">
+              Upgrade Again
+            </a>
+          </div>
+
+          <p>Your archived ${previousPlan} plan data remains available for 30 days.</p>
+        </div>
+        ${commonFooter}
+      </div>
+    `,
+    text: `Hi ${user.name},\n\nYour ${previousPlan} plan has expired. You've been downgraded to our Free Plan.\nUpgrade again: ${baseUrl}/pricing\n\nYour ${previousPlan} data remains available for 30 days.`,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Subscription downgrade email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending downgrade notification:", error);
+    throw error;
+  }
+}
+
+// Add this common footer section at the top of your file
+const commonFooter = `
+  <div style="background: #f8f9fa; padding: 15px; text-align: center; font-size: 0.9em; 
+              color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 20px;">
+    <p>© ${new Date().getFullYear()} ECOD. All rights reserved.</p>
+    <p style="margin: 5px 0;">
+      <a href="${baseUrl}/privacy" style="color: #6c757d; text-decoration: none;">Privacy Policy</a> | 
+      <a href="${baseUrl}/terms" style="color: #6c757d; text-decoration: none;">Terms of Service</a>
+    </p>
+    <p style="margin: 0;">This is an automated message - please do not reply directly</p>
+  </div>
+`;
+
+export async function SubscriptionPaymentFailedMail(name, email) {
+  const mailOptions = {
+    ...commonMailOptions,
+    to: email,
+    subject: "⚠️ Payment Failed - Please Update Your Billing Info",
+    html: `
+      <div style="font-family: Arial, sans-serif; background: #fff; padding: 20px; max-width: 600px; margin: auto; border-radius: 8px;">
+        <div style="background: #dc3545; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0;">Payment Failed</h2>
+        </div>
+        <div style="padding: 20px;">
+          <p>Hello ${name || "there"},</p>
+          <p>We attempted to process your subscription payment, but unfortunately it was unsuccessful.</p>
+          <p>Please update your payment information as soon as possible to continue enjoying ECOD services without interruption.</p>
+          <p style="text-align: center; margin-top: 30px;">
+            <a href="${baseUrl}/billing" style="background-color: #dc3545; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none;">Update Billing Info</a>
+          </p>
+          <p>If you need help, our support team is here for you.</p>
+          <p>Thanks,<br>The ECOD Team</p>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e9ecef; padding-top: 10px;">
+          <p>© ${new Date().getFullYear()} ECOD. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+    text: `Hello ${
+      name || "there"
+    },\n\nYour subscription payment failed. Please update your billing info here: ${baseUrl}/billing\n\nThanks,\nThe ECOD Team`,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Subscription payment failed email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending subscription payment failed email:", error);
+    throw error;
+  }
+}
+
+export async function SubscriptionReactivatedMail(name, email) {
+  const mailOptions = {
+    ...commonMailOptions,
+    to: email,
+    subject: "✅ Subscription Reactivated - Welcome Back!",
+    html: `
+      <div style="font-family: Arial, sans-serif; background: #fff; padding: 20px; max-width: 600px; margin: auto; border-radius: 8px;">
+        <div style="background: #28a745; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0;">Welcome Back!</h2>
+        </div>
+        <div style="padding: 20px;">
+          <p>Hello ${name || "there"},</p>
+          <p>Your ECOD subscription has been successfully reactivated.</p>
+          <p>You now have full access to all features. Thank you for choosing us again!</p>
+          <p style="text-align: center; margin-top: 30px;">
+            <a href="${baseUrl}/dashboard" style="background-color: #28a745; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none;">Go to Dashboard</a>
+          </p>
+          <p>Need help? Just reach out to our support team.</p>
+          <p>Thanks,<br>The ECOD Team</p>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #6c757d; border-top: 1px solid #e9ecef; padding-top: 10px;">
+          <p>© ${new Date().getFullYear()} ECOD. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+    text: `Hello ${
+      name || "there"
+    },\n\nYour ECOD subscription has been reactivated. You can access your dashboard here: ${baseUrl}/dashboard\n\nThanks,\nThe ECOD Team`,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Subscription reactivated email sent:", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending subscription reactivated email:", error);
+    throw error;
+  }
+}

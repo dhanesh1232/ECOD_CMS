@@ -138,6 +138,7 @@ export async function POST(req) {
         name: tempUser.name,
         phone: tempUser.phone,
         isVerified: true,
+        plan: "free",
       });
       await AccountVerificationCompletedMail(newUser.name, newUser.email);
 

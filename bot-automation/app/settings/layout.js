@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { FiExternalLink } from "react-icons/fi";
 import SettingsBreadcrumb from "@/components/breadcrumb";
+import { ToastProvider } from "@/components/ui/toast-provider";
 
 const SettingsLayout = ({ children }) => {
   const pathname = usePathname();
@@ -175,7 +176,7 @@ const SettingsLayout = ({ children }) => {
           isMobile && mobileNavOpen ? "opacity-50 pointer-events-none" : ""
         }`}
       >
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Breadcrumbs - Mobile header */}
           <div className="sm:hidden mb-4 flex items-center">
             {isMobile && (
@@ -189,9 +190,11 @@ const SettingsLayout = ({ children }) => {
             <SettingsBreadcrumb pathname={pathname} />
           </div>
           {/* Content Card */}
-          <div className="rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            {children}
-          </div>
+          <ToastProvider>
+            <div className="rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              {children}
+            </div>
+          </ToastProvider>
         </div>
       </div>
     </div>
