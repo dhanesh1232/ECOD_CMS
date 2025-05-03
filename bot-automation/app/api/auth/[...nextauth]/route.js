@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
-import User from "@/model/par-user";
+import { User } from "@/model/par-user";
 import dbConnect from "@/config/dbconnect";
 import { NewSignupGoogleMail, sendLoginAlertEmail } from "@/lib/helper";
 

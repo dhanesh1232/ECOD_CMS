@@ -339,5 +339,4 @@ userSchema.statics = {
 userSchema.index({ "loginHistory.ip": 1 });
 userSchema.index({ accountLockedUntil: 1 }, { expireAfterSeconds: 0 });
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-export default User;
+export const User = mongoose.models.User || mongoose.model("User", userSchema);

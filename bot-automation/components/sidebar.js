@@ -1,7 +1,13 @@
 "use client";
 
 import { FiLogOut, FiPlus, FiChevronsRight, FiMenu, FiX } from "react-icons/fi";
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -69,26 +75,46 @@ export const SideBar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleTooltip = (itemId, event) => {
-    if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        navRef.current &&
+        !navRef.current.contains(event.target) &&
+        !event.target.closest('button[aria-label*="sidebar"]')
+      ) {
+        setCollapsed(true);
+      }
+    };
 
-    if (itemId && event?.currentTarget) {
-      const target = event.currentTarget;
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isMobile, collapsed]);
 
-      tooltipTimeout.current = setTimeout(() => {
-        if (!target) return; // just in case
+  const handleTooltip = useCallback(
+    (itemId, event) => {
+      if (isMobile) return; // Disable tooltips on mobile
 
-        const rect = target.getBoundingClientRect();
-        setTooltipPosition({
-          top: rect.top + window.scrollY + rect.height / 2,
-          left: rect.right + 12,
-        });
-        setHoveredItem(itemId);
-      }, 150);
-    } else {
-      setHoveredItem(null);
-    }
-  };
+      if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
+
+      if (itemId && event?.currentTarget) {
+        const target = event.currentTarget;
+
+        tooltipTimeout.current = setTimeout(() => {
+          if (!target) return;
+
+          const rect = target.getBoundingClientRect();
+          setTooltipPosition({
+            top: rect.top + window.scrollY + rect.height / 4,
+            left: rect.right + 12,
+          });
+          setHoveredItem(itemId);
+        }, 150);
+      } else {
+        setHoveredItem(null);
+      }
+    },
+    [isMobile]
+  );
 
   useEffect(() => {
     return () => {
@@ -102,10 +128,10 @@ export const SideBar = () => {
   };
 
   const handleLogout = () => {
-    setUserProfile(false);
-    const params = new URLSearchParams(searchParams);
-    params.set("model", "confirm_logout");
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    if (userProfile) return setUserProfile(false);
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set("model", "confirm_logout");
+    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
 
   const activeNavItem = useMemo(
@@ -199,8 +225,10 @@ export const SideBar = () => {
             <li key={item.id}>
               <Link
                 href={item.href}
-                onMouseEnter={(e) => handleTooltip(item.id, e)}
-                onMouseLeave={() => handleTooltip(null)}
+                {...(!isMobile && {
+                  onMouseEnter: (e) => handleTooltip(item.id, e),
+                  onMouseLeave: () => handleTooltip(null),
+                })}
                 onClick={() => isMobile && setMobileMenuOpen(false)}
                 className={`flex items-center p-3 rounded-lg transition-colors ${
                   collapsed ? "justify-center" : "space-x-3"
@@ -249,9 +277,14 @@ export const SideBar = () => {
           </button>
           {!collapsed && (
             <>
-              <div className="flex-1 min-w-0">
+              <div
+                className="flex-1 min-w-0"
+                onClick={() => {
+                  setUserProfile(!userProfile);
+                }}
+              >
                 <p className="font-medium truncate">{session?.user?.name}</p>
-                <p className="text-xs text-indigo-300/90 truncate">
+                <p className="text-xs text-indigo-300/90 font-bold truncate">
                   {session?.user?.role}
                 </p>
               </div>
@@ -265,48 +298,6 @@ export const SideBar = () => {
             </>
           )}
         </div>
-
-        {/* Profile Dropdown */}
-        <AnimatePresence>
-          {userProfile &&
-            createPortal(
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="fixed bg-white dark:bg-gray-800 shadow-lg rounded-lg p-2 z-50 border dark:border-gray-700"
-                style={{
-                  top: `${profileRef.current?.getBoundingClientRect().top}px`,
-                  left: `${
-                    (profileRef.current?.getBoundingClientRect().left || 0) + 60
-                  }px`,
-                }}
-              >
-                <Link
-                  href="/settings/account/profile"
-                  className="px-4 py-2 flex items-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Profile</span>
-                </Link>
-                <Link
-                  href="/settings/account/security"
-                  className="px-4 py-2 flex items-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                >
-                  <Lock className="w-4 h-4" />
-                  <span>Security</span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 w-full text-left flex items-center gap-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                >
-                  <FiLogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
-              </motion.div>,
-              document.body
-            )}
-        </AnimatePresence>
       </div>
     </motion.nav>
   );

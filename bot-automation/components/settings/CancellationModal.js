@@ -16,9 +16,7 @@ import {
 import { format } from "date-fns";
 
 const formatDate = (dateString) => {
-  console.log(dateString);
   const date = new Date(dateString);
-  console.log(date);
   return isNaN(date) ? "Invalid date" : format(date, "MMM do, yyyy");
 };
 

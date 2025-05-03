@@ -191,7 +191,7 @@ const SettingsLayout = ({ children }) => {
           </div>
           {/* Content Card */}
           <ToastProvider>
-            <div className="rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700">
               {children}
             </div>
           </ToastProvider>

@@ -1,31 +1,4 @@
-// Currency conversion and formatting utilities
-const DEFAULT_CURRENCY = navigator.language.startsWith("en-IN") ? "INR" : "USD";
-const EXCHANGE_RATE = 83.33; // Update this with current rate in production
-console.log(navigator);
-export const getLocalizedPrice = (amount, currency = DEFAULT_CURRENCY) => {
-  const convertedAmount = currency === "INR" ? amount : amount / EXCHANGE_RATE;
-
-  return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(convertedAmount);
-};
-
-export const getPlanPrice = (planId, period = "monthly") => {
-  const plan = PLANS[planId];
-  if (!plan.prices) return null;
-
-  return {
-    raw: plan.prices[period],
-    localized: getLocalizedPrice(plan.prices[period]),
-    currency: DEFAULT_CURRENCY,
-    period,
-  };
-};
-
-// Updated PLANS configuration with price helpers
+// config/pricing.config.js
 export const PLANS = {
   free: {
     name: "Free",
@@ -46,9 +19,8 @@ export const PLANS = {
   starter: {
     name: "Starter",
     prices: {
-      monthly: 1900,
-      yearly: 19000,
-      get: (period = "monthly") => getPlanPrice("starter", period),
+      monthly: 1999,
+      yearly: 19999,
     },
     razorpayIds: {
       monthly: "plan_NlNjdG4zbDw6Qx",
@@ -71,9 +43,8 @@ export const PLANS = {
   pro: {
     name: "Pro",
     prices: {
-      monthly: 4900,
-      yearly: 49000,
-      get: (period = "monthly") => getPlanPrice("pro", period),
+      monthly: 4999,
+      yearly: 49999,
     },
     razorpayIds: {
       monthly: "plan_NlNjgR7q3CJ2vT",
@@ -111,6 +82,7 @@ export const PLANS = {
   },
 };
 
-// Dynamic tax configuration
-export const TAX_RATE = DEFAULT_CURRENCY === "INR" ? 0.18 : 0; // 18% GST for India
-export const CURRENCY = DEFAULT_CURRENCY;
+export const TAX_RATES = {
+  INR: 0.18,
+  USD: 0.18,
+};

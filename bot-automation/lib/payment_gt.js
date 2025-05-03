@@ -1,4 +1,4 @@
-// lib/razorpay.js
+// lib/payment_gt.js
 import Razorpay from "razorpay";
 
 export const razorpay = new Razorpay({

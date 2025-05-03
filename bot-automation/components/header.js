@@ -44,8 +44,11 @@ export function Header() {
   }, []);
 
   const renderTitle = () => {
-    if (pathname === "/") return "Home";
-    return pathname.replace("/", "").replace(/-/g, " ");
+    if (pathname === "/") return "Dashboard";
+    const parts = pathname.split("/");
+    const lastPart = parts[parts.length - 1];
+    console.log(lastPart);
+    return lastPart;
   };
 
   const toggleProfileMenu = () => {
@@ -53,9 +56,9 @@ export function Header() {
   };
   const handleSignOut = () => {
     if (menuOpen) setMenuOpen(false);
-    const params = new URLSearchParams(searchParams);
-    params.set("model", `confirm_logout`);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set("model", "confirm_logout");
+    router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
 
   return (

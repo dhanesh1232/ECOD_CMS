@@ -151,7 +151,7 @@ const PlanSummaryCard = ({
           {subscription && getStatusBadge(subscription.status)}
         </div>
 
-        {subscription?.renewalInterval !== "life_time" && (
+        {subscription?.renewalInterval !== "lifetime" && (
           <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-full">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Billed{" "}

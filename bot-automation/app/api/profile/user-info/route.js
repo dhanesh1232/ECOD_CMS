@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import dbConnect from "@/config/dbconnect";
-import User from "@/model/par-user";
+import { User } from "@/model/par-user";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Subscription } from "@/model/subscription";
@@ -38,7 +38,7 @@ export async function GET(req) {
               user: user._id,
               plan: "free",
               status: "active",
-              renewalInterval: "life_time",
+              renewalInterval: "lifetime",
               startDate: new Date(),
               endDate: null,
               features: {

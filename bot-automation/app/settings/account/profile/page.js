@@ -1,7 +1,6 @@
 "use client";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
@@ -10,14 +9,17 @@ import {
   FiExternalLink,
   FiCheck,
   FiX,
+  FiShield,
 } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 
 const AccountInfoSection = () => {
-  const { data: session } = useSession();
+  const router = useRouter();
+  const [activePlan, setActivePlan] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    profilePicture: session?.user?.image || "",
+    profilePicture: "",
     fullName: "",
     email: "",
     phone: "",
@@ -35,7 +37,10 @@ const AccountInfoSection = () => {
           method: "GET",
         });
         if (res.ok) {
-          const data = await res.json();
+          const res_data = await res.json();
+          const data = res_data?.user;
+          const existPlan = res_data.existPlan;
+          setActivePlan(existPlan);
           setFormData({
             profilePicture: data.image || "",
             fullName: data.name || "",
@@ -141,7 +146,6 @@ const AccountInfoSection = () => {
           </div>
         )}
       </div>
-
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Profile Picture */}
         <div className="flex flex-col items-center lg:items-start">
@@ -299,6 +303,31 @@ const AccountInfoSection = () => {
               </p>
             )}
           </div>
+        </div>
+      </div>
+      <hr className="my-2" />
+      {/*Plan Details*/}
+      <div className="w-full p-6 rounded-xl backdrop-blur-sm border border-white/20 dark:border-gray-600/30">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-gray-900 capitalize dark:text-white flex items-center gap-2">
+            <FiShield className="w-6 h-6 text-indigo-600" />
+            {activePlan.plan}
+          </h3>
+          {activePlan.isActive && (
+            <span className="px-3 py-1 bg-green-100/30 dark:bg-green-900/20 text-green-600 dark:text-green-300 rounded-full text-sm">
+              Active
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-end justify-end">
+          <button
+            type="button"
+            onClick={() => router.push("/settings/account/billing")}
+            className="px-4 py-2 rounded-lg hover:bg-indigo-600/20 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-300"
+          >
+            Know More...
+          </button>
         </div>
       </div>
     </div>

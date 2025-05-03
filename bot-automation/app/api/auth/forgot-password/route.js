@@ -1,9 +1,9 @@
 import { PasswordResetLinkGenerator } from "@/lib/helper";
 import { generateStrongVerificationCode } from "@/lib/validator";
 import ForgotTemp from "@/model/for-temp";
+import { User } from "@/model/par-user";
 import { NextResponse } from "next/server";
 const { default: dbConnect } = require("@/config/dbconnect");
-const { default: User } = require("@/model/par-user");
 
 export async function POST(req) {
   try {

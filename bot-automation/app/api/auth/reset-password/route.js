@@ -1,7 +1,7 @@
 import dbConnect from "@/config/dbconnect";
 import { PasswordResetSuccessfulMail } from "@/lib/helper";
 import ForgotTemp from "@/model/for-temp";
-import User from "@/model/par-user";
+import { User } from "@/model/par-user";
 
 const { NextResponse } = require("next/server");
 
