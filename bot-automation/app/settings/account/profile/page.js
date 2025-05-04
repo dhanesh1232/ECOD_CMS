@@ -12,8 +12,10 @@ import {
   FiShield,
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast-provider";
 
 const AccountInfoSection = () => {
+  const showToast = useToast();
   const router = useRouter();
   const [activePlan, setActivePlan] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -80,6 +82,14 @@ const AccountInfoSection = () => {
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+      if (file.size > MAX_SIZE) {
+        showToast({
+          description: "Image must be smaller than 2MB",
+          title: "Size",
+        });
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target?.result);
@@ -92,14 +102,46 @@ const AccountInfoSection = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!tempData.fullName.trim()) {
-      alert("Full Name is required.");
+      showToast("Full Name is required.", "error");
       return;
     }
-    setFormData({ ...tempData });
-    setIsEditing(false);
-    // Optional: You can POST the updated data to your server here
+
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/profile/update", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: tempData.profilePicture,
+          company: tempData.company,
+          website: tempData.website, // Corrected from tempData.company
+        }),
+      });
+
+      const responseData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(responseData.message || "Failed to update profile");
+      }
+
+      // Update form data only after successful API response
+      setFormData({ ...tempData });
+      setImagePreview(tempData.profilePicture);
+      setIsEditing(false);
+      showToast({
+        discription: "Profile updated successfully",
+        title: "Change",
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      showToast(error.message || "Failed to update profile", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {

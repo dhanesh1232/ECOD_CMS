@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth";
 import dbConnect from "@/config/dbconnect";
-import { User } from "@/model/par-user";
+import { User } from "@/models/user/par-user";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Subscription } from "@/model/subscription";
+import { Subscription } from "@/models/payment/subscription";
 
 export async function GET(req) {
   try {
@@ -71,9 +71,11 @@ export async function GET(req) {
       }
     }
 
-    if (user.plan !== existingSubscription.plan) {
-      user.plan = existingSubscription.plan;
-      await user.save();
+    if (existingSubscription) {
+      if (user.plan !== existingSubscription.plan) {
+        user.plan = existingSubscription.plan;
+        await user.save();
+      }
     }
 
     const populatedUser = await User.findById(user._id)
@@ -84,7 +86,11 @@ export async function GET(req) {
       .select("+password +image");
 
     return NextResponse.json(
-      { user: user, existPlan: existingSubscription },
+      {
+        requiresProfileCompletion: user.requiresProfileCompletion,
+        user: user,
+        existPlan: existingSubscription,
+      },
       populatedUser.toObject({ virtuals: true })
     );
   } catch (err) {

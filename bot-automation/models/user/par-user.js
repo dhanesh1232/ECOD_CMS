@@ -105,17 +105,23 @@ const userSchema = new mongoose.Schema(
     twoFactorSecret: String,
 
     // Profile Information
+    // In your User model schema
     image: {
       type: String,
       default: "",
       validate: {
         validator: function (v) {
-          return validator.isURL(v, {
-            protocols: ["http", "https"],
-            require_protocol: true,
-          });
+          return (
+            validator.isURL(v, {
+              protocols: ["http", "https"],
+              require_protocol: true,
+            }) ||
+            /^data:image\/(png|jpeg|jpg|gif);base64,([a-zA-Z0-9+/]+={0,2})$/.test(
+              v
+            )
+          );
         },
-        message: "Image must be a valid URL",
+        message: "Image must be a valid URL or base64 image",
       },
     },
     company: String,

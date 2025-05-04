@@ -11,9 +11,11 @@ import {
 import { useSession } from "next-auth/react";
 import PasswordStrengthBar from "react-password-strength-bar";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/toast-provider";
 
 const PasswordAndSecurity = () => {
   const { data: session } = useSession();
+  const showToast = useToast();
   const [form, setForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -24,10 +26,8 @@ const PasswordAndSecurity = () => {
     new: false,
     confirm: false,
   });
-  const [passwordScore, setPasswordScore] = useState(0);
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const validateField = useCallback(
@@ -94,11 +94,10 @@ const PasswordAndSecurity = () => {
     e.preventDefault();
     setLoading(true);
     setErrors({});
-    setSuccess("");
 
     try {
-      const res = await fetch("/api/auth/change-password", {
-        method: "POST",
+      const res = await fetch("/api/profile/update/change-password", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: session?.user?.email,
@@ -107,12 +106,23 @@ const PasswordAndSecurity = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Password change failed");
 
-      setSuccess("Password changed successfully!");
+      if (!res.ok) {
+        throw new Error(data.message || "Password change failed");
+      }
+
+      showToast({
+        title: "Success",
+        description: "Password changed successfully!",
+        variant: "success",
+      });
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
-      setErrors({ general: err.message });
+      showToast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -250,8 +260,8 @@ const PasswordAndSecurity = () => {
                   shortScoreWord="Too Short"
                   barColors={
                     form.newPassword.length === 0
-                      ? ["#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db"] // gray for empty
-                      : ["#dc2626", "#ea580c", "#16a34a", "#15803d", "#065f46"] // your original colors
+                      ? ["#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db", "#d1d5db"]
+                      : ["#dc2626", "#ea580c", "#16a34a", "#15803d", "#065f46"]
                   }
                 />
 
@@ -330,29 +340,6 @@ const PasswordAndSecurity = () => {
                 </p>
               )}
             </div>
-
-            {/* Status Messages */}
-            {errors.general && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg flex items-center gap-2"
-              >
-                <FiShield className="w-5 h-5" />
-                {errors.general}
-              </motion.div>
-            )}
-
-            {success && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg flex items-center gap-2"
-              >
-                <FiCheckCircle className="w-5 h-5" />
-                {success}
-              </motion.div>
-            )}
 
             {/* Submit Button */}
             <button

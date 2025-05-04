@@ -3,7 +3,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/config/dbconnect";
 import { PLANS, TAX_RATES } from "@/config/pricing.config";
 import { razorpay } from "@/lib/payment_gt";
-import { PaymentHistory } from "@/model/payment_history";
+import { PaymentHistory } from "@/models/payment/payment_history";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 

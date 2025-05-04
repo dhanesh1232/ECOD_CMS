@@ -1,0 +1,61 @@
+import dbConnect from "@/config/dbconnect";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { authOptions } from "../../auth/[...nextauth]/route";
+import { User } from "@/models/user/par-user";
+import cloudinary from "@/utils/cloudinary";
+
+export async function PUT(request) {
+  await dbConnect();
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session?.user) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const body = await request.json();
+    const { image, website, company } = body;
+
+    // Handle image upload
+    let imageUrl = image;
+
+    if (image.startsWith("data:image")) {
+      const uploadResult = await cloudinary.uploader.upload(image, {
+        folder: "user-profiles",
+        allowed_formats: ["png", "jpg", "jpeg", "gif"],
+      });
+      imageUrl = uploadResult.secure_url;
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      session?.user?.id,
+      {
+        $set: {
+          image: imageUrl,
+          company,
+          website,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+    return NextResponse.json(
+      { message: "Profile updated successfully" },
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json(
+      {
+        message: "Internal server error please try again",
+      },
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+}

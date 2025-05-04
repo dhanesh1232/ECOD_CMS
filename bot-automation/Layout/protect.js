@@ -38,14 +38,13 @@ export default function ProtectLayout({ children }) {
     try {
       const res = await fetch("/api/profile/user-info");
       const data = await res.json();
-
       if (!res.ok && data.message.includes("not")) {
         await signOut({ redirect: true, callbackUrl: "/auth/login" });
         return;
       }
 
       if (data.requiresProfileCompletion) {
-        const encryptedName = stableEncrypt(data.name);
+        const encryptedName = stableEncrypt(data.user.name);
         const newParams = new URLSearchParams(searchParams);
         newParams.set(
           "model",
@@ -53,7 +52,9 @@ export default function ProtectLayout({ children }) {
         );
 
         if (!pathname.startsWith("/settings")) {
-          router.push(`/settings?${newParams.toString()}`, { scroll: false });
+          router.push(`/settings/account/profile?${newParams.toString()}`, {
+            scroll: false,
+          });
           return;
         }
       } else if (searchParams.has("model")) {

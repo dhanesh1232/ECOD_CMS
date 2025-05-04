@@ -1,6 +1,6 @@
 import dbConnect from "@/config/dbconnect";
-import UserTemp from "@/model/user-temp";
-import { User } from "@/model/par-user";
+import UserTemp from "@/models/user/user-temp";
+import { User } from "@/models/user/par-user";
 import { NextResponse } from "next/server";
 import rateLimit from "@/utils/rate-limit";
 import { AccountVerificationCompletedMail } from "@/lib/helper";

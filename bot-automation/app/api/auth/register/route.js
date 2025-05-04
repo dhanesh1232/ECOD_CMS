@@ -7,8 +7,8 @@ import {
 } from "@/lib/validator";
 import { VerificationMail } from "@/lib/helper";
 import dbConnect from "@/config/dbconnect";
-import UserTemp from "@/model/user-temp";
-import { User } from "@/model/par-user";
+import UserTemp from "@/models/user/user-temp";
+import { User } from "@/models/user/par-user";
 
 export async function POST(request) {
   try {

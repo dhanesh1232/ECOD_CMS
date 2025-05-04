@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { User } from "@/model/par-user";
+import { User } from "@/models/user/par-user";
 import dbConnect from "@/config/dbconnect";
 import { NewSignupGoogleMail, sendLoginAlertEmail } from "@/lib/helper";
 
@@ -180,7 +180,7 @@ const handleGoogleSignIn = async ({ user, profile, req }) => {
       // Update existing user
       const updates = {
         name: profile.name,
-        image: profile.picture || existingUser.image,
+        image: existingUser.image || profile.picture,
         lastLogin: new Date(),
         provider: "google",
       };

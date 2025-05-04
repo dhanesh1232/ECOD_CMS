@@ -1,10 +1,10 @@
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/config/dbconnect";
 import { razorpay } from "@/lib/payment_gt";
-import { User } from "@/model/par-user";
-import { PaymentHistory } from "@/model/payment_history";
-import { PaymentMethod } from "@/model/paymentMethod";
-import { Subscription } from "@/model/subscription";
+import { User } from "@/models/user/par-user";
+import { PaymentHistory } from "@/models/payment/payment_history";
+import { PaymentMethod } from "@/models/payment/paymentMethod";
+import { Subscription } from "@/models/payment/subscription";
 import { validatePaymentRequest } from "@/utils/validators/payment.validator";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";

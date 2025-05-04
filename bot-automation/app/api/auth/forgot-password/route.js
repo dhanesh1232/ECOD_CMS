@@ -1,7 +1,7 @@
 import { PasswordResetLinkGenerator } from "@/lib/helper";
 import { generateStrongVerificationCode } from "@/lib/validator";
-import ForgotTemp from "@/model/for-temp";
-import { User } from "@/model/par-user";
+import ForgotTemp from "@/models/user/for-temp";
+import { User } from "@/models/user/par-user";
 import { NextResponse } from "next/server";
 const { default: dbConnect } = require("@/config/dbconnect");
 

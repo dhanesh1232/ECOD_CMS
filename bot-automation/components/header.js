@@ -47,7 +47,6 @@ export function Header() {
     if (pathname === "/") return "Dashboard";
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
-    console.log(lastPart);
     return lastPart;
   };
 
