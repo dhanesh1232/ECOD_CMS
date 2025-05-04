@@ -1,11 +1,11 @@
 // utils/validators/payment.validator.js
 import { NextResponse } from "next/server";
-import { PaymentHistory } from "@/model/payment_history";
+import { PaymentHistory } from "@/models/payment/payment_history";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import crypto from "crypto";
 import { PLANS } from "@/config/pricing.config";
-import { User } from "@/model/par-user";
+import { User } from "@/models/user/par-user";
 import dbConnect from "@/config/dbconnect";
 
 export const validatePaymentRequest = async (req) => {
