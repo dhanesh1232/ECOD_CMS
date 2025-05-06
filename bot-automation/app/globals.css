@@ -197,3 +197,17 @@ input:checked+.slider:before {
 .alert-info {
   @apply border-blue-500/50 text-blue-600 dark:border-blue-500 [&>svg]:text-blue-600 dark:text-blue-400;
 }
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0;
+  }
+}
+
+.animate-progress {
+  animation: progress 5s linear forwards;
+}

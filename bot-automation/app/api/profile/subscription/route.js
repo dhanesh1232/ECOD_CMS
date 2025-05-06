@@ -15,13 +15,12 @@ export async function GET(req) {
 
     const existUser = await User.findOne({ email: session.user.email })
       .populate({
-        path: "subscription",
+        path: ["paymentmethod", "subscription", "paymenthistory"],
         match: {
           status: {
             $in: ["active", "past_due", "grace_period", "canceled", "unpaid"],
           },
         },
-        populate: { path: "paymentMethod" },
       })
       .lean();
 

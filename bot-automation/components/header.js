@@ -47,7 +47,9 @@ export function Header() {
     if (pathname === "/") return "Dashboard";
     const parts = pathname.split("/");
     const lastPart = parts[parts.length - 1];
-    return lastPart;
+    // Remove all special characters
+    const cleaned = lastPart.replace(/[^a-zA-Z0-9]/g, " ");
+    return cleaned || "Dashboard";
   };
 
   const toggleProfileMenu = () => {

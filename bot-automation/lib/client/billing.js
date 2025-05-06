@@ -22,7 +22,14 @@ export const billingService = {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(paymentData),
+      body: JSON.stringify({
+        razorpay_payment_id: paymentData.razorpay_payment_id,
+        razorpay_order_id: paymentData.razorpay_order_id,
+        razorpay_signature: paymentData.razorpay_signature,
+        planId: paymentData.planId,
+        currency: paymentData.currency,
+        period: paymentData.period,
+      }),
     }).then(handleResponse);
   },
 

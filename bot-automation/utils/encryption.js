@@ -16,10 +16,18 @@ export function encryptData(text) {
 }
 
 export function decryptData(text) {
+  if (!text) return null;
   const [ivHex, encryptedData] = text.split(":");
-  const iv = Buffer.from(ivHex, "hex");
-  const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
-  let decrypted = decipher.update(encryptedData, "hex", "utf8");
-  decrypted += decipher.final("utf8");
-  return decrypted;
+  if (!ivHex || !encryptedData) return null;
+
+  try {
+    const iv = Buffer.from(ivHex, "hex");
+    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
+    let decrypted = decipher.update(encryptedData, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  } catch (error) {
+    console.error("Decryption failed:", error);
+    return null;
+  }
 }

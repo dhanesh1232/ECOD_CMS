@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { FiExternalLink } from "react-icons/fi";
 import SettingsBreadcrumb from "@/components/breadcrumb";
-import { ToastProvider } from "@/components/ui/toast-provider";
 
 const SettingsLayout = ({ children }) => {
   const pathname = usePathname();
@@ -28,6 +27,19 @@ const SettingsLayout = ({ children }) => {
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
+
+  useEffect(() => {
+    if (!pathname) return;
+    // Find the section that contains the current path
+    const activeSection = settingsNavItems.find((section) =>
+      section.items?.some((item) => pathname.startsWith(item.href))
+    );
+    if (activeSection?.id) {
+      setExpandedSection(activeSection.id);
+    } else {
+      setExpandedSection("");
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -190,11 +202,9 @@ const SettingsLayout = ({ children }) => {
             <SettingsBreadcrumb pathname={pathname} />
           </div>
           {/* Content Card */}
-          <ToastProvider>
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-              {children}
-            </div>
-          </ToastProvider>
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700">
+            {children}
+          </div>
         </div>
       </div>
     </div>

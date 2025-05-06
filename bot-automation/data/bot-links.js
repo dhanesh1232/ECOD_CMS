@@ -111,7 +111,7 @@ export const navItems = [
     href: "/help",
   },
 ];
-
+// data/bot-links.js
 export const settingsNavItems = [
   {
     id: "general",

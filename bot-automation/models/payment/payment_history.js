@@ -1,3 +1,4 @@
+// models/paymentHistory.js
 import mongoose from "mongoose";
 
 const paymentHistorySchema = new mongoose.Schema(
@@ -24,6 +25,11 @@ const paymentHistorySchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "paid", "failed", "refunded"],
       default: "pending",
+    },
+    period: {
+      type: String,
+      enum: ["monthly", "yearly"],
+      default: "monthly",
     },
   },
   { timestamps: true }

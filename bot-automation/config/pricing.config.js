@@ -11,9 +11,9 @@ export const PLANS = {
       fileAttachments: false,
       analyticsDashboard: false,
       customBranding: false,
-      apiAccess: false,
       prioritySupport: false,
       whiteLabel: false,
+      apiAccess: false,
     },
   },
   starter: {
@@ -35,9 +35,9 @@ export const PLANS = {
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,
-      apiAccess: false,
       prioritySupport: false,
       whiteLabel: false,
+      apiAccess: false,
     },
   },
   pro: {
@@ -59,15 +59,15 @@ export const PLANS = {
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,
-      apiAccess: true,
       prioritySupport: true,
       whiteLabel: true,
+      apiAccess: false,
     },
   },
   enterprise: {
     name: "Enterprise",
     features: {
-      channels: ["web", "whatsapp", "facebook", "instagram", "telegram", "sms"],
+      channels: ["web", "whatsapp", "facebook", "instagram", "telegram"],
       chatbots: Infinity,
       monthlyMessages: Infinity,
       teamMembers: Infinity,
@@ -75,14 +75,13 @@ export const PLANS = {
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,
-      apiAccess: true,
       prioritySupport: true,
       whiteLabel: true,
+      apiAccess: true,
     },
   },
 };
 
 export const TAX_RATES = {
   INR: 0.18,
-  USD: 0.18,
 };

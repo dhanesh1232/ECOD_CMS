@@ -10,9 +10,15 @@ import {
   FiCheck,
   FiX,
   FiShield,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiBriefcase,
+  FiGlobe,
 } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
+import { motion } from "framer-motion";
 
 const AccountInfoSection = () => {
   const showToast = useToast();
@@ -37,6 +43,7 @@ const AccountInfoSection = () => {
       try {
         const res = await fetch("/api/profile/user-info", {
           method: "GET",
+          credentials: "include",
         });
         if (res.ok) {
           const res_data = await res.json();
@@ -63,12 +70,17 @@ const AccountInfoSection = () => {
         }
       } catch (error) {
         console.error("Failed to load user data:", error);
+        showToast({
+          title: "Error",
+          description: "Failed to load user data",
+          variant: "error",
+        });
       } finally {
         setIsLoading(false);
       }
     };
     fetchUserDetails();
-  }, []);
+  }, [showToast]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -85,8 +97,9 @@ const AccountInfoSection = () => {
       const MAX_SIZE = 2 * 1024 * 1024; // 2MB
       if (file.size > MAX_SIZE) {
         showToast({
+          title: "Image too large",
           description: "Image must be smaller than 2MB",
-          title: "Size",
+          variant: "error",
         });
         return;
       }
@@ -104,7 +117,11 @@ const AccountInfoSection = () => {
 
   const handleSave = async () => {
     if (!tempData.fullName.trim()) {
-      showToast("Full Name is required.", "error");
+      showToast({
+        title: "Validation Error",
+        description: "Full Name is required",
+        variant: "error",
+      });
       return;
     }
 
@@ -115,10 +132,11 @@ const AccountInfoSection = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           image: tempData.profilePicture,
           company: tempData.company,
-          website: tempData.website, // Corrected from tempData.company
+          website: tempData.website,
         }),
       });
 
@@ -128,17 +146,21 @@ const AccountInfoSection = () => {
         throw new Error(responseData.message || "Failed to update profile");
       }
 
-      // Update form data only after successful API response
       setFormData({ ...tempData });
       setImagePreview(tempData.profilePicture);
       setIsEditing(false);
       showToast({
-        discription: "Profile updated successfully",
-        title: "Change",
+        title: "Success",
+        description: "Profile updated successfully",
+        variant: "success",
       });
     } catch (error) {
       console.error("Error saving profile:", error);
-      showToast(error.message || "Failed to update profile", "error");
+      showToast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -159,52 +181,60 @@ const AccountInfoSection = () => {
   }
 
   return (
-    <div className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm overflow-auto transition-all">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
+      className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm overflow-auto transition-all border border-gray-100 dark:border-gray-800"
+    >
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
-          Account Info
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          Account Information
         </h2>
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition hover:shadow-md"
           >
-            <FiEdit2 size={14} /> Edit
+            <FiEdit2 size={16} /> Edit
           </button>
         ) : (
           <div className="flex gap-2">
             <button
               onClick={handleCancel}
-              className="flex items-center gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-md transition"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition"
             >
-              <FiX size={14} /> Cancel
+              <FiX size={16} /> Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition"
+              disabled={isLoading}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition hover:shadow-md disabled:opacity-70"
             >
-              <FiCheck size={14} /> Save
+              <FiCheck size={16} /> {isLoading ? "Saving..." : "Save"}
             </button>
           </div>
         )}
       </div>
+
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Profile Picture */}
+        {/* Profile Picture Section */}
         <div className="flex flex-col items-center lg:items-start">
           <div className="relative group">
-            <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 border-4 border-white dark:border-gray-700 shadow-md">
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg">
               {imagePreview ? (
                 <Image
                   src={imagePreview}
                   alt="Profile"
-                  width={112}
-                  height={112}
+                  width={128}
+                  height={128}
                   className="object-cover w-full h-full"
+                  priority
                 />
               ) : (
                 <div className="flex items-center justify-center w-full h-full text-gray-400">
                   <svg
-                    className="w-12 h-12"
+                    className="w-16 h-16"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -220,8 +250,8 @@ const AccountInfoSection = () => {
               )}
             </div>
             {isEditing && (
-              <label className="absolute bottom-0 right-0 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition">
-                <FiUpload className="text-white" size={16} />
+              <label className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition transform hover:scale-105">
+                <FiUpload className="text-white" size={18} />
                 <input
                   type="file"
                   accept="image/*"
@@ -232,18 +262,19 @@ const AccountInfoSection = () => {
             )}
           </div>
           {isEditing && (
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
-              Click to upload
+            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+              JPG, PNG (Max 2MB)
             </p>
           )}
         </div>
 
-        {/* Form */}
+        {/* Form Section */}
         <div className="flex-1 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Full Name */}
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <FiUser size={16} className="text-indigo-600" />
                 Full Name
               </label>
               {isEditing ? (
@@ -252,52 +283,64 @@ const AccountInfoSection = () => {
                   name="fullName"
                   value={tempData.fullName}
                   onChange={handleInputChange}
-                  className="w-full p-2 rounded-md border dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  placeholder="Enter your full name"
                 />
               ) : (
-                <p className="bg-gray-100 dark:bg-gray-800 p-2 rounded">
-                  {formData.fullName}
+                <p className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-700">
+                  {formData.fullName || "Not provided"}
                 </p>
               )}
             </div>
 
             {/* Email */}
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <FiMail size={16} className="text-indigo-600" />
                 Email Address
               </label>
-
-              <input
-                type="email"
-                name="email"
-                value={tempData.email}
-                readOnly
-                disabled
-                onChange={handleInputChange}
-                className="w-full p-2 rounded-md cursor-not-allowed dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  value={tempData.email}
+                  readOnly
+                  disabled
+                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 cursor-not-allowed opacity-80"
+                />
+                <span className="absolute right-3 top-3 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
+                  Verified
+                </span>
+              </div>
             </div>
 
             {/* Phone */}
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <FiPhone size={16} className="text-indigo-600" />
                 Phone Number
               </label>
-
-              <PhoneInput
-                international
-                readOnly
-                disabled
-                defaultCountry="IN"
-                value={tempData.phone}
-                onChange={handlePhoneChange}
-                className="custom-phone-input border cursor-not-allowed outline-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
+              <div className="custom-phone-input-container">
+                <PhoneInput
+                  international
+                  readOnly={!isEditing}
+                  disabled={!isEditing}
+                  defaultCountry="IN"
+                  value={tempData.phone}
+                  onChange={handlePhoneChange}
+                  className={`custom-phone-input w-full rounded-lg border dark:border-gray-700 ${
+                    isEditing
+                      ? "bg-gray-50 dark:bg-gray-800"
+                      : "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+                  }`}
+                />
+              </div>
             </div>
 
             {/* Company */}
-            <div>
-              <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <FiBriefcase size={16} className="text-indigo-600" />
                 Company
               </label>
               {isEditing ? (
@@ -306,10 +349,11 @@ const AccountInfoSection = () => {
                   name="company"
                   value={tempData.company}
                   onChange={handleInputChange}
-                  className="w-full p-2 rounded-md border dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  placeholder="Your company name"
                 />
               ) : (
-                <p className="bg-gray-100 dark:bg-gray-800 p-2 rounded">
+                <p className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-700">
                   {formData.company || "Not provided"}
                 </p>
               )}
@@ -317,62 +361,94 @@ const AccountInfoSection = () => {
           </div>
 
           {/* Website */}
-          <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+              <FiGlobe size={16} className="text-indigo-600" />
               Website
             </label>
             {isEditing ? (
-              <input
-                type="url"
-                name="website"
-                value={tempData.website}
-                onChange={handleInputChange}
-                className="w-full p-2 rounded-md border dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-              />
+              <div className="relative">
+                <input
+                  type="url"
+                  name="website"
+                  value={tempData.website}
+                  onChange={handleInputChange}
+                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  placeholder="https://example.com"
+                />
+                {tempData.website && (
+                  <span className="absolute right-3 top-3 text-xs text-gray-500">
+                    <FiExternalLink size={16} />
+                  </span>
+                )}
+              </div>
             ) : formData.website ? (
               <a
-                href={formData.website}
+                href={
+                  formData.website.startsWith("http")
+                    ? formData.website
+                    : `https://${formData.website}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
+                className="inline-flex items-center gap-2 p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition"
               >
                 {formData.website}
-                <FiExternalLink className="ml-1" size={14} />
+                <FiExternalLink size={16} />
               </a>
             ) : (
-              <p className="bg-gray-100 dark:bg-gray-800 p-2 rounded">
+              <p className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-700">
                 Not provided
               </p>
             )}
           </div>
         </div>
       </div>
-      <hr className="my-2" />
-      {/*Plan Details*/}
-      <div className="w-full p-6 rounded-xl backdrop-blur-sm border border-white/20 dark:border-gray-600/30">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 capitalize dark:text-white flex items-center gap-2">
-            <FiShield className="w-6 h-6 text-indigo-600" />
-            {activePlan.plan}
-          </h3>
-          {activePlan.isActive && (
-            <span className="px-3 py-1 bg-green-100/30 dark:bg-green-900/20 text-green-600 dark:text-green-300 rounded-full text-sm">
-              Active
-            </span>
-          )}
-        </div>
 
-        <div className="flex items-end justify-end">
-          <button
-            type="button"
-            onClick={() => router.push("/settings/account/billing")}
-            className="px-4 py-2 rounded-lg hover:bg-indigo-600/20 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-300"
-          >
-            Know More...
-          </button>
+      {/* Plan Details Section */}
+      <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 border border-indigo-100 dark:border-gray-700">
+        <div className="flex justify-between items-start sm:items-center gap-4 mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/50">
+              <FiShield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+                {activePlan.plan || "Free Plan"}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {activePlan.description || "Basic features"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {activePlan.isActive ? (
+              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
+                Active
+              </span>
+            ) : (
+              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-medium">
+                Inactive
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => router.push("/settings/account/billing")}
+              className="px-4 py-2 hidden rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition lg:flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
+            >
+              Upgrade Plan
+            </button>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => router.push("/settings/account/billing")}
+          className="px-4 py-2 lg:hidden w-full justify-center rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
+        >
+          Upgrade Plan
+        </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

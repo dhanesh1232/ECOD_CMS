@@ -1,3 +1,4 @@
+// models/subscription.js
 import mongoose from "mongoose";
 import { PLANS } from "@/config/pricing.config";
 import {
@@ -42,7 +43,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     renewalInterval: {
       type: String,
-      enum: ["month", "year", "lifetime"],
+      enum: ["monthly", "yearly", "lifetime"],
       default: "lifetime",
     },
     features: {
@@ -122,18 +123,11 @@ subscriptionSchema.virtual("daysUntilRenewal").get(function () {
   return Math.ceil((this.endDate - new Date()) / (1000 * 60 * 60 * 24));
 });
 
-// Pre-save Hooks
+// In models/subscription.js - Update pre-save hook
 subscriptionSchema.pre("save", async function (next) {
   const now = new Date();
 
-  if (this.isNew) {
-    this.startDate = now;
-    if (this.plan === "free") {
-      this.renewalInterval = "lifetime";
-      this.endDate = null;
-    }
-  }
-
+  // Reset usage if plan changes
   if (this.isModified("plan")) {
     const planConfig = PLANS[this.plan];
     this.features = planConfig.features;
@@ -142,14 +136,16 @@ subscriptionSchema.pre("save", async function (next) {
       this.usage.chatbotsCreated,
       planConfig.features.chatbots
     );
+
+    // Reset renewal interval for paid plans
+    if (this.plan !== "free" && !this.renewalInterval) {
+      this.renewalInterval = "monthly"; // Default to monthly
+    }
   }
 
-  if (
-    this.usage.lastReset.getMonth() !== now.getMonth() ||
-    this.usage.lastReset.getFullYear() !== now.getFullYear()
-  ) {
-    this.usage.messagesUsed = 0;
-    this.usage.lastReset = new Date(now.getFullYear(), now.getMonth(), 1);
+  // Add additional validation
+  if (this.plan === "free" && this.renewalInterval !== "lifetime") {
+    this.renewalInterval = "lifetime";
   }
 
   next();

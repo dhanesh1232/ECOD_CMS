@@ -11,7 +11,6 @@ import React, {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, User } from "lucide-react";
 import { navItems } from "@/data/bot-links";
 import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
@@ -94,22 +93,52 @@ export const SideBar = () => {
     (itemId, event) => {
       if (isMobile) return; // Disable tooltips on mobile
 
-      if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
+      // Clear any existing timeout immediately
+      if (tooltipTimeout.current) {
+        clearTimeout(tooltipTimeout.current);
+        tooltipTimeout.current = null;
+      }
 
       if (itemId && event?.currentTarget) {
         const target = event.currentTarget;
 
-        tooltipTimeout.current = setTimeout(() => {
-          if (!target) return;
-
+        // Show tooltip immediately on click/tap
+        if (event.type === "click") {
           const rect = target.getBoundingClientRect();
           setTooltipPosition({
             top: rect.top + window.scrollY + rect.height / 4,
             left: rect.right + 12,
           });
           setHoveredItem(itemId);
-        }, 150);
+          return;
+        }
+
+        // For hover, show after a short delay (reduced from 3000ms to 300ms)
+        tooltipTimeout.current = setTimeout(() => {
+          if (!target) return;
+
+          const rect = target.getBoundingClientRect();
+          const viewportWidth = window.innerWidth;
+
+          // Calculate position with boundary checking
+          const leftPosition = Math.min(
+            rect.right + 12,
+            viewportWidth - 150 // Ensure tooltip doesn't go off screen
+          );
+
+          setTooltipPosition({
+            top: rect.top + window.scrollY + rect.height / 4,
+            left: leftPosition,
+          });
+          setHoveredItem(itemId);
+
+          // Auto-hide after 5 seconds
+          tooltipTimeout.current = setTimeout(() => {
+            setHoveredItem(null);
+          }, 5000);
+        }, 300); // Reduced delay for better UX
       } else {
+        // Hide tooltip with fade-out animation
         setHoveredItem(null);
       }
     },
