@@ -3,7 +3,7 @@ import { generateStrongVerificationCode } from "@/lib/validator";
 import ForgotTemp from "@/models/user/for-temp";
 import { User } from "@/models/user/par-user";
 import { NextResponse } from "next/server";
-const { default: dbConnect } = require("@/config/dbconnect");
+import dbConnect from "@/config/dbconnect";
 
 export async function POST(req) {
   try {

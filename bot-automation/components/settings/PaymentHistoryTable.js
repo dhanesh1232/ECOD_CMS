@@ -3,11 +3,15 @@
 import { CheckCircle, XCircle, Loader, Download, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
+import { generateInvoicePDF } from "@/lib/client/generateInvoice";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return isNaN(date) ? "Invalid date" : format(date, "MMM do, yyyy");
+  if (isNaN(date)) return "Invalid date";
+  const day = String(date.getDate()).padStart(2, "0"); // Ensure two-digit day
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Ensure two-digit month
+  const year = String(date.getFullYear()).slice(-2); // Extract last two digits of the year
+  return `${month}/${day}/${year}`; // Return in MM/DD/YY format
 };
 
 const PaymentHistoryTable = ({ paymentHistory }) => {
@@ -68,37 +72,39 @@ const PaymentHistoryTable = ({ paymentHistory }) => {
               </tr>
             </thead>
             <tbody>
-              {paymentHistory.map((payment, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-100 dark:border-gray-700 last:border-0"
-                >
-                  <td className="py-4 px-2">{formatDate(payment.date)}</td>
-                  <td className="py-4 px-2 font-medium">
-                    {payment.currency} {(payment.amount / 100).toFixed(2)}
-                  </td>
-                  <td className="py-4 px-2">
-                    {getStatusBadge(payment.status)}
-                  </td>
-                  <td className="py-4 px-2 text-right">
-                    <Button
-                      asChild
-                      variant="ghost"
-                      size="sm"
-                      className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                    >
-                      <a
-                        href={payment.receipt}
-                        target="_blank"
-                        rel="noopener noreferrer"
+              {paymentHistory.map((payment, index) => {
+                return (
+                  <tr
+                    key={index}
+                    className="border-b border-gray-100 dark:border-gray-700 last:border-0"
+                  >
+                    <td className="py-4 px-2">
+                      {formatDate(payment.createdAt)}
+                    </td>
+                    <td className="py-4 px-2 font-medium">
+                      ₹
+                      {payment.amount.total.toLocaleString("en-IN", {
+                        maximumFractionDigits: 2,
+                      })}
+                    </td>
+                    <td className="py-4 px-2">
+                      {getStatusBadge(payment.status)}
+                    </td>
+                    <td className="py-4 px-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={payment.status !== "paid"}
+                        className="text-blue-600 dark:text-blue-400 outline-none active:outline-none active:ring-0 focus:outline-none focus-within:outline-none focus:ring-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        onClick={() => generateInvoicePDF(payment)}
                       >
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </a>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                        <Download className="h-4 w-4 mr-2" />
+                        Invoice
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 

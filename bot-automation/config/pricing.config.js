@@ -23,8 +23,8 @@ export const PLANS = {
       yearly: 19999,
     },
     razorpayIds: {
-      monthly: "plan_NlNjdG4zbDw6Qx",
-      yearly: "plan_NlNjfJ4mZJk9pD",
+      monthly: "plan_QS3bpF6uWaXCt6",
+      yearly: "plan_QS3c2KZLIExwlX",
     },
     features: {
       channels: ["web", "whatsapp"],
@@ -47,8 +47,8 @@ export const PLANS = {
       yearly: 49999,
     },
     razorpayIds: {
-      monthly: "plan_NlNjgR7q3CJ2vT",
-      yearly: "plan_NlNjhP8s1dB7wE",
+      monthly: "plan_QS3CWwOR3vrYNe",
+      yearly: "plan_QS3F2XWMxMog5J",
     },
     features: {
       channels: ["web", "whatsapp", "facebook", "instagram"],

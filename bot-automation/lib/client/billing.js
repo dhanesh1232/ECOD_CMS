@@ -33,6 +33,13 @@ export const billingService = {
     }).then(handleResponse);
   },
 
+  getPaymentHistory: async (userId) => {
+    return fetch(`/api/profile/subscription/payment-history?user=${userId}`, {
+      method: "GET",
+      credentials: "include",
+    }).then(handleResponse);
+  },
+
   cancelSubscription: async () => {
     return fetch("/api/subscription/cancel", {
       method: "POST",

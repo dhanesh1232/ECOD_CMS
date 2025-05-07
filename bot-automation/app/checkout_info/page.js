@@ -78,6 +78,23 @@ const PlanInfoCheckoutPage = () => {
       });
       return;
     }
+    if (!plan || !plan_name || !plan.prices[selectedDuration]) {
+      showToast({
+        title: "Invalid Selection",
+        description: "Please select a valid plan and duration",
+        variant: "warning",
+      });
+      return;
+    }
+    const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY;
+    if (!publicKey) {
+      showToast({
+        title: "Configuration Error",
+        description: "Payment gateway not configured",
+        variant: "warning",
+      });
+      return;
+    }
 
     setIsProcessing(true);
     try {
@@ -91,7 +108,7 @@ const PlanInfoCheckoutPage = () => {
       });
       console.log(order);
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+        key: publicKey,
         amount: order.amount,
         currency: order.currency,
         name: "ECODrIx",
@@ -102,6 +119,10 @@ const PlanInfoCheckoutPage = () => {
           contact: formData?.phone,
         },
         handler: async (response) => {
+          if (!response?.razorpay_payment_id) {
+            showToast({ title: "Payment Failed", variant: "warning" });
+            return;
+          }
           try {
             await billingService.verifyPayment({
               razorpay_payment_id: response.razorpay_payment_id,
@@ -148,7 +169,7 @@ const PlanInfoCheckoutPage = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push("/settings/account/billing")}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />

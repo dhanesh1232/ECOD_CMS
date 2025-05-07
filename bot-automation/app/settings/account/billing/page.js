@@ -8,7 +8,6 @@ import {
   InfinityIcon,
   ChevronRight,
   StarsIcon,
-  CheckCircle2,
   CheckCircle,
   Rocket,
 } from "lucide-react";
@@ -62,6 +61,7 @@ const BillingPage = () => {
   const [userCred, setUserCred] = useState({});
   const [currency] = useState("INR");
   const [billingPeriod, setBillingPeriod] = useState("monthly");
+  const [paymentHistory, setPaymentHistory] = useState([]);
   const showToast = useToast();
 
   const getPlanPrice = (planId) => {
@@ -87,13 +87,29 @@ const BillingPage = () => {
       });
       setSubscription(data?.user?.subscription);
       setError("");
+      try {
+        setIsProcessing(false);
+        if (data?.user?.subscription?.plan !== "free") {
+          const paymentHistory = await billingService.getPaymentHistory(
+            data?.user?.subscription.user
+          );
+          setPaymentHistory([...paymentHistory?.paymentHistory] || []);
+          console.log("Payment history:", paymentHistory.paymentHistory);
+        }
+      } catch (err) {
+        showToast({
+          title: "Failed to fetch",
+          description: "Failed to fetch subscription history data.",
+          variant: "warning",
+        });
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setIsProcessing(false);
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     fetchSubscription();
@@ -460,34 +476,36 @@ const BillingPage = () => {
 
             <UsageStatsCard subscription={subscription} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PaymentMethodForm
-                subscription={subscription}
-                onUpdatePaymentMethod={async () => {
-                  const res = await fetch("/api/billing/portal");
-                  const { url } = await res.json();
-                  window.location.href = url;
-                }}
-              />
-
-              <div className="space-y-6">
-                <div className="p-6 bg-muted/50 rounded-xl">
-                  <h3 className="text-lg font-semibold mb-4">
-                    Plan Recommendations
-                  </h3>
-                  <Button
-                    className="w-full"
-                    onClick={handlePlansTab}
-                    variant="secondary"
-                  >
-                    Explore Premium Plans
-                  </Button>
-                </div>
-                <PaymentHistoryTable
-                  paymentHistory={subscription?.paymentHistory}
+            {subscription.plan.toLowerCase() !== "free" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <PaymentMethodForm
+                  subscription={subscription}
+                  onUpdatePaymentMethod={async () => {
+                    const res = await fetch("/api/billing/portal");
+                    const { url } = await res.json();
+                    window.location.href = url;
+                  }}
                 />
+
+                <div className="space-y-6">
+                  <div className="p-6 bg-muted/50 rounded-xl">
+                    <h3 className="text-lg font-semibold mb-4">
+                      Plan Recommendations
+                    </h3>
+                    <Button
+                      className="w-full"
+                      onClick={handlePlansTab}
+                      variant="premium"
+                      size="lg"
+                      disabled={isProcessing}
+                    >
+                      Explore Premium Plans
+                    </Button>
+                  </div>
+                  <PaymentHistoryTable paymentHistory={paymentHistory} />
+                </div>
               </div>
-            </div>
+            )}
 
             <CancellationModal
               open={showCancelModal}

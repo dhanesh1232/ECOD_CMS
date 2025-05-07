@@ -43,6 +43,15 @@ paymentHistorySchema.virtual("formattedAmount").get(function () {
     total: (this.amount.total / 100).toFixed(2),
   };
 });
+paymentHistorySchema.virtual("userInfo", {
+  ref: "User",
+  localField: "user",
+  foreignField: "_id",
+  justOne: true,
+});
+
+paymentHistorySchema.set("toJSON", { virtuals: true });
+paymentHistorySchema.set("toObject", { virtuals: true });
 
 export const PaymentHistory =
   mongoose.models.PaymentHistory ||

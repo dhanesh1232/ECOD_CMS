@@ -48,10 +48,26 @@ const Button = React.forwardRef(
       icon: Icon,
       iconPosition = "left",
       children,
+      asChild = false,
       ...props
     },
     ref
   ) => {
+    if (asChild) {
+      const child = React.Children.only(children);
+      return React.cloneElement(child, {
+        className: twMerge(
+          buttonVariants({ variant, size, className }),
+          clsx({
+            "flex-row-reverse": iconPosition === "right",
+            "cursor-wait": isLoading,
+          }),
+          child.props.className
+        ),
+        disabled: isLoading || props.disabled,
+        ...props,
+      });
+    }
     return (
       <button
         className={twMerge(

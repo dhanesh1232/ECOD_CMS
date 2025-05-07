@@ -222,7 +222,7 @@ export const SideBar = () => {
         {!isMobile && (
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-md border hover:scale-110"
+            className="absolute -right-3 top-6 p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-md border-none ring-2 ring-blue-700 outline-none hover:scale-110"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <FiChevronsRight
