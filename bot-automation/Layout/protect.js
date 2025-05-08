@@ -7,7 +7,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CryptoJS from "crypto-js";
 import OverLayComponent from "@/components/overlay/overlay";
 import { signOut } from "next-auth/react";
-import { ToastProvider } from "@/components/ui/toast-provider";
 
 export default function ProtectLayout({ children }) {
   const router = useRouter();
@@ -91,11 +90,10 @@ export default function ProtectLayout({ children }) {
         <SideBar />
         <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
           <Header />
-          <ToastProvider>
-            <main className="flex-1 bg-white overflow-hidden dark:bg-gray-700 transition-colors ease-in-out duration-300">
-              {children}
-            </main>
-          </ToastProvider>
+
+          <main className="flex-1 bg-white overflow-hidden dark:bg-gray-700 transition-colors ease-in-out duration-300">
+            {children}
+          </main>
         </div>
       </div>
       <OverLayComponent />

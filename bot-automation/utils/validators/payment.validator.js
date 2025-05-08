@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import crypto from "crypto";
 import { PLANS } from "@/config/pricing.config";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import dbConnect from "@/config/dbconnect";
 
 export const validatePaymentRequest = async (req) => {

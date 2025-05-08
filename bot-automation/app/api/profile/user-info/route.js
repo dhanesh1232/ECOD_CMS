@@ -130,7 +130,14 @@ export async function PUT(req) {
       }
     }
 
-    if (password) user.password = password;
+    if (password) {
+      user.password = password;
+      user.passwordHistory.push({
+        password: password,
+        changedAt: Date.now(),
+      });
+      user.passwordChangedAt = Date.now(); // Ensure the password changed time is set correctly
+    }
     if (phone) user.phone = phone;
 
     if (password && phone) {

@@ -287,6 +287,7 @@ export const authOptions = {
   pages: {
     signIn: "/auth/login",
     newUser: "/settings?model",
+    error: "/auth/error",
   },
 };
 

@@ -9,6 +9,7 @@ import { VerificationMail } from "@/lib/helper";
 import dbConnect from "@/config/dbconnect";
 import UserTemp from "@/models/user/user-temp";
 import { User } from "@/models/user/par-user";
+import { encryptData } from "@/utils/encryption";
 
 export async function POST(request) {
   try {
@@ -33,12 +34,20 @@ export async function POST(request) {
     //Temp Creation
     const verificationCode = generateStrongVerificationCode(6);
     await VerificationMail(verificationCode, email);
-    await UserTemp.create({ email, password, name, phone, verificationCode });
+    const en = encryptData(password);
+    await UserTemp.create({
+      email,
+      password: en,
+      name,
+      phone,
+      verificationCode,
+      termsAccepted: terms,
+    });
 
     return NextResponse.json(
       {
         message: "Registration successful",
-        data: { verificationCode, email, password, name, phone },
+        success: true,
       },
       { status: 201 }
     );
@@ -67,6 +76,13 @@ export async function PUT(req) {
     const user = await UserTemp.findOne({ email });
     user.verificationCode = verificationCode;
     await user.save();
+    return NextResponse.json(
+      {
+        message: "Resend verification code successfully",
+        success: true,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     return NextResponse.json(
       {

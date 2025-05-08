@@ -125,6 +125,7 @@ export function Header() {
               >
                 <Link
                   href="/settings/account/profile"
+                  onClick={() => setMenuOpen(false)}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -132,6 +133,7 @@ export function Header() {
                 </Link>
                 <Link
                   href="/settings/account/security"
+                  onClick={() => setMenuOpen(false)}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
                   <Lock className="w-4 h-4" />

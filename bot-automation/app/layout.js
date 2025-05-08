@@ -3,6 +3,7 @@ import "./globals.css";
 import Layout from "@/Layout/layout";
 import { DarkModeProvider } from "@/context/context";
 import { Analytics } from "@vercel/analytics/react";
+import { ToastProvider } from "@/components/ui/toast-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -75,10 +76,12 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <DarkModeProvider>
-          <Layout>
-            {children}
-            <Analytics />
-          </Layout>
+          <ToastProvider>
+            <Layout>
+              {children}
+              <Analytics />
+            </Layout>
+          </ToastProvider>
         </DarkModeProvider>
       </body>
     </html>

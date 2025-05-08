@@ -4,6 +4,7 @@ import { User } from "@/models/user/par-user";
 import { NextResponse } from "next/server";
 import rateLimit from "@/utils/rate-limit";
 import { AccountVerificationCompletedMail } from "@/lib/helper";
+import { decryptData, encryptData } from "@/utils/encryption";
 
 // Configure rate limiting (5 attempts per hour per IP)
 const limiter = rateLimit({
@@ -12,7 +13,6 @@ const limiter = rateLimit({
 });
 
 const CODE_EXPIRY_TIME = 60 * 60 * 1000; // 60 minutes
-const MAX_ATTEMPTS = 3;
 
 export async function POST(req) {
   try {
@@ -46,8 +46,6 @@ export async function POST(req) {
       // Check if permanent user already exists
       const existingUser = await User.findOne({ email }).session(session);
       if (existingUser) {
-        // Clean up the temp record
-        await UserTemp.deleteOne({ email }).session(session);
         await session.commitTransaction();
 
         return NextResponse.json(
@@ -131,26 +129,32 @@ export async function POST(req) {
         }
       }
 
+      const pw = decryptData(tempUser.password);
       // Create new user
       const newUser = new User({
         email: tempUser.email,
-        password: tempUser.password,
+        password: pw,
         name: tempUser.name,
         phone: tempUser.phone,
         isVerified: true,
+        termsAccepted: tempUser.termsAccepted || true,
         plan: "free",
       });
+
       await AccountVerificationCompletedMail(newUser.name, newUser.email);
 
       await newUser.save({ session });
-      await UserTemp.deleteOne({ email }).session(session);
       await session.commitTransaction();
 
       return NextResponse.json(
         {
           message: "Account verified successfully",
           success: true,
-          user: { email: newUser.email, name: newUser.name },
+          user: {
+            email: newUser.email,
+            name: newUser.name,
+            password: tempUser.password,
+          },
         },
         { status: 200 }
       );

@@ -10,8 +10,7 @@ let rateLimiter;
 
 const initializeRateLimiter = async () => {
   if (!rateLimiter) {
-    await dbConnect(); // Ensure connection is ready
-
+    await dbConnect();
     rateLimiter = new RateLimiterMongo({
       storeClient: mongoose.connection.getClient(),
       dbName: process.env.DB_NAME,
@@ -19,7 +18,6 @@ const initializeRateLimiter = async () => {
       duration: 15 * 60,
       blockDuration: 60 * 60,
       tableName: "login_rate_limits",
-      inmemoryBlockOnConsumed: true,
     });
   }
   return rateLimiter;
@@ -43,7 +41,7 @@ const userSchema = new mongoose.Schema(
       validate: [validator.isEmail, "Please provide a valid email"],
       immutable: true,
     },
-    termsAccepted: {
+    terms: {
       type: Boolean,
       required: [true, "You must accept the terms and conditions"],
     },
@@ -55,18 +53,33 @@ const userSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["credentials", "google", "facebook"],
+      enum: ["credentials", "google", "facebook", "github", "azure", "apple"],
       default: "credentials",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: String,
+    verificationExpires: Date,
+    verificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
     },
     role: {
       type: String,
-      enum: ["user", "admin", "moderator"],
+      enum: ["user", "admin", "moderator", "agent", "analyst", "owner"],
       default: "user",
     },
-    plan: {
+    organization: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+    },
+    orgRole: {
       type: String,
-      enum: ["free", "starter", "pro", "enterprise"],
-      default: "free",
+      enum: ["owner", "admin", "member"],
+      default: "member",
     },
 
     // Security Tracking
@@ -80,66 +93,47 @@ const userSchema = new mongoose.Schema(
         city: String,
         device: String,
         userAgent: String,
+        isSuspicious: Boolean,
       },
     ],
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    // Password Reset
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-    passwordChangeHistory: [
-      {
-        password: String,
-        changedAt: Date,
-      },
-    ],
     failedLoginAttempts: {
       type: Number,
       default: 0,
       select: false,
     },
     accountLockedUntil: Date,
-    twoFactorEnabled: {
-      type: Boolean,
-      default: false,
+    twoFactorAuth: {
+      enabled: { type: Boolean, default: false },
+      method: {
+        type: String,
+        enum: ["sms", "email", "authenticator", "none"],
+        default: "none",
+      },
+      secret: { type: String, select: false },
+      backupCodes: [{ type: String, select: false }],
+      lastUsed: Date,
     },
-    twoFactorSecret: String,
+    passwordHistory: [String],
     // Profile Information
-    // In your User model schema
     image: {
       type: String,
       default: "",
       validate: {
         validator: function (v) {
-          // Allow empty string or null
-          if (v === "" || v === null) return true;
-
-          // Check for valid URL (with or without protocol)
-          if (
+          return (
             validator.isURL(v, {
               protocols: ["http", "https"],
-              require_protocol: false, // Changed to false to allow protocol-less URLs
-              require_valid_protocol: true, // Still requires valid protocol if present
-            })
-          )
-            return true;
-
-          // Check for base64 image
-          if (
-            /^data:image\/(png|jpeg|jpg|gif);base64,([a-zA-Z0-9+/]+={0,2})$/.test(
+              require_protocol: true,
+            }) ||
+            /^data:image\/(png|jpeg|jpg|gif|webp);base64,([a-zA-Z0-9+/]+={0,2})$/.test(
               v
             )
-          ) {
-            return true;
-          }
-
-          return false;
+          );
         },
-        message:
-          "Image must be a valid URL (with or without http/https), base64 image, or empty string",
+        message: "Image must be a valid URL or base64 image",
       },
     },
     company: String,
@@ -157,15 +151,75 @@ const userSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: function (v) {
-          return v === null || v === "" || validator.isMobilePhone(v);
+          return (
+            v === null ||
+            v === "" ||
+            validator.isMobilePhone(v, "any", { strictMode: false })
+          );
         },
         message: (props) => `${props.value} is not a valid phone number`,
       },
       default: null,
     },
+    timezone: {
+      type: String,
+      default: "UTC",
+    },
+    language: {
+      type: String,
+      default: "en",
+      enum: ["en", "es", "fr", "de", "pt", "zh", "ja", "ar", "hi", "ru"],
+    },
+
+    // Notification Preferences
+    notifications: {
+      email: {
+        enabled: { type: Boolean, default: true },
+        frequency: {
+          type: String,
+          enum: ["instant", "daily", "weekly"],
+          default: "instant",
+        },
+      },
+      push: {
+        enabled: { type: Boolean, default: true },
+      },
+      inApp: {
+        enabled: { type: Boolean, default: true },
+      },
+      sound: {
+        enabled: { type: Boolean, default: true },
+      },
+    },
+    // API Access
+    apiKeys: [
+      {
+        name: String,
+        key: { type: String, select: false },
+        secret: { type: String, select: false },
+        permissions: [String],
+        lastUsed: Date,
+        createdAt: Date,
+        expiresAt: Date,
+        isActive: Boolean,
+      },
+    ],
 
     // System Flags
     requiresProfileCompletion: Boolean,
+    verificationAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    lastVerificationAttempt: Date,
+    status: {
+      type: String,
+      enum: ["active", "suspended", "deactivated", "invited"],
+      default: "active",
+    },
+    deletionRequestedAt: Date,
+    deletionScheduledAt: Date,
   },
   {
     timestamps: true,
@@ -176,9 +230,13 @@ const userSchema = new mongoose.Schema(
         delete ret.password;
         delete ret.passwordResetToken;
         delete ret.passwordResetExpires;
+        delete ret.verificationAttempts;
+        delete ret.lastVerificationAttempt;
         delete ret.failedLoginAttempts;
         delete ret.accountLockedUntil;
-        delete ret.twoFactorSecret;
+        delete ret.securityQuestions;
+        delete ret.twoFactorAuth;
+        delete ret.apiKeys;
         return ret;
       },
     },
@@ -186,7 +244,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // ======================
-// SCHEMA METHODS
+// VIRTUAL PROPERTIES
 // ======================
 
 userSchema.virtual("subscription", {
@@ -195,6 +253,32 @@ userSchema.virtual("subscription", {
   foreignField: "user",
   justOne: true,
 });
+
+userSchema.virtual("activeConversations", {
+  ref: "Conversation",
+  localField: "_id",
+  foreignField: "assignedTo",
+  match: { status: { $in: ["active", "pending"] } },
+  count: true,
+});
+
+userSchema.virtual("unreadNotifications", {
+  ref: "Notification",
+  localField: "_id",
+  foreignField: "userId",
+  match: { isRead: false },
+  count: true,
+});
+
+userSchema.virtual("assignedChatbots", {
+  ref: "Chatbot",
+  localField: "_id",
+  foreignField: "members.userId",
+});
+
+// ======================
+// MIDDLEWARE
+// ======================
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -209,12 +293,22 @@ userSchema.pre("save", async function (next) {
   }
 });
 
+userSchema.pre("save", function (next) {
+  if (this.isModified("twoFactorAuth") && this.twoFactorAuth.enabled) {
+    this.twoFactorAuth.lastUsed = new Date();
+  }
+  next();
+});
+
+// ======================
+// INSTANCE METHODS
+// ======================
+
 userSchema.methods = {
   // Password verification
   correctPassword: async function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
   },
-
   // Password changed check
   changedPasswordAfter: function (JWTTimestamp) {
     if (this.passwordChangedAt) {
@@ -238,11 +332,31 @@ userSchema.methods = {
     return resetToken;
   },
 
+  // Generate API Key
+  generateApiKey: function (name, permissions = [], expiresInDays = 90) {
+    const key = crypto.randomBytes(32).toString("hex");
+    const secret = crypto.randomBytes(64).toString("hex");
+
+    const apiKey = {
+      name,
+      key,
+      secret,
+      permissions,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
+      isActive: true,
+    };
+
+    this.apiKeys.push(apiKey);
+    return { key, secret, apiKey };
+  },
+
   // Track login activity
   trackLogin: async function (req) {
     try {
       const ip = req.ip;
       const location = await this.constructor.getIpLocation(ip);
+      const isSuspicious = this.isSuspiciousLogin(req);
 
       this.lastLogin = Date.now();
       this.loginHistory.push({
@@ -253,10 +367,15 @@ userSchema.methods = {
         city: location.city || "Unknown",
         device: req.device?.type || "Unknown",
         userAgent: req.headers["user-agent"] || "Unknown",
+        isSuspicious,
       });
 
       // Keep only last 10 logins
       if (this.loginHistory.length > 10) this.loginHistory.shift();
+
+      if (isSuspicious) {
+        await this.sendSuspiciousLoginAlert(req);
+      }
     } catch (err) {
       console.error("Login tracking failed:", err);
     }
@@ -280,9 +399,28 @@ userSchema.methods = {
 
     if (this.failedLoginAttempts >= 5) {
       this.accountLockedUntil = Date.now() + 60 * 60 * 1000; // 1 hour
+      await this.sendAccountLockedNotification();
     }
 
     await this.save();
+  },
+
+  // Two-factor authentication
+  setupTwoFactorAuth: function (method = "authenticator") {
+    const secret = crypto.randomBytes(20).toString("hex");
+    const backupCodes = Array.from({ length: 5 }, () =>
+      crypto.randomBytes(5).toString("hex").toUpperCase()
+    );
+
+    this.twoFactorAuth = {
+      enabled: true,
+      method,
+      secret,
+      backupCodes,
+      lastUsed: new Date(),
+    };
+
+    return { secret, backupCodes };
   },
 };
 
@@ -345,6 +483,13 @@ userSchema.statics = {
       return { country: "Unknown", region: "Unknown", city: "Unknown" };
     }
   },
+
+  // Find by API key
+  findByApiKey: async function (apiKey) {
+    return this.findOne({ "apiKeys.key": apiKey, "apiKeys.isActive": true })
+      .select("+apiKeys")
+      .exec();
+  },
 };
 
 // ======================
@@ -353,5 +498,9 @@ userSchema.statics = {
 
 userSchema.index({ "loginHistory.ip": 1 });
 userSchema.index({ accountLockedUntil: 1 }, { expireAfterSeconds: 0 });
+userSchema.index({ "organization.id": 1 });
+userSchema.index({ "apiKeys.key": 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ "twoFactorAuth.enabled": 1 });
 
 export const User = mongoose.models.User || mongoose.model("User", userSchema);

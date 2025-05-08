@@ -21,6 +21,7 @@ import {
   FiArrowLeft,
 } from "react-icons/fi";
 import { decryptData } from "@/utils/encryption";
+import { useToast } from "../ui/toast-provider";
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
   tabs: [
@@ -246,6 +247,7 @@ export default function FormComponent() {
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const errorParam = searchParams.get("error");
 
+  const showToast = useToast();
   const [activeTab, setActiveTab] = useState(FORM_CONFIG.tabs[0].id);
   const [formState, setFormState] = useState({
     name: "",
@@ -491,12 +493,20 @@ export default function FormComponent() {
           },
           body: JSON.stringify({ phone, email, name, password, terms }),
         });
-        console.log(res);
         const data = await res.json();
         if (!res.ok) {
-          setError(data.message || "Registration failed");
-          setFormErrors(data.errors || {});
+          showToast({
+            title: "Registration failed",
+            description: data.message || data.errors || "Please try again",
+            variant: "destructive",
+          });
         } else {
+          showToast({
+            title: "Registration successful",
+            description:
+              "We have sent a confirmation email, please verify your email address",
+            variant: "success",
+          });
           setFormState((prev) => ({
             ...prev,
             registered: true,
@@ -856,9 +866,31 @@ export default function FormComponent() {
                   {`Didn't receive the email?`}{" "}
                   <button
                     type="button"
-                    onClick={() => {
-                      // Here you could add logic to resend the confirmation email
-                      setFormState((prev) => ({ ...prev, registered: false }));
+                    onClick={async () => {
+                      const res = await fetch("/api/auth/register", {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          email: formState.email,
+                        }),
+                      });
+                      console.log(res);
+                      if (res.ok) {
+                        showToast({
+                          title: "Confirmation email sent",
+                          description:
+                            "Please check your inbox and spam folder.",
+                          variant: "success",
+                        });
+                      } else {
+                        showToast({
+                          title: "Error",
+                          description: "Failed to resend confirmation email.",
+                          variant: "warning",
+                        });
+                      }
                     }}
                     className="text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors"
                   >
