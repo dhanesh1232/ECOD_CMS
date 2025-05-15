@@ -1,17 +1,16 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/config/dbconnect";
 import { razorpay } from "@/lib/payment_gt";
 import { PaymentHistory } from "@/models/payment/payment_history";
 import { PaymentMethod } from "@/models/payment/paymentMethod";
 import { Subscription } from "@/models/payment/subscription";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import { validatePaymentRequest } from "@/utils/validators/payment.validator";
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { addMonths, addYears } from "date-fns";
 import mongoose from "mongoose"; // Added mongoose import
 import { PLANS } from "@/config/pricing.config";
+import { validateSession } from "@/lib/auth";
 
 export async function POST(request) {
   const validationResult = await validatePaymentRequest(request);
@@ -21,10 +20,7 @@ export async function POST(request) {
   const { razorpay_payment_id, razorpay_order_id, razorpay_signature, planId } =
     data;
 
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const session = await validateSession(request);
 
   let dbSession;
   try {

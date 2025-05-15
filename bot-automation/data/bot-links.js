@@ -6,15 +6,26 @@ import {
   FiBook,
   FiLifeBuoy,
   FiCpu,
-  FiBarChart2,
-  FiKey,
   FiCreditCard,
   FiLock,
   FiUser,
 } from "react-icons/fi";
-import { PaintBucket, Plug, Settings } from "lucide-react";
+import {
+  ChartBar,
+  GlobeIcon,
+  Key,
+  PaintBucket,
+  Plug,
+  Puzzle,
+  Settings,
+  Users,
+} from "lucide-react";
+import {
+  ArrowPathIcon,
+  ClipboardDocumentIcon,
+} from "@heroicons/react/24/outline";
 
-export const navItems = [
+export const getNavItems = (slug) => [
   {
     id: "dashboard",
     icon: (
@@ -30,7 +41,7 @@ export const navItems = [
       </svg>
     ),
     label: "Dashboard",
-    href: "/",
+    href: `${slug}/`,
   },
   {
     id: "chatbots",
@@ -50,7 +61,7 @@ export const navItems = [
       </svg>
     ),
     label: "My Chatbots",
-    href: "/chatbots",
+    href: `${slug}/chatbots`,
   },
   {
     id: "analytics",
@@ -67,7 +78,7 @@ export const navItems = [
       </svg>
     ),
     label: "Analytics",
-    href: "/analytics",
+    href: `${slug}/analytics`,
   },
   {
     id: "conversations",
@@ -84,33 +95,72 @@ export const navItems = [
       </svg>
     ),
     label: "Conversations",
-    href: "/conversations",
+    href: `${slug}/conversations`,
   },
   {
     id: "template",
     icon: <FiFileText size={20} />,
     label: "Templates",
-    href: "/template",
+    href: `${slug}/template`,
   },
   {
     id: "contacts",
     icon: <FiUsers size={20} />,
     label: "Contacts",
-    href: "/contacts",
+    href: `${slug}/contacts`,
   },
   {
     id: "settings",
     icon: <FiSettings size={20} />,
     label: "Settings",
-    href: "/settings",
+    href: `${slug}/settings`,
   },
   {
     id: "help",
     icon: <FiHelpCircle size={20} />,
     label: "Help Center",
-    href: "/help",
+    href: `${slug}/help`,
   },
 ];
+
+const workspaceLinks = [
+  {
+    name: "Team Members",
+    href: "/settings/workspace/team-members",
+    icon: <Users className="w-4 h-4" />,
+  },
+  {
+    name: "API Keys",
+    href: "/settings/workspace/api-keys",
+    icon: <Key className="w-4 h-4" />,
+  },
+  {
+    name: "Usage Analytics",
+    href: "/settings/workspace/usage",
+    icon: <ChartBar className="w-4 h-4" />,
+  },
+  {
+    name: "Integrations",
+    href: "/settings/workspace/integrations",
+    icon: <Puzzle className="w-4 h-4" />,
+  },
+  {
+    name: "Webhooks",
+    href: "/settings/workspace/webhooks",
+    icon: <ArrowPathIcon className="w-4 h-4" />,
+  },
+  {
+    name: "Custom Domains",
+    href: "/settings/workspace/domains",
+    icon: <GlobeIcon className="w-4 h-4" />,
+  },
+  {
+    name: "Audit Logs",
+    href: "/settings/workspace/audit-logs",
+    icon: <ClipboardDocumentIcon className="w-4 h-4" />,
+  },
+];
+
 // data/bot-links.js
 export const settingsNavItems = [
   {
@@ -145,23 +195,7 @@ export const settingsNavItems = [
     id: "workspace",
     category: "Workspace",
     icon: <FiUsers className="w-4 h-4" />,
-    items: [
-      {
-        name: "Team Members",
-        href: "/settings/workspace/team",
-        icon: <FiUsers className="w-4 h-4" />,
-      },
-      {
-        name: "API Keys",
-        href: "/settings/workspace/api",
-        icon: <FiKey className="w-4 h-4" />,
-      },
-      {
-        name: "Usage Analytics",
-        href: "/settings/workspace/analytics",
-        icon: <FiBarChart2 className="w-4 h-4" />,
-      },
-    ],
+    items: [...workspaceLinks],
   },
   {
     id: "chatbot",
@@ -210,3 +244,21 @@ export const settingsNavItems = [
     ],
   },
 ];
+export const getFinalSettingsNav = (slug = "") => {
+  return settingsNavItems.map((item) => {
+    const updatedItem = { ...item };
+
+    if (updatedItem.href) {
+      updatedItem.href = `${slug}${updatedItem.href}`;
+    }
+
+    if (updatedItem.items) {
+      updatedItem.items = updatedItem.items.map((subItem) => ({
+        ...subItem,
+        href: subItem.external ? subItem.href : `${slug}${subItem.href}`,
+      }));
+    }
+
+    return updatedItem;
+  });
+};

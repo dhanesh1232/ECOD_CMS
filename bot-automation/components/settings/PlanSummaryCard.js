@@ -136,6 +136,7 @@ const PlanSummaryCard = ({
     const diff = new Date(subscription.trialEndDate) - new Date();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
+  console.log(subscription);
 
   return (
     <div
@@ -155,7 +156,9 @@ const PlanSummaryCard = ({
           <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-full">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
               Billed{" "}
-              {subscription?.renewalInterval === "year" ? "Yearly" : "Monthly"}
+              {subscription?.renewalInterval === "yearly"
+                ? "Yearly"
+                : "Monthly"}
             </span>
           </div>
         )}

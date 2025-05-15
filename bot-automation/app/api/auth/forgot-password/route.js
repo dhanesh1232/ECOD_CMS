@@ -1,5 +1,5 @@
 import { PasswordResetLinkGenerator } from "@/lib/helper";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import { NextResponse } from "next/server";
 import dbConnect from "@/config/dbconnect";
 

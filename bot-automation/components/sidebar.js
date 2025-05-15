@@ -11,9 +11,10 @@ import React, {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { navItems } from "@/data/bot-links";
+
 import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
+import { getNavItems } from "@/data/bot-links";
 
 const ChatBotAI = () => (
   <svg
@@ -33,6 +34,11 @@ const ChatBotAI = () => (
 
 export const SideBar = () => {
   const { data: session } = useSession();
+  let navItems;
+  if (session.user) {
+    navItems = getNavItems(session.user.defaultWorkspace);
+  }
+
   const [hoveredItem, setHoveredItem] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -170,7 +176,7 @@ export const SideBar = () => {
           pathname === item.href ||
           (item.href !== "/" && pathname.startsWith(`${item.href}/`))
       ),
-    [pathname]
+    [pathname, navItems]
   );
 
   const MobileOverlay = () =>

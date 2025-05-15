@@ -47,23 +47,19 @@ const chatbotPlatforms = [
 export default function NewBot() {
   const router = useRouter();
 
-  const handleNavigate = useCallback(
-    async (bot) => {
-      console.log(bot);
-      const res = await fetch("/api/bot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: bot.id,
-          id: bot.id,
-        }),
-      });
-      //router.push(route);
-    },
-    [router]
-  );
+  const handleNavigate = useCallback(async (bot) => {
+    console.log(bot);
+    const res = await fetch("/api/bot", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: bot.id,
+        id: bot.id,
+      }),
+    });
+  }, []);
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 md:p-8">

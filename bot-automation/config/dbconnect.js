@@ -1,8 +1,8 @@
 // config/dbConnect.js
 import mongoose from "mongoose";
 
-// Add global mongoose configuration here
-mongoose.set("strictPopulate", false); // Move this outside the function
+// Global mongoose configuration (runs once)
+mongoose.set("strictPopulate", false);
 mongoose.set("strictQuery", false);
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -12,27 +12,40 @@ if (!MONGODB_URI) {
   );
 }
 
-// Connection events
-mongoose.connection.on("connected", () => {
-  console.log("✅ MongoDB connected");
-});
-
-mongoose.connection.on("error", (err) => {
-  console.error("❌ MongoDB connection error:", err);
-});
-
-mongoose.connection.on("disconnected", () => {
-  console.warn("⚠️ MongoDB disconnected");
-});
-
 // Cache connection
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongoose = {
+    conn: null,
+    promise: null,
+    listenersAttached: false, // Track if we've added listeners
+  };
+}
+
+// Add connection events only once
+function attachConnectionListeners() {
+  if (cached.listenersAttached) return;
+
+  mongoose.connection.on("connected", () => {
+    console.log("✅ MongoDB connected");
+  });
+
+  mongoose.connection.on("error", (err) => {
+    console.error("❌ MongoDB connection error:", err);
+  });
+
+  mongoose.connection.on("disconnected", () => {
+    console.warn("⚠️ MongoDB disconnected");
+  });
+
+  cached.listenersAttached = true;
 }
 
 async function dbConnect() {
+  // Attach listeners (will only happen once)
+  attachConnectionListeners();
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -41,22 +54,25 @@ async function dbConnect() {
     const opts = {
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
-      bufferCommands: false,
-      maxPoolSize: 10,
+      bufferCommands: true,
+      maxPoolSize: 5,
       retryWrites: true,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log("✅ MongoDB connected");
-      return mongoose;
-    });
+    cached.promise = mongoose
+      .connect(MONGODB_URI, opts)
+      .then((mongoose) => mongoose)
+      .catch((err) => {
+        cached.promise = null;
+        throw err;
+      });
   }
 
   try {
     cached.conn = await cached.promise;
     return cached.conn;
   } catch (err) {
-    cached.promise = null; // Clear cache on error
+    cached.promise = null;
     throw err;
   }
 }

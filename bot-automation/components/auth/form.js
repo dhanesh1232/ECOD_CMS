@@ -1021,21 +1021,12 @@ export default function FormComponent() {
           </motion.p>
         </div>
 
-        {/* Error Message */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              variants={errorVariants}
-              className="w-full p-3 mb-4 text-sm text-red-500 dark:text-red-400 dark:bg-red-900/30 bg-red-100 rounded-lg border dark:border-red-800 border-red-200 flex items-center gap-2"
-            >
-              <FiAlertCircle className="flex-shrink-0" />
-              {error}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {error &&
+          showToast({
+            title: "Error",
+            description: error,
+            variant: "warning",
+          })}
 
         {/* Form */}
         <motion.form

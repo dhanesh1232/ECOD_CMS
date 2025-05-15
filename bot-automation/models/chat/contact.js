@@ -103,10 +103,6 @@ contactSchema.index(
   { organizationId: 1, email: 1 },
   { unique: true, sparse: true }
 );
-contactSchema.index(
-  { organizationId: 1, phone: 1 },
-  { unique: true, sparse: true }
-);
 contactSchema.index({
   "channelIdentifiers.channel": 1,
   "channelIdentifiers.id": 1,

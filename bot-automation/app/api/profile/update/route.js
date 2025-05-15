@@ -1,17 +1,14 @@
 import dbConnect from "@/config/dbconnect";
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import cloudinary from "@/utils/cloudinary";
+import { validateSession } from "@/lib/auth";
 
 export async function PUT(request) {
   await dbConnect();
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session?.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const session = await validateSession(request);
+
     const body = await request.json();
     const { image, website, company } = body;
 

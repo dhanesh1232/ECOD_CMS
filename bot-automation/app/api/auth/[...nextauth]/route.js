@@ -1,75 +1,13 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import bcrypt from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import dbConnect from "@/config/dbconnect";
 import { NewSignupGoogleMail, sendLoginAlertEmail } from "@/lib/helper";
-
-// Enhanced trackUserLogin function
-const trackUserLogin = async (userId, req) => {
-  try {
-    await dbConnect();
-
-    // Get the real IP address from multiple possible locations
-    let ip = "Unknown";
-    if (req) {
-      ip =
-        req.headers?.["x-real-ip"] ||
-        req.headers?.["x-forwarded-for"]?.split(",")[0]?.trim() ||
-        req.socket?.remoteAddress ||
-        req.connection?.remoteAddress ||
-        "Unknown";
-    }
-
-    // Get location information
-    let location = { country: "Unknown", region: "Unknown", city: "Unknown" };
-    try {
-      if (ip !== "Unknown") {
-        location = await User.getIpLocation(ip);
-      }
-    } catch (err) {
-      console.error("Location lookup failed:", err);
-    }
-
-    // Get detailed device info from user agent
-    const userAgent = req?.headers?.["user-agent"] || "Unknown";
-    let deviceType = "Unknown";
-
-    if (userAgent) {
-      if (/mobile/i.test(userAgent)) deviceType = "Mobile";
-      else if (/tablet/i.test(userAgent)) deviceType = "Tablet";
-      else if (/android/i.test(userAgent)) deviceType = "Android";
-      else if (/iphone|ipad|ipod/i.test(userAgent)) deviceType = "iOS";
-      else if (/windows/i.test(userAgent)) deviceType = "Windows";
-      else if (/macintosh/i.test(userAgent)) deviceType = "Mac";
-      else if (/linux/i.test(userAgent)) deviceType = "Linux";
-    }
-
-    // Update user record with login history
-    await User.updateOne(
-      { _id: userId },
-      {
-        $set: { lastLogin: new Date() },
-        $push: {
-          loginHistory: {
-            timestamp: new Date(),
-            ip,
-            country: location.country,
-            region: location.region,
-            city: location.city,
-            device: deviceType,
-            userAgent,
-          },
-        },
-        $slice: { loginHistory: -10 }, // Keep only last 10 logins
-      }
-    );
-  } catch (error) {
-    console.error("Login tracking failed:", error);
-  }
-};
-
+import validator from "validator";
+import { Workspace } from "@/models/user/workspace";
+import { generateRandomSlug } from "@/lib/slugGenerator";
+import mongoose from "mongoose";
 // Credentials authentication
 const authorizeCredentials = async (credentials, req) => {
   try {
@@ -78,15 +16,18 @@ const authorizeCredentials = async (credentials, req) => {
 
     if ((!email && !phone) || !password) return null;
 
+    if (email && !validator.isEmail(email)) {
+      return null;
+    }
+
     const user = await User.findOne({
       $or: [{ email: email?.trim().toLowerCase() }, { phone: phone?.trim() }],
-    })
-      .select("+password +failedLoginAttempts +accountLockedUntil")
-      .lean();
+    }).select(
+      "+password +failedLoginAttempts +accountLockedUntil +mfa.enabled"
+    );
 
     if (!user?.password) return null;
 
-    // Check account lock
     if (
       user.accountLockedUntil &&
       new Date(user.accountLockedUntil) > new Date()
@@ -94,23 +35,11 @@ const authorizeCredentials = async (credentials, req) => {
       return null;
     }
 
-    // Verify password
-    if (!(await bcrypt.compare(password, user.password))) {
-      await User.updateOne(
-        { _id: user._id },
-        {
-          $inc: { failedLoginAttempts: 1 },
-          ...(user.failedLoginAttempts >= 4
-            ? {
-                accountLockedUntil: new Date(Date.now() + 60 * 60 * 1000),
-              }
-            : {}),
-        }
-      );
+    if (!(await user.correctPassword(password))) {
+      await user.handleFailedLogin();
       return null;
     }
 
-    // Reset failed attempts
     await User.updateOne(
       { _id: user._id },
       {
@@ -127,7 +56,7 @@ const authorizeCredentials = async (credentials, req) => {
       phone: user.phone || null,
       image: user.image || null,
       role: user.role || "user",
-      requiresProfileCompletion: user.requiresProfileCompletion ?? false,
+      requiresProfileCompletion: user.requiresProfileCompletion ?? true,
       provider: "credentials",
     };
   } catch (error) {
@@ -151,43 +80,84 @@ const googleProvider = GoogleProvider({
   },
 });
 
-// Google sign-in handler
-const handleGoogleSignIn = async ({ user, profile, req }) => {
+// Update the handleGoogleSignIn function
+const handleGoogleSignIn = async ({ profile }) => {
+  const session = await mongoose.startSession();
+
   try {
     await dbConnect();
+    await session.startTransaction();
+
+    const existingUser = await User.findOne({ email: profile.email }).session(
+      session
+    );
     let userData;
 
-    const existingUser = await User.findOne({ email: profile.email });
-
     if (!existingUser) {
-      // Create new user
-      userData = await User.create({
-        name: profile.name,
-        email: profile.email,
-        provider: "google",
-        isVerified: true,
-        role: "user",
-        image: profile.picture || "",
-        website: "",
-        phone: "",
-        plan: "pro",
-        requiresProfileCompletion: true,
-        lastLogin: new Date(),
-      });
+      // 🔹 Create new user
+      userData = await User.create(
+        [
+          {
+            name: profile.name,
+            email: profile.email,
+            provider: "google",
+            isVerified: true,
+            role: "user",
+            image: profile.picture || "",
+            requiresProfileCompletion: true,
+            lastLogin: new Date(),
+          },
+        ],
+        { session }
+      );
 
+      userData = userData[0];
+
+      // 🔧 Create default workspace for the user
+      await userData.createDefaultWorkspace();
+
+      // 📩 Send welcome email
       await NewSignupGoogleMail(profile.name, profile.email);
     } else {
-      // Update existing user
+      // 🔹 Update user login info and Google image if needed
       const updates = {
         name: profile.name,
-        image: existingUser.image || profile.picture,
         lastLogin: new Date(),
         provider: "google",
       };
 
-      await User.updateOne({ _id: existingUser._id }, updates);
-      userData = { ...existingUser.toObject(), ...updates };
+      if (profile.picture && !existingUser.image) {
+        updates.image = profile.picture;
+      }
+
+      await User.updateOne({ _id: existingUser._id }, updates).session(session);
+
+      userData = await User.findById(existingUser._id).session(session);
+
+      // 🏗️ Ensure at least one workspace exists for the user
+      const workspaces = await Workspace.find({
+        "members.user": existingUser._id,
+      }).session(session);
+
+      if (workspaces.length === 0) {
+        await Workspace.createWithOwner(
+          existingUser._id,
+          {
+            name: `${profile.name}'s Workspace`,
+            slug: generateRandomSlug(await User.countDocuments()),
+            subscription: {
+              plan: "free",
+              billingCycle: "lifetime",
+              status: "active",
+            },
+          },
+          session
+        );
+      }
     }
+
+    // ✅ Commit all operations
+    await session.commitTransaction();
 
     return {
       id: userData._id.toString(),
@@ -196,12 +166,18 @@ const handleGoogleSignIn = async ({ user, profile, req }) => {
       phone: userData.phone || null,
       image: userData.image || null,
       role: userData.role || "user",
-      requiresProfileCompletion: userData.requiresProfileCompletion ?? false,
+      requiresProfileCompletion: userData.requiresProfileCompletion ?? true,
       provider: "google",
     };
   } catch (error) {
+    if (session?.inTransaction()) {
+      await session.abortTransaction();
+    }
+
     console.error("Google sign-in error:", error);
-    throw error;
+    throw new Error("Google sign-in failed.");
+  } finally {
+    session?.endSession();
   }
 };
 
@@ -215,21 +191,22 @@ export const authOptions = {
         phone: { label: "Phone", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
-        const user = await authorizeCredentials(credentials, req);
-        if (user) {
-          await trackUserLogin(user.id, req);
-          return user;
-        }
-        return null;
-      },
+      authorize: authorizeCredentials,
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     async jwt({ token, user, account }) {
       if (user && account) {
+        console.log(user);
+        const dbUser = await User.findById(user.id)
+          .select("currentWorkspace")
+          .populate("currentWorkspace", "slug");
+
         token = {
           ...token,
           sub: user.id,
@@ -237,39 +214,69 @@ export const authOptions = {
           email: user.email,
           phone: user.phone,
           image: user.image,
-          role: user.role || "user",
-          provider: account.provider || "credentials",
-          requiresProfileCompletion: user.requiresProfileCompletion ?? false,
+          role: user.role,
+          provider: account.provider,
+          requiresProfileCompletion: user.requiresProfileCompletion,
+          workspaceSlug: dbUser?.currentWorkspace?.slug,
         };
       }
       return token;
     },
+
     async session({ session, token }) {
+      await dbConnect();
       session.user = {
         id: token.sub,
         name: token.name,
         email: token.email,
-        phone: token.phone || null,
-        role: token.role || "user",
+        phone: token.phone,
+        role: token.role,
         provider: token.provider,
         requiresProfileCompletion: token.requiresProfileCompletion,
         image: token.image,
+        workspaceSlug: token.workspaceSlug,
       };
+
+      // Add user's workspaces to session
+      if (token.sub) {
+        const workspaces = await Workspace.find({
+          "members.user": token.sub,
+        }).select("name slug subscription");
+
+        session.user.workspaces = workspaces;
+        session.user.defaultWorkspace = workspaces[0]?.slug || null;
+      }
+
       return session;
     },
-    async signIn({ user, account, profile, request }) {
+    async signIn({ user, account, profile }) {
       try {
         if (account.provider === "google") {
-          await sendLoginAlertEmail(profile.name, profile.email);
-          const userData = await handleGoogleSignIn({
-            user,
-            profile,
-            req: request,
-          });
+          await dbConnect();
+          const existingUser = await User.findOne({ email: profile.email });
+
+          // If user exists but with different provider, allow linking
+          if (existingUser && existingUser.provider !== "google") {
+            // Update provider to google and merge accounts
+            await User.updateOne(
+              { _id: existingUser._id },
+              {
+                provider: "google",
+                image: profile.picture || existingUser.image,
+                isVerified: true,
+              }
+            );
+            return true;
+          }
+
+          const userData = await handleGoogleSignIn({ profile });
           Object.assign(user, userData);
-        } else {
+        }
+
+        if (user.email) {
           await sendLoginAlertEmail(user.name, user.email);
         }
+
         return true;
       } catch (error) {
         console.error("SignIn error:", error);
@@ -278,15 +285,14 @@ export const authOptions = {
     },
   },
   events: {
-    async signIn({ user, request }) {
-      if (user?.id) {
-        await trackUserLogin(user.id, request);
+    async signIn({ user, isNewUser }) {
+      if (isNewUser && user.provider === "google") {
+        await NewSignupGoogleMail(user.name, user.email);
       }
     },
   },
   pages: {
     signIn: "/auth/login",
-    newUser: "/settings?model",
     error: "/auth/error",
   },
 };

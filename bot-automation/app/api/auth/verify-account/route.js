@@ -1,10 +1,13 @@
 import dbConnect from "@/config/dbconnect";
 import UserTemp from "@/models/user/user-temp";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import { NextResponse } from "next/server";
 import rateLimit from "@/utils/rate-limit";
 import { AccountVerificationCompletedMail } from "@/lib/helper";
-import { decryptData, encryptData } from "@/utils/encryption";
+import { decryptData } from "@/utils/encryption";
+import { Workspace } from "@/models/user/workspace";
+import { Subscription } from "@/models/payment/subscription";
+import { PLANS } from "@/config/pricing.config";
 
 // Configure rate limiting (5 attempts per hour per IP)
 const limiter = rateLimit({
@@ -131,19 +134,20 @@ export async function POST(req) {
 
       const pw = decryptData(tempUser.password);
       // Create new user
-      const newUser = new User({
+      const newUser = await User.create({
         email: tempUser.email,
         password: pw,
         name: tempUser.name,
         phone: tempUser.phone,
         isVerified: true,
         termsAccepted: tempUser.termsAccepted || true,
-        plan: "free",
+        provider: "credentials",
       });
+
+      await newUser.createDefaultWorkspace();
 
       await AccountVerificationCompletedMail(newUser.name, newUser.email);
 
-      await newUser.save({ session });
       await session.commitTransaction();
 
       return NextResponse.json(

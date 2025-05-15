@@ -1,19 +1,16 @@
 // Server-side: app/api/subscription/create-payment-order/route.js
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/config/dbconnect";
 import { PLANS, TAX_RATES } from "@/config/pricing.config";
+import { validateSession } from "@/lib/auth";
 import { razorpay } from "@/lib/payment_gt";
 import { PaymentHistory } from "@/models/payment/payment_history";
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 // Enhanced create-payment-order API route
 export async function POST(request) {
   try {
     await dbConnect();
-    const session = await getServerSession(authOptions);
-    if (!session)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await validateSession();
 
     // Verify Razorpay instance
     if (!razorpay) {

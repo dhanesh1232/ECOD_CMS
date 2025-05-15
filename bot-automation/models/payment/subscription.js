@@ -1,239 +1,549 @@
-// models/subscription.js
 import mongoose from "mongoose";
-import { PLANS } from "@/config/pricing.config";
-import {
-  SubscriptionDowngradedMail,
-  SubscriptionExpiryWarningMail,
-  SubscriptionPaymentFailedMail,
-  SubscriptionReactivatedMail,
-} from "@/lib/helper";
+import { PLANS, PricingUtils, TAX_RATES } from "@/config/pricing.config";
+import { razorpay } from "@/lib/payment_gt";
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    user: {
+    workspace: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Workspace",
       required: true,
+      immutable: true,
+      index: true,
+      unique: true,
     },
     plan: {
       type: String,
-      required: true,
       enum: Object.keys(PLANS),
-      default: "free",
+      required: true,
+      index: true,
     },
     status: {
       type: String,
-      enum: ["active", "past_due", "grace_period", "canceled", "unpaid"],
+      enum: ["active", "trialing", "past_due", "canceled", "unpaid"],
       default: "active",
+      index: true,
     },
-    startDate: {
-      type: Date,
-      default: Date.now,
-    },
-    endDate: Date,
-    paymentGateway: {
-      type: String,
-      enum: ["razorpay", "none"],
-      default: "none",
-    },
-    razorpaySubscriptionId: String,
-    currentPaymentMethod: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "PaymentMethod",
-    },
-    renewalInterval: {
+    billingCycle: {
       type: String,
       enum: ["monthly", "yearly", "lifetime"],
+      required: true,
       default: "lifetime",
+    },
+    currentPeriodStart: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    currentPeriodEnd: {
+      type: Date,
+      required: function () {
+        return this.plan !== "free";
+      },
+      default: null,
+    },
+    trialStart: Date,
+    trialEnd: Date,
+    canceledAt: Date,
+    endedAt: Date,
+    paymentGateway: {
+      type: String,
+      enum: ["razorpay", "stripe", "paypal"],
+      default: "razorpay",
+    },
+    gatewaySubscriptionId: {
+      type: String,
+      index: true,
+    },
+    gatewayCustomerId: String,
+    gatewayPlanId: String,
+    latestInvoice: {
+      id: String,
+      amount: Number,
+      currency: String,
+      status: String,
+      pdfUrl: String,
+      hostedInvoiceUrl: String,
+    },
+    invoiceHistory: [
+      {
+        id: String,
+        date: Date,
+        amount: Number,
+        currency: String,
+        status: String,
+        pdfUrl: String,
+      },
+    ],
+    usage: {
+      chatbots: { type: Number, default: 0 },
+      messages: { type: Number, default: 0 },
+      members: { type: Number, default: 1 },
+      storage: { type: Number, default: 0 },
+    },
+    limits: {
+      chatbots: { type: Number, required: true },
+      messages: { type: Number, required: true },
+      members: { type: Number, required: true },
+      storage: { type: Number, required: true },
+      conversations: { type: Number, required: true },
+      integrations: { type: Number, required: true },
     },
     features: {
       channels: [String],
-      chatbots: Number,
-      monthlyMessages: Number,
-      teamMembers: Number,
-      bandwidth: String,
-      fileAttachments: Boolean,
-      analyticsDashboard: Boolean,
-      customBranding: Boolean,
+      analytics: Boolean,
       apiAccess: Boolean,
+      customBranding: Boolean,
       prioritySupport: Boolean,
       whiteLabel: Boolean,
     },
-    usage: {
-      messagesUsed: {
-        type: Number,
-        default: 0,
-      },
-      chatbotsCreated: {
-        type: Number,
-        default: 0,
-      },
-      lastReset: {
-        type: Date,
-        default: () =>
-          new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-      },
-    },
-    paymentHistory: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "PaymentHistory",
-      },
-    ],
     notifications: {
-      expiryNotified: Boolean,
-      downgradeNotified: Boolean,
-      paymentFailedNotified: Boolean,
-      lastNotified: Date,
+      upcomingRenewal: { sent: Boolean, sentAt: Date },
+      paymentFailed: { sent: Boolean, sentAt: Date },
+      subscriptionEnding: { sent: Boolean, sentAt: Date },
+    },
+    metadata: {
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: Date,
+      canceledAt: Date,
     },
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        // Clean up sensitive data
+        delete ret.gatewaySubscriptionId;
+        delete ret.gatewayCustomerId;
+        delete ret.gatewayPlanId;
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   }
 );
 
 // Indexes
-subscriptionSchema.index({ endDate: 1 });
-subscriptionSchema.index({ status: 1 });
-subscriptionSchema.index({ user: 1 });
-subscriptionSchema.index({ renewalInterval: 1 });
+subscriptionSchema.index({ currentPeriodEnd: 1 });
+subscriptionSchema.index({ "metadata.createdAt": 1 });
 
-// Virtual Properties
+// Virtuals
 subscriptionSchema.virtual("isActive").get(function () {
-  if (this.renewalInterval === "lifetime") {
-    return this.status === "active";
-  }
   return (
-    ["active", "grace_period"].includes(this.status) &&
-    (!this.endDate || this.endDate > new Date())
+    ["active", "trialing"].includes(this.status) &&
+    this.currentPeriodEnd > new Date()
   );
 });
 
-subscriptionSchema.virtual("messagesRemaining").get(function () {
-  return Math.max(
-    this.features.monthlyMessages - (this.usage.messagesUsed || 0),
-    0
-  );
+subscriptionSchema.virtual("isTrial").get(function () {
+  return this.trialEnd && this.trialEnd > new Date();
 });
 
 subscriptionSchema.virtual("daysUntilRenewal").get(function () {
-  if (!this.endDate) return null;
-  return Math.ceil((this.endDate - new Date()) / (1000 * 60 * 60 * 24));
+  return Math.ceil(
+    (this.currentPeriodEnd - new Date()) / (1000 * 60 * 60 * 24)
+  );
 });
 
-// In models/subscription.js - Update pre-save hook
-subscriptionSchema.pre("save", async function (next) {
-  const now = new Date();
+subscriptionSchema.virtual("usagePercentage").get(function () {
+  return {
+    chatbots: Math.min(
+      Math.round((this.usage.chatbots / this.limits.chatbots) * 100),
+      100
+    ),
+    messages: Math.min(
+      Math.round((this.usage.messages / this.limits.messages) * 100),
+      100
+    ),
+    members: Math.min(
+      Math.round((this.usage.members / this.limits.members) * 100),
+      100
+    ),
+    storage: Math.min(
+      Math.round((this.usage.storage / this.limits.storage) * 100),
+      100
+    ),
+  };
+});
 
-  // Reset usage if plan changes
+// Hooks
+subscriptionSchema.pre("save", function (next) {
+  const plan = PLANS[this.plan];
+  // Check if plan is valid
+  if (!plan) {
+    return next(new Error(`Invalid plan: ${this.plan}`));
+  }
+
   if (this.isModified("plan")) {
-    const planConfig = PLANS[this.plan];
-    this.features = planConfig.features;
-    this.usage.messagesUsed = 0;
-    this.usage.chatbotsCreated = Math.min(
-      this.usage.chatbotsCreated,
-      planConfig.features.chatbots
-    );
-
-    // Reset renewal interval for paid plans
-    if (this.plan !== "free" && !this.renewalInterval) {
-      this.renewalInterval = "monthly"; // Default to monthly
-    }
+    this.limits = plan.limits;
+    this.features = plan.features;
   }
 
-  // Add additional validation
-  if (this.plan === "free" && this.renewalInterval !== "lifetime") {
-    this.renewalInterval = "lifetime";
+  if (this.isModified("status") && this.status === "canceled") {
+    this.metadata.canceledAt = new Date();
   }
 
+  if (plan.metadata.trialDays > 0 && !this.trialEnd) {
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + plan.metadata.trialDays);
+    this.trialEnd = trialEnd;
+    this.status = "trialing";
+  }
+
+  this.metadata.updatedAt = new Date();
   next();
 });
 
 // Methods
 subscriptionSchema.methods = {
-  async createRazorpaySubscription(paymentMethod) {
+  generateInvoice: function () {
     const plan = PLANS[this.plan];
-    const subscription = await razorpay.subscriptions.create({
-      plan_id: plan.razorpayIds[this.renewalInterval],
-      customer_id: this.user.razorpayCustomerId,
-      payment_method: paymentMethod,
-      total_count: this.renewalInterval === "lifetime" ? 1 : 12,
+    const priceInfo = PricingUtils.calculatePrice(this.plan, this.billingCycle);
+
+    return {
+      invoiceNumber: `INV-${this._id.toString().substring(0, 8).toUpperCase()}`,
+      date: new Date().toISOString().split("T")[0],
+      plan: plan.name,
+      billingCycle: this.billingCycle,
+      periodStart: this.currentPeriodStart.toISOString().split("T")[0],
+      periodEnd: this.currentPeriodEnd.toISOString().split("T")[0],
+      basePrice: PricingUtils.formatPrice(priceInfo.base),
+      taxRate: `${TAX_RATES.INR * 100}%`,
+      taxAmount: PricingUtils.formatPrice(priceInfo.tax),
+      total: PricingUtils.formatPrice(priceInfo.total),
+      currency: priceInfo.currency,
+      features: Object.entries(plan.features)
+        .filter(([_, value]) => value === true)
+        .map(([key]) => key),
+      limits: plan.limits,
+    };
+  },
+
+  hasFeature: function (feature) {
+    return PLANS[this.plan].features[feature] || false;
+  },
+
+  getUsageDashboard: function () {
+    const plan = PLANS[this.plan];
+    return {
+      chatbots: {
+        used: this.usage.chatbots,
+        limit: plan.limits.chatbots,
+        percentage: Math.min(
+          Math.round((this.usage.chatbots / plan.limits.chatbots) * 100),
+          100
+        ),
+      },
+      messages: {
+        used: this.usage.messages,
+        limit: plan.limits.messages,
+        percentage: Math.min(
+          Math.round((this.usage.messages / plan.limits.messages) * 100),
+          100
+        ),
+      },
+      members: {
+        used: this.usage.members,
+        limit: plan.limits.members,
+        percentage: Math.min(
+          Math.round((this.usage.members / plan.limits.members) * 100),
+          100
+        ),
+      },
+    };
+  },
+
+  async cancel(atPeriodEnd = true) {
+    if (this.status === "canceled") return this;
+
+    if (this.paymentGateway === "razorpay") {
+      await razorpay.subscriptions.cancel(this.gatewaySubscriptionId, {
+        cancel_at_period_end: atPeriodEnd,
+      });
+    }
+
+    this.status = atPeriodEnd ? "active" : "canceled";
+    this.canceledAt = new Date();
+
+    if (!atPeriodEnd) {
+      this.endedAt = new Date();
+    }
+
+    await this.save();
+
+    // Update workspace status
+    const Workspace = mongoose.model("Workspace");
+    await Workspace.findByIdAndUpdate(this.workspace, {
+      "subscription.status": this.status,
     });
 
-    this.razorpaySubscriptionId = subscription.id;
-    this.paymentGateway = "razorpay";
-    return this.save();
+    return this;
   },
 
-  async sendExpiryNotification(user) {
-    if (!this.notifications.expiryNotified && this.daysUntilRenewal <= 3) {
-      await SubscriptionExpiryWarningMail(user, this.endDate, this.plan);
-      this.notifications.expiryNotified = true;
-      this.notifications.lastNotified = new Date();
-      await this.save();
-    }
-  },
+  async reactivate() {
+    if (this.status === "active") return this;
 
-  async sendPaymentFailedNotification(user) {
-    if (
-      !this.notifications.paymentFailedNotified &&
-      this.status === "past_due"
-    ) {
-      await SubscriptionPaymentFailedMail(user, this.plan);
-      this.notifications.paymentFailedNotified = true;
-      this.notifications.lastNotified = new Date();
-      await this.save();
+    if (this.paymentGateway === "razorpay") {
+      await razorpay.subscriptions.reactivate(this.gatewaySubscriptionId);
     }
-  },
-  sendDowngradeNotification: async function (user) {
-    if (!this.notifications.downgradeNotified) {
-      try {
-        await SubscriptionDowngradedMail(user, this.archivedData.lastPaidPlan);
-        this.notifications.downgradeNotified = true;
-        this.notifications.lastNotified = new Date();
-        await this.save();
-      } catch (error) {
-        console.error("Failed to send downgrade notification:", error);
-        throw error;
-      }
-    }
-  },
 
-  sendReactivatedNotification: async function (user) {
-    try {
-      await SubscriptionReactivatedMail(user, this.plan);
-      this.notifications.lastNotified = new Date();
-      await this.save();
-    } catch (error) {
-      console.error("Failed to send reactivation notification:", error);
-      throw error;
-    }
-  },
-  async downgradeToFree() {
-    this.plan = "free";
     this.status = "active";
-    this.renewalInterval = "lifetime";
-    this.endDate = null;
-    this.notifications.downgradeNotified = true;
+    this.canceledAt = undefined;
+    await this.save();
+
+    // Update workspace status
+    const Workspace = mongoose.model("Workspace");
+    await Workspace.findByIdAndUpdate(this.workspace, {
+      "subscription.status": "active",
+    });
+
+    return this;
+  },
+
+  updatePlan: async function (newPlan, billingCycle) {
+    const planConfig = PLANS[newPlan];
+
+    if (this.paymentGateway === "razorpay") {
+      await razorpay.subscriptions.update(this.gatewaySubscriptionId, {
+        plan_id: planConfig.razorpayIds[billingCycle],
+        prorate: true,
+      });
+    }
+
+    this.plan = newPlan;
+    this.billingCycle = billingCycle;
+    this.limits = planConfig.limits;
+    this.features = planConfig.features;
+
+    await this.save();
+
+    const Workspace = mongoose.model("Workspace");
+    await Workspace.findByIdAndUpdate(this.workspace, {
+      "subscription.plan": newPlan,
+      limits: planConfig.limits,
+    });
+
+    return this;
+  },
+
+  updateUsage: async function (resource, amount = 1) {
+    this.usage[resource] = (this.usage[resource] || 0) + amount;
     await this.save();
     return this;
   },
+
+  checkLimits: function () {
+    return {
+      chatbots: this.usage.chatbots >= this.limits.chatbots,
+      messages: this.usage.messages >= this.limits.messages,
+      members: this.usage.members >= this.limits.members,
+      storage: this.usage.storage >= this.limits.storage,
+    };
+  },
+
+  sendUpcomingRenewalNotification: async function () {
+    if (
+      this.daysUntilRenewal <= 7 &&
+      !this.notifications.upcomingRenewal.sent
+    ) {
+      const Workspace = mongoose.model("Workspace");
+      const workspace = await Workspace.findById(this.workspace).populate({
+        path: "members.user",
+        select: "email name",
+      });
+
+      const owners = workspace.members
+        .filter((m) => m.role === "owner")
+        .map((m) => m.user);
+
+      for (const owner of owners) {
+        await mongoose
+          .model("User")
+          .sendSubscriptionNotification(owner, "upcoming_renewal", {
+            daysUntilRenewal: this.daysUntilRenewal,
+            plan: this.plan,
+            billingCycle: this.billingCycle,
+          });
+      }
+
+      this.notifications.upcomingRenewal = {
+        sent: true,
+        sentAt: new Date(),
+      };
+      await this.save();
+    }
+  },
 };
 
-// Static Methods
+// Statics
 subscriptionSchema.statics = {
-  findByUserId: function (userId) {
-    return this.findOne({ user: userId }).populate("currentPaymentMethod");
+  async createWithPricing(workspaceId, planId, billingCycle, session = null) {
+    const options = session ? { session } : {};
+    const plan = PLANS[planId];
+    if (!plan) throw new Error("Invalid plan");
+
+    const periodEnd = new Date();
+    periodEnd.setMonth(
+      periodEnd.getMonth() + (billingCycle === "yearly" ? 12 : 1)
+    );
+
+    const subscriptionData = {
+      workspace: workspaceId,
+      plan: planId,
+      billingCycle,
+      status: planId === "free" ? "active" : "trialing",
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: planId === "free" ? null : periodEnd,
+      limits: plan.limits,
+      features: plan.features,
+      paymentGateway: planId === "free" ? null : "razorpay",
+    };
+
+    if (planId !== "free") {
+      const razorpaySub = await razorpay.subscriptions.create({
+        plan_id: plan.razorpayIds[billingCycle],
+        total_count: billingCycle === "yearly" ? 1 : 12,
+        customer_notify: 1,
+        notes: {
+          workspaceId: workspaceId.toString(),
+        },
+      });
+
+      subscriptionData.gatewaySubscriptionId = razorpaySub.id;
+      subscriptionData.gatewayPlanId = plan.razorpayIds[billingCycle];
+    }
+
+    return await Subscription.create([subscriptionData], options).then(
+      (res) => res[0]
+    );
   },
-  findActiveSubscriptions: function () {
-    return this.find({ status: "active" });
+
+  calculateProratedCost: async function (
+    subscriptionId,
+    newPlanId,
+    newBillingCycle
+  ) {
+    const subscription = await this.findById(subscriptionId);
+    if (!subscription) throw new Error("Subscription not found");
+
+    const currentPlan = PLANS[subscription.plan];
+    const newPlan = PLANS[newPlanId];
+
+    if (!currentPlan || !newPlan) throw new Error("Invalid plan");
+
+    const daysUsed = Math.ceil(
+      (new Date() - subscription.currentPeriodStart) / (1000 * 60 * 60 * 24)
+    );
+    const daysTotal = Math.ceil(
+      (subscription.currentPeriodEnd - subscription.currentPeriodStart) /
+        (1000 * 60 * 60 * 24)
+    );
+    const unusedDays = daysTotal - daysUsed;
+
+    const dailyRateCurrent =
+      currentPlan.prices[subscription.billingCycle] / daysTotal;
+    const credit = unusedDays * dailyRateCurrent;
+
+    const dailyRateNew =
+      newPlan.prices[newBillingCycle] /
+      (newBillingCycle === "yearly" ? 365 : 30);
+    const costNew = dailyRateNew * daysTotal;
+
+    const proratedAmount = Math.max(costNew - credit, 0);
+
+    return {
+      currentPlan: currentPlan.name,
+      newPlan: newPlan.name,
+      daysUsed,
+      daysTotal,
+      credit: PricingUtils.formatPrice(credit),
+      newCost: PricingUtils.formatPrice(costNew),
+      proratedAmount: PricingUtils.formatPrice(proratedAmount),
+      taxRate: `${TAX_RATES.INR * 100}%`,
+      taxAmount: PricingUtils.formatPrice(proratedAmount * TAX_RATES.INR),
+      total: PricingUtils.formatPrice(
+        proratedAmount + proratedAmount * TAX_RATES.INR
+      ),
+    };
   },
-  findExpiringSubscriptions: function (days = 3) {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return this.find({ endDate: { $lte: date }, status: "active" });
+
+  async handleWebhook(event, payload) {
+    const subscription = await this.findOne({
+      gatewaySubscriptionId: payload.subscription_id,
+    });
+
+    if (!subscription) return null;
+
+    switch (event) {
+      case "subscription.charged":
+        return this._handlePaymentSuccess(subscription, payload);
+      case "subscription.payment_failed":
+        return this._handlePaymentFailed(subscription, payload);
+      case "subscription.cancelled":
+        return this._handleCancellation(subscription, payload);
+      default:
+        return null;
+    }
+  },
+
+  async _handlePaymentSuccess(subscription, payload) {
+    subscription.status = "active";
+    subscription.latestInvoice = {
+      id: payload.invoice_id,
+      amount: payload.amount / 100,
+      currency: payload.currency,
+      status: "paid",
+    };
+
+    await subscription.save();
+
+    // Update workspace
+    const Workspace = mongoose.model("Workspace");
+    await Workspace.findByIdAndUpdate(subscription.workspace, {
+      "subscription.status": "active",
+    });
+
+    return subscription;
+  },
+
+  handlePaymentFailed: async function (payload) {
+    const subscription = await this.findOne({
+      gatewaySubscriptionId: payload.subscription_id,
+    });
+
+    if (!subscription) return null;
+
+    subscription.status = "past_due";
+    subscription.notifications.paymentFailed = {
+      sent: true,
+      sentAt: new Date(),
+    };
+
+    await subscription.save();
+
+    const Workspace = mongoose.model("Workspace");
+    const workspace = await Workspace.findById(subscription.workspace).populate(
+      {
+        path: "members.user",
+        select: "email name",
+      }
+    );
+
+    const owners = workspace.members
+      .filter((m) => m.role === "owner")
+      .map((m) => m.user);
+
+    for (const owner of owners) {
+      await mongoose
+        .model("User")
+        .sendSubscriptionNotification(owner, "payment_failed", {
+          plan: subscription.plan,
+          workspace: workspace.name,
+        });
+    }
+
+    return subscription;
   },
 };
 

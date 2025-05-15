@@ -6,7 +6,7 @@ import LoaderThreeDots from "@/components/animate/loader";
 const { SessionProvider, useSession } = require("next-auth/react");
 
 function AuthWrapper({ children }) {
-  const { data: session, status } = useSession();
+  const { data: status } = useSession();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

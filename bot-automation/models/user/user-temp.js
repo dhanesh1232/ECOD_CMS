@@ -37,8 +37,18 @@ const userTempSchema = new mongoose.Schema(
     },
     attemptsRemaining: {
       type: Number,
-      default: 3,
+      default: 5,
       min: 0,
+    },
+    workspace: {
+      slug: {
+        type: String,
+        default: "",
+      },
+      name: {
+        type: String,
+        default: "",
+      },
     },
     expiresAt: {
       type: Date,

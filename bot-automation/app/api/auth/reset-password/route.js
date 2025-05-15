@@ -1,6 +1,6 @@
 import dbConnect from "@/config/dbconnect";
 import { PasswordResetSuccessfulMail } from "@/lib/helper";
-import { User } from "@/models/user/par-user";
+import { User } from "@/models/user/user";
 import crypto from "crypto";
 const { NextResponse } = require("next/server");
 
@@ -24,18 +24,6 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-    if (user.passwordHistory.map((item) => item.password).includes(password)) {
-      return NextResponse.json(
-        { message: "Password already used, please choose a new one" },
-        { status: 400 }
-      );
-    }
-
-    // Update password history
-    user.passwordHistory.push({
-      password: user.password,
-      changedAt: Date.now(),
-    }); // Store the old password in history
 
     user.password = password;
     user.passwordChangedAt = Date.now(); // Ensure the password changed time is set correctly

@@ -1,15 +1,12 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/config/dbconnect";
+import { validateSession } from "@/lib/auth";
 import { PaymentHistory } from "@/models/payment/payment_history";
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request) {
   await dbConnect();
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  await validateSession(request);
+
   const url = new URL(request.url);
   const userId = url.searchParams.get("user");
   if (!userId) {

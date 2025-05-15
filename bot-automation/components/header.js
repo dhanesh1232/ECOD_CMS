@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./logo";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import SelectWorkspace from "./workspace_select";
 
 export function Header() {
   const { data: session } = useSession();
@@ -64,9 +65,7 @@ export function Header() {
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 py-4 flex items-center justify-between shadow-sm transition-colors duration-300">
-      <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-gray-100 capitalize hidden md:block">
-        {renderTitle()}
-      </h1>
+      <SelectWorkspace className="w-[200px] items-center px-4 sm:flex hidden" />
       <Logo hide={true} />
 
       <div className="flex items-center space-x-4">

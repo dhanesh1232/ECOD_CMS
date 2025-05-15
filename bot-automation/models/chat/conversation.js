@@ -3,6 +3,11 @@ import mongoose from "mongoose";
 const conversationSchema = new mongoose.Schema(
   {
     chatbotId: { type: Schema.Types.ObjectId, ref: "Chatbot", required: true },
+    organizationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
     channel: {
       type: String,
       enum: ["web", "whatsapp", "facebook", "instagram", "telegram", "sms"],
