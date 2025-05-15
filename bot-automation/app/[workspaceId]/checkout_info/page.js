@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/toast-provider";
 import { PLANS, TAX_RATES } from "@/config/pricing.config";
 import { billingService } from "@/lib/client/billing";
 import { decryptData, encryptData } from "@/utils/encryption";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { useEffect, useState, useRef } from "react";
@@ -399,19 +400,19 @@ const PlanInfoCheckoutPage = () => {
                     />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       I agree to the{" "}
-                      <a
+                      <Link
                         href="/terms"
                         className="text-blue-600 hover:underline dark:text-blue-400"
                       >
                         Terms of Service
-                      </a>{" "}
+                      </Link>{" "}
                       and{" "}
-                      <a
+                      <Link
                         href="/privacy"
                         className="text-blue-600 hover:underline dark:text-blue-400"
                       >
                         Privacy Policy
-                      </a>
+                      </Link>
                     </span>
                   </label>
 
