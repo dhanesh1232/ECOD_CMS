@@ -72,6 +72,25 @@ const userSchema = new mongoose.Schema(
         return this.provider !== "credentials";
       },
     },
+    invitation: [
+      {
+        invitedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        workspace: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Workspace",
+          required: true,
+        },
+        role: {
+          type: String,
+          enum: ["owner", "admin", "member", "guest"],
+          default: "member",
+          required: true,
+        },
+      },
+    ],
     workspaces: [
       {
         workspace: {
@@ -273,6 +292,37 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+// Updated User model methods
+userSchema.methods.createDefaultWorkspace = async function (session = null) {
+  const Workspace = mongoose.model("Workspace");
+
+  // Create workspace with transaction support
+  const workspace = await Workspace.createWithOwner(
+    this._id,
+    {
+      name: `${this.name}'s Workspace`,
+      slug: generateRandomSlug(),
+      members: [
+        {
+          user: this._id,
+          role: "owner",
+          status: "active",
+          joinedAt: new Date(),
+        },
+      ],
+      subscription: {
+        plan: "free",
+        billingCycle: "lifetime",
+        status: "active",
+      },
+    },
+    { session }
+  );
+
+  // Add workspace to user with transaction support
+  await this.addToWorkspace(workspace._id, "owner", null, session);
+  return workspace;
+};
 // Methods
 userSchema.methods = {
   correctPassword: async function (candidatePassword) {
@@ -315,7 +365,8 @@ userSchema.methods = {
   addToWorkspace: async function (
     workspaceId,
     role = "member",
-    invitedBy = null
+    invitedBy = null,
+    session = null
   ) {
     // Check if already in workspace
     const existingIndex = this.workspaces.findIndex((ws) =>
@@ -345,8 +396,7 @@ userSchema.methods = {
     if (!this.currentWorkspace) {
       this.currentWorkspace = workspaceId;
     }
-
-    await this.save();
+    await this.save(session);
     return this;
   },
 
@@ -385,32 +435,6 @@ userSchema.methods = {
       await this.save();
     }
     return this;
-  },
-
-  createDefaultWorkspace: async function () {
-    // Create Workspace and subscription and store this.workspaces,
-    const Workspace = mongoose.model("Workspace");
-    const userCount = await mongoose.model("User").countDocuments();
-    const workspace = await Workspace.createWithOwner(this._id, {
-      name: `${this.name}'s Workspace`,
-      slug: generateRandomSlug(userCount),
-      members: [
-        {
-          user: this._id,
-          role: "owner",
-          status: "active",
-          joinedAt: new Date(),
-        },
-      ],
-      subscription: {
-        plan: "free",
-        billingCycle: "lifetime",
-        status: "active",
-      },
-    });
-
-    await this.addToWorkspace(workspace._id, "owner");
-    return workspace;
   },
 
   trackLogin: async function (req) {

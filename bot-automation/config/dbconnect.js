@@ -54,7 +54,7 @@ async function dbConnect() {
     const opts = {
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
-      bufferCommands: true,
+      bufferCommands: false,
       maxPoolSize: 5,
       retryWrites: true,
     };

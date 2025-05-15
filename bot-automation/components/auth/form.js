@@ -2,9 +2,9 @@
 
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import dynamic from "next/dynamic";
 import { signIn } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import AIFormWrapper from "./wrapper";
 import Logo from "../logo";
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,11 +17,11 @@ import {
   FiUser,
   FiArrowRight,
   FiCheckCircle,
-  FiAlertCircle,
   FiArrowLeft,
 } from "react-icons/fi";
 import { decryptData } from "@/utils/encryption";
 import { useToast } from "../ui/toast-provider";
+const AIFormWrapper = dynamic(() => import("./wrapper"));
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
   tabs: [

@@ -1,5 +1,8 @@
 "use client";
-import FormComponent from "@/components/auth/form";
+import dynamic from "next/dynamic";
+const FormComponent = dynamic(() => import("@/components/auth/form"), {
+  ssr: false,
+});
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 

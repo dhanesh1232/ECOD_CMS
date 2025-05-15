@@ -19,8 +19,8 @@ const workspaceSchema = new mongoose.Schema(
       required: true,
       immutable: true,
       validate: {
-        validator: (v) => /^eco[a-z0-9]{3}-\d{2}d$/.test(v),
-        message: "Slug must follow Ecod format (ecoxxx-xxd)",
+        validator: (v) => /^[a-z0-9-]+$/.test(v), // Simple alphanumeric + hyphen check
+        message: "Slug can only contain lowercase letters, numbers and hyphens",
       },
     },
     description: {

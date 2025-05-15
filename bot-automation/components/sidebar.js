@@ -8,13 +8,18 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
-import { getNavItems } from "@/data/bot-links";
+import { navItems } from "@/data/bot-links";
 
 const ChatBotAI = () => (
   <svg
@@ -32,13 +37,10 @@ const ChatBotAI = () => (
   </svg>
 );
 
-export const SideBar = () => {
+export default function SideBar() {
   const { data: session } = useSession();
-  let navItems;
-  if (session.user) {
-    navItems = getNavItems(session.user.defaultWorkspace);
-  }
-
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const [hoveredItem, setHoveredItem] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -50,7 +52,6 @@ export const SideBar = () => {
   const [userProfile, setUserProfile] = useState(false);
   const profileRef = useRef(null);
   const tooltipTimeout = useRef(null);
-
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sidebarCollapsed");
@@ -158,7 +159,7 @@ export const SideBar = () => {
   }, []);
 
   const handleCreateNew = () => {
-    router.push("/new");
+    router.push(`${workspaceId}/new`);
     if (isMobile) setMobileMenuOpen(false);
   };
 
@@ -169,15 +170,15 @@ export const SideBar = () => {
     router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
 
-  const activeNavItem = useMemo(
-    () =>
-      navItems.find(
-        (item) =>
-          pathname === item.href ||
-          (item.href !== "/" && pathname.startsWith(`${item.href}/`))
-      ),
-    [pathname, navItems]
-  );
+  const activeNavItem = useMemo(() => {
+    const pathSegment = pathname.split("/").filter(Boolean);
+    const currentPath = `${pathSegment.slice(1).join("/")}`;
+    return navItems.find(
+      (each) =>
+        currentPath === each.href ||
+        (each.href !== "/" && currentPath.startsWith(`${each.href}/`))
+    );
+  }, [pathname]);
 
   const MobileOverlay = () =>
     createPortal(
@@ -212,7 +213,7 @@ export const SideBar = () => {
       {/* Header Section */}
       <div className="p-4 py-4 flex items-center justify-between border-b border-indigo-700/50 relative">
         <Link
-          href="/"
+          href={`/${workspaceId}`}
           className={`flex items-center ${
             collapsed ? "justify-center w-full" : "space-x-2"
           }`}
@@ -259,7 +260,7 @@ export const SideBar = () => {
           return (
             <li key={item.id}>
               <Link
-                href={item.href}
+                href={`/${workspaceId}${item.href}`}
                 {...(!isMobile && {
                   onMouseEnter: (e) => handleTooltip(item.id, e),
                   onMouseLeave: () => handleTooltip(null),
@@ -369,4 +370,4 @@ export const SideBar = () => {
       )}
     </>
   );
-};
+}

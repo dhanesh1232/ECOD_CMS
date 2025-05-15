@@ -1,51 +1,35 @@
 "use client";
 
-import { SideBar } from "@/components/sidebar";
-import { Header } from "@/components/header";
-import { useCallback, useEffect, useState, useRef } from "react";
+import dynamic from "next/dynamic";
+const SideBar = dynamic(() => import("@/components/sidebar"));
+const Header = dynamic(() => import("@/components/header"));
+import { useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import CryptoJS from "crypto-js";
-import OverLayComponent from "@/components/overlay/overlay";
+const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
 import SelectWorkspace from "@/components/workspace_select";
+import { encryptData } from "@/utils/encryption";
 
 export default function ProtectLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isChecking, setIsChecking] = useState(true);
-  const encryptionCache = useRef(new Map());
   const initialCheckDone = useRef(false);
-
-  const SECRET_KEY = process.env.NEXTAUTH_SECRET || "ecodify-dns-key";
-
-  const stableEncrypt = useCallback(
-    (data) => {
-      if (!data) return "";
-      if (encryptionCache.current.has(data)) {
-        return encryptionCache.current.get(data);
-      }
-      const encrypted = CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
-      encryptionCache.current.set(data, encrypted);
-      return encrypted;
-    },
-    [SECRET_KEY]
-  );
 
   const checkProfileComplete = useCallback(async () => {
     if (initialCheckDone.current) return;
 
-    setIsChecking(true);
     try {
       const res = await fetch("/api/profile/user-info");
       const data = await res.json();
+      console.log(data);
       if (!res.ok && data.message.includes("not")) {
         await signOut({ redirect: true, callbackUrl: "/auth/login" });
         return;
       }
 
       if (data.requiresProfileCompletion) {
-        const encryptedName = stableEncrypt(data.user.name);
+        const encryptedName = encryptData(data.user.name);
         const newParams = new URLSearchParams(searchParams);
         newParams.set(
           "model",
@@ -53,9 +37,14 @@ export default function ProtectLayout({ children }) {
         );
 
         if (!pathname.startsWith("/settings")) {
-          router.push(`/settings/account/profile?${newParams.toString()}`, {
-            scroll: false,
-          });
+          router.push(
+            `${
+              data?.user?.currentWorkspace?.slug
+            }/settings/account/profile?${newParams.toString()}`,
+            {
+              scroll: false,
+            }
+          );
           return;
         }
       } else if (searchParams.has("model")) {
@@ -66,24 +55,13 @@ export default function ProtectLayout({ children }) {
     } catch (error) {
       console.error("Profile check failed:", error);
     } finally {
-      setIsChecking(false);
       initialCheckDone.current = true;
     }
-  }, [stableEncrypt, searchParams, router, pathname]);
+  }, [searchParams, router, pathname]);
 
   useEffect(() => {
     checkProfileComplete();
   }, [checkProfileComplete]);
-
-  if (isChecking) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100/30 dark:bg-gray-900/30">
-        <div className="animate-pulse text-xl text-gray-600 dark:text-gray-400">
-          Verifying profile...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>

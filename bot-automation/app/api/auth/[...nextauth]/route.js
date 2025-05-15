@@ -8,46 +8,44 @@ import validator from "validator";
 import { Workspace } from "@/models/user/workspace";
 import { generateRandomSlug } from "@/lib/slugGenerator";
 import mongoose from "mongoose";
-// Credentials authentication
-const authorizeCredentials = async (credentials, req) => {
-  try {
-    await dbConnect();
-    const { email, phone, password } = credentials;
 
+// Enhanced credentials authentication
+const authorizeCredentials = async (credentials) => {
+  await dbConnect();
+
+  try {
+    const { email, phone, password } = credentials;
     if ((!email && !phone) || !password) return null;
 
     if (email && !validator.isEmail(email)) {
-      return null;
+      throw new Error("Invalid email format");
     }
 
     const user = await User.findOne({
       $or: [{ email: email?.trim().toLowerCase() }, { phone: phone?.trim() }],
-    }).select(
-      "+password +failedLoginAttempts +accountLockedUntil +mfa.enabled"
-    );
+    }).select("+password +failedLoginAttempts +accountLockedUntil");
 
-    if (!user?.password) return null;
+    if (!user?.password) throw new Error("User not found");
 
     if (
       user.accountLockedUntil &&
       new Date(user.accountLockedUntil) > new Date()
     ) {
-      return null;
+      throw new Error("Account temporarily locked");
     }
 
-    if (!(await user.correctPassword(password))) {
+    const isPasswordValid = await user.correctPassword(password);
+    if (!isPasswordValid) {
       await user.handleFailedLogin();
-      return null;
+      throw new Error("Invalid credentials");
     }
 
-    await User.updateOne(
-      { _id: user._id },
-      {
-        failedLoginAttempts: 0,
-        accountLockedUntil: null,
-        lastLogin: new Date(),
-      }
-    );
+    // Reset failed attempts on successful login
+    await User.findByIdAndUpdate(user._id, {
+      failedLoginAttempts: 0,
+      accountLockedUntil: null,
+      lastLogin: new Date(),
+    });
 
     return {
       id: user._id.toString(),
@@ -60,41 +58,52 @@ const authorizeCredentials = async (credentials, req) => {
       provider: "credentials",
     };
   } catch (error) {
-    console.error("Credentials auth error:", error);
+    console.error("Credentials auth error:", error.message);
     return null;
   }
 };
 
-// Google provider configuration
+// Secure Google provider configuration
 const googleProvider = GoogleProvider({
-  clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT,
-  clientSecret: process.env.NEXT_PUBLIC_GOOGLE_SECRET,
-  profile(profile) {
-    return {
-      id: profile.sub,
-      name: profile.name,
-      email: profile.email,
-      image: profile.picture,
-      provider: "google",
-    };
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  authorization: {
+    params: {
+      prompt: "consent",
+      access_type: "offline",
+      response_type: "code",
+    },
+  },
+  profile: async (profile) => {
+    try {
+      return {
+        id: profile.sub,
+        name: profile.name,
+        email: profile.email,
+        image: profile.picture,
+        provider: "google",
+      };
+    } catch (error) {
+      console.error("Google profile error:", error);
+      throw new Error("Failed to process Google profile");
+    }
   },
 });
 
-// Update the handleGoogleSignIn function
-const handleGoogleSignIn = async ({ profile }) => {
+// Simplified Google sign-in handler
+const handleGoogleSignIn = async (profile) => {
+  await dbConnect();
   const session = await mongoose.startSession();
+  await session.startTransaction();
 
   try {
-    await dbConnect();
-    await session.startTransaction();
-
     const existingUser = await User.findOne({ email: profile.email }).session(
       session
     );
     let userData;
 
     if (!existingUser) {
-      // 🔹 Create new user
+      // Create new user
       userData = await User.create(
         [
           {
@@ -112,72 +121,38 @@ const handleGoogleSignIn = async ({ profile }) => {
       );
 
       userData = userData[0];
-
-      // 🔧 Create default workspace for the user
-      await userData.createDefaultWorkspace();
-
-      // 📩 Send welcome email
-      await NewSignupGoogleMail(profile.name, profile.email);
+      await userData.createDefaultWorkspace(session);
     } else {
-      // 🔹 Update user login info and Google image if needed
+      // Update existing user
       const updates = {
         name: profile.name,
         lastLogin: new Date(),
         provider: "google",
+        ...(!existingUser.image && profile.picture
+          ? { image: profile.picture }
+          : {}),
       };
 
-      if (profile.picture && !existingUser.image) {
-        updates.image = profile.picture;
-      }
-
       await User.updateOne({ _id: existingUser._id }, updates).session(session);
-
-      userData = await User.findById(existingUser._id).session(session);
-
-      // 🏗️ Ensure at least one workspace exists for the user
-      const workspaces = await Workspace.find({
-        "members.user": existingUser._id,
-      }).session(session);
-
-      if (workspaces.length === 0) {
-        await Workspace.createWithOwner(
-          existingUser._id,
-          {
-            name: `${profile.name}'s Workspace`,
-            slug: generateRandomSlug(await User.countDocuments()),
-            subscription: {
-              plan: "free",
-              billingCycle: "lifetime",
-              status: "active",
-            },
-          },
-          session
-        );
-      }
+      userData = existingUser;
     }
 
-    // ✅ Commit all operations
     await session.commitTransaction();
-
     return {
       id: userData._id.toString(),
       name: userData.name,
       email: userData.email,
-      phone: userData.phone || null,
-      image: userData.image || null,
-      role: userData.role || "user",
-      requiresProfileCompletion: userData.requiresProfileCompletion ?? true,
+      image: userData.image,
+      role: userData.role,
       provider: "google",
+      requiresProfileCompletion: userData.requiresProfileCompletion ?? true,
     };
   } catch (error) {
-    if (session?.inTransaction()) {
-      await session.abortTransaction();
-    }
-
-    console.error("Google sign-in error:", error);
-    throw new Error("Google sign-in failed.");
+    await session.abortTransaction();
+    console.error("Google sign-in transaction failed:", error);
+    throw error;
   } finally {
-    session?.endSession();
+    session.endSession();
   }
 };
 
@@ -199,77 +174,16 @@ export const authOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+    verifyRequest: "/auth/verify-account",
+  },
   callbacks: {
-    async jwt({ token, user, account }) {
-      if (user && account) {
-        console.log(user);
-        const dbUser = await User.findById(user.id)
-          .select("currentWorkspace")
-          .populate("currentWorkspace", "slug");
-
-        token = {
-          ...token,
-          sub: user.id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          image: user.image,
-          role: user.role,
-          provider: account.provider,
-          requiresProfileCompletion: user.requiresProfileCompletion,
-          workspaceSlug: dbUser?.currentWorkspace?.slug,
-        };
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      await dbConnect();
-      session.user = {
-        id: token.sub,
-        name: token.name,
-        email: token.email,
-        phone: token.phone,
-        role: token.role,
-        provider: token.provider,
-        requiresProfileCompletion: token.requiresProfileCompletion,
-        image: token.image,
-        workspaceSlug: token.workspaceSlug,
-      };
-
-      // Add user's workspaces to session
-      if (token.sub) {
-        const workspaces = await Workspace.find({
-          "members.user": token.sub,
-        }).select("name slug subscription");
-
-        session.user.workspaces = workspaces;
-        session.user.defaultWorkspace = workspaces[0]?.slug || null;
-      }
-
-      return session;
-    },
     async signIn({ user, account, profile }) {
       try {
         if (account.provider === "google") {
-          await dbConnect();
-          const existingUser = await User.findOne({ email: profile.email });
-
-          // If user exists but with different provider, allow linking
-          if (existingUser && existingUser.provider !== "google") {
-            // Update provider to google and merge accounts
-            await User.updateOne(
-              { _id: existingUser._id },
-              {
-                provider: "google",
-                image: profile.picture || existingUser.image,
-                isVerified: true,
-              }
-            );
-            return true;
-          }
-
-          const userData = await handleGoogleSignIn({ profile });
+          const userData = await handleGoogleSignIn(profile);
           Object.assign(user, userData);
         }
 
@@ -279,9 +193,51 @@ export const authOptions = {
 
         return true;
       } catch (error) {
-        console.error("SignIn error:", error);
+        console.error("SignIn callback error:", error);
         return false;
       }
+    },
+
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.userId = user.id;
+        token.role = user.role;
+        token.provider = account?.provider || "credentials";
+
+        // Only fetch workspace if not already in token
+        if (!token.workspaceSlug) {
+          const dbUser = await User.findById(user.id)
+            .select("currentWorkspace")
+            .populate("currentWorkspace", "slug")
+            .populate("workspaces.workspace", "slug name");
+          token.workspaceSlug = dbUser?.currentWorkspace?.slug;
+        }
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      session.user = {
+        id: token.userId,
+        name: token.name,
+        email: token.email,
+        image: token.picture,
+        role: token.role,
+        provider: token.provider,
+        workspaceSlug: token.workspaceSlug,
+      };
+
+      // Only fetch workspaces if needed
+      if (!session.user.workspaces && token.userId) {
+        const workspaces = await Workspace.find({
+          "members.user": token.userId,
+        }).select("name slug");
+
+        session.user.workspaces = workspaces;
+        session.user.defaultWorkspace = workspaces[0]?.slug || null;
+      }
+
+      return session;
     },
   },
   events: {
@@ -290,11 +246,11 @@ export const authOptions = {
         await NewSignupGoogleMail(user.name, user.email);
       }
     },
+    async signOut() {
+      // Optional: Add cleanup logic
+    },
   },
-  pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
-  },
+  debug: process.env.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);

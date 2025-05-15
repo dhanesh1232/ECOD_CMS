@@ -1,9 +1,9 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import ProfileCompletion from "./profile";
-import LogoutRelay from "./logout";
-
+import dynamic from "next/dynamic";
+const LogoutRelay = dynamic(() => import("./logout"));
+const ProfileCompletion = dynamic(() => import("./profile"));
 const OverLayComponent = () => {
   const [isShown, setIsShown] = useState("");
   const searchParams = useSearchParams();

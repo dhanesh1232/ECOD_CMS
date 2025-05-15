@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ProtectLayout from "./protect";
 import LoaderThreeDots from "@/components/animate/loader";
-const { SessionProvider, useSession } = require("next-auth/react");
+import { SessionProvider, useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+const ProtectLayout = dynamic(() => import("./protect"));
 
 function AuthWrapper({ children }) {
-  const { data: status } = useSession();
+  const { data: session, status } = useSession();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     return () => setIsMounted(false);
-  }, [setIsMounted]);
+  }, [setIsMounted, session]);
 
   if (!isMounted || status === "loading") {
     return <LoaderThreeDots />;

@@ -8,9 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { FiExternalLink } from "react-icons/fi";
 import SettingsBreadcrumb from "@/components/breadcrumb";
+import { useSession } from "next-auth/react";
 
 const SettingsLayout = ({ children }) => {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [expandedSection, setExpandedSection] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);

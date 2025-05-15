@@ -11,7 +11,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import SelectWorkspace from "./workspace_select";
 
-export function Header() {
+export default function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
