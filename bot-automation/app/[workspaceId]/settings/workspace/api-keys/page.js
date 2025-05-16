@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import CopyToClipboard from "react-copy-to-clipboard";
 import {
   useParams,
   usePathname,
@@ -25,6 +24,7 @@ import {
   Trash,
   X,
 } from "lucide-react";
+import copy from "copy-to-clipboard";
 
 // Constants for scopes to avoid magic strings
 const SCOPES = {
@@ -339,23 +339,21 @@ export default function ApiKeysPage() {
                         {newKeyCreated.key}
                       </code>
                     </div>
-                    <CopyToClipboard
-                      text={newKeyCreated.key}
-                      onCopy={() =>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        copy(newKeyCreated.key);
                         showToast({
                           description: "Copied to clipboard",
                           variant: "success",
-                        })
-                      }
+                        });
+                      }}
+                      className="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                      <button
-                        type="button"
-                        className="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                      >
-                        <Clipboard className="mr-1 h-4 w-4" />
-                        Copy
-                      </button>
-                    </CopyToClipboard>
+                      <Clipboard className="mr-1 h-4 w-4" />
+                      Copy
+                    </button>
                   </div>
                 </div>
               </div>
@@ -499,23 +497,21 @@ export default function ApiKeysPage() {
                                   {showKey.key}
                                 </code>
                               </div>
-                              <CopyToClipboard
-                                text={showKey.key}
-                                onCopy={() =>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  copy(showKey.key);
                                   showToast({
                                     description: "Copied to clipboard",
                                     variant: "success",
-                                  })
-                                }
+                                  });
+                                }}
+                                className="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                               >
-                                <button
-                                  type="button"
-                                  className="ml-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                  <Clipboard className="mr-1 h-4 w-4" />
-                                  Copy
-                                </button>
-                              </CopyToClipboard>
+                                <Clipboard className="mr-1 h-4 w-4" />
+                                Copy
+                              </button>
                             </div>
                           </div>
                         </div>
