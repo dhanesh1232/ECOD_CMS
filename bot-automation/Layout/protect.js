@@ -22,7 +22,6 @@ export default function ProtectLayout({ children }) {
     try {
       const res = await fetch("/api/profile/user-info");
       const data = await res.json();
-      console.log(data);
       if (!res.ok && data.message.includes("not")) {
         await signOut({ redirect: true, callbackUrl: "/auth/login" });
         return;

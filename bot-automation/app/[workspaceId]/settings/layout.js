@@ -2,17 +2,17 @@
 
 import { settingsNavItems } from "@/data/bot-links";
 import { ChevronRight, Menu, X } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { FiExternalLink } from "react-icons/fi";
 import SettingsBreadcrumb from "@/components/breadcrumb";
-import { useSession } from "next-auth/react";
 
 const SettingsLayout = ({ children }) => {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const [expandedSection, setExpandedSection] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -34,14 +34,16 @@ const SettingsLayout = ({ children }) => {
     if (!pathname) return;
     // Find the section that contains the current path
     const activeSection = settingsNavItems.find((section) =>
-      section.items?.some((item) => pathname.startsWith(item.href))
+      section.items?.some((item) =>
+        pathname.startsWith(`/${workspaceId}${item.href}`)
+      )
     );
     if (activeSection?.id) {
       setExpandedSection(activeSection.id);
     } else {
       setExpandedSection("");
     }
-  }, [pathname]);
+  }, [pathname, workspaceId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -138,10 +140,10 @@ const SettingsLayout = ({ children }) => {
                         {section.items.map((item) => (
                           <Link
                             key={item.name}
-                            href={item.href}
+                            href={`/${workspaceId}${item.href}`}
                             prefetch={true}
                             className={`flex items-center px-3 py-2 text-sm transition-colors rounded-md ${
-                              isActive(item.href)
+                              pathname === `/${workspaceId}${item.href}`
                                 ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200 font-medium"
                                 : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700/50"
                             }`}
@@ -167,7 +169,7 @@ const SettingsLayout = ({ children }) => {
                 </>
               ) : (
                 <Link
-                  href={section.href}
+                  href={`/${workspaceId}/${section.href}`}
                   className={`flex items-center p-3 text-sm font-medium rounded-md ${
                     pathname === section.href
                       ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200"

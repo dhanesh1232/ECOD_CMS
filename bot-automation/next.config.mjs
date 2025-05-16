@@ -3,6 +3,7 @@ const nextConfig = {
   images: {
     domains: ["lh3.googleusercontent.com"],
   },
+  fastRefresh: true,
   experimental: {
     optimizeCss: false,
     // Add these experimental flags:
@@ -10,16 +11,12 @@ const nextConfig = {
     esmExternals: false, // Faster module loading
     externalDir: true, // Better external dependency handling
     // Optional: try these if still slow
-    // modularizeImports: {    // Optimizes named imports
-    //   lodash: {
-    //     transform: 'lodash/{{member}}',
-    //   },
-    // },
-  },
-  // Add these standard optimizations:
-  compiler: {
-    reactRemoveProperties: process.env.NODE_ENV === "production", // Only remove in prod
-    removeConsole: process.env.NODE_ENV === "production", // Only remove in prod
+    modularizeImports: {
+      // Optimizes named imports
+      lodash: {
+        transform: "lodash/{{member}}",
+      },
+    },
   },
   webpack: (config) => {
     config.watchOptions = {

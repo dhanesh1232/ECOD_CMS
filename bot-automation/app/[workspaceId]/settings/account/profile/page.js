@@ -6,23 +6,23 @@ import { useEffect, useState } from "react";
 import {
   FiEdit2,
   FiUpload,
-  FiExternalLink,
   FiCheck,
   FiX,
   FiShield,
   FiUser,
   FiMail,
   FiPhone,
-  FiBriefcase,
-  FiGlobe,
 } from "react-icons/fi";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
 import { motion } from "framer-motion";
+import { CheckmarkIcon } from "react-hot-toast";
 
 const AccountInfoSection = () => {
   const showToast = useToast();
   const router = useRouter();
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const [activePlan, setActivePlan] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,8 +31,7 @@ const AccountInfoSection = () => {
     fullName: "",
     email: "",
     phone: "",
-    company: "",
-    website: "",
+    isVerified: false,
   });
   const [tempData, setTempData] = useState({ ...formData });
   const [imagePreview, setImagePreview] = useState(formData.profilePicture);
@@ -47,6 +46,7 @@ const AccountInfoSection = () => {
         });
         if (res.ok) {
           const res_data = await res.json();
+          console.log(res_data);
           const data = res_data?.user;
           const existPlan = res_data.existPlan;
           setActivePlan(existPlan);
@@ -55,16 +55,13 @@ const AccountInfoSection = () => {
             fullName: data.name || "",
             email: data.email || "",
             phone: data.phone || "",
-            company: data.company || "",
-            website: data.website || "",
+            isVerified: data.isVerified || false,
           });
           setTempData({
             profilePicture: data.image || "",
             fullName: data.name || "",
             email: data.email || "",
             phone: data.phone || "",
-            company: data.company || "",
-            website: data.website || "",
           });
           setImagePreview(data.image || "");
         }
@@ -135,8 +132,6 @@ const AccountInfoSection = () => {
         credentials: "include",
         body: JSON.stringify({
           image: tempData.profilePicture,
-          company: tempData.company,
-          website: tempData.website,
         }),
       });
 
@@ -221,7 +216,7 @@ const AccountInfoSection = () => {
         {/* Profile Picture Section */}
         <div className="flex flex-col items-center lg:items-start">
           <div className="relative group">
-            <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg">
+            <div className="md:w-32 w-20 h-20 md:h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg">
               {imagePreview ? (
                 <Image
                   src={imagePreview}
@@ -308,9 +303,11 @@ const AccountInfoSection = () => {
                   disabled
                   className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 cursor-not-allowed opacity-80"
                 />
-                <span className="absolute right-3 top-3 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
-                  Verified
-                </span>
+                {formData.isVerified && (
+                  <span className="absolute right-3 top-3 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
+                    <CheckmarkIcon size={14} />
+                  </span>
+                )}
               </div>
             </div>
 
@@ -336,71 +333,6 @@ const AccountInfoSection = () => {
                 />
               </div>
             </div>
-
-            {/* Company */}
-            <div className="space-y-1">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <FiBriefcase size={16} className="text-indigo-600" />
-                Company
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="company"
-                  value={tempData.company}
-                  onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                  placeholder="Your company name"
-                />
-              ) : (
-                <p className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-700">
-                  {formData.company || "Not provided"}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Website */}
-          <div className="space-y-1">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <FiGlobe size={16} className="text-indigo-600" />
-              Website
-            </label>
-            {isEditing ? (
-              <div className="relative">
-                <input
-                  type="url"
-                  name="website"
-                  value={tempData.website}
-                  onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                  placeholder="https://example.com"
-                />
-                {tempData.website && (
-                  <span className="absolute right-3 top-3 text-xs text-gray-500">
-                    <FiExternalLink size={16} />
-                  </span>
-                )}
-              </div>
-            ) : formData.website ? (
-              <a
-                href={
-                  formData.website.startsWith("http")
-                    ? formData.website
-                    : `https://${formData.website}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition"
-              >
-                {formData.website}
-                <FiExternalLink size={16} />
-              </a>
-            ) : (
-              <p className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-700">
-                Not provided
-              </p>
-            )}
           </div>
         </div>
       </div>
@@ -414,7 +346,7 @@ const AccountInfoSection = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                {activePlan.plan || "Free Plan"}
+                {activePlan.plan}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {activePlan.description || "Basic features"}
@@ -422,7 +354,7 @@ const AccountInfoSection = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {activePlan.isActive ? (
+            {activePlan.status === "active" ? (
               <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
                 Active
               </span>
@@ -433,7 +365,9 @@ const AccountInfoSection = () => {
             )}
             <button
               type="button"
-              onClick={() => router.push("/settings/account/billing")}
+              onClick={() =>
+                router.push(`/${workspaceId}/settings/account/billing`)
+              }
               className="px-4 py-2 hidden rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition lg:flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
             >
               Upgrade Plan
@@ -442,7 +376,9 @@ const AccountInfoSection = () => {
         </div>
         <button
           type="button"
-          onClick={() => router.push("/settings/account/billing")}
+          onClick={() =>
+            router.push(`/${workspaceId}/settings/account/billing`)
+          }
           className="px-4 py-2 lg:hidden w-full justify-center rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
         >
           Upgrade Plan

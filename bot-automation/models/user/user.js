@@ -112,6 +112,18 @@ const userSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
+        settings: {
+          chatHistory: {
+            type: Boolean,
+            default: true,
+          },
+          // Other user-specific workspace settings
+          notificationFrequency: {
+            type: String,
+            enum: ["realtime", "hourly", "daily"],
+            default: "realtime",
+          },
+        },
         lastActive: Date,
         status: {
           type: String,

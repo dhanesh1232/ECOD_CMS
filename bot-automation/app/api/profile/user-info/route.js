@@ -1,3 +1,4 @@
+// api/profile/user-info
 import { NextResponse } from "next/server";
 import { User } from "@/models/user/user";
 import { Subscription } from "@/models/payment/subscription";
@@ -34,6 +35,7 @@ export async function GET(req) {
       .populate({
         path: "currentWorkspace",
         select: "name slug domain logo settings",
+        model: Workspace,
       })
       .populate({
         path: "workspaces.workspace",

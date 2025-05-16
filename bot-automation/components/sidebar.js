@@ -1,13 +1,7 @@
 "use client";
 
 import { FiLogOut, FiPlus, FiChevronsRight, FiMenu, FiX } from "react-icons/fi";
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   useParams,
   usePathname,
@@ -170,15 +164,23 @@ export default function SideBar() {
     router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
 
-  const activeNavItem = useMemo(() => {
-    const pathSegment = pathname.split("/").filter(Boolean);
-    const currentPath = `${pathSegment.slice(1).join("/")}`;
-    return navItems.find(
-      (each) =>
-        currentPath === each.href ||
-        (each.href !== "/" && currentPath.startsWith(`${each.href}/`))
-    );
-  }, [pathname]);
+  const getIsActive = (href, exact) => {
+    const pathSegments = pathname.split("/").filter(Boolean);
+
+    // Extract workspaceId and current path without workspaceId
+    const workspaceId = pathSegments[0];
+    const currentPath = `/${pathSegments.slice(1).join("/")}`;
+
+    // Clean up href to handle trailing slashes
+    const cleanHref = href.replace(/\/$/, "");
+    const cleanCurrentPath = currentPath.replace(/\/$/, "");
+
+    if (exact) {
+      return cleanCurrentPath === cleanHref;
+    }
+
+    return cleanCurrentPath.startsWith(cleanHref);
+  };
 
   const MobileOverlay = () =>
     createPortal(
@@ -256,7 +258,7 @@ export default function SideBar() {
       {/* Navigation Items */}
       <ul className="flex-1 overflow-y-auto p-2 space-y-1">
         {navItems.map((item) => {
-          const isActive = item.href === activeNavItem?.href;
+          const isActive = getIsActive(item.href, item.exact);
           return (
             <li key={item.id}>
               <Link

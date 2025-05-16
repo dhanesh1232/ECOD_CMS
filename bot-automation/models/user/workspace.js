@@ -174,8 +174,35 @@ const workspaceSchema = new mongoose.Schema(
             },
           ],
         },
+        historyRetention: {
+          enabled: {
+            type: Boolean,
+            default: true,
+          },
+          durationDays: {
+            type: Number,
+            default: 30,
+            min: 1,
+            max: 365,
+          },
+        },
+        // Other workspace-level chat settings
+        defaultTone: {
+          type: String,
+          enum: ["casual", "formal", "technical", "friendly", "professional"],
+          default: "casual",
+        },
         autoCloseAfter: { type: Number, default: 24 },
       },
+      realtime: {
+        enabled: { type: Boolean, default: true },
+        updateFrequency: { type: Number, default: 5000 }, // ms
+      },
+      localization: {
+        enabled: { type: Boolean, default: false },
+        defaultLanguage: { type: String, default: "en" },
+      },
+      retentionDays: { type: Number, default: 30, min: 1, max: 365 },
       notifications: {
         newConversation: {
           email: { type: Boolean, default: false },
