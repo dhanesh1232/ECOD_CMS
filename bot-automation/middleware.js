@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 export async function middleware(req) {
-  const { pathname } = req.nextUrl;
+  const { pathname, origin } = req.nextUrl;
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const isAuthPage = pathname.startsWith("/auth");
+  const slug = token?.workspaceSlug;
+  //console.log(req, req.nextUrl);
 
-  if (token && (isAuthPage || pathname === "/")) {
-    return NextResponse.redirect(new URL(`/${token.workspaceSlug}`, req.url));
+  if (token) {
+    if (isAuthPage || pathname === "/") {
+      const redirectUrl = new URL(`${slug}`, origin);
+      return NextResponse.redirect(redirectUrl);
+    }
+    return NextResponse.next();
   }
 
   if (!token && !isAuthPage) {
     return NextResponse.redirect(
-      new URL(
-        `/auth/login?callbackUrl=${encodeURIComponent(pathname)}`,
-        req.url
-      )
+      new URL(`/auth/login?callbackUrl=${encodeURIComponent(pathname)}`, origin)
     );
   }
   return NextResponse.next();

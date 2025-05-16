@@ -16,7 +16,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
 import { motion } from "framer-motion";
-import { CheckmarkIcon } from "react-hot-toast";
+import { CheckCircle2 } from "lucide-react";
 
 const AccountInfoSection = () => {
   const showToast = useToast();
@@ -305,7 +305,7 @@ const AccountInfoSection = () => {
                 />
                 {formData.isVerified && (
                   <span className="absolute right-3 top-3 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
-                    <CheckmarkIcon size={14} />
+                    <CheckCircle2 size={14} />
                   </span>
                 )}
               </div>

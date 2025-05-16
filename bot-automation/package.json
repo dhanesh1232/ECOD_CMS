@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "set NODE_OPTIONS=--max-old-space-size=8192&& next dev",
+    "dev:profile": "set NODE_OPTIONS=--max-old-space-size=8192&& next dev --profile",
+    "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096&& next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clear": "if exist .next rd /s /q .next && if exist .cache rd /s /q .cache",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
@@ -56,6 +60,7 @@
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-confetti": "^6.4.0",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-country-flag": "^3.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
@@ -86,6 +91,7 @@
     "eslint-config-next": "15.3.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.3.3",
-    "url": "^0.11.4"
+    "url": "^0.11.4",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

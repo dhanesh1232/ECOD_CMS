@@ -1,3 +1,4 @@
+// models/Workspace.js
 import mongoose from "mongoose";
 import validator from "validator";
 import slugify from "slugify";
@@ -19,7 +20,7 @@ const workspaceSchema = new mongoose.Schema(
       required: true,
       immutable: true,
       validate: {
-        validator: (v) => /^[a-z0-9-]+$/.test(v), // Simple alphanumeric + hyphen check
+        validator: (v) => /^[a-z0-9-]+$/.test(v),
         message: "Slug can only contain lowercase letters, numbers and hyphens",
       },
     },
@@ -45,6 +46,99 @@ const workspaceSchema = new mongoose.Schema(
         validator: (v) => !v || validator.isFQDN(v),
         message: "Domain must be a valid fully qualified domain name",
       },
+    },
+    // New fields for general settings
+    industry: {
+      type: String,
+      enum: [
+        "technology",
+        "healthcare",
+        "finance",
+        "education",
+        "retail",
+        "hospitality",
+        "manufacturing",
+        "other",
+      ],
+      default: "technology",
+    },
+    timezone: {
+      type: String,
+      default: "UTC",
+      validate: {
+        validator: function (v) {
+          try {
+            Intl.DateTimeFormat(undefined, { timeZone: v }).format();
+            return true;
+          } catch (e) {
+            return false;
+          }
+        },
+        message: (props) => `${props.value} is not a valid timezone`,
+      },
+    },
+    contactInfo: {
+      supportEmail: {
+        type: String,
+        validate: [validator.isEmail, "Please provide a valid email"],
+        trim: true,
+        lowercase: true,
+      },
+      websiteURL: {
+        type: String,
+        validate: [validator.isURL, "Please provide a valid URL"],
+        trim: true,
+      },
+      phone: {
+        type: String,
+        validate: {
+          validator: (v) => !v || validator.isMobilePhone(v),
+          message: (props) => `${props.value} is not a valid phone number`,
+        },
+      },
+      address: {
+        street: String,
+        city: String,
+        state: String,
+        postalCode: String,
+        country: String,
+      },
+    },
+    branding: {
+      primaryColor: {
+        type: String,
+        default: "#4f46e5",
+        validate: {
+          validator: (v) => /^#([0-9A-F]{3}){1,2}$/i.test(v),
+          message: (props) => `${props.value} is not a valid hex color`,
+        },
+      },
+      secondaryColor: {
+        type: String,
+        default: "#7c3aed",
+        validate: {
+          validator: (v) => /^#([0-9A-F]{3}){1,2}$/i.test(v),
+          message: (props) => `${props.value} is not a valid hex color`,
+        },
+      },
+      logoUrl: String,
+      faviconUrl: String,
+      customDomain: String,
+    },
+    security: {
+      widgetDomainWhitelist: [
+        {
+          type: String,
+          validate: [validator.isURL, "Please provide a valid URL"],
+        },
+      ],
+      apiKeyRotationDays: {
+        type: Number,
+        default: 90,
+        min: 1,
+        max: 365,
+      },
+      lastApiKeyRotation: Date,
     },
     members: [
       {

@@ -1,390 +1,702 @@
 "use client";
 import { useState, useEffect } from "react";
-import { ChevronRight, Download, Trash2 } from "lucide-react";
-import useSWR from "swr";
 import { useToast } from "@/components/ui/toast-provider";
 import { useParams } from "next/navigation";
-
-const ToggleSwitch = ({ id, checked, onChange, disabled = false }) => {
-  return (
-    <label
-      htmlFor={id}
-      className={`relative inline-flex items-center cursor-pointer ${
-        disabled ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-    >
-      <input
-        type="checkbox"
-        id={id}
-        className="sr-only peer"
-        checked={checked}
-        onChange={(e) => !disabled && onChange(e.target.checked)}
-        disabled={disabled}
-      />
-      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-    </label>
-  );
-};
+import { useSession } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 const GeneralPage = () => {
+  const { data: session } = useSession();
   const showToast = useToast();
   const params = useParams();
   const workspaceId = params.workspaceId;
-  const [currentWorkspace, setCurrentWorkspace] = useState(null);
-  const [userRole, setUserRole] = useState("member");
-
-  const fetcher = async (url) => {
-    const res = await fetch(url, { credentials: "include" });
-    if (!res.ok) {
-      const error = new Error("An error occurred");
-      error.info = await res.json();
-      error.status = res.status;
-      throw error;
-    }
-    return res.json();
-  };
-  // Fetch user and workspace data
-  const { data: userData } = useSWR("/api/profile/user-info", fetcher);
-  const { data: workspaceData, mutate: mutateWorkspace } = useSWR(
-    userData?.user?.currentWorkspace?.id
-      ? `/api/workspace/${userData?.user?.currentWorkspace?._id}`
-      : null,
-    fetcher
-  );
-
+  const [workspace, setWorkspace] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    industry: "technology",
+    timezone: "UTC",
+    contactInfo: {
+      supportEmail: "",
+      websiteURL: "",
+      phone: "",
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "",
+      },
+    },
+    branding: {
+      primaryColor: "#4f46e5",
+      secondaryColor: "#7c3aed",
+      logoUrl: "",
+      faviconUrl: "",
+      customDomain: "",
+    },
+    security: {
+      widgetDomainWhitelist: [],
+      apiKeyRotationDays: 90,
+    },
+  });
+  const [hasChanges, setHasChanges] = useState(false);
   useEffect(() => {
-    console.log(workspaceData, userData);
-    if (workspaceData && userData) {
-      const role =
-        userData?.user?.workspaces.find(
-          (ws) => ws.workspace === workspaceData._id
-        )?.role || "member";
-      setUserRole(role);
-      setCurrentWorkspace(workspaceData);
+    const fetchWorkspaceSettings = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/workspace/${workspaceId}/settings`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch workspace settings");
+        }
+        const data = await response.json();
+        setWorkspace(data);
+        console.log(data);
+        setFormData({
+          name: data.name || "",
+          description: data.description || "",
+          industry: data.industry || "technology",
+          timezone: data.timezone || "UTC",
+          contactInfo: data.contactInfo || {
+            supportEmail: "",
+            websiteURL: "",
+            phone: "",
+            address: {
+              street: "",
+              city: "",
+              state: "",
+              postalCode: "",
+              country: "",
+            },
+          },
+          branding: data.branding || {
+            primaryColor: "#4f46e5",
+            secondaryColor: "#7c3aed",
+            logoUrl: "",
+            faviconUrl: "",
+            customDomain: "",
+          },
+          security: data.security || {
+            widgetDomainWhitelist: [],
+            apiKeyRotationDays: 90,
+          },
+        });
+      } catch (error) {
+        showToast({
+          title: "Error",
+          description: "Failed to load workspace settings",
+          variant: "warning",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (session && workspaceId) {
+      fetchWorkspaceSettings();
     }
-  }, [workspaceData, userData]);
+  }, [workspaceId, session, showToast]);
 
-  const getWorkspaceSettings = () => {
-    return userData?.user?.workspaces.find(
-      (ws) => ws.workspace._id === currentWorkspace._id
-    )?.settings;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
+      return newData;
+    });
   };
-
-  const hasPermission = (requiredRole) => {
-    const roleHierarchy = ["owner", "admin", "member", "guest"];
-    return (
-      roleHierarchy.indexOf(userRole) <= roleHierarchy.indexOf(requiredRole)
-    );
-  };
-
-  const handleWorkspaceUpdate = async (key, value) => {
-    try {
-      await fetch(`/api/workspace/${currentWorkspace._id}/settings`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: value }),
-      });
-      mutateWorkspace({
-        ...currentWorkspace,
-        settings: {
-          ...currentWorkspace.settings,
-          [key]: value,
+  const handleNestedChange = (parent, e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [name]: value,
         },
-      });
-    } catch (error) {
-      showToast({ variant: "destructive", title: "Failed to update settings" });
-    }
+      };
+      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
+      return newData;
+    });
   };
-  const getWorkspaceSetting = (path, defaultValue) => {
-    const paths = path.split(".");
-    let result = currentWorkspace?.settings;
-
-    for (const p of paths) {
-      result = result?.[p];
-      if (result === undefined) return defaultValue;
-    }
-
-    return result ?? defaultValue;
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        contactInfo: {
+          ...prev.contactInfo,
+          address: {
+            ...prev.contactInfo.address,
+            [name]: value,
+          },
+        },
+      };
+      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
+      return newData;
+    });
   };
 
-  const handleSettingUpdate = async (type, key, value) => {
+  const handleAddDomain = () => {
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        security: {
+          ...prev.security,
+          widgetDomainWhitelist: [...prev.security.widgetDomainWhitelist, ""],
+        },
+      };
+      setHasChanges(true);
+      return newData;
+    });
+  };
+  const handleDomainChange = (index, value) => {
+    setFormData((prev) => {
+      const newDomains = [...prev.security.widgetDomainWhitelist];
+      newDomains[index] = value;
+      const newData = {
+        ...prev,
+        security: {
+          ...prev.security,
+          widgetDomainWhitelist: newDomains,
+        },
+      };
+      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
+      return newData;
+    });
+  };
+  const handleRemoveDomain = (index) => {
+    setFormData((prev) => {
+      const newDomains = [...prev.security.widgetDomainWhitelist];
+      newDomains.splice(index, 1);
+      const newData = {
+        ...prev,
+        security: {
+          ...prev.security,
+          widgetDomainWhitelist: newDomains,
+        },
+      };
+      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
+      return newData;
+    });
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await fetch(`/api/workspaces/${currentWorkspace._id}/settings`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          settingKey: `${type}.${key}`,
-          value,
-        }),
+      setLoading(true);
+      const response = await fetch("/api/workspace/settings", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
 
-      // Optimistic update
-      mutateWorkspace({
-        ...currentWorkspace,
-        settings:
-          type === "workspace"
-            ? { ...currentWorkspace.settings, [key]: value }
-            : currentWorkspace.settings,
-      });
+      if (!response.ok) {
+        throw new Error("Failed to update workspace settings");
+      }
 
-      mutateUser({
-        ...userData,
-        workspaces: userData.workspaces.map((ws) =>
-          ws.workspace._id === currentWorkspace._id
-            ? { ...ws, settings: { ...ws.settings, [key]: value } }
-            : ws
-        ),
+      const updatedWorkspace = await response.json();
+      setWorkspace(updatedWorkspace);
+      setHasChanges(false);
+      showToast({
+        description: "Workspace settings updated successfully",
+        variant: "success",
       });
     } catch (error) {
-      showToast({ variant: "destructive", title: "Update failed" });
-    }
-  };
-  // Add missing handler functions in your component
-  const handleDataExport = async () => {
-    try {
-      const res = await fetch(`/api/workspace/${currentWorkspace._id}/export`, {
-        method: "POST",
+      console.error("Error updating workspace settings:", error);
+      showToast({
+        description: "Failed to update workspace settings",
+        variant: "warning",
       });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch (error) {
-      showToast({ variant: "destructive", title: "Export failed" });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleWorkspaceDeletion = async () => {
-    if (!confirm("Are you sure you want to delete this workspace?")) return;
-    try {
-      await fetch(`/api/workspace/${currentWorkspace._id}`, {
-        method: "DELETE",
-      });
-      window.location.href = `/${workspaceId}`;
-    } catch (error) {
-      showToast({ variant: "destructive", title: "Deletion failed" });
-    }
-  };
-
-  if (!currentWorkspace || !userData) return <div>Loading...</div>;
-
-  return (
-    <div className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-        {currentWorkspace.name} Settings
-      </h1>
-
-      {/* Chat Behavior */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
-          Chat Preferences
-        </h2>
-        <div className="space-y-6">
-          {/* Response Length */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Response Length
-              </label>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                {currentWorkspace.settings.chat.responseLength}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min="20"
-              max="100"
-              value={currentWorkspace.settings.chat.responseLength}
-              onChange={(e) =>
-                handleWorkspaceUpdate(
-                  "chat.responseLength",
-                  Number(e.target.value)
-                )
-              }
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-              disabled={!hasPermission("admin")}
-            />
-          </div>
-
-          {/* Conversation Tone */}
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Conversation Tone
-            </label>
-            <select
-              value={currentWorkspace.settings.chat.tone}
-              onChange={(e) =>
-                handleWorkspaceUpdate("chat.tone", e.target.value)
-              }
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 max-w-[180px]"
-              disabled={!hasPermission("admin")}
-            >
-              <option value="casual">Casual</option>
-              <option value="formal">Formal</option>
-              <option value="technical">Technical</option>
-              <option value="friendly">Friendly</option>
-              <option value="professional">Professional</option>
-            </select>
-          </div>
-
-          {/* Chat History */}
-          <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Save Chat History
-              </label>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Store conversation history locally
-              </p>
-            </div>
-            <ToggleSwitch
-              checked={getWorkspaceSettings()?.chatHistory ?? true}
-              onChange={(val) =>
-                handleSettingUpdate("user", "chatHistory", val)
-              }
-            />
-          </div>
-
-          {/* Real-Time Features */}
-          <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Real-Time Sync
-              </label>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Enable live collaboration
-              </p>
-            </div>
-            <ToggleSwitch
-              checked={getWorkspaceSetting("realtime.enabled", true)}
-              onChange={(val) => handleWorkspaceUpdate("realtime.enabled", val)}
-              disabled={!hasPermission("admin")}
-            />
-          </div>
+  if (loading && !workspace) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-1/3" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-20" />
+          ))}
         </div>
       </div>
+    );
+  }
+  return (
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">General Settings</h1>
+        <p className="text-sm text-muted-foreground">
+          {`Manage your workspace's basic information, branding, and security
+          settings.`}
+        </p>
+      </div>
 
-      {/* Workspace Management */}
-      {hasPermission("admin") && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
-            Workspace Configuration
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Multi-Language Support
-                </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Enable auto-translation for multilingual teams
-                </p>
-              </div>
-              <ToggleSwitch
-                checked={currentWorkspace.settings.localization.enabled}
-                onChange={(val) =>
-                  handleWorkspaceUpdate("localization.enabled", val)
-                }
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Workspace Information</h2>
+            <p className="text-sm text-muted-foreground">
+              Basic details about your workspace.
+            </p>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Workspace Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your workspace name"
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Select
+                value={formData.industry}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, industry: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="technology">Technology</SelectItem>
+                  <SelectItem value="healthcare">Healthcare</SelectItem>
+                  <SelectItem value="finance">Finance</SelectItem>
+                  <SelectItem value="education">Education</SelectItem>
+                  <SelectItem value="retail">Retail</SelectItem>
+                  <SelectItem value="hospitality">Hospitality</SelectItem>
+                  <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timezone">Timezone</Label>
+              <Select
+                value={formData.timezone}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, timezone: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UTC">UTC</SelectItem>
+                  <SelectItem value="America/New_York">
+                    Eastern Time (ET)
+                  </SelectItem>
+                  <SelectItem value="America/Chicago">
+                    Central Time (CT)
+                  </SelectItem>
+                  <SelectItem value="America/Denver">
+                    Mountain Time (MT)
+                  </SelectItem>
+                  <SelectItem value="America/Los_Angeles">
+                    Pacific Time (PT)
+                  </SelectItem>
+                  <SelectItem value="Europe/London">London</SelectItem>
+                  <SelectItem value="Europe/Paris">Paris</SelectItem>
+                  <SelectItem value="Asia/Tokyo">Tokyo</SelectItem>
+                  <SelectItem value="Asia/Shanghai">Shanghai</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                rows={3}
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="A brief description of your workspace"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Contact Information</h2>
+            <p className="text-sm text-muted-foreground">
+              How customers can get in touch with your business.
+            </p>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="supportEmail">Support Email</Label>
+              <Input
+                type="email"
+                id="supportEmail"
+                name="supportEmail"
+                value={formData.contactInfo.supportEmail}
+                onChange={(e) => handleNestedChange("contactInfo", e)}
+                placeholder="support@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="websiteURL">Website URL</Label>
+              <Input
+                type="url"
+                id="websiteURL"
+                name="websiteURL"
+                value={formData.contactInfo.websiteURL}
+                onChange={(e) => handleNestedChange("contactInfo", e)}
+                placeholder="https://example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.contactInfo.phone}
+                onChange={(e) => handleNestedChange("contactInfo", e)}
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <h3 className="text-sm font-medium">Address</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street</Label>
+                  <Input
+                    id="street"
+                    name="street"
+                    value={formData.contactInfo.address.street}
+                    onChange={handleAddressChange}
+                    placeholder="123 Main St"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    value={formData.contactInfo.address.city}
+                    onChange={handleAddressChange}
+                    placeholder="New York"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State/Province</Label>
+                  <Input
+                    id="state"
+                    name="state"
+                    value={formData.contactInfo.address.state}
+                    onChange={handleAddressChange}
+                    placeholder="NY"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">ZIP/Postal Code</Label>
+                  <Input
+                    id="postalCode"
+                    name="postalCode"
+                    value={formData.contactInfo.address.postalCode}
+                    onChange={handleAddressChange}
+                    placeholder="10001"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    value={formData.contactInfo.address.country}
+                    onChange={handleAddressChange}
+                    placeholder="United States"
+                  />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Branding Card */}
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Branding</h2>
+            <p className="text-sm text-muted-foreground">
+              Customize how your workspace looks across the platform.
+            </p>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Primary Color</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  id="primaryColor"
+                  name="primaryColor"
+                  value={formData.branding.primaryColor}
+                  onChange={(e) => handleNestedChange("branding", e)}
+                  className="h-10 w-10 rounded-md border cursor-pointer"
+                />
+                <Input
+                  value={formData.branding.primaryColor}
+                  onChange={(e) => handleNestedChange("branding", e)}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Secondary Color</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  id="secondaryColor"
+                  name="secondaryColor"
+                  value={formData.branding.secondaryColor}
+                  onChange={(e) => handleNestedChange("branding", e)}
+                  className="h-10 w-10 rounded-md border cursor-pointer"
+                />
+                <Input
+                  value={formData.branding.secondaryColor}
+                  onChange={(e) => handleNestedChange("branding", e)}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="logoUrl">Logo URL</Label>
+              <Input
+                type="url"
+                id="logoUrl"
+                name="logoUrl"
+                value={formData.branding.logoUrl}
+                onChange={(e) => handleNestedChange("branding", e)}
+                placeholder="https://example.com/logo.png"
+              />
+              {formData.branding.logoUrl && (
+                <div className="mt-2">
+                  <img
+                    src={formData.branding.logoUrl}
+                    alt="Logo preview"
+                    className="h-16 object-contain rounded-md border"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="faviconUrl">Favicon URL</Label>
+              <Input
+                type="url"
+                id="faviconUrl"
+                name="faviconUrl"
+                value={formData.branding.faviconUrl}
+                onChange={(e) => handleNestedChange("branding", e)}
+                placeholder="https://example.com/favicon.ico"
+              />
+              {formData.branding.faviconUrl && (
+                <div className="mt-2">
+                  <img
+                    src={formData.branding.faviconUrl}
+                    alt="Favicon preview"
+                    className="h-16 object-contain rounded-md border"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="customDomain">Custom Domain</Label>
+              <Input
+                id="customDomain"
+                name="customDomain"
+                value={formData.branding.customDomain}
+                onChange={(e) => handleNestedChange("branding", e)}
+                placeholder="example.com"
+              />
+              <p className="text-sm text-muted-foreground">
+                Enter your custom domain without https:// or www.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Security Card */}
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Security</h2>
+            <p className="text-sm text-muted-foreground">
+              Configure security settings for your workspace.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Data Retention Policy
-                </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Automatically delete old conversations after{" "}
-                  {currentWorkspace.settings.retentionDays} days
+                <Label>Widget Domain Whitelist</Label>
+                <p className="text-sm text-muted-foreground">
+                  Domains where your chat widget is allowed to be embedded.
                 </p>
               </div>
-              <input
+
+              <div className="space-y-2">
+                {formData.security.widgetDomainWhitelist.map(
+                  (domain, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        type="url"
+                        value={domain}
+                        onChange={(e) =>
+                          handleDomainChange(index, e.target.value)
+                        }
+                        placeholder="https://example.com"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => handleRemoveDomain(index)}
+                        variant="destructive"
+                        size="icon"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                )}
+                <Button
+                  type="button"
+                  onClick={handleAddDomain}
+                  variant="outline"
+                  className="gap-1"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Add Domain
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="apiKeyRotationDays">
+                API Key Rotation (Days)
+              </Label>
+              <Input
                 type="number"
-                value={currentWorkspace.settings.retentionDays}
-                onChange={(e) =>
-                  handleWorkspaceUpdate("retentionDays", Number(e.target.value))
-                }
-                className="w-20 px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                id="apiKeyRotationDays"
+                name="apiKeyRotationDays"
                 min="1"
                 max="365"
+                value={formData.security.apiKeyRotationDays}
+                onChange={(e) => handleNestedChange("security", e)}
               />
+              <p className="text-sm text-muted-foreground">
+                How often API keys should be automatically rotated (1-365 days).
+              </p>
             </div>
-          </div>
-        </div>
-      )}
+          </CardContent>
+        </Card>
 
-      {/* Data Management */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
-          Data Management
-        </h2>
-        <div className="space-y-4">
-          <button
-            className="w-full flex justify-between items-center p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            onClick={() => handleDataExport()}
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            onClick={() => {
+              setFormData(workspace);
+              setHasChanges(false);
+            }}
+            disabled={!hasChanges}
+            variant="outline"
           >
-            <div className="flex items-center gap-3">
-              <Download className="h-5 w-5" />
-              <span className="text-gray-700 dark:text-gray-300">
-                Export Workspace Data
-              </span>
-            </div>
-            <ChevronRight className="h-5 w-5 text-gray-400" />
-          </button>
-
-          {hasPermission("owner") && (
-            <button
-              className="w-full flex justify-between items-center p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-red-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-              onClick={() => handleWorkspaceDeletion()}
-            >
-              <div className="flex items-center gap-3">
-                <Trash2 className="h-5 w-5" />
-                <span>Delete Workspace</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
-            </button>
-          )}
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!hasChanges || loading}>
+            {loading ? (
+              <>
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
         </div>
-      </div>
-
-      {/* Advanced Settings */}
-      {hasPermission("admin") && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
-            Advanced Settings
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  API Access
-                </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Enable third-party integrations
-                </p>
-              </div>
-              <ToggleSwitch
-                checked={currentWorkspace.settings.apiAccess}
-                onChange={(val) => handleWorkspaceUpdate("apiAccess", val)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Audit Logging
-                </label>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Track all workspace activities
-                </p>
-              </div>
-              <ToggleSwitch
-                checked={currentWorkspace.settings.auditLogs}
-                onChange={(val) => handleWorkspaceUpdate("auditLogs", val)}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      </form>
     </div>
   );
 };
+
+const TrashIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M3 6h18" />
+    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+  </svg>
+);
+
+const PlusIcon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+);
+
+const Loader2Icon = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
 
 export default GeneralPage;

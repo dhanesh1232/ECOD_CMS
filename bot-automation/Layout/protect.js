@@ -4,7 +4,12 @@ import dynamic from "next/dynamic";
 const SideBar = dynamic(() => import("@/components/sidebar"));
 const Header = dynamic(() => import("@/components/header"));
 import { useCallback, useEffect, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
 import SelectWorkspace from "@/components/workspace_select";
@@ -12,6 +17,8 @@ import { encryptData } from "@/utils/encryption";
 
 export default function ProtectLayout({ children }) {
   const router = useRouter();
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialCheckDone = useRef(false);
@@ -37,9 +44,7 @@ export default function ProtectLayout({ children }) {
 
         if (!pathname.startsWith("/settings")) {
           router.push(
-            `${
-              data?.user?.currentWorkspace?.slug
-            }/settings/account/profile?${newParams.toString()}`,
+            `${workspaceId}/settings/account/profile?${newParams.toString()}`,
             {
               scroll: false,
             }
@@ -56,7 +61,7 @@ export default function ProtectLayout({ children }) {
     } finally {
       initialCheckDone.current = true;
     }
-  }, [searchParams, router, pathname]);
+  }, [searchParams, router, workspaceId, pathname]);
 
   useEffect(() => {
     checkProfileComplete();
