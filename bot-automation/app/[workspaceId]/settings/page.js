@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
 const GeneralPage = () => {
   const { data: session } = useSession();
   const showToast = useToast();
@@ -499,7 +500,9 @@ const GeneralPage = () => {
               />
               {formData.branding.logoUrl && (
                 <div className="mt-2">
-                  <img
+                  <Image
+                    height={100}
+                    width={100}
                     src={formData.branding.logoUrl}
                     alt="Logo preview"
                     className="h-16 object-contain rounded-md border"
@@ -520,7 +523,9 @@ const GeneralPage = () => {
               />
               {formData.branding.faviconUrl && (
                 <div className="mt-2">
-                  <img
+                  <Image
+                    height={100}
+                    width={100}
                     src={formData.branding.faviconUrl}
                     alt="Favicon preview"
                     className="h-16 object-contain rounded-md border"

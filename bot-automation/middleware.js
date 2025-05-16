@@ -4,8 +4,8 @@ export async function middleware(req) {
   const { pathname, origin } = req.nextUrl;
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const isAuthPage = pathname.startsWith("/auth");
+  console.log(token);
   const slug = token?.workspaceSlug;
-  //console.log(req, req.nextUrl);
 
   if (token) {
     if (isAuthPage || pathname === "/") {

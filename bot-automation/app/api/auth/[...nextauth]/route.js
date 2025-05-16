@@ -170,20 +170,23 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-    cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-        domain:
-          process.env.NODE_ENV === "production" &&
-          "https://bot-automation.vercel.app/",
-      },
-    },
-  },
+  cookies:
+    process.env.NODE_ENV === "production"
+      ? {
+          sessionToken: {
+            name: `__Secure-next-auth.session-token`,
+            options: {
+              httpOnly: true,
+              sameSite: "lax",
+              path: "/",
+              secure: process.env.NODE_ENV === "production",
+              domain:
+                process.env.NODE_ENV === "production" &&
+                "https://bot-automation.vercel.app/",
+            },
+          },
+        }
+      : undefined,
   useSecureCookies: process.env.NODE_ENV === "production",
   session: {
     strategy: "jwt",
