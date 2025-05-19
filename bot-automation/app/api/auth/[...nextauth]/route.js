@@ -202,24 +202,32 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  cookies:
+  /*cookies:
     process.env.NODE_ENV === "production"
       ? {
           sessionToken: {
             name: `__Secure-next-auth.session-token`,
             options: {
-              httpOnly: true,
+              httpsOnly: true,
               sameSite: "lax",
               path: "/",
-              secure: process.env.NODE_ENV === "production",
-              domain:
-                process.env.NODE_ENV === "production"
-                  ? "bot-automation.vercel.app/"
-                  : undefined,
+              secure: true,
+              domain: "bot-automation.vercel.app", // no protocol
             },
           },
         }
-      : undefined,
+      : {
+          sessionToken: {
+            name: `next-auth.session-token`,
+            options: {
+              httpsOnly: true,
+              sameSite: "lax",
+              path: "/",
+              secure: false,
+            },
+          },
+        },*/
+
   useSecureCookies: process.env.NODE_ENV === "production",
   session: {
     strategy: "jwt",
