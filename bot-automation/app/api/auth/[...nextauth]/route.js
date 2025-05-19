@@ -213,8 +213,9 @@ export const authOptions = {
               path: "/",
               secure: process.env.NODE_ENV === "production",
               domain:
-                process.env.NODE_ENV === "production" &&
-                "bot-automation.vercel.app/",
+                process.env.NODE_ENV === "production"
+                  ? "bot-automation.vercel.app/"
+                  : undefined,
             },
           },
         }
