@@ -6,7 +6,6 @@ import rateLimit from "@/utils/rate-limit";
 import { AccountVerificationCompletedMail } from "@/lib/helper";
 import { decryptData } from "@/utils/encryption";
 import { Workspace } from "@/models/user/workspace";
-import { Subscription } from "@/models/payment/subscription";
 import { generateRandomSlug } from "@/lib/slugGenerator";
 
 // Configure rate limiting (5 attempts per hour per IP)

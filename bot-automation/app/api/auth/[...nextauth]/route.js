@@ -214,7 +214,7 @@ export const authOptions = {
               secure: process.env.NODE_ENV === "production",
               domain:
                 process.env.NODE_ENV === "production" &&
-                "https://bot-automation.vercel.app/",
+                "bot-automation.vercel.app/",
             },
           },
         }
