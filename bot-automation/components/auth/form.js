@@ -4,7 +4,12 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import dynamic from "next/dynamic";
 import { signIn } from "next-auth/react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import Logo from "../logo";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -233,14 +238,13 @@ const successVariants = {
 };
 
 export default function FormComponent() {
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageKey = pathname.split("/").pop() || "login";
   const pageConfig = FORM_CONFIG.pages[pageKey] || FORM_CONFIG.pages.login;
-
-  // Check for callbackUrl from query params
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const errorParam = searchParams.get("error");
   const [touchedFields, setTouchedFields] = useState({});
   const showToast = useToast();
@@ -468,7 +472,7 @@ export default function FormComponent() {
             password: formState.password,
             remember: formState.remember,
             redirect: false,
-            callbackUrl,
+            callbackUrl: `/${workspaceId}/dashboard`,
           };
           // Add email or phone based on active tab
           if (activeTab === "EMAIL") {
@@ -495,7 +499,7 @@ export default function FormComponent() {
               toastRef.current = true;
             }
           } else {
-            router.push(callbackUrl);
+            router.push(`/${workspaceId}/dashboard`);
           }
         } catch (error) {
           // Log any unexpected errors and display a generic error message
@@ -1153,7 +1157,10 @@ export default function FormComponent() {
                 <motion.button
                   key={provider.id}
                   onClick={() =>
-                    signIn(provider.id, { callbackUrl, redirect: false })
+                    signIn(provider.id, {
+                      callbackUrl: `/${workspaceId}/dashboard`,
+                      redirect: false,
+                    })
                   }
                   className="flex items-center justify-center py-2.5 px-4 gap-2 dark:bg-gray-800 bg-gray-100 dark:text-gray-300 text-gray-700 rounded-lg transition-all hover:shadow-md dark:hover:bg-gray-700 hover:bg-gray-200"
                   aria-label={`Sign in with ${provider.name}`}
