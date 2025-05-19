@@ -202,13 +202,13 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  /*cookies:
+  cookies:
     process.env.NODE_ENV === "production"
       ? {
           sessionToken: {
             name: `__Secure-next-auth.session-token`,
             options: {
-              httpsOnly: true,
+              httpOnly: true,
               sameSite: "lax",
               path: "/",
               secure: true,
@@ -220,13 +220,13 @@ export const authOptions = {
           sessionToken: {
             name: `next-auth.session-token`,
             options: {
-              httpsOnly: true,
+              httpOnly: true,
               sameSite: "lax",
               path: "/",
               secure: false,
             },
           },
-        },*/
+        },
 
   useSecureCookies: process.env.NODE_ENV === "production",
   session: {
@@ -285,6 +285,7 @@ export const authOptions = {
     },
 
     async session({ session, token }) {
+      console.log("session created", session);
       session.user = {
         id: token.userId,
         name: token.name,

@@ -12,8 +12,14 @@ const CACHE_TTL = 5000; // 5 seconds
 
 export async function middleware(req) {
   const { pathname, origin } = new URL(req.url);
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+  });
   if (shouldSkipMiddleware(pathname)) {
     return NextResponse.next();
   }
@@ -165,18 +171,18 @@ function handleVerificationError(result, origin) {
 
 function handleWorkspaceSwitch(verificationResult, req, origin) {
   const response = NextResponse.next();
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieName = isProduction
+    ? "__Secure-next-auth.session-token.workspace"
+    : "next-auth.session-token.workspace";
 
-  // Update session token with new workspace if needed
   if (verificationResult.workspace) {
-    response.cookies.set(
-      "next-auth.session-token.workspace",
-      verificationResult.workspace.slug,
-      {
-        path: "/",
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-      }
-    );
+    response.cookies.set(cookieName, verificationResult.workspace.slug, {
+      path: "/",
+      sameSite: "lax",
+      secure: isProduction,
+      domain: isProduction ? "bot-automation.vercel.app" : undefined,
+    });
   }
 
   return response;
