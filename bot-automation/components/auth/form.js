@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { signIn } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Logo from "../logo";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiMail,
@@ -21,6 +21,7 @@ import {
 } from "react-icons/fi";
 import { decryptData } from "@/utils/encryption";
 import { useToast } from "../ui/toast-provider";
+import { FaWhatsapp } from "react-icons/fa";
 const AIFormWrapper = dynamic(() => import("./wrapper"));
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
@@ -231,11 +232,6 @@ const successVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const errorVariants = {
-  hidden: { opacity: 0, y: -20 },
-  visible: { opacity: 1, y: 0 },
-};
-
 export default function FormComponent() {
   const pathname = usePathname();
   const router = useRouter();
@@ -246,8 +242,9 @@ export default function FormComponent() {
   // Check for callbackUrl from query params
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const errorParam = searchParams.get("error");
-
+  const [touchedFields, setTouchedFields] = useState({});
   const showToast = useToast();
+  const toastRef = useRef(false);
   const [activeTab, setActiveTab] = useState(FORM_CONFIG.tabs[0].id);
   const [formState, setFormState] = useState({
     name: "",
@@ -355,6 +352,21 @@ export default function FormComponent() {
 
   const validateField = useCallback(
     (name, value, formValues = formState) => {
+      // Only validate register fields strictly
+      if (pageKey !== "register") {
+        const fieldConfig = FORM_CONFIG.fieldConfig[name];
+        if (!fieldConfig?.validation) return "";
+
+        // For login, only validate required fields
+        if (fieldConfig.validation.required && !value) {
+          return (
+            fieldConfig.errorMessages?.required || "This field is required"
+          );
+        }
+        return "";
+      }
+
+      // Strict validation for register fields
       const fieldConfig = FORM_CONFIG.fieldConfig[name];
       if (!fieldConfig?.validation) return "";
 
@@ -385,7 +397,7 @@ export default function FormComponent() {
 
       return "";
     },
-    [formState]
+    [formState, pageKey]
   );
 
   const handleChange = (e) => {
@@ -396,6 +408,7 @@ export default function FormComponent() {
       ...prev,
       [name]: newValue,
     }));
+    setTouchedFields((prev) => ({ ...prev, [name]: true }));
 
     // Validate on change
     if (FORM_CONFIG.fieldConfig[name]?.validation) {
@@ -474,7 +487,13 @@ export default function FormComponent() {
             } else if (result.error === "TooManyRequests") {
               errorMessage = "Too many login attempts. Please try again later.";
             }
-            setError(errorMessage);
+            if (!toastRef.current) {
+              showToast({
+                description: errorMessage,
+                variant: "warning",
+              });
+              toastRef.current = true;
+            }
           } else {
             router.push(callbackUrl);
           }
@@ -495,18 +514,23 @@ export default function FormComponent() {
         });
         const data = await res.json();
         if (!res.ok) {
-          showToast({
-            title: "Registration failed",
-            description: data.message || data.errors || "Please try again",
-            variant: "destructive",
-          });
+          if (!toastRef.current) {
+            showToast({
+              description: data.message || data.errors || "Please try again",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
         } else {
-          showToast({
-            title: "Registration successful",
-            description:
-              "We have sent a confirmation email, please verify your email address",
-            variant: "success",
-          });
+          if (!toastRef.current) {
+            showToast({
+              title: "Registration successful",
+              description:
+                "We have sent a confirmation email, please verify your email address",
+              variant: "success",
+            });
+            toastRef.current = true;
+          }
           setFormState((prev) => ({
             ...prev,
             registered: true,
@@ -560,6 +584,13 @@ export default function FormComponent() {
         }
       }
     } catch (err) {
+      if (!toastRef.current) {
+        showToast({
+          description: err.message,
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
       setError(err.message || "An error occurred");
     } finally {
       setIsLoading(false);
@@ -573,6 +604,9 @@ export default function FormComponent() {
     const { type, label, placeholder, icon, helpText } = fieldConfig;
     const value = formState[field];
     const error = formErrors[field];
+    const touched = touchedFields[field];
+
+    const showError = pageKey === "register" ? error : touched && error;
 
     if (type === "checkbox") {
       return (
@@ -598,7 +632,7 @@ export default function FormComponent() {
               </label>
             </div>
           </div>
-          {error && (
+          {showError && (
             <p className="text-xs text-red-500 dark:text-red-400 mt-1">
               {error}
             </p>
@@ -650,9 +684,15 @@ export default function FormComponent() {
                   [field]: validateField(field, value),
                 }));
               }}
-              className="custom-phone-input sm:pl-10 pl-5"
+              className="custom-phone-input flex items-center sm:pl-10 pl-5"
             />
           </div>
+          {pageKey === "register" && (
+            <span className="text-xs flex items-center gap-1 text-gray-800 dark:text-gray-200">
+              <FaWhatsapp size={12} color="green" className="mb-1" />
+              Please use whatsapp number for feature updates
+            </span>
+          )}
           {error && (
             <p className="text-xs text-red-500 dark:text-red-400 mt-1">
               {error}
@@ -696,7 +736,7 @@ export default function FormComponent() {
             className={`w-full ${
               icon ? "pl-10" : "pl-4"
             } pr-4 py-2.5 text-sm dark:bg-gray-900 bg-white dark:text-white text-gray-900 border ${
-              error
+              showError
                 ? "border-red-500 dark:border-red-500"
                 : "dark:border-gray-700 border-gray-200"
             } rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all`}
@@ -723,12 +763,12 @@ export default function FormComponent() {
             </button>
           )}
         </div>
-        {helpText && !error && (
+        {helpText && !showError && pageKey === "register" && (
           <p className="text-[10px] sm:text-xs dark:text-gray-400 text-gray-500 mt-1">
             {helpText}
           </p>
         )}
-        {error && (
+        {showError && (
           <p className="text-xs text-red-500 dark:text-red-400 mt-1">{error}</p>
         )}
       </div>
@@ -878,18 +918,24 @@ export default function FormComponent() {
                       });
                       console.log(res);
                       if (res.ok) {
-                        showToast({
-                          title: "Confirmation email sent",
-                          description:
-                            "Please check your inbox and spam folder.",
-                          variant: "success",
-                        });
+                        if (!toastRef.current) {
+                          showToast({
+                            title: "Confirmation email sent",
+                            description:
+                              "Please check your inbox and spam folder.",
+                            variant: "success",
+                          });
+                          toastRef.current = true;
+                        }
                       } else {
-                        showToast({
-                          title: "Error",
-                          description: "Failed to resend confirmation email.",
-                          variant: "warning",
-                        });
+                        if (!toastRef.current) {
+                          showToast({
+                            title: "Error",
+                            description: "Failed to resend confirmation email.",
+                            variant: "warning",
+                          });
+                          toastRef.current = true;
+                        }
                       }
                     }}
                     className="text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors"
@@ -1020,13 +1066,6 @@ export default function FormComponent() {
             {pageConfig.subtitle}
           </motion.p>
         </div>
-
-        {error &&
-          showToast({
-            title: "Error",
-            description: error,
-            variant: "warning",
-          })}
 
         {/* Form */}
         <motion.form

@@ -44,7 +44,7 @@ body {
 
 /* globals.css */
 .custom-phone-input {
-  @apply w-full text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-200 ease-in-out;
+  @apply w-full text-sm text-gray-900 flex items-center dark:text-white bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-200 ease-in-out;
 }
 
 .custom-phone-input:hover {
@@ -52,7 +52,7 @@ body {
 }
 
 .custom-phone-input input {
-  @apply w-full py-2.5 px-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 bg-transparent outline-none focus:outline-none focus:ring-0 transition-all duration-200 ease-in-out;
+  @apply w-full py-2.5 px-3 flex items-center text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 bg-transparent outline-none focus:outline-none focus:ring-0 transition-all duration-200 ease-in-out;
 }
 
 .custom-phone-input .PhoneInputCountry {

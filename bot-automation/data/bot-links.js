@@ -87,7 +87,7 @@ export const navItems = [
     id: "dashboard",
     icon: <DashboardIcon />,
     label: "Dashboard",
-    href: `/`,
+    href: `/dashboard`,
     exact: true, // For exact route matching
   },
   {

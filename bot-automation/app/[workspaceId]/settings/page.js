@@ -228,7 +228,7 @@ const GeneralPage = () => {
 
   if (loading && !workspace) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 sm:p-6">
         <Skeleton className="h-10 w-1/3" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[...Array(6)].map((_, i) => (

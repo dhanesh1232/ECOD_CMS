@@ -73,8 +73,7 @@ const SettingsLayout = ({ children }) => {
     setExpandedSection((prev) => (prev === sectionId ? null : sectionId));
   };
 
-  const isActive = (href) => pathname?.startsWith(href);
-
+  console.log(pathname);
   return (
     <div className="flex flex-col sm:flex-row h-full relative">
       <div
@@ -171,7 +170,7 @@ const SettingsLayout = ({ children }) => {
                 <Link
                   href={`/${workspaceId}/${section.href}`}
                   className={`flex items-center p-3 text-sm font-medium rounded-md ${
-                    pathname === section.href
+                    pathname === `/${workspaceId}${section.href}`
                       ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200"
                       : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                   }`}

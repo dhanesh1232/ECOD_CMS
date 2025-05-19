@@ -1,22 +1,18 @@
-export function generateRandomSlug() {
-  const randomString = (length) => {
-    return Math.random()
-      .toString(36)
-      .substring(2, 2 + length);
-  };
+import crypto from "crypto";
 
-  const patterns = [
-    // ecod-xxx-1234
-    () => `ecod-${randomString(3)}-${Math.floor(1000 + Math.random() * 9000)}`,
-    // xxx-ecod-1234
-    () => `${randomString(3)}-ecod-${Math.floor(1000 + Math.random() * 9000)}`,
-    // ecoxxx-xxd-1234
-    () =>
-      `eco${randomString(3)}-${randomString(2)}d-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`,
-  ];
+export function generateRandomSlug(prefix = "") {
+  // Avoid ambiguous chars (0/o, 1/i/l)
+  const charset = "23456789abcdefghjkmnpqrstuvwxyz";
+  const randomValues = crypto.randomBytes(8);
 
-  const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
-  return selectedPattern();
+  let slug = "";
+  for (let i = 0; i < 8; i++) {
+    slug += charset[randomValues[i] % charset.length];
+    if (i === 3) slug += "-";
+  }
+
+  return slug;
+  /*return prefix
+    ? `${prefix.toLowerCase().replace(/[^a-z0-9]/g, "")}-${slug}`
+    : slug;*/
 }

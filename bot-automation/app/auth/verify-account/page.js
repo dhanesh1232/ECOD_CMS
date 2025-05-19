@@ -16,39 +16,57 @@ const VerifyAccount = () => {
     email: "",
     code: "",
   });
-
   const [isVerify, setIsVerify] = useState(false);
   const [otp, setOtp] = useState(Array(6).fill(""));
   const inputRefs = useRef([]);
+  const toastShownRef = useRef(false); // Track if toast has been shown
 
+  // Handle URL parameters and initial verification
   useEffect(() => {
     const email = searchParams.get("email");
     const code = searchParams.get("code");
+
     if (email && code) {
-      const enCode = decryptData(decodeURIComponent(code));
-      const enMail = decryptData(decodeURIComponent(email));
-      setState({
-        code: enCode,
-        email: enMail,
-      });
-    } else {
+      try {
+        const enCode = decryptData(decodeURIComponent(code));
+        const enMail = decryptData(decodeURIComponent(email));
+        setState({
+          code: enCode,
+          email: enMail,
+        });
+      } catch (error) {
+        if (!toastShownRef.current) {
+          showToast({
+            title: "Error",
+            description: "Invalid verification link",
+            variant: "destructive",
+          });
+          toastShownRef.current = true;
+          router.push("/auth/register");
+        }
+      }
+    } else if (!toastShownRef.current) {
       showToast({
         title: "Error",
         description: "Verification link is incomplete",
         variant: "destructive",
       });
+      toastShownRef.current = true;
       router.push("/auth/register");
     }
   }, [searchParams, showToast, router]);
 
+  // Handle verification logic
   const handleVerify = useCallback(async () => {
-    const { email, code } = state;
-    if (!code || !email) {
-      showToast({
-        title: "Error",
-        description: "Verification link is incomplete",
-        variant: "destructive",
-      });
+    if (!state.code || !state.email) {
+      if (!toastShownRef.current) {
+        showToast({
+          title: "Error",
+          description: "Verification link is incomplete",
+          variant: "destructive",
+        });
+        toastShownRef.current = true;
+      }
       return;
     }
 
@@ -57,90 +75,108 @@ const VerifyAccount = () => {
       const res = await fetch("/api/auth/verify-account", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email: state.email, code: state.code }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        showToast({
-          title: "Success",
-          description: data.message || "Account verified successfully",
-          variant: "success",
-        });
+        if (!toastShownRef.current) {
+          showToast({
+            title: "Success",
+            description: data.message || "Account verified successfully",
+            variant: "success",
+          });
+          toastShownRef.current = true;
+        }
+
         const options = {
           email: data?.user?.email,
           password: decryptData(data?.user?.password),
+          callbackUrl: "/", // Add default redirect
         };
-        signIn("credentials", options);
+        await signIn("credentials", options);
       } else {
-        showToast({
-          title: "Error",
-          description: data.message || "Verification failed",
-          variant: "destructive",
-        });
-        if (data.errorType === "PHONE_EXISTS") {
+        if (!toastShownRef.current) {
+          let description = data.message || "Verification failed";
+          let redirectPath = "/auth/register";
+
+          if (data.errorType === "PHONE_EXISTS") {
+            description = "Phone number already exists";
+            redirectPath = "/auth/login";
+          } else if (data.errorType === "DUPLICATE_KEY") {
+            description = `${data.field} already in use`;
+            redirectPath = "/auth/login";
+          }
+
           showToast({
             title: "Error",
-            description: "Phone number already exists",
+            description,
             variant: "destructive",
           });
-          router.push("/auth/login");
-        } else if (data.errorType === "DUPLICATE_KEY") {
-          showToast({
-            title: "Error",
-            description: `${data.field} already in use`,
-            variant: "destructive",
-          });
-          router.push(`/auth/login`);
+          toastShownRef.current = true;
+          router.push(redirectPath);
         }
       }
     } catch (err) {
-      showToast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      if (!toastShownRef.current) {
+        showToast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+        toastShownRef.current = true;
+      }
     } finally {
       setIsVerify(false);
     }
-  }, [showToast, state, router]); // Updated dependencies
+  }, [showToast, state, router]);
 
+  // Update OTP display when code changes
   useEffect(() => {
     if (state.code?.length === 6) {
       setOtp(state.code.split(""));
     }
   }, [state.code]);
 
+  // Auto-verify when code and email are available
   useEffect(() => {
     if (state.code && state.email) {
       handleVerify();
     }
   }, [state.code, state.email, handleVerify]);
+
+  // Handle resend verification
   const handleResend = async () => {
-    const res = await fetch("/api/auth/register", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: state.email,
-      }),
-    });
-    if (res.ok) {
-      showToast({
-        title: "Confirmation email sent",
-        description: "Please check your inbox and spam folder.",
-        variant: "success",
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: state.email }),
       });
-    } else {
-      showToast({
-        title: "Error",
-        description: "Failed to resend confirmation email.",
-        variant: "warning",
-      });
+
+      if (!toastShownRef.current) {
+        showToast({
+          title: res.ok ? "Success" : "Error",
+          description: res.ok
+            ? "Confirmation email sent. Please check your inbox and spam folder."
+            : "Failed to resend confirmation email.",
+          variant: res.ok ? "success" : "warning",
+        });
+        toastShownRef.current = true;
+      }
+    } catch (error) {
+      if (!toastShownRef.current) {
+        showToast({
+          title: "Error",
+          description: "Failed to resend confirmation email.",
+          variant: "warning",
+        });
+        toastShownRef.current = true;
+      }
     }
   };
+
   return (
     <AIFormWrapper>
       <div className="flex flex-col items-center">
@@ -196,7 +232,7 @@ const VerifyAccount = () => {
           <p className="text-sm text-gray-300 text-center">
             {`Didn't receive a code?`}{" "}
             <button
-              onClick={() => handleResend()}
+              onClick={handleResend}
               className="text-indigo-300 hover:text-indigo-200"
             >
               Resend verification

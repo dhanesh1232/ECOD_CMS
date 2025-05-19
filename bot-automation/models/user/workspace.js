@@ -20,8 +20,11 @@ const workspaceSchema = new mongoose.Schema(
       required: true,
       immutable: true,
       validate: {
-        validator: (v) => /^[a-z0-9-]+$/.test(v),
-        message: "Slug can only contain lowercase letters, numbers and hyphens",
+        validator: function (v) {
+          return /^(?:[a-z0-9]+-)?[a-z0-9]{4}-[a-z0-9]{4}$/.test(v);
+        },
+        message: (props) =>
+          `${props.value} is invalid. Slug must be in format xxxx-xxxx or prefix-xxxx-xxxx, with no ambiguous characters (0/o/1/i/l).`,
       },
     },
     description: {
@@ -163,7 +166,7 @@ const workspaceSchema = new mongoose.Schema(
         lastActive: Date,
         status: {
           type: String,
-          enum: ["active", "suspended", "invited"],
+          enum: ["active", "suspended", "inactive", "invited"],
           default: "active",
         },
         permissions: [
@@ -515,6 +518,7 @@ workspaceSchema.methods = {
 // Statics
 workspaceSchema.statics = {
   async createWithOwner(ownerId, workspaceData, session = null) {
+    console.log(ownerId, workspaceData);
     const options = session ? { session } : {};
 
     const workspace = new this({

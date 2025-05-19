@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import LoaderThreeDots from "@/components/animate/loader";
 import { SessionProvider, useSession } from "next-auth/react";
-import dynamic from "next/dynamic";
-const ProtectLayout = dynamic(() => import("./protect"));
 
 function AuthWrapper({ children }) {
   const { data: session, status } = useSession();
@@ -20,7 +18,7 @@ function AuthWrapper({ children }) {
   }
 
   if (status === "authenticated") {
-    return <ProtectLayout>{children}</ProtectLayout>;
+    return children;
   } else if (status === "unauthenticated") {
     return children;
   }

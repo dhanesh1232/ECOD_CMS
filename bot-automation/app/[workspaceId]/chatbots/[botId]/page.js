@@ -11,7 +11,7 @@ export default function Chatbot({ params }) {
     fetch(`/api/bot/${params.botId}`)
       .then((res) => res.json())
       .then(setBot);
-  }, []);
+  }, [params.botId]);
 
   const sendMessage = () => {
     const newMessages = [...messages, { sender: "user", content: input }];

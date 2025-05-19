@@ -1,6 +1,11 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useDarkMode } from "@/context/context";
 import { ChevronDown, Bell, Sun, Moon, User, Lock } from "lucide-react";
 import { FiLogOut } from "react-icons/fi";
@@ -15,6 +20,8 @@ export default function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const router = useRouter();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -123,7 +130,7 @@ export default function Header() {
                 className="absolute right-0 sm:-right-4 mt-2 px-1 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50 border border-gray-100 dark:border-gray-700"
               >
                 <Link
-                  href="/settings/account/profile"
+                  href={`/${workspaceId}/settings/account/profile`}
                   onClick={() => setMenuOpen(false)}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
@@ -131,7 +138,7 @@ export default function Header() {
                   <span className="text-sm">{session?.user?.name}</span>
                 </Link>
                 <Link
-                  href="/settings/account/security"
+                  href={`/${workspaceId}/settings/account/security`}
                   onClick={() => setMenuOpen(false)}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >

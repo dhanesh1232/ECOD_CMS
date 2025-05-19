@@ -6,8 +6,8 @@ import dbConnect from "@/config/dbconnect";
 import { NewSignupGoogleMail, sendLoginAlertEmail } from "@/lib/helper";
 import validator from "validator";
 import { Workspace } from "@/models/user/workspace";
-import { generateRandomSlug } from "@/lib/slugGenerator";
 import mongoose from "mongoose";
+import { generateRandomSlug } from "@/lib/slugGenerator";
 
 // Enhanced credentials authentication
 const authorizeCredentials = async (credentials) => {
@@ -23,7 +23,9 @@ const authorizeCredentials = async (credentials) => {
 
     const user = await User.findOne({
       $or: [{ email: email?.trim().toLowerCase() }, { phone: phone?.trim() }],
-    }).select("+password +failedLoginAttempts +accountLockedUntil");
+    })
+      .select("+password +failedLoginAttempts +accountLockedUntil")
+      .populate("currentWorkspace", "slug");
 
     if (!user?.password) throw new Error("User not found");
 
@@ -47,15 +49,25 @@ const authorizeCredentials = async (credentials) => {
       lastLogin: new Date(),
     });
 
+    // Get workspace slug
+    let workspaceSlug = user.currentWorkspace?.slug;
+    if (!workspaceSlug) {
+      const workspace = await Workspace.findOne({
+        "members.user": user._id,
+      }).select("slug");
+      workspaceSlug = workspace?.slug || null;
+    }
+
     return {
       id: user._id.toString(),
       name: user.name,
       email: user.email,
       phone: user.phone || null,
       image: user.image || null,
-      role: user.role || "user",
+      role: user.role || "member",
       requiresProfileCompletion: user.requiresProfileCompletion ?? true,
       provider: "credentials",
+      workspaceSlug,
     };
   } catch (error) {
     console.error("Credentials auth error:", error.message);
@@ -94,50 +106,67 @@ const googleProvider = GoogleProvider({
 const handleGoogleSignIn = async (profile) => {
   await dbConnect();
   const session = await mongoose.startSession();
-  await session.startTransaction();
 
   try {
-    const existingUser = await User.findOne({ email: profile.email }).session(
-      session
-    );
+    await session.startTransaction();
+
+    const existingUser = await User.findOne({ email: profile.email })
+      .session(session)
+      .populate("currentWorkspace", "slug");
+
     let userData;
+    let workspaceSlug = null;
 
     if (!existingUser) {
       // Create new user
-      userData = await User.create(
-        [
-          {
-            name: profile.name,
-            email: profile.email,
-            provider: "google",
-            isVerified: true,
-            role: "user",
-            image: profile.picture || "",
-            requiresProfileCompletion: true,
-            lastLogin: new Date(),
-          },
-        ],
-        { session }
+      const user = new User({
+        name: profile.name,
+        email: profile.email,
+        provider: "google",
+        isVerified: true,
+        role: "owner",
+        image: profile.picture || "",
+        requiresProfileCompletion: true,
+        lastLogin: new Date(),
+      });
+
+      userData = await user.save({ session });
+
+      // Create workspace
+      const workspace = await Workspace.createWithOwner(
+        userData._id,
+        {
+          name: `${profile.name}'s Workspace`,
+          slug: generateRandomSlug(),
+        },
+        session
       );
 
-      userData = userData[0];
-      await userData.createDefaultWorkspace(session);
+      workspaceSlug = workspace.slug;
+
+      // Add workspace to user - pass just the ID
+      await userData.addToWorkspace(workspace._id, "owner", null, session);
+
+      // Set current workspace - just the ID
+      userData.currentWorkspace = workspace._id;
+      await userData.save({ session });
     } else {
       // Update existing user
-      const updates = {
-        name: profile.name,
-        lastLogin: new Date(),
-        provider: "google",
-        ...(!existingUser.image && profile.picture
-          ? { image: profile.picture }
-          : {}),
-      };
+      userData = await User.findOneAndUpdate(
+        { _id: existingUser._id },
+        {
+          $set: {
+            lastLogin: new Date(),
+          },
+        },
+        { new: true, session }
+      ).populate("currentWorkspace", "slug");
 
-      await User.updateOne({ _id: existingUser._id }, updates).session(session);
-      userData = existingUser;
+      workspaceSlug = userData.currentWorkspace?.slug;
     }
 
     await session.commitTransaction();
+
     return {
       id: userData._id.toString(),
       name: userData.name,
@@ -146,13 +175,16 @@ const handleGoogleSignIn = async (profile) => {
       role: userData.role,
       provider: "google",
       requiresProfileCompletion: userData.requiresProfileCompletion ?? true,
+      workspaceSlug,
     };
   } catch (error) {
-    await session.abortTransaction();
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     console.error("Google sign-in transaction failed:", error);
     throw error;
   } finally {
-    session.endSession();
+    await session.endSession();
   }
 };
 
@@ -219,16 +251,25 @@ export const authOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         token.userId = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
         token.role = user.role;
         token.provider = account?.provider || "credentials";
+        token.workspaceSlug = user.workspaceSlug;
+      }
+      if (token.userId && !token.workspaceSlug) {
+        const dbUser = await User.findById(token.userId)
+          .select("currentWorkspace")
+          .populate("currentWorkspace", "slug");
 
-        // Only fetch workspace if not already in token
+        token.workspaceSlug = dbUser?.currentWorkspace?.slug;
+
         if (!token.workspaceSlug) {
-          const dbUser = await User.findById(user.id)
-            .select("currentWorkspace")
-            .populate("currentWorkspace", "slug")
-            .populate("workspaces.workspace", "slug name");
-          token.workspaceSlug = dbUser?.currentWorkspace?.slug;
+          const workspace = await Workspace.findOne({
+            "members.user": token.userId,
+          }).select("slug");
+          token.workspaceSlug = workspace?.slug || null;
         }
       }
       return token;
@@ -245,14 +286,13 @@ export const authOptions = {
         workspaceSlug: token.workspaceSlug,
       };
 
-      // Only fetch workspaces if needed
-      if (!session.user.workspaces && token.userId) {
-        const workspaces = await Workspace.find({
+      // Ensure we always have a workspace slug
+      if (!session.user.workspaceSlug && token.userId) {
+        const workspaces = await Workspace.findOne({
           "members.user": token.userId,
-        }).select("name slug");
+        }).select("slug");
 
-        session.user.workspaces = workspaces;
-        session.user.defaultWorkspace = workspaces[0]?.slug || null;
+        session.user.workspaceSlug = workspaces[0]?.slug || null;
       }
 
       return session;
@@ -268,7 +308,6 @@ export const authOptions = {
       // Optional: Add cleanup logic
     },
   },
-  debug: process.env.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);

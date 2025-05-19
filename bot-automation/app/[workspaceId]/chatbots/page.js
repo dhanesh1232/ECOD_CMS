@@ -18,6 +18,9 @@ export default function MyChatbotsPage() {
       status: "inactive",
     },
   ];
+  const handleClose = () => {
+    setShowModal(false);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -37,7 +40,7 @@ export default function MyChatbotsPage() {
         ))}
       </div>
 
-      {showModal && <NewChatbotModal onClose={() => setShowModal(false)} />}
+      {showModal && <NewChatbotModal onClose={handleClose} />}
     </div>
   );
 }

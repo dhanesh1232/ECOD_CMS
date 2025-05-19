@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import validator from "validator";
 import crypto from "crypto";
 import { RateLimiterMongo } from "rate-limiter-flexible";
-import { generateRandomSlug } from "@/lib/slugGenerator";
 
 const userSchema = new mongoose.Schema(
   {
@@ -97,6 +96,12 @@ const userSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Workspace",
           required: true,
+          validate: {
+            validator: function (v) {
+              return mongoose.Types.ObjectId.isValid(v);
+            },
+            message: (props) => `${props.value} is not a valid workspace ID!`,
+          },
         },
         role: {
           type: String,
@@ -127,7 +132,7 @@ const userSchema = new mongoose.Schema(
         lastActive: Date,
         status: {
           type: String,
-          enum: ["active", "suspended", "invited"],
+          enum: ["active", "suspended", "inactive", "invited"],
           default: "active",
         },
       },
@@ -304,216 +309,170 @@ userSchema.pre("save", function (next) {
   next();
 });
 
-// Updated User model methods
-userSchema.methods.createDefaultWorkspace = async function (session = null) {
-  const Workspace = mongoose.model("Workspace");
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  return (
+    this.passwordChangedAt &&
+    parseInt(this.passwordChangedAt.getTime() / 1000, 10) > JWTTimestamp
+  );
+};
+userSchema.methods.correctPassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+};
 
-  // Create workspace with transaction support
-  const workspace = await Workspace.createWithOwner(
-    this._id,
-    {
-      name: `${this.name}'s Workspace`,
-      slug: generateRandomSlug(),
-      members: [
-        {
-          user: this._id,
-          role: "owner",
-          status: "active",
-          joinedAt: new Date(),
-        },
-      ],
-      subscription: {
-        plan: "free",
-        billingCycle: "lifetime",
-        status: "active",
-      },
-    },
-    { session }
+userSchema.methods.hasWorkspaceAccess = function (workspaceId) {
+  // Check user have workspace access or not ?
+  return this.workspaces.some(
+    (ws) => ws.workspace.equals(workspaceId) && ws.status === "active"
+  );
+};
+userSchema.methods.getWorkspaceRole = function (workspaceId) {
+  // Get existing workspace role
+  const workspace = this.workspaces.find(
+    (ws) => ws.workspace.equals(workspaceId) && ws.status === "active"
+  );
+  return workspace?.role;
+};
+userSchema.methods.addToWorkspace = async function (
+  workspaceId,
+  role = "member",
+  invitedBy = null,
+  session = null
+) {
+  const options = session ? { session } : {};
+
+  // Check if already in workspace
+  const existingIndex = this.workspaces.findIndex(
+    (ws) => ws.workspace && ws.workspace.toString() === workspaceId.toString()
   );
 
-  // Add workspace to user with transaction support
-  await this.addToWorkspace(workspace._id, "owner", null, session);
-  return workspace;
+  if (existingIndex >= 0) {
+    this.workspaces[existingIndex].role = role;
+    this.workspaces[existingIndex].status = "active";
+    this.workspaces[existingIndex].invitedBy = invitedBy;
+    this.workspaces[existingIndex].lastActive = new Date();
+  } else {
+    this.workspaces.push({
+      workspace: workspaceId,
+      role,
+      status: "active",
+      invitedBy,
+      joinedAt: new Date(),
+      lastActive: new Date(),
+    });
+  }
+
+  if (!this.currentWorkspace) {
+    this.currentWorkspace = workspaceId;
+  }
+
+  await this.save(options);
+  return this;
 };
-// Methods
-userSchema.methods = {
-  correctPassword: async function (candidatePassword) {
-    if (!this.password) return false;
-    return bcrypt.compare(candidatePassword, this.password);
-  },
 
-  changedPasswordAfter: function (JWTTimestamp) {
-    return (
-      this.passwordChangedAt &&
-      parseInt(this.passwordChangedAt.getTime() / 1000, 10) > JWTTimestamp
-    );
-  },
+userSchema.methods.removeFromWorkspace = async function (workspaceId) {
+  const index = this.workspaces.findIndex((ws) =>
+    ws.workspace.equals(workspaceId)
+  );
 
-  createPasswordResetToken: function () {
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    this.passwordResetToken = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
-    return resetToken;
-  },
+  if (index !== -1) {
+    // Mark status as 'suspended' or remove completely depending on your policy
+    this.workspaces.splice(index, 1);
 
-  hasWorkspaceAccess: function (workspaceId) {
-    // Check user have workspace access or not ?
-    return this.workspaces.some(
-      (ws) => ws.workspace.equals(workspaceId) && ws.status === "active"
-    );
-  },
+    // If current workspace is being removed, unset it
+    if (this.currentWorkspace && this.currentWorkspace.equals(workspaceId)) {
+      this.currentWorkspace = null;
 
-  getWorkspaceRole: function (workspaceId) {
-    // Get existing workspace role
-    const workspace = this.workspaces.find(
-      (ws) => ws.workspace.equals(workspaceId) && ws.status === "active"
-    );
-    return workspace?.role;
-  },
-
-  addToWorkspace: async function (
-    workspaceId,
-    role = "member",
-    invitedBy = null,
-    session = null
-  ) {
-    // Check if already in workspace
-    const existingIndex = this.workspaces.findIndex((ws) =>
-      ws.workspace.equals(workspaceId)
-    );
-
-    if (existingIndex >= 0) {
-      // Update existing membership
-      this.workspaces[existingIndex] = {
-        ...this.workspaces[existingIndex].toObject(),
-        role,
-        status: "active",
-        invitedBy,
-        lastActive: new Date(),
-      };
-    } else {
-      // Add new workspace membership
-      this.workspaces.push({
-        workspace: workspaceId,
-        role,
-        status: "active",
-        invitedBy,
-        joinedAt: new Date(),
-        lastActive: new Date(),
-      });
-    }
-    if (!this.currentWorkspace) {
-      this.currentWorkspace = workspaceId;
-    }
-    await this.save(session);
-    return this;
-  },
-
-  removeFromWorkspace: async function (workspaceId) {
-    const index = this.workspaces.findIndex((ws) =>
-      ws.workspace.equals(workspaceId)
-    );
-
-    if (index !== -1) {
-      // Mark status as 'suspended' or remove completely depending on your policy
-      this.workspaces.splice(index, 1);
-
-      // If current workspace is being removed, unset it
-      if (this.currentWorkspace && this.currentWorkspace.equals(workspaceId)) {
-        this.currentWorkspace = null;
-
-        // Optionally set a new active workspace, if any
-        const active = this.workspaces.find((ws) => ws.status === "active");
-        if (active) {
-          this.currentWorkspace = active.workspace;
-        }
+      // Optionally set a new active workspace, if any
+      const active = this.workspaces.find((ws) => ws.status === "active");
+      if (active) {
+        this.currentWorkspace = active.workspace;
       }
-
-      await this.save();
     }
 
-    return this;
-  },
-
-  updateLastActiveInWorkspace: async function (workspaceId) {
-    const workspace = this.workspaces.find((ws) =>
-      ws.workspace.equals(workspaceId)
-    );
-    if (workspace) {
-      workspace.lastActive = new Date();
-      await this.save();
-    }
-    return this;
-  },
-
-  trackLogin: async function (req) {
-    try {
-      // Safely get headers or default to empty object
-      const headers = req?.headers || new Headers();
-
-      // Get IP address with multiple fallbacks
-      const ip =
-        req?.ip || Array.isArray(headers["x-forwarded-for"])
-          ? headers["x-forwarded-for"][0]
-          : (typeof headers["x-forwarded-for"] === "string"
-              ? headers["x-forwarded-for"].split(",").shift().trim()
-              : null) ||
-            req?.socket?.remoteAddress ||
-            req?.connection?.remoteAddress ||
-            "unknown";
-
-      // Get user agent safely
-      const userAgent = headers["user-agent"] || "unknown";
-
-      this.lastLogin = new Date();
-      this.loginHistory.push({
-        timestamp: new Date(),
-        ip,
-        userAgent,
-        device: this.getDeviceType(userAgent),
-        location: await this.constructor.getIpLocation(ip),
-      });
-
-      if (this.loginHistory.length > 20) this.loginHistory.shift();
-      await this.save();
-    } catch (error) {
-      console.error("Error tracking login:", error);
-      // Continue without failing the request
-    }
-  },
-
-  getDeviceType: function (userAgent) {
-    // Get Device Type
-    if (/mobile/i.test(userAgent)) return "Mobile";
-    if (/tablet/i.test(userAgent)) return "Tablet";
-    if (/iPad|iPhone|iPod/.test(userAgent)) return "iOS";
-    if (/Android/.test(userAgent)) return "Android";
-    if (/Windows/.test(userAgent)) return "Windows";
-    if (/Macintosh/.test(userAgent)) return "Mac";
-    if (/Linux/.test(userAgent)) return "Linux";
-    return "Unknown";
-  },
-
-  handleFailedLogin: async function () {
-    // User login failed then its works
-    this.failedLoginAttempts += 1;
-    if (this.failedLoginAttempts >= 5) {
-      this.accountLockedUntil = Date.now() + 30 * 60 * 1000; // 30Min Lock
-    }
     await this.save();
-  },
+  }
 
-  resetLoginAttempts: async function () {
-    // If previous logins are failed, after sometime user have successful then its will reset
-    this.failedLoginAttempts = 0;
-    this.accountLockedUntil = undefined;
-    await this.save();
-  },
+  return this;
 };
+userSchema.methods.updateLastActiveInWorkspace = async function (workspaceId) {
+  const workspace = this.workspaces.find((ws) =>
+    ws.workspace.equals(workspaceId)
+  );
+  if (workspace) {
+    workspace.lastActive = new Date();
+    await this.save();
+  }
+  return this;
+};
+userSchema.methods.trackLogin = async function (req) {
+  try {
+    // Safely get headers or default to empty object
+    const headers = req?.headers || new Headers();
 
+    // Get IP address with multiple fallbacks
+    const ip =
+      req?.ip || Array.isArray(headers["x-forwarded-for"])
+        ? headers["x-forwarded-for"][0]
+        : (typeof headers["x-forwarded-for"] === "string"
+            ? headers["x-forwarded-for"].split(",").shift().trim()
+            : null) ||
+          req?.socket?.remoteAddress ||
+          req?.connection?.remoteAddress ||
+          "unknown";
+
+    // Get user agent safely
+    const userAgent = headers["user-agent"] || "unknown";
+
+    this.lastLogin = new Date();
+    this.loginHistory.push({
+      timestamp: new Date(),
+      ip,
+      userAgent,
+      device: this.getDeviceType(userAgent),
+      location: await this.constructor.getIpLocation(ip),
+    });
+
+    if (this.loginHistory.length > 20) this.loginHistory.shift();
+    await this.save();
+  } catch (error) {
+    console.error("Error tracking login:", error);
+    // Continue without failing the request
+  }
+};
+userSchema.methods.getDeviceType = function (userAgent) {
+  // Get Device Type
+  if (/mobile/i.test(userAgent)) return "Mobile";
+  if (/tablet/i.test(userAgent)) return "Tablet";
+  if (/iPad|iPhone|iPod/.test(userAgent)) return "iOS";
+  if (/Android/.test(userAgent)) return "Android";
+  if (/Windows/.test(userAgent)) return "Windows";
+  if (/Macintosh/.test(userAgent)) return "Mac";
+  if (/Linux/.test(userAgent)) return "Linux";
+  return "Unknown";
+};
+userSchema.methods.handleFailedLogin = async function () {
+  // User login failed then its works
+  this.failedLoginAttempts += 1;
+  if (this.failedLoginAttempts >= 5) {
+    this.accountLockedUntil = Date.now() + 30 * 60 * 1000; // 30Min Lock
+  }
+  await this.save();
+};
+userSchema.methods.resetLoginAttempts = async function () {
+  // If previous logins are failed, after sometime user have successful then its will reset
+  this.failedLoginAttempts = 0;
+  this.accountLockedUntil = undefined;
+  await this.save();
+};
 // Statics
 userSchema.statics = {
   isEmailTaken: async function (email, excludeUserId) {

@@ -7,7 +7,7 @@ import { AccountVerificationCompletedMail } from "@/lib/helper";
 import { decryptData } from "@/utils/encryption";
 import { Workspace } from "@/models/user/workspace";
 import { Subscription } from "@/models/payment/subscription";
-import { PLANS } from "@/config/pricing.config";
+import { generateRandomSlug } from "@/lib/slugGenerator";
 
 // Configure rate limiting (5 attempts per hour per IP)
 const limiter = rateLimit({
@@ -26,7 +26,7 @@ export async function POST(req) {
     // Validate input
     if (!code || !email) {
       return NextResponse.json(
-        { message: "Both code and email are required" },
+        { message: "code and email are required" },
         { status: 400 }
       );
     }
@@ -134,20 +134,49 @@ export async function POST(req) {
 
       const pw = decryptData(tempUser.password);
       // Create new user
-      const newUser = await User.create({
-        email: tempUser.email,
-        password: pw,
-        name: tempUser.name,
-        phone: tempUser.phone,
-        isVerified: true,
-        termsAccepted: tempUser.termsAccepted || true,
-        provider: "credentials",
+      // Create the user
+      const [newUser] = await User.create(
+        [
+          {
+            email: tempUser.email,
+            password: pw,
+            name: tempUser.name,
+            phone: tempUser.phone,
+            isVerified: true,
+            termsAccepted: tempUser.termsAccepted || true,
+            provider: "credentials",
+          },
+        ],
+        { session }
+      );
+
+      // Create the workspace
+      const workspace = await Workspace.createWithOwner(
+        newUser._id,
+        {
+          name: `${newUser.name}'s Workspace`,
+          slug: generateRandomSlug(),
+        },
+        session
+      );
+
+      // Manually add the workspace to the user's workspaces array
+      newUser.workspaces.push({
+        workspace: workspace._id,
+        role: "owner",
+        status: "active",
+        joinedAt: new Date(),
       });
 
-      await newUser.createDefaultWorkspace();
+      // Set currentWorkspace if not set
+      if (!newUser.currentWorkspace) {
+        newUser.currentWorkspace = workspace._id;
+      }
+
+      // Save the user
+      await newUser.save({ session });
 
       await AccountVerificationCompletedMail(newUser.name, newUser.email);
-
       await session.commitTransaction();
 
       return NextResponse.json(

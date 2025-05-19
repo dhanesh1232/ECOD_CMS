@@ -301,8 +301,10 @@ export default function ApiKeysPage() {
         {/* Header section */}
         <div className="border-b border-gray-200 pb-4 flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
           <div className="md:w-1/2 w-full">
-            <h1 className="text-2xl font-semibold text-gray-900">API Keys</h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <h1 className="text-2xl font-semibold dark:text-gray-100 text-gray-900">
+              API Keys
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-100">
               Manage API keys for your workspace. These keys allow external
               services to access your workspace data securely.
             </p>
