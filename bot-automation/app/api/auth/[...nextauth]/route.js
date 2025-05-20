@@ -285,7 +285,6 @@ export const authOptions = {
     },
 
     async session({ session, token }) {
-      console.log("session created", session);
       session.user = {
         id: token.userId,
         name: token.name,

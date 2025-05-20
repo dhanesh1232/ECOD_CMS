@@ -10,8 +10,8 @@ export async function PUT(request) {
     const session = await validateSession(request);
 
     const body = await request.json();
-    const { image, website, company } = body;
-
+    const { image, name } = body;
+    console.log(body);
     // Handle image upload
     let imageUrl = image;
 
@@ -27,8 +27,7 @@ export async function PUT(request) {
       {
         $set: {
           image: imageUrl,
-          company,
-          website,
+          name,
         },
       },
       { new: true, runValidators: true }

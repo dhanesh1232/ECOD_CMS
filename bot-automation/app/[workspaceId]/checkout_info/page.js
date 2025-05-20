@@ -170,7 +170,7 @@ const PlanInfoCheckoutPage = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.push("/settings/account/billing")}
+              onClick={() => router.back()}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />

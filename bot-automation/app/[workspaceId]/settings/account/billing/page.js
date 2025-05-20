@@ -1,7 +1,12 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import {
   AlertCircle,
   RotateCw,
@@ -51,6 +56,8 @@ const BillingPage = () => {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams();
+  const workspaceId = params.workspaceId;
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -63,6 +70,7 @@ const BillingPage = () => {
   const [billingPeriod, setBillingPeriod] = useState("monthly");
   const [paymentHistory, setPaymentHistory] = useState([]);
   const showToast = useToast();
+  const toastRef = useRef(false);
 
   const getPlanPrice = (planId) => {
     const plan = PLANS[planId];
@@ -79,37 +87,41 @@ const BillingPage = () => {
   const fetchSubscription = useCallback(async () => {
     try {
       setIsProcessing(true);
-      const data = await billingService.getSubscription();
+      const data = await billingService.getSubscription(workspaceId);
+      console.log(data.data.user);
       setUserCred({
-        phone: data?.user?.phone,
-        email: data?.user?.email,
-        name: data?.user?.name,
+        phone: data?.data?.user?.phone,
+        email: data?.data?.user?.email,
+        name: data?.data?.user?.name,
       });
-      setSubscription(data?.user?.subscription);
+      setSubscription(data?.data?.subscription);
       setError("");
       try {
         setIsProcessing(false);
-        if (data?.user?.subscription?.plan !== "free") {
+        if (data?.data?.subscription?.plan !== "free") {
           const paymentHistory = await billingService.getPaymentHistory(
-            data?.user?.subscription.user
+            data?.user?.subscription.user,
+            workspaceId
           );
           setPaymentHistory([...paymentHistory?.paymentHistory] || []);
           console.log("Payment history:", paymentHistory.paymentHistory);
         }
       } catch (err) {
-        showToast({
-          title: "Failed to fetch",
-          description: "Failed to fetch subscription history data.",
-          variant: "warning",
-        });
+        if (!toastRef.current) {
+          showToast({
+            description: "Failed to fetch subscription history data.",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
       }
     } catch (err) {
-      setError(err.message);
+      showToast({ description: err.message, variant: "warning" });
     } finally {
       setIsProcessing(false);
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, workspaceId]);
 
   useEffect(() => {
     fetchSubscription();
@@ -119,7 +131,7 @@ const BillingPage = () => {
 
   const handlePlansTab = () => {
     const newParams = new URLSearchParams(searchParams.toString());
-    const en = encryptData(session?.user?.email);
+    const en = encryptData(workspaceId);
     newParams.set("plans_comp", `user_${en}`);
     router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   };
@@ -134,7 +146,7 @@ const BillingPage = () => {
       pn: encryptData(userCred.phone),
     };
     const params = new URLSearchParams(obj).toString();
-    router.replace(`/checkout_info?${params}`);
+    router.replace(`/${workspaceId}/checkout_info?${params}`);
   };
 
   const formatFeatureValue = (val) => {
@@ -176,10 +188,10 @@ const BillingPage = () => {
                 </span>
                 <span className="text-muted-foreground">/{billingPeriod}</span>
               </div>
-              {TAX_RATES[currency] > 0 && (
+              {planId.toLowerCase() !== "free" && TAX_RATES[currency] > 0 && (
                 <p className="text-xs font-bold text-muted-foreground">
-                  Includes( {TAX_RATES[currency] * 100}%{" "}
-                  {currency === "INR" && "GST"} )
+                  Includes ({TAX_RATES[currency] * 100}%{" "}
+                  {currency === "INR" && "GST"})
                 </p>
               )}
             </div>
@@ -518,13 +530,19 @@ const BillingPage = () => {
                   });
                   if (!res.ok) throw new Error("Cancellation failed");
                   fetchSubscription();
-                  showToast({ title: "Cancellation Successful" });
+                  if (!toastRef.current) {
+                    showToast({ title: "Cancellation Successful" });
+                    toastRef.current = true;
+                  }
                 } catch (error) {
-                  showToast({
-                    title: "Cancellation Failed",
-                    description: error.message,
-                    variant: "destructive",
-                  });
+                  if (!toastRef.current) {
+                    showToast({
+                      title: "Cancellation Failed",
+                      description: error.message,
+                      variant: "destructive",
+                    });
+                    toastRef.current = true;
+                  }
                 }
               }}
               onDowngrade={async () => {
@@ -532,13 +550,19 @@ const BillingPage = () => {
                   const res = await fetch("/api/downgrade", { method: "POST" });
                   if (!res.ok) throw new Error("Downgrade failed");
                   fetchSubscription();
-                  showToast({ title: "Downgraded to Free Plan" });
+                  if (toastRef.current) {
+                    showToast({ title: "Downgraded to Free Plan" });
+                    toastRef.current = true;
+                  }
                 } catch (error) {
-                  showToast({
-                    title: "Downgrade Failed",
-                    description: error.message,
-                    variant: "destructive",
-                  });
+                  if (!toastRef.current) {
+                    showToast({
+                      title: "Downgrade Failed",
+                      description: error.message,
+                      variant: "destructive",
+                    });
+                    toastRef.current = true;
+                  }
                 }
               }}
             />

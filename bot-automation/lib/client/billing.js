@@ -1,24 +1,27 @@
 // lib/billing.js
 export const billingService = {
-  getSubscription: async () => {
-    return fetch("/api/profile/subscription", {
+  getSubscription: async (workspaceId) => {
+    return fetch(`/api/workspace/${workspaceId}/subscription`, {
       method: "GET",
       credentials: "include",
     }).then(handleResponse);
   },
 
-  createPaymentOrder: async (data) => {
+  createPaymentOrder: async (data, workspaceId) => {
     console.log(data);
-    return fetch("/api/profile/subscription/create-payment-order", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    }).then(handleResponse);
+    return fetch(
+      `/api/workspace/${workspaceId}/subscription/create-payment-order`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }
+    ).then(handleResponse);
   },
 
-  verifyPayment: async (paymentData) => {
-    return fetch("/api/profile/subscription/verify-payment", {
+  verifyPayment: async (paymentData, workspaceId) => {
+    return fetch(`/api/workspace/${workspaceId}/subscription/verify-payment`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -33,11 +36,14 @@ export const billingService = {
     }).then(handleResponse);
   },
 
-  getPaymentHistory: async (userId) => {
-    return fetch(`/api/profile/subscription/payment-history?user=${userId}`, {
-      method: "GET",
-      credentials: "include",
-    }).then(handleResponse);
+  getPaymentHistory: async (workspace, workspaceId) => {
+    return fetch(
+      `/api/workspace/${workspaceId}/subscription/payment-history?workspace=${workspace}`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    ).then(handleResponse);
   },
 
   cancelSubscription: async () => {

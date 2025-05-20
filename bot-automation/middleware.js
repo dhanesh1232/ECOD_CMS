@@ -100,6 +100,7 @@ function shouldSkipMiddleware(pathname) {
     "/404",
     "/500",
     "/forbidden",
+    "/create-workspace",
   ].some((path) => pathname.startsWith(path) || pathname === path);
 }
 
@@ -190,6 +191,6 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|auth|static|404|500|forbidden).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|auth|static|404|500|forbidden|create-workspace).*)",
   ],
 };

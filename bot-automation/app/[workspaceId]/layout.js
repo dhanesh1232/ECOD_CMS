@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 const SideBar = dynamic(() => import("@/components/sidebar"));
 const Header = dynamic(() => import("@/components/header"));
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import {
   useParams,
   usePathname,
@@ -12,10 +12,10 @@ import {
 } from "next/navigation";
 const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
-import SelectWorkspace from "@/components/workspace_select";
 import { encryptData } from "@/utils/encryption";
 
 export default function ProtectLayout({ children }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspaceId;
@@ -70,12 +70,16 @@ export default function ProtectLayout({ children }) {
   return (
     <>
       <div className="flex h-full bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-        <SideBar />
+        <SideBar
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
         <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
-          <Header />
-
+          <Header
+            mobileMenuOpen={mobileMenuOpen}
+            setMobileMenuOpen={setMobileMenuOpen}
+          />
           <main className="flex-1 flex flex-col bg-white overflow-hidden dark:bg-gray-700 transition-colors ease-in-out duration-300">
-            <SelectWorkspace className="w-full flex items-center justify-center sm:hidden px-4" />
             {children}
           </main>
         </div>

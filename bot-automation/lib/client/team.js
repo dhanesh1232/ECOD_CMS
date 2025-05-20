@@ -7,6 +7,13 @@ async function handleResponse(response) {
 }
 
 export const WorkspaceService = {
+  checkCurrentWorkspaceRole: async () => {
+    const response = await fetch("/api/workspace", {
+      methos: "GET",
+      credentials: "include",
+    });
+    return handleResponse(response);
+  },
   getTeam: async () => {
     const response = await fetch("/api/workspace/team", {
       method: "GET",
@@ -19,7 +26,6 @@ export const WorkspaceService = {
       method: "GET",
       credentials: "include",
     });
-    console.log(res);
     return handleResponse(res);
   },
   getLimits: async () => {

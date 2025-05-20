@@ -71,11 +71,41 @@ const userSchema = new mongoose.Schema(
         return this.provider !== "credentials";
       },
     },
+    // User notifications from workspaces or their own
+    notifications: [
+      {
+        type: {
+          type: String,
+          enum: [
+            "workspace_invitation",
+            "invitation_accepted",
+            "invitation_expired",
+            "trial_ending",
+            "payment_failed",
+            "subscription_activated",
+            "subscription_renewed",
+          ],
+          required: true,
+        },
+        message: String,
+        data: mongoose.Schema.Types.Mixed,
+        read: {
+          type: Boolean,
+          default: false,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    // User invitations from workspaces
     invitation: [
       {
         invitedBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
+          required: true,
         },
         workspace: {
           type: mongoose.Schema.Types.ObjectId,
@@ -84,9 +114,23 @@ const userSchema = new mongoose.Schema(
         },
         role: {
           type: String,
-          enum: ["owner", "admin", "member", "guest"],
+          enum: ["admin", "member", "guest"],
           default: "member",
           required: true,
+        },
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "expired", "declined"],
+          required: true,
+          default: "pending",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        expireSAt: {
+          type: Date,
+          default: () => Date.now() * 7 * 24 * 60 * 1000, // 7 Days
         },
       },
     ],
@@ -244,7 +288,10 @@ userSchema.virtual("activeWorkspaces", {
   ref: "Workspace",
   localField: "workspaces.workspace",
   foreignField: "_id",
-  match: { "workspaces.status": "active" },
+  justOne: false,
+  match: {
+    "workspaces.status": "active", // This matches the User's workspace entry status
+  },
 });
 
 // Pre-save hooks

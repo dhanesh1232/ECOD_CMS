@@ -31,7 +31,7 @@ export async function GET(req) {
 
     // Get user with subscription
     const user = await User.findOne({ email })
-      .select("+password +image")
+      .select("+image")
       .populate({
         path: "currentWorkspace",
         select: "name slug domain logo settings",

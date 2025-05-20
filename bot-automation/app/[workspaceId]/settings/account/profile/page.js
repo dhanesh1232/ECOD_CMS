@@ -1,8 +1,14 @@
 "use client";
+import imageCompression from "browser-image-compression";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast-provider";
+import { motion } from "framer-motion";
+import Image from "next/image";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.css";
 import {
   FiEdit2,
   FiUpload,
@@ -13,16 +19,17 @@ import {
   FiMail,
   FiPhone,
 } from "react-icons/fi";
-import { useParams, useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/toast-provider";
-import { motion } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useMobileRange } from "@/hooks/mediaQuery";
 
 const AccountInfoSection = () => {
+  const isTinyMobile = useMobileRange();
   const showToast = useToast();
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspaceId;
+
   const [activePlan, setActivePlan] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +42,10 @@ const AccountInfoSection = () => {
   });
   const [tempData, setTempData] = useState({ ...formData });
   const [imagePreview, setImagePreview] = useState(formData.profilePicture);
+  const [showCropper, setShowCropper] = useState(false);
+  const [originalImage, setOriginalImage] = useState(null);
+  const cropperRef = useRef(null);
+  const toastRef = useRef(false);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -44,38 +55,49 @@ const AccountInfoSection = () => {
           method: "GET",
           credentials: "include",
         });
+
         if (res.ok) {
-          const res_data = await res.json();
-          console.log(res_data);
-          const data = res_data?.user;
-          const existPlan = res_data.existPlan;
-          setActivePlan(existPlan);
+          const { user, existPlan } = await res.json();
+          console.log(user);
+
+          setActivePlan(existPlan || {});
           setFormData({
-            profilePicture: data.image || "",
-            fullName: data.name || "",
-            email: data.email || "",
-            phone: data.phone || "",
-            isVerified: data.isVerified || false,
+            profilePicture: user.image || "",
+            fullName: user.name || "",
+            email: user.email || "",
+            phone: user.phone || "",
+            isVerified: user.isVerified || false,
           });
           setTempData({
-            profilePicture: data.image || "",
-            fullName: data.name || "",
-            email: data.email || "",
-            phone: data.phone || "",
+            profilePicture: user.image || "",
+            fullName: user.name || "",
+            email: user.email || "",
+            phone: user.phone || "",
           });
-          setImagePreview(data.image || "");
+          setImagePreview(user.image || "");
+        } else {
+          if (!toastRef.current) {
+            showToast({
+              description: "Failed to fetch user data",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
         }
       } catch (error) {
-        console.error("Failed to load user data:", error);
-        showToast({
-          title: "Error",
-          description: "Failed to load user data",
-          variant: "error",
-        });
+        if (!toastRef.current) {
+          showToast({
+            title: "Error",
+            description: error.message || "Failed to load user data",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchUserDetails();
   }, [showToast]);
 
@@ -88,41 +110,138 @@ const AccountInfoSection = () => {
     setTempData((prev) => ({ ...prev, phone: value }));
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
       if (file.size > MAX_SIZE) {
-        showToast({
-          title: "Image too large",
-          description: "Image must be smaller than 2MB",
-          variant: "error",
-        });
+        if (!toastRef.current) {
+          showToast({
+            title: "Image too large",
+            description: "Image must be smaller than 5MB",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImagePreview(event.target?.result);
-        setTempData((prev) => ({
-          ...prev,
-          profilePicture: event.target?.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+
+      try {
+        // First create a preview URL for the cropper
+        const imageUrl = URL.createObjectURL(file);
+        setOriginalImage(imageUrl);
+        setShowCropper(true);
+      } catch (error) {
+        if (!toastRef.current) {
+          showToast({
+            title: "Error",
+            description: "Could not process the image. Try another file.",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
+      }
+    }
+  };
+
+  const handleCrop = async () => {
+    if (cropperRef.current && cropperRef.current.cropper) {
+      const cropperInstance = cropperRef.current.cropper;
+      try {
+        // Get the cropped canvas
+        const canvas = cropperInstance.getCroppedCanvas({
+          width: 512,
+          height: 512,
+          minWidth: 256,
+          minHeight: 256,
+          maxWidth: 1024,
+          maxHeight: 1024,
+          fillColor: "#fff",
+          imageSmoothingEnabled: true,
+          imageSmoothingQuality: "high",
+        });
+
+        if (!canvas) {
+          if (!toastRef.current) {
+            showToast({
+              description: "Could not get cropped canvas",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
+        }
+
+        // Convert canvas to blob
+        canvas.toBlob(
+          async (blob) => {
+            try {
+              // Compress the blob
+              const options = {
+                maxSizeMB: 1, // Compress to ~1MB
+                maxWidthOrHeight: 1024,
+                useWebWorker: true,
+              };
+              const compressedFile = await imageCompression(blob, options);
+              const compressedBase64 =
+                await imageCompression.getDataUrlFromFile(compressedFile);
+
+              setImagePreview(compressedBase64);
+              setTempData((prev) => ({
+                ...prev,
+                profilePicture: compressedBase64,
+              }));
+              setShowCropper(false);
+              URL.revokeObjectURL(originalImage); // Clean up
+            } catch (error) {
+              if (!toastRef.current) {
+                showToast({
+                  title: "Error",
+                  description: "Could not process the image. Try another file.",
+                  variant: "warning",
+                });
+                toastRef.current = true;
+              }
+            }
+          },
+          "image/jpeg",
+          0.8
+        ); // 80% quality
+      } catch (error) {
+        if (!toastRef.current) {
+          showToast({
+            title: "Error",
+            description: "Could not crop the image. Try again.",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
+      }
+    } else {
+      if (!toastRef.current) {
+        showToast({
+          title: "Error",
+          description: "Cropper not initialized. Please try again.",
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
     }
   };
 
   const handleSave = async () => {
     if (!tempData.fullName.trim()) {
-      showToast({
-        title: "Validation Error",
-        description: "Full Name is required",
-        variant: "error",
-      });
+      if (!toastRef.current) {
+        showToast({
+          title: "Validation Error",
+          description: "Full Name is required",
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
       return;
     }
 
-    setIsLoading(true);
     try {
       const res = await fetch("/api/profile/update", {
         method: "PUT",
@@ -132,30 +251,42 @@ const AccountInfoSection = () => {
         credentials: "include",
         body: JSON.stringify({
           image: tempData.profilePicture,
+          name: tempData.fullName,
+          phone: tempData.phone,
         }),
       });
 
-      const responseData = await res.json();
-
       if (!res.ok) {
-        throw new Error(responseData.message || "Failed to update profile");
+        const errorData = await res.json();
+        if (!toastRef.current) {
+          showToast({
+            description: errorData.message || "Failed to update profile",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
       }
 
       setFormData({ ...tempData });
       setImagePreview(tempData.profilePicture);
       setIsEditing(false);
-      showToast({
-        title: "Success",
-        description: "Profile updated successfully",
-        variant: "success",
-      });
+      if (!toastRef.current) {
+        showToast({
+          title: "Success",
+          description: "Profile updated successfully",
+          variant: "success",
+        });
+        toastRef.current = true;
+      }
     } catch (error) {
-      console.error("Error saving profile:", error);
-      showToast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
-        variant: "error",
-      });
+      if (!toastRef.current) {
+        showToast({
+          title: "Error",
+          description: error.message || "Failed to update profile",
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -165,14 +296,20 @@ const AccountInfoSection = () => {
     setTempData({ ...formData });
     setImagePreview(formData.profilePicture);
     setIsEditing(false);
+    if (originalImage) {
+      URL.revokeObjectURL(originalImage);
+    }
+  };
+
+  const cancelCrop = () => {
+    setShowCropper(false);
+    if (originalImage) {
+      URL.revokeObjectURL(originalImage);
+    }
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[300px]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   return (
@@ -182,118 +319,104 @@ const AccountInfoSection = () => {
       transition={{ duration: 0.2 }}
       className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm overflow-auto transition-all border border-gray-100 dark:border-gray-800"
     >
+      {showCropper && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl p-4 max-h-[90vh] overflow-auto">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              Crop your profile picture
+            </h3>
+            <div className="w-full h-64 md:h-96 mb-4">
+              <Cropper
+                ref={cropperRef}
+                src={originalImage}
+                style={{ height: "100%", width: "100%" }}
+                aspectRatio={1}
+                viewMode={1}
+                guides={true}
+                minCropBoxHeight={100}
+                minCropBoxWidth={100}
+                background={false}
+                responsive={true}
+                autoCropArea={0.8}
+                checkOrientation={false}
+              />
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelCrop}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCrop}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg"
+              >
+                Crop & Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+        <h2
+          className={`${
+            isTinyMobile ? "text-base" : "text-lg"
+          } sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white`}
+        >
           Account Information
         </h2>
         {!isEditing ? (
-          <button
+          <EditButton
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition hover:shadow-md"
-          >
-            <FiEdit2 size={16} /> Edit
-          </button>
+            isTinyMobile={isTinyMobile}
+          />
         ) : (
-          <div className="flex gap-2">
-            <button
-              onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition"
-            >
-              <FiX size={16} /> Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition hover:shadow-md disabled:opacity-70"
-            >
-              <FiCheck size={16} /> {isLoading ? "Saving..." : "Save"}
-            </button>
-          </div>
+          <EditControls
+            onCancel={handleCancel}
+            onSave={handleSave}
+            isLoading={isLoading}
+            isTinyMobile={isTinyMobile}
+          />
         )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Profile Picture Section */}
-        <div className="flex flex-col items-center lg:items-start">
-          <div className="relative group">
-            <div className="md:w-32 w-20 h-20 md:h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg">
-              {imagePreview ? (
-                <Image
-                  src={imagePreview}
-                  alt="Profile"
-                  width={128}
-                  height={128}
-                  className="object-cover w-full h-full"
-                  priority
-                />
-              ) : (
-                <div className="flex items-center justify-center w-full h-full text-gray-400">
-                  <svg
-                    className="w-16 h-16"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-              )}
-            </div>
-            {isEditing && (
-              <label className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition transform hover:scale-105">
-                <FiUpload className="text-white" size={18} />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            )}
-          </div>
-          {isEditing && (
-            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-              JPG, PNG (Max 2MB)
-            </p>
-          )}
-        </div>
+        <ProfilePictureSection
+          imagePreview={imagePreview}
+          isEditing={isEditing}
+          onImageChange={handleImageChange}
+        />
 
-        {/* Form Section */}
         <div className="flex-1 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Full Name */}
-            <div className="space-y-1">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <FiUser size={16} className="text-indigo-600" />
-                Full Name
-              </label>
+            <FormField
+              label="Full Name"
+              icon={<FiUser size={16} className="text-indigo-600" />}
+              isEditing={isEditing}
+            >
               {isEditing ? (
                 <input
                   type="text"
                   name="fullName"
                   value={tempData.fullName}
                   onChange={handleInputChange}
-                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  className={`w-full p-2 md:p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 text-sm dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition`}
                   placeholder="Enter your full name"
                 />
               ) : (
-                <p className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border dark:border-gray-700">
+                <p className="bg-gray-50 dark:bg-gray-800 text-sm p-2 md:p-3 rounded-lg border dark:border-gray-700">
                   {formData.fullName || "Not provided"}
                 </p>
               )}
-            </div>
+            </FormField>
 
-            {/* Email */}
-            <div className="space-y-1">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <FiMail size={16} className="text-indigo-600" />
-                Email Address
-              </label>
+            <FormField
+              label="Email Address"
+              icon={<FiMail size={16} className="text-indigo-600" />}
+              isEditing={false}
+            >
               <div className="relative">
                 <input
                   type="email"
@@ -301,22 +424,17 @@ const AccountInfoSection = () => {
                   value={tempData.email}
                   readOnly
                   disabled
-                  className="w-full p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 cursor-not-allowed opacity-80"
+                  className="w-full p-2 text-sm md:p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 opacity-80"
                 />
-                {formData.isVerified && (
-                  <span className="absolute right-3 top-3 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
-                    <CheckCircle2 size={14} />
-                  </span>
-                )}
+                {formData.isVerified && <VerifiedBadge />}
               </div>
-            </div>
+            </FormField>
 
-            {/* Phone */}
-            <div className="space-y-1">
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                <FiPhone size={16} className="text-indigo-600" />
-                Phone Number
-              </label>
+            <FormField
+              label="Phone Number"
+              icon={<FiPhone size={16} className="text-indigo-600" />}
+              isEditing={isEditing}
+            >
               <div className="custom-phone-input-container">
                 <PhoneInput
                   international
@@ -325,67 +443,256 @@ const AccountInfoSection = () => {
                   defaultCountry="IN"
                   value={tempData.phone}
                   onChange={handlePhoneChange}
-                  className={`custom-phone-input w-full rounded-lg border dark:border-gray-700 ${
+                  className={`custom-phone-input w-full text-sm rounded-lg border dark:border-gray-700 ${
                     isEditing
                       ? "bg-gray-50 dark:bg-gray-800"
                       : "bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                   }`}
                 />
               </div>
-            </div>
+            </FormField>
           </div>
         </div>
       </div>
 
-      {/* Plan Details Section */}
-      <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 border border-indigo-100 dark:border-gray-700">
-        <div className="flex justify-between items-start sm:items-center gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/50">
-              <FiShield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+      <WorkspacePlanSection
+        activePlan={activePlan}
+        workspaceId={workspaceId}
+        router={router}
+      />
+    </motion.div>
+  );
+};
+
+// Sub-components for better organization
+const LoadingSkeleton = () => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.2 }}
+    className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm overflow-auto transition-all border border-gray-100 dark:border-gray-800"
+  >
+    <div className="flex justify-between items-center mb-6">
+      <Skeleton className="h-8 w-48 rounded-lg" />
+      <Skeleton className="h-10 w-24 rounded-lg" />
+    </div>
+
+    <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col items-center lg:items-start">
+        <Skeleton className="w-32 h-32 rounded-full" />
+        <Skeleton className="mt-3 h-4 w-32 rounded-md" />
+      </div>
+
+      <div className="flex-1 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-5 w-24 rounded-md" />
+              <Skeleton className="h-12 w-full rounded-lg" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                {activePlan.plan}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {activePlan.description || "Basic features"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {activePlan.status === "active" ? (
-              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
-                Active
-              </span>
-            ) : (
-              <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-medium">
-                Inactive
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() =>
-                router.push(`/${workspaceId}/settings/account/billing`)
-              }
-              className="px-4 py-2 hidden rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition lg:flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
-            >
-              Upgrade Plan
-            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div className="mt-8 p-6 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <div className="flex justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-12 h-12 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32 rounded-md" />
+            <Skeleton className="h-4 w-48 rounded-md" />
           </div>
         </div>
+        <Skeleton className="h-10 w-32 rounded-lg" />
+      </div>
+    </div>
+  </motion.div>
+);
+
+const EditButton = ({ onClick, isTinyMobile }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-2 ${
+      isTinyMobile ? "px-2 py-2 text-xs" : "px-4 py-2 text-sm"
+    } font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition hover:shadow-md`}
+  >
+    <FiEdit2 size={isTinyMobile ? 14 : 16} /> Edit
+  </button>
+);
+
+const EditControls = ({ onCancel, onSave, isLoading, isTinyMobile }) => (
+  <div className="flex gap-2 mt-0 justify-end">
+    <button
+      onClick={onCancel}
+      className={`flex items-center gap-1.5 ${
+        isTinyMobile ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
+      } font-medium text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-100/90 dark:hover:bg-gray-700/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-xs`}
+    >
+      <FiX size={isTinyMobile ? 14 : 16} />
+      {!isTinyMobile && "Cancel"}
+    </button>
+    <button
+      onClick={onSave}
+      disabled={isLoading}
+      className={`flex items-center gap-1.5 ${
+        isTinyMobile ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
+      } font-medium text-white bg-green-600/90 hover:bg-green-700/90 backdrop-blur-sm rounded-lg transition-all duration-200 shadow-sm hover:shadow-xs disabled:opacity-70 disabled:cursor-not-allowed`}
+    >
+      {isLoading ? (
+        <>
+          <Spinner />
+          {!isTinyMobile && "Saving..."}
+        </>
+      ) : (
+        <>
+          <FiCheck size={isTinyMobile ? 14 : 16} />
+          {!isTinyMobile && "Save"}
+        </>
+      )}
+    </button>
+  </div>
+);
+
+const Spinner = () => (
+  <svg
+    className="animate-spin -ml-1 mr-1 h-3 w-3 text-white"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
+
+const ProfilePictureSection = ({ imagePreview, isEditing, onImageChange }) => (
+  <div className="flex flex-col items-center lg:items-start">
+    <div className="relative group">
+      <div className="md:w-32 w-20 h-20 md:h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg">
+        {imagePreview ? (
+          <Image
+            src={imagePreview}
+            alt="Profile"
+            width={128}
+            height={128}
+            className="object-cover w-full h-full"
+            priority
+          />
+        ) : (
+          <DefaultProfileIcon />
+        )}
+      </div>
+      {isEditing && (
+        <label className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition transform hover:scale-105">
+          <FiUpload className="text-white" size={18} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={onImageChange}
+            className="hidden"
+          />
+        </label>
+      )}
+    </div>
+    {isEditing && (
+      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+        JPG, PNG (Max 5MB)
+      </p>
+    )}
+  </div>
+);
+
+const DefaultProfileIcon = () => (
+  <div className="flex items-center justify-center w-full h-full text-gray-400">
+    <svg
+      className="w-16 h-16"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  </div>
+);
+
+const FormField = ({ label, icon, isEditing, children }) => (
+  <div className="space-y-1">
+    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+      {icon}
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const VerifiedBadge = () => (
+  <span className="absolute right-3 top-1.5 sm:top-2 md:top-3 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-700 text-green-700 dark:text-green-100 shadow-md ring-1 ring-green-300 dark:ring-green-600">
+    <BadgeCheck size={14} className="stroke-[1.5]" />
+  </span>
+);
+
+const WorkspacePlanSection = ({ activePlan, workspaceId, router }) => (
+  <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 border border-indigo-100 dark:border-gray-700">
+    <div className="flex justify-between items-start sm:items-center gap-4 mb-4">
+      <div className="flex items-center gap-3">
+        <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/50">
+          <FiShield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
+            {activePlan.plan || "Free"}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {activePlan.description || "Basic features"}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        {activePlan.status === "active" ? (
+          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
+            Active
+          </span>
+        ) : (
+          <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-medium">
+            Inactive
+          </span>
+        )}
         <button
           type="button"
           onClick={() =>
             router.push(`/${workspaceId}/settings/account/billing`)
           }
-          className="px-4 py-2 lg:hidden w-full justify-center rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
+          className="px-4 py-2 hidden rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition lg:flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
         >
           Upgrade Plan
         </button>
       </div>
-    </motion.div>
-  );
-};
+    </div>
+    <button
+      type="button"
+      onClick={() => router.push(`/${workspaceId}/settings/account/billing`)}
+      className="px-4 py-2 lg:hidden w-full justify-center rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
+    >
+      Upgrade Plan
+    </button>
+  </div>
+);
 
 export default AccountInfoSection;

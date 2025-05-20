@@ -7,16 +7,16 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useDarkMode } from "@/context/context";
-import { ChevronDown, Bell, Sun, Moon, User, Lock } from "lucide-react";
-import { FiLogOut } from "react-icons/fi";
+import { Sun, Moon, User, Lock, X } from "lucide-react";
+import { FiLogOut, FiMenu } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "./logo";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import SelectWorkspace from "./workspace_select";
+import NotificationButton from "./notification";
 
-export default function Header() {
+export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -72,18 +72,26 @@ export default function Header() {
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 py-4 flex items-center justify-between shadow-sm transition-colors duration-300">
-      <SelectWorkspace className="w-[200px] items-center px-4 sm:flex hidden" />
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
+        {mobileMenuOpen ? (
+          <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+        ) : (
+          <FiMenu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+        )}
+      </button>
       <Logo hide={true} />
 
       <div className="flex items-center space-x-4">
-        {/* Notifications */}
-        <button
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-0 transition"
-          title="Notifications"
-        >
-          <Bell className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-        </button>
-
+        {/*Notification */}
+        <NotificationButton
+          size="sm"
+          iconSize={18}
+          position="top-14 right-0"
+          className="hidden md:flex"
+        />
         {/* Toggle Theme */}
         <button
           onClick={toggleDarkMode}
@@ -112,11 +120,6 @@ export default function Header() {
                   .toUpperCase()}
               </span>
             </div>
-            <ChevronDown
-              className={`w-4 h-4 text-gray-600 dark:text-gray-300 transform transition-transform duration-200 ${
-                menuOpen ? "rotate-180" : ""
-              }`}
-            />
           </button>
 
           {/* Dropdown Menu */}
