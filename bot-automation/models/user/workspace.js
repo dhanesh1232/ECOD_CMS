@@ -83,14 +83,26 @@ const workspaceSchema = new mongoose.Schema(
     contactInfo: {
       supportEmail: {
         type: String,
-        validate: [validator.isEmail, "Please provide a valid email"],
+        validate: {
+          validator: function (v) {
+            return v === "" || validator.isEmail(v);
+          },
+          message: "Please provide a valid email",
+        },
+        default: "",
         trim: true,
         lowercase: true,
       },
       websiteURL: {
         type: String,
-        validate: [validator.isURL, "Please provide a valid URL"],
+        validate: {
+          validator: function (v) {
+            return v === "" || validator.isURL(v);
+          },
+          message: "Please provide a valid URL",
+        },
         trim: true,
+        default: "",
       },
       phone: {
         type: String,

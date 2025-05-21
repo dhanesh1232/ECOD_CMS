@@ -72,8 +72,6 @@ const SettingsLayout = ({ children }) => {
   const toggleSection = (sectionId) => {
     setExpandedSection((prev) => (prev === sectionId ? null : sectionId));
   };
-
-  console.log(pathname);
   return (
     <div className="flex flex-col sm:flex-row h-full relative">
       <div

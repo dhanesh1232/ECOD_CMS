@@ -1,7 +1,7 @@
 "use client";
 
-import { FiLogOut, FiPlus, FiChevronsRight, FiMenu, FiX } from "react-icons/fi";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { FiLogOut, FiPlus, FiChevronsRight } from "react-icons/fi";
+import React, { useState, useRef, useEffect } from "react";
 import {
   useParams,
   usePathname,
@@ -14,9 +14,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { createPortal } from "react-dom";
 import { navItems } from "@/data/bot-links";
-import { Bell } from "lucide-react";
 import SelectWorkspace from "./workspace_select";
 import NotificationButton from "./notification";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const ChatBotAI = () => (
   <svg
@@ -38,8 +38,6 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
   const { data: session } = useSession();
   const params = useParams();
   const workspaceId = params.workspaceId;
-  const [hoveredItem, setHoveredItem] = useState(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const navRef = useRef(null);
   const pathname = usePathname();
@@ -47,7 +45,6 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
   const searchParams = useSearchParams();
   const [userProfile, setUserProfile] = useState(false);
   const profileRef = useRef(null);
-  const tooltipTimeout = useRef(null);
   const [userRole, setUserRole] = useState("Owner");
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -56,6 +53,8 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
     }
     return false;
   });
+
+  const MemoizedSelectWorkspace = React.memo(SelectWorkspace);
 
   useEffect(() => {
     localStorage.setItem("sidebarCollapsed", JSON.stringify(collapsed));
@@ -105,68 +104,6 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isMobile, collapsed]);
 
-  const handleTooltip = useCallback(
-    (itemId, event) => {
-      if (isMobile) return; // Disable tooltips on mobile
-
-      // Clear any existing timeout immediately
-      if (tooltipTimeout.current) {
-        clearTimeout(tooltipTimeout.current);
-        tooltipTimeout.current = null;
-      }
-
-      if (itemId && event?.currentTarget) {
-        const target = event.currentTarget;
-
-        // Show tooltip immediately on click/tap
-        if (event.type === "click") {
-          const rect = target.getBoundingClientRect();
-          setTooltipPosition({
-            top: rect.top + window.scrollY + rect.height / 4,
-            left: rect.right + 12,
-          });
-          setHoveredItem(itemId);
-          return;
-        }
-
-        // For hover, show after a short delay (reduced from 3000ms to 300ms)
-        tooltipTimeout.current = setTimeout(() => {
-          if (!target) return;
-
-          const rect = target.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-
-          // Calculate position with boundary checking
-          const leftPosition = Math.min(
-            rect.right + 12,
-            viewportWidth - 150 // Ensure tooltip doesn't go off screen
-          );
-
-          setTooltipPosition({
-            top: rect.top + window.scrollY + rect.height / 4,
-            left: leftPosition,
-          });
-          setHoveredItem(itemId);
-
-          // Auto-hide after 5 seconds
-          tooltipTimeout.current = setTimeout(() => {
-            setHoveredItem(null);
-          }, 5000);
-        }, 300); // Reduced delay for better UX
-      } else {
-        // Hide tooltip with fade-out animation
-        setHoveredItem(null);
-      }
-    },
-    [isMobile]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
-    };
-  }, []);
-
   const handleCreateNew = () => {
     router.push(`${workspaceId}/new`);
     if (isMobile) setMobileMenuOpen(false);
@@ -182,9 +119,6 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
 
   const getIsActive = (href, exact) => {
     const pathSegments = pathname.split("/").filter(Boolean);
-
-    // Extract workspaceId and current path without workspaceId
-    const workspaceId = pathSegments[0];
     const currentPath = `/${pathSegments.slice(1).join("/")}`;
 
     // Clean up href to handle trailing slashes
@@ -277,72 +211,142 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
       </div>
 
       {/* Workspace Selector */}
-      <div className="px-4 pb-2 mt-2 relative">
-        <SelectWorkspace
-          className="[&_button]:text-sm [&_button]:font-medium [&>button]:border-indigo-600/50 [&>button]:bg-indigo-700/40 [&>button]:hover:bg-indigo-700/50"
-          isCollapsed={collapsed}
-          mobile={isMobile}
-        />
-      </div>
+      {!isMobile && collapsed ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="px-4 pb-2 mt-2 relative">
+              <MemoizedSelectWorkspace
+                className="[&_button]:text-sm [&_button]:font-medium [&>button]:border-indigo-600/50 [&>button]:bg-indigo-700/40 [&>button]:hover:bg-indigo-700/50"
+                isCollapsed={collapsed}
+                mobile={isMobile}
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" arrow>
+            {"Select Workspace"}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <div className="px-4 pb-2 mt-2 relative">
+          <MemoizedSelectWorkspace
+            className="[&_button]:text-sm [&_button]:font-medium [&>button]:border-indigo-600/50 [&>button]:bg-indigo-700/40 [&>button]:hover:bg-indigo-700/50"
+            isCollapsed={collapsed}
+            mobile={isMobile}
+          />
+        </div>
+      )}
 
       {/* Create New Button */}
-      <div className="p-4">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleCreateNew}
-          className={`w-full flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-2.5 rounded-lg font-medium transition-all ${
-            collapsed ? "px-2.5" : "px-4"
-          } shadow-lg hover:shadow-indigo-900/30 active:shadow-inner`}
-        >
-          <FiPlus size={18} className="flex-shrink-0" />
-          {(!collapsed || isMobile) && <span>New Chatbot</span>}
-        </motion.button>
-      </div>
+      {collapsed && !isMobile ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="p-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCreateNew}
+                className={`w-full flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-2.5 rounded-lg font-medium transition-all ${
+                  collapsed ? "px-2.5" : "px-4"
+                } shadow-lg hover:shadow-indigo-900/30 active:shadow-inner`}
+              >
+                <FiPlus size={18} className="flex-shrink-0" />
+                {(!collapsed || isMobile) && <span>New Chatbot</span>}
+              </motion.button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" arrow>
+            {"Create Bot"}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <div className="p-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCreateNew}
+            className={`w-full flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-2.5 rounded-lg font-medium transition-all ${
+              collapsed ? "px-2.5" : "px-4"
+            } shadow-lg hover:shadow-indigo-900/30 active:shadow-inner`}
+          >
+            <FiPlus size={18} className="flex-shrink-0" />
+            {(!collapsed || isMobile) && <span>New Chatbot</span>}
+          </motion.button>
+        </div>
+      )}
 
       {/* Navigation Items */}
       <ul className="flex-1 overflow-y-auto p-2 space-y-1">
         {navItems.map((item) => {
           const isActive = getIsActive(item.href, item.exact);
-          return (
-            <li key={item.id}>
-              <motion.div
-                whileHover={isActive ? {} : { scale: 1.02 }}
-                className={`rounded-lg p-0 ${
+          const linkContent =
+            collapsed && !isMobile ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={`/${workspaceId}${item.href}`}
+                    onClick={() => isMobile && setMobileMenuOpen(false)}
+                    className={`flex items-center p-3 transition-colors ${
+                      collapsed
+                        ? isMobile
+                          ? "justify-start space-x-2"
+                          : "justify-center"
+                        : "space-x-3"
+                    } rounded-lg p-0 ${
+                      isActive
+                        ? "bg-indigo-700/90 shadow-inner border-l-4 border-indigo-300"
+                        : "hover:bg-indigo-700/50 border-l-4 border-transparent"
+                    }`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {React.cloneElement(item.icon, {
+                      className: `flex-shrink-0 ${
+                        isActive ? "text-indigo-100" : "text-indigo-300"
+                      }`,
+                    })}
+                    {(!collapsed || isMobile) && (
+                      <span className="font-medium truncate">{item.label}</span>
+                    )}
+                    {isActive && !collapsed && (
+                      <div className="ml-auto w-1 h-6 bg-indigo-300 rounded-full animate-pulse" />
+                    )}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" arrow>
+                  {item.label}
+                  {isActive && <span className="ml-1">(active)</span>}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Link
+                href={`/${workspaceId}${item.href}`}
+                onClick={() => isMobile && setMobileMenuOpen(false)}
+                className={`flex items-center p-3 transition-colors ${
+                  collapsed && isMobile
+                    ? "justify-start space-x-2"
+                    : "space-x-3"
+                } rounded-lg ${
                   isActive
                     ? "bg-indigo-700/90 shadow-inner border-l-4 border-indigo-300"
                     : "hover:bg-indigo-700/50 border-l-4 border-transparent"
                 }`}
+                aria-current={isActive ? "page" : undefined}
               >
-                <Link
-                  href={`/${workspaceId}${item.href}`}
-                  {...(!isMobile && {
-                    onMouseEnter: (e) => handleTooltip(item.id, e),
-                    onMouseLeave: () => handleTooltip(null),
-                  })}
-                  onClick={() => isMobile && setMobileMenuOpen(false)}
-                  className={`flex items-center p-3 transition-colors ${
-                    collapsed
-                      ? isMobile
-                        ? "justify-start space-x-2"
-                        : "justify-center"
-                      : "space-x-3"
-                  }`}
-                  aria-current={isActive ? "page" : undefined}
-                >
-                  {React.cloneElement(item.icon, {
-                    className: `flex-shrink-0 ${
-                      isActive ? "text-indigo-100" : "text-indigo-300"
-                    }`,
-                  })}
-                  {(!collapsed || isMobile) && (
-                    <span className="font-medium truncate">{item.label}</span>
-                  )}
-                  {isActive && !collapsed && (
-                    <div className="ml-auto w-1 h-6 bg-indigo-300 rounded-full animate-pulse" />
-                  )}
-                </Link>
-              </motion.div>
+                {React.cloneElement(item.icon, {
+                  className: `flex-shrink-0 ${
+                    isActive ? "text-indigo-100" : "text-indigo-300"
+                  }`,
+                })}
+                {(!collapsed || isMobile) && (
+                  <span className="font-medium truncate">{item.label}</span>
+                )}
+                {isActive && !collapsed && (
+                  <div className="ml-auto w-1 h-6 bg-indigo-300 rounded-full animate-pulse" />
+                )}
+              </Link>
+            );
+          return (
+            <li key={item.id} className="p-0 m-0 outline-none ring-0">
+              {linkContent}
             </li>
           );
         })}
@@ -354,21 +358,46 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
         ref={profileRef}
       >
         <div className="flex items-center space-x-3">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setUserProfile(!userProfile)}
-            className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center border-2 border-indigo-500/30 shadow-sm"
-            aria-label="User profile"
-          >
-            <span className="font-medium text-indigo-100">
-              {session?.user?.name
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}
-            </span>
-          </motion.button>
+          {collapsed && !isMobile ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setUserProfile(!userProfile)}
+                  className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center border-2 border-indigo-500/30 shadow-sm"
+                  aria-label="User profile"
+                >
+                  <span className="font-medium text-indigo-100">
+                    {session?.user?.name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
+                  </span>
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent side="right" arrow>
+                {"Profile"}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setUserProfile(!userProfile)}
+              className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center border-2 border-indigo-500/30 shadow-sm"
+              aria-label="User profile"
+            >
+              <span className="font-medium text-indigo-100">
+                {session?.user?.name
+                  ?.split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
+            </motion.button>
+          )}
           {(!collapsed || isMobile) && (
             <>
               <div
@@ -382,15 +411,22 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
                   {userRole}
                 </p>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleLogout}
-                className="p-1.5 hover:bg-indigo-700/50 rounded-lg"
-                aria-label="Logout"
-              >
-                <FiLogOut className="text-indigo-200" />
-              </motion.button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleLogout}
+                    className="p-1.5 hover:bg-indigo-700/50 rounded-lg"
+                    aria-label="Logout"
+                  >
+                    <FiLogOut className="text-indigo-200" />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent side="right" arrow>
+                  {"Sign Out"}
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>
@@ -415,17 +451,6 @@ export default function SideBar({ mobileMenuOpen, setMobileMenuOpen }) {
             className="md:hidden fixed bottom-4 right-8 z-40 bg-indigo-600 text-white shadow-lg rounded-full hover:bg-indigo-700"
           />
         </>
-      )}
-
-      {/* Floating Tooltip */}
-      {!isMobile && hoveredItem && collapsed && (
-        <div
-          className="fixed z-50 px-3 py-2 bg-gray-800 text-white text-sm rounded shadow-lg pointer-events-none"
-          style={{ ...tooltipPosition }}
-        >
-          {navItems.find((i) => i.id === hoveredItem)?.label}
-          <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45" />
-        </div>
       )}
     </>
   );

@@ -5,44 +5,70 @@ export const Textarea = React.forwardRef(
   (
     {
       className,
-      variant = "default",
-      size = "default",
+      variant = "default", // 'default', 'ghost', 'filled'
+      size = "md", // 'sm', 'md', 'lg'
+      error, // error state
+      success, // success state
       disabled = false,
-      error = false,
       ...props
     },
     ref
   ) => {
-    const variants = {
+    const baseClasses = `
+      flex w-full rounded-md border ring-offset-background
+      placeholder:text-muted-foreground focus-visible:outline-none
+      disabled:cursor-not-allowed disabled:opacity-50
+      transition-all duration-200 ease-in-out
+      shadow-sm focus-visible:ring-2 focus-visible:ring-offset-2
+    `;
+
+    const sizeClasses = {
+      sm: "px-2.5 py-1.5 text-xs min-h-[60px]",
+      md: "px-3 py-2 text-sm min-h-[80px]",
+      lg: "px-4 py-3 text-base min-h-[100px]",
+    };
+
+    const variantClasses = {
       default: `
-        border-gray-300 focus:border-primary-500 focus:ring-primary-500
-        dark:border-gray-600 dark:bg-gray-700 dark:text-white
-        dark:focus:border-primary-400 dark:focus:ring-primary-400
+        bg-background border-input
+        focus-visible:ring-ring
+        dark:bg-gray-900 dark:border-gray-700
+        dark:focus-visible:ring-gray-500
       `,
-      error: `
-        border-red-500 focus:border-red-500 focus:ring-red-500
-        dark:border-red-400 dark:focus:border-red-400 dark:focus:ring-red-400
+      ghost: `
+        bg-transparent border-transparent
+        focus-visible:bg-background focus-visible:border-input
+        dark:focus-visible:bg-gray-900 dark:focus-visible:border-gray-700
+      `,
+      filled: `
+        bg-gray-100 border-transparent
+        focus-visible:bg-background focus-visible:border-input
+        dark:bg-gray-800 dark:focus-visible:bg-gray-900
+        dark:focus-visible:border-gray-700
       `,
     };
 
-    const sizes = {
-      sm: "py-1 px-2 text-sm",
-      default: "py-2 px-3 text-base",
-      lg: "py-3 px-4 text-lg",
-    };
+    const stateClasses = error
+      ? `
+          border-red-500 dark:border-red-400
+          focus-visible:ring-red-200 dark:focus-visible:ring-red-900
+        `
+      : success
+      ? `
+          border-green-500 dark:border-green-400
+          focus-visible:ring-green-200 dark:focus-visible:ring-green-900
+        `
+      : "";
 
     return (
       <textarea
         ref={ref}
         disabled={disabled}
         className={clsx(
-          "w-full rounded-xl border bg-white text-gray-900 shadow-sm",
-          "placeholder:text-gray-400 focus:outline-none focus:ring-2",
-          "transition-colors duration-200 ease-in-out",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          "dark:placeholder:text-gray-400 dark:shadow-none",
-          variants[variant] || variants.default,
-          sizes[size] || sizes.default,
+          baseClasses,
+          sizeClasses[size],
+          variantClasses[variant],
+          stateClasses,
           className
         )}
         {...props}

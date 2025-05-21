@@ -15,7 +15,7 @@ export function ToastProvider({ children }) {
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
-    }, 5000);
+    }, 3000);
   };
 
   const removeToast = (id) => {

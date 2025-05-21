@@ -15,6 +15,7 @@ import Logo from "./logo";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import NotificationButton from "./notification";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   const { data: session } = useSession();
@@ -93,35 +94,94 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
           className="hidden md:flex"
         />
         {/* Toggle Theme */}
-        <button
-          onClick={toggleDarkMode}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none transition-all"
-          title="Toggle Theme"
-        >
-          {darkMode ? (
-            <Sun className="w-5 h-5 text-yellow-400" />
-          ) : (
-            <Moon className="w-5 h-5 text-gray-700" />
-          )}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none transition-all"
+              title="Toggle Theme"
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-yellow-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-gray-700" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" arrow>
+            {"Toggle Theme"}
+          </TooltipContent>
+        </Tooltip>
 
         {/* Profile Dropdown */}
         <div className="relative" ref={profileRef}>
-          <button
-            onClick={toggleProfileMenu}
-            className="relative flex items-center space-x-2 group focus:outline-none"
-          >
-            <div className="sm:w-10 w-8 h-8 sm:h-10 rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center flex-shrink-0">
-              <span className="font-medium text-xs sm:text-sm text-indigo-100 dark:text-indigo-200">
-                {session?.user?.name
-                  .split(" ")
-                  .map((word) => word[0])
-                  .join("")
-                  .toUpperCase()}
-              </span>
-            </div>
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.button
+                onClick={toggleProfileMenu}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative flex items-center focus:outline-none group"
+                aria-label="User profile menu"
+              >
+                <div className="relative">
+                  {/* Glass effect container with border gradient */}
+                  <div className="sm:w-10 w-8 h-8 sm:h-10 rounded-full p-[2px] backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-white/30 dark:border-gray-700/50 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 dark:from-indigo-600/30 dark:to-purple-600/30">
+                    {/* Animated inner circle */}
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        boxShadow: [
+                          "inset 0 0 0 0 rgba(99, 102, 241, 0)",
+                          "inset 0 0 10px 2px rgba(99, 102, 241, 0.3)",
+                          "inset 0 0 0 0 rgba(99, 102, 241, 0)",
+                        ],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                      }}
+                      className="w-full h-full rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center overflow-hidden"
+                    >
+                      {/* User initials with subtle animation */}
+                      <motion.span
+                        className="font-medium text-xs sm:text-sm text-indigo-100 dark:text-indigo-200"
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        {session?.user?.name
+                          .split(" ")
+                          .map((word) => word[0])
+                          .join("")
+                          .toUpperCase()}
+                      </motion.span>
 
+                      {/* Active indicator (pulse animation when menu is open) */}
+                      {menuOpen && (
+                        <motion.span
+                          className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full border border-white dark:border-gray-900"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500 }}
+                        />
+                      )}
+                    </motion.div>
+                  </div>
+
+                  {/* Subtle hover effect */}
+                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="absolute inset-0 bg-white/10 dark:bg-black/10 rounded-full" />
+                    <div className="absolute inset-0 border-2 border-white/20 dark:border-gray-600/20 rounded-full" />
+                  </div>
+                </div>
+              </motion.button>
+            </TooltipTrigger>
+            {!menuOpen && (
+              <TooltipContent side="bottom" animation="slide" arrow>
+                My Profile
+              </TooltipContent>
+            )}
+          </Tooltip>
           {/* Dropdown Menu */}
           <AnimatePresence>
             {menuOpen && (

@@ -1,13 +1,21 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "@/components/ui/toast-provider";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { WorkspaceService } from "@/lib/client/team";
+import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -16,15 +24,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import Image from "next/image";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { DomainWhitelist } from "@/components/ui/domain-whitelist";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Building, Contact, Palette, Shield } from "lucide-react";
+import { FaSpinner } from "react-icons/fa";
+import { deepEqual } from "@/lib/utils";
+import Separator from "@/components/ui/separator";
+
 const GeneralPage = () => {
   const { data: session } = useSession();
   const showToast = useToast();
   const params = useParams();
   const workspaceId = params.workspaceId;
-  const [workspace, setWorkspace] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
+  const toastRef = useRef(false);
+
+  const initialFormState = {
     name: "",
     description: "",
     industry: "technology",
@@ -52,181 +67,234 @@ const GeneralPage = () => {
       widgetDomainWhitelist: [],
       apiKeyRotationDays: 90,
     },
+  };
+
+  // State management
+  const [state, setState] = useState({
+    loading: true,
+    saving: false,
+    workspace: null,
+    formData: initialFormState,
+    initialData: initialFormState,
   });
-  const [hasChanges, setHasChanges] = useState(false);
-  useEffect(() => {
-    const fetchWorkspaceSettings = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/workspace/${workspaceId}/settings`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch workspace settings");
-        }
-        const data = await response.json();
-        setWorkspace(data);
-        console.log(data);
-        setFormData({
-          name: data.name || "",
-          description: data.description || "",
-          industry: data.industry || "technology",
-          timezone: data.timezone || "UTC",
-          contactInfo: data.contactInfo || {
-            supportEmail: "",
-            websiteURL: "",
-            phone: "",
-            address: {
-              street: "",
-              city: "",
-              state: "",
-              postalCode: "",
-              country: "",
-            },
+
+  // Refs
+  const hasChanges = !deepEqual(state.formData, state.initialData);
+  // Memoized fetch function
+  const fetchWorkspaceSettings = useCallback(async () => {
+    try {
+      setState((prev) => ({ ...prev, loading: true }));
+
+      const data = await WorkspaceService.getWorkspaceConfig(workspaceId);
+      const initialData = {
+        name: data.name || "",
+        description: data.description || "",
+        industry: data.industry || "technology",
+        timezone: data.timezone || "UTC",
+        contactInfo: data.contactInfo || {
+          supportEmail: "",
+          websiteURL: "",
+          phone: "",
+          address: {
+            street: "",
+            city: "",
+            state: "",
+            postalCode: "",
+            country: "",
           },
-          branding: data.branding || {
-            primaryColor: "#4f46e5",
-            secondaryColor: "#7c3aed",
-            logoUrl: "",
-            faviconUrl: "",
-            customDomain: "",
-          },
-          security: data.security || {
-            widgetDomainWhitelist: [],
-            apiKeyRotationDays: 90,
-          },
-        });
-      } catch (error) {
+        },
+        branding: data.branding || {
+          primaryColor: "#4f46e5",
+          secondaryColor: "#7c3aed",
+          logoUrl: "",
+          faviconUrl: "",
+          customDomain: "",
+        },
+        security: data.security || {
+          widgetDomainWhitelist: [],
+          apiKeyRotationDays: 90,
+        },
+      };
+
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        workspace: data,
+        formData: initialData,
+        initialData: JSON.parse(JSON.stringify(initialData)), // Deep clone
+      }));
+    } catch (error) {
+      setState((prev) => ({ ...prev, loading: false }));
+      if (!toastRef.current) {
         showToast({
           title: "Error",
           description: "Failed to load workspace settings",
-          variant: "warning",
+          variant: "destructive",
         });
-      } finally {
-        setLoading(false);
+        toastRef.current = true;
       }
-    };
+    }
+  }, [workspaceId, showToast]);
+
+  // Update the useEffect cleanup
+  useEffect(() => {
     if (session && workspaceId) {
       fetchWorkspaceSettings();
     }
-  }, [workspaceId, session, showToast]);
-
+  }, [session, workspaceId, fetchWorkspaceSettings]);
+  // Handle form changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const newData = { ...prev, [name]: value };
-      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
-      return newData;
-    });
+    setState((prev) => ({
+      ...prev,
+      formData: {
+        ...prev.formData,
+        [name]: value,
+      },
+    }));
   };
+
   const handleNestedChange = (parent, e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const newData = {
-        ...prev,
+    setState((prev) => ({
+      ...prev,
+      formData: {
+        ...prev.formData,
         [parent]: {
-          ...prev[parent],
+          ...prev.formData[parent],
           [name]: value,
         },
-      };
-      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
-      return newData;
-    });
+      },
+    }));
   };
+
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const newData = {
-        ...prev,
+    setState((prev) => ({
+      ...prev,
+      formData: {
+        ...prev.formData,
         contactInfo: {
-          ...prev.contactInfo,
+          ...prev.formData.contactInfo,
           address: {
-            ...prev.contactInfo.address,
+            ...prev.formData.contactInfo.address,
             [name]: value,
           },
         },
+      },
+    }));
+  };
+
+  // Domain whitelist handlers
+  const handleAddDomain = (add) => {
+    setState((prev) => ({
+      ...prev,
+      formData: {
+        ...prev.formData,
+        security: {
+          ...prev.formData.security,
+          widgetDomainWhitelist: [
+            ...prev.formData.security.widgetDomainWhitelist,
+            add,
+          ],
+        },
+      },
+    }));
+  };
+
+  const handleDomainChange = (index, value) => {
+    setState((prev) => {
+      const newDomains = [...prev.formData.security.widgetDomainWhitelist];
+      newDomains[index] = value;
+      return {
+        ...prev,
+        formData: {
+          ...prev.formData,
+          security: {
+            ...prev.formData.security,
+            widgetDomainWhitelist: newDomains,
+          },
+        },
       };
-      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
-      return newData;
     });
   };
 
-  const handleAddDomain = () => {
-    setFormData((prev) => {
-      const newData = {
-        ...prev,
-        security: {
-          ...prev.security,
-          widgetDomainWhitelist: [...prev.security.widgetDomainWhitelist, ""],
-        },
-      };
-      setHasChanges(true);
-      return newData;
-    });
-  };
-  const handleDomainChange = (index, value) => {
-    setFormData((prev) => {
-      const newDomains = [...prev.security.widgetDomainWhitelist];
-      newDomains[index] = value;
-      const newData = {
-        ...prev,
-        security: {
-          ...prev.security,
-          widgetDomainWhitelist: newDomains,
-        },
-      };
-      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
-      return newData;
-    });
-  };
   const handleRemoveDomain = (index) => {
-    setFormData((prev) => {
-      const newDomains = [...prev.security.widgetDomainWhitelist];
+    setState((prev) => {
+      const newDomains = [...prev.formData.security.widgetDomainWhitelist];
       newDomains.splice(index, 1);
-      const newData = {
+      return {
         ...prev,
-        security: {
-          ...prev.security,
-          widgetDomainWhitelist: newDomains,
+        formData: {
+          ...prev.formData,
+          security: {
+            ...prev.formData.security,
+            widgetDomainWhitelist: newDomains,
+          },
         },
       };
-      setHasChanges(JSON.stringify(newData) !== JSON.stringify(workspace));
-      return newData;
     });
   };
+
+  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!hasChanges) return;
+
     try {
-      setLoading(true);
-      const response = await fetch("/api/workspace/settings", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      setState((prev) => ({ ...prev, saving: true }));
+      const updatedWorkspace = await WorkspaceService.updateWorkspaceConfig(
+        workspaceId,
+        state.formData
+      );
+      if (updatedWorkspace.error) {
+        if (!toastRef.current) {
+          showToast({
+            title: updatedWorkspace.error.error || "Validation Failed",
+            description: updatedWorkspace.details[0].message,
+            variant: "warning",
+          });
+        }
+      } else {
+        setState((prev) => ({
+          ...prev,
+          workspace: updatedWorkspace,
+          initialData: JSON.parse(JSON.stringify(prev.formData)),
+          saving: false,
+        }));
 
-      if (!response.ok) {
-        throw new Error("Failed to update workspace settings");
+        if (!toastRef.current) {
+          showToast({
+            description: "Workspace settings updated successfully",
+            variant: "success",
+          });
+          toastRef.current = true;
+        }
       }
-
-      const updatedWorkspace = await response.json();
-      setWorkspace(updatedWorkspace);
-      setHasChanges(false);
-      showToast({
-        description: "Workspace settings updated successfully",
-        variant: "success",
-      });
     } catch (error) {
-      console.error("Error updating workspace settings:", error);
-      showToast({
-        description: "Failed to update workspace settings",
-        variant: "warning",
-      });
-    } finally {
-      setLoading(false);
+      setState((prev) => ({ ...prev, saving: false }));
+      if (!toastRef.current) {
+        console.log(error);
+        showToast({
+          description: error.message || "Failed to update workspace settings",
+          variant: "destructive",
+        });
+        toastRef.current = true;
+      }
     }
   };
 
-  if (loading && !workspace) {
+  // Reset form
+  const handleReset = () => {
+    setState((prev) => ({
+      ...prev,
+      formData: JSON.parse(JSON.stringify(prev.initialData)), // Deep clone
+    }));
+  };
+
+  // Loading state
+  if (state.loading && !state.workspace) {
     return (
       <div className="space-y-4 p-4 sm:p-6">
         <Skeleton className="h-10 w-1/3" />
@@ -238,45 +306,58 @@ const GeneralPage = () => {
       </div>
     );
   }
+
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">General Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          {`Manage your workspace's basic information, branding, and security
-          settings.`}
+    <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+          General Settings
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
+          {`Manage your workspace's basic information, branding, and security settings.`}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Workspace Information</h2>
-            <p className="text-sm text-muted-foreground">
-              Basic details about your workspace.
-            </p>
+        {/* Workspace Information Card */}
+        <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+                <Building className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl">
+                  Workspace Information
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Basic details about your workspace
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
             <div className="space-y-2">
-              <Label htmlFor="name">Workspace Name</Label>
+              <Label htmlFor="name">Organization</Label>
               <Input
                 id="name"
                 name="name"
-                value={formData.name}
+                value={state.formData.name}
                 onChange={handleChange}
-                placeholder="Your workspace name"
+                placeholder="Your Organization"
+                className="bg-white dark:bg-gray-900"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
               <Select
-                value={formData.industry}
+                value={state.formData.industry}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, industry: value }))
+                  handleChange({ target: { name: "industry", value } })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white dark:bg-gray-900">
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
                 <SelectContent>
@@ -295,12 +376,12 @@ const GeneralPage = () => {
             <div className="space-y-2">
               <Label htmlFor="timezone">Timezone</Label>
               <Select
-                value={formData.timezone}
+                value={state.formData.timezone}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, timezone: value }))
+                  handleChange({ target: { name: "timezone", value } })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-white dark:bg-gray-900">
                   <SelectValue placeholder="Select timezone" />
                 </SelectTrigger>
                 <SelectContent>
@@ -331,31 +412,45 @@ const GeneralPage = () => {
                 id="description"
                 name="description"
                 rows={3}
-                value={formData.description}
+                value={state.formData.description}
                 onChange={handleChange}
                 placeholder="A brief description of your workspace"
+                className="bg-white dark:bg-gray-900"
               />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Contact Information</h2>
-            <p className="text-sm text-muted-foreground">
-              How customers can get in touch with your business.
-            </p>
+        <Separator className="my-6" />
+
+        {/* Contact Information Card */}
+        <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                <Contact className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl">
+                  Contact Information
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  How customers can get in touch with your business
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
             <div className="space-y-2">
               <Label htmlFor="supportEmail">Support Email</Label>
               <Input
                 type="email"
                 id="supportEmail"
                 name="supportEmail"
-                value={formData.contactInfo.supportEmail}
+                value={state.formData.contactInfo.supportEmail}
                 onChange={(e) => handleNestedChange("contactInfo", e)}
                 placeholder="support@example.com"
+                className="bg-white dark:bg-gray-900"
               />
             </div>
 
@@ -365,9 +460,10 @@ const GeneralPage = () => {
                 type="url"
                 id="websiteURL"
                 name="websiteURL"
-                value={formData.contactInfo.websiteURL}
+                value={state.formData.contactInfo.websiteURL}
                 onChange={(e) => handleNestedChange("contactInfo", e)}
                 placeholder="https://example.com"
+                className="bg-white dark:bg-gray-900"
               />
             </div>
 
@@ -377,23 +473,28 @@ const GeneralPage = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                value={formData.contactInfo.phone}
+                value={state.formData.contactInfo.phone}
                 onChange={(e) => handleNestedChange("contactInfo", e)}
                 placeholder="+1 (555) 123-4567"
+                className="bg-white dark:bg-gray-900"
               />
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <h3 className="text-sm font-medium">Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <h3 className="text-sm font-medium">Address</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="street">Street</Label>
                   <Input
                     id="street"
                     name="street"
-                    value={formData.contactInfo.address.street}
+                    value={state.formData.contactInfo.address.street}
                     onChange={handleAddressChange}
                     placeholder="123 Main St"
+                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
@@ -401,9 +502,10 @@ const GeneralPage = () => {
                   <Input
                     id="city"
                     name="city"
-                    value={formData.contactInfo.address.city}
+                    value={state.formData.contactInfo.address.city}
                     onChange={handleAddressChange}
                     placeholder="New York"
+                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
@@ -411,9 +513,10 @@ const GeneralPage = () => {
                   <Input
                     id="state"
                     name="state"
-                    value={formData.contactInfo.address.state}
+                    value={state.formData.contactInfo.address.state}
                     onChange={handleAddressChange}
                     placeholder="NY"
+                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
@@ -421,19 +524,21 @@ const GeneralPage = () => {
                   <Input
                     id="postalCode"
                     name="postalCode"
-                    value={formData.contactInfo.address.postalCode}
+                    value={state.formData.contactInfo.address.postalCode}
                     onChange={handleAddressChange}
                     placeholder="10001"
+                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="country">Country</Label>
                   <Input
                     id="country"
                     name="country"
-                    value={formData.contactInfo.address.country}
+                    value={state.formData.contactInfo.address.country}
                     onChange={handleAddressChange}
                     placeholder="United States"
+                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
               </div>
@@ -441,97 +546,72 @@ const GeneralPage = () => {
           </CardContent>
         </Card>
 
+        <Separator className="my-6" />
+
         {/* Branding Card */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Branding</h2>
-            <p className="text-sm text-muted-foreground">
-              Customize how your workspace looks across the platform.
-            </p>
+        <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/30">
+                <Palette className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl">Branding</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Customize how your workspace looks across the platform
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Primary Color</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="primaryColor"
-                  name="primaryColor"
-                  value={formData.branding.primaryColor}
-                  onChange={(e) => handleNestedChange("branding", e)}
-                  className="h-10 w-10 rounded-md border cursor-pointer"
-                />
-                <Input
-                  value={formData.branding.primaryColor}
-                  onChange={(e) => handleNestedChange("branding", e)}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Secondary Color</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  id="secondaryColor"
-                  name="secondaryColor"
-                  value={formData.branding.secondaryColor}
-                  onChange={(e) => handleNestedChange("branding", e)}
-                  className="h-10 w-10 rounded-md border cursor-pointer"
-                />
-                <Input
-                  value={formData.branding.secondaryColor}
-                  onChange={(e) => handleNestedChange("branding", e)}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
             <div className="space-y-2">
               <Label htmlFor="logoUrl">Logo URL</Label>
-              <Input
-                type="url"
-                id="logoUrl"
-                name="logoUrl"
-                value={formData.branding.logoUrl}
-                onChange={(e) => handleNestedChange("branding", e)}
-                placeholder="https://example.com/logo.png"
+              <ImageUpload
+                value={state.formData.branding.logoUrl}
+                onChange={(url) =>
+                  handleNestedChange("branding", {
+                    target: { name: "logoUrl", value: url },
+                  })
+                }
+                placeholder="Upload logo"
               />
-              {formData.branding.logoUrl && (
-                <div className="mt-2">
-                  <Image
-                    height={100}
-                    width={100}
-                    src={formData.branding.logoUrl}
-                    alt="Logo preview"
-                    className="h-16 object-contain rounded-md border"
-                  />
-                </div>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="faviconUrl">Favicon URL</Label>
-              <Input
-                type="url"
-                id="faviconUrl"
-                name="faviconUrl"
-                value={formData.branding.faviconUrl}
-                onChange={(e) => handleNestedChange("branding", e)}
-                placeholder="https://example.com/favicon.ico"
+              <ImageUpload
+                value={state.formData.branding.faviconUrl}
+                onChange={(url) =>
+                  handleNestedChange("branding", {
+                    target: { name: "faviconUrl", value: url },
+                  })
+                }
+                placeholder="Upload favicon"
               />
-              {formData.branding.faviconUrl && (
-                <div className="mt-2">
-                  <Image
-                    height={100}
-                    width={100}
-                    src={formData.branding.faviconUrl}
-                    alt="Favicon preview"
-                    className="h-16 object-contain rounded-md border"
-                  />
-                </div>
-              )}
+            </div>
+            <div className="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:gap-6">
+              <div className="space-y-2 flex flex-col">
+                <Label>Primary Color</Label>
+                <ColorPicker
+                  color={state.formData.branding.primaryColor}
+                  onChange={(color) =>
+                    handleNestedChange("branding", {
+                      target: { name: "primaryColor", value: color },
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2 flex flex-col">
+                <Label>Secondary Color</Label>
+                <ColorPicker
+                  color={state.formData.branding.secondaryColor}
+                  onChange={(color) =>
+                    handleNestedChange("branding", {
+                      target: { name: "secondaryColor", value: color },
+                    })
+                  }
+                />
+              </div>
             </div>
 
             <div className="space-y-2 md:col-span-2">
@@ -539,67 +619,50 @@ const GeneralPage = () => {
               <Input
                 id="customDomain"
                 name="customDomain"
-                value={formData.branding.customDomain}
+                value={state.formData.branding.customDomain}
                 onChange={(e) => handleNestedChange("branding", e)}
                 placeholder="example.com"
+                className="bg-white dark:bg-gray-900"
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Enter your custom domain without https:// or www.
               </p>
             </div>
           </CardContent>
         </Card>
 
+        <Separator className="my-6" />
+
         {/* Security Card */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Security</h2>
-            <p className="text-sm text-muted-foreground">
-              Configure security settings for your workspace.
-            </p>
+        <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/30">
+                <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <CardTitle className="text-lg sm:text-xl">Security</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Configure security settings for your workspace
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 pt-3">
             <div className="space-y-4">
               <div>
                 <Label>Widget Domain Whitelist</Label>
-                <p className="text-sm text-muted-foreground">
-                  Domains where your chat widget is allowed to be embedded.
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Domains where your chat widget is allowed to be embedded
                 </p>
               </div>
 
-              <div className="space-y-2">
-                {formData.security.widgetDomainWhitelist.map(
-                  (domain, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Input
-                        type="url"
-                        value={domain}
-                        onChange={(e) =>
-                          handleDomainChange(index, e.target.value)
-                        }
-                        placeholder="https://example.com"
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => handleRemoveDomain(index)}
-                        variant="destructive"
-                        size="icon"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )
-                )}
-                <Button
-                  type="button"
-                  onClick={handleAddDomain}
-                  variant="outline"
-                  className="gap-1"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                  Add Domain
-                </Button>
-              </div>
+              <DomainWhitelist
+                domains={state.formData.security.widgetDomainWhitelist}
+                onAdd={handleAddDomain}
+                onChange={handleDomainChange}
+                onRemove={handleRemoveDomain}
+              />
             </div>
 
             <div className="space-y-2">
@@ -612,96 +675,63 @@ const GeneralPage = () => {
                 name="apiKeyRotationDays"
                 min="1"
                 max="365"
-                value={formData.security.apiKeyRotationDays}
-                onChange={(e) => handleNestedChange("security", e)}
+                value={state.formData.security.apiKeyRotationDays}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value, 10);
+                  handleNestedChange("security", {
+                    target: {
+                      name: e.target.name,
+                      value: isNaN(value) ? 90 : value, // Default to 90 if invalid
+                    },
+                  });
+                }}
+                className="bg-white dark:bg-gray-900 max-w-xs"
               />
-              <p className="text-sm text-muted-foreground">
-                How often API keys should be automatically rotated (1-365 days).
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                How often API keys should be automatically rotated (1-365 days)
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
           <Button
             type="button"
-            onClick={() => {
-              setFormData(workspace);
-              setHasChanges(false);
-            }}
-            disabled={!hasChanges}
+            onClick={handleReset}
+            disabled={!hasChanges || state.saving}
             variant="outline"
+            className="w-full sm:w-auto"
           >
-            Cancel
+            Reset
           </Button>
-          <Button type="submit" disabled={!hasChanges || loading}>
-            {loading ? (
-              <>
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Changes"
+          <Button
+            type="submit"
+            disabled={!hasChanges || state.saving}
+            className="w-full sm:w-auto relative overflow-hidden"
+          >
+            {state.saving && (
+              <motion.span
+                className="absolute inset-0 bg-primary/20"
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
             )}
+            <span className="relative z-10 flex items-center justify-center">
+              {state.saving ? (
+                <>
+                  <FaSpinner className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </span>
           </Button>
         </div>
       </form>
     </div>
   );
 };
-
-const TrashIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M3 6h18" />
-    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-  </svg>
-);
-
-const PlusIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M5 12h14" />
-    <path d="M12 5v14" />
-  </svg>
-);
-
-const Loader2Icon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-);
 
 export default GeneralPage;

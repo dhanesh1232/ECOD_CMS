@@ -13,6 +13,7 @@ import {
 const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
 import { encryptData } from "@/utils/encryption";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function ProtectLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,22 +70,24 @@ export default function ProtectLayout({ children }) {
 
   return (
     <>
-      <div className="flex h-full bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-        <SideBar
-          mobileMenuOpen={mobileMenuOpen}
-          setMobileMenuOpen={setMobileMenuOpen}
-        />
-        <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
-          <Header
+      <TooltipProvider delayDuration={300} skipDelayDuration={100}>
+        <div className="flex h-full bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+          <SideBar
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
           />
-          <main className="flex-1 flex flex-col bg-white overflow-hidden dark:bg-gray-700 transition-colors ease-in-out duration-300">
-            {children}
-          </main>
+          <div className="flex-1 flex flex-col overflow-hidden h-full bg-inherit">
+            <Header
+              mobileMenuOpen={mobileMenuOpen}
+              setMobileMenuOpen={setMobileMenuOpen}
+            />
+            <main className="flex-1 flex flex-col bg-white overflow-hidden dark:bg-gray-700 transition-colors ease-in-out duration-300">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-      <OverLayComponent />
+        <OverLayComponent />
+      </TooltipProvider>
     </>
   );
 }

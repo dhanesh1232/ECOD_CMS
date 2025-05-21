@@ -1,15 +1,54 @@
+// lib/client/team.js
+
 async function handleResponse(response) {
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || "Network response was not ok");
+    return error || "Network response was not ok";
   }
   return response.json();
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "";
+
+const fetchWithRetry = async (url, options, retries = 3) => {
+  try {
+    const fullUrl = `${API_BASE_URL}${url}`;
+    const response = await fetch(fullUrl, options);
+    return await handleResponse(response);
+  } catch (error) {
+    if (retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    return error;
+  }
+};
 export const WorkspaceService = {
+  //Fetch Settings General Page
+  getWorkspaceConfig: async (workspaceId, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/settings`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...options,
+    });
+  },
+  updateWorkspaceConfig: async (workspaceId, formData) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/settings`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+  },
+
   checkCurrentWorkspaceRole: async () => {
     const response = await fetch("/api/workspace", {
-      methos: "GET",
+      method: "GET",
       credentials: "include",
     });
     return handleResponse(response);
