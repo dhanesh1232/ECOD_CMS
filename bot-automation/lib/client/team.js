@@ -8,12 +8,9 @@ async function handleResponse(response) {
   return response.json();
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "";
-
 const fetchWithRetry = async (url, options, retries = 3) => {
   try {
-    const fullUrl = `${API_BASE_URL}${url}`;
-    const response = await fetch(fullUrl, options);
+    const response = await fetch(url, options);
     return await handleResponse(response);
   } catch (error) {
     if (retries > 0) {
