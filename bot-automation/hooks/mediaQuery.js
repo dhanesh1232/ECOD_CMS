@@ -20,3 +20,17 @@ export const useMobileRange = () => {
 
   return isInRange;
 };
+
+export const useSettingsExpand = () => {
+  const [inRange, SetInRange] = useState(false);
+  useEffect(() => {
+    const checkRange = () => {
+      const width = window.innerWidth;
+      SetInRange(width >= 768 && width <= 950);
+    };
+    checkRange(); // check on mount
+    window.addEventListener("resize", checkRange);
+    return () => window.removeEventListener("resize", checkRange);
+  });
+  return inRange;
+};

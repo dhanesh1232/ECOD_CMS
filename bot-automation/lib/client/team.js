@@ -1,5 +1,4 @@
 // lib/client/team.js
-
 async function handleResponse(response) {
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));

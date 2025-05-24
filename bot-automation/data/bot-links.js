@@ -1,8 +1,6 @@
 import {
   FiSettings,
   FiUsers,
-  FiHelpCircle,
-  FiFileText,
   FiBook,
   FiLifeBuoy,
   FiCpu,
@@ -11,6 +9,7 @@ import {
   FiUser,
 } from "react-icons/fi";
 import {
+  Bell,
   ChartBar,
   GlobeIcon,
   Key,
@@ -24,111 +23,67 @@ import {
   ArrowPathIcon,
   ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
+import {
+  AnalyticsIcon,
+  ChatBotAI,
+  SettingsIcon,
+  ContactsIcon,
+  ConversationsIcon,
+  DashboardIcon,
+  HelpIcon,
+  TemplatesIcon,
+} from "@/public/Images/svg_ecod";
 
 // Reusable SVG components for consistent icons
-const DashboardIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    viewBox="0 0 24 24"
-  >
-    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z" />
-  </svg>
-);
-
-const ChatbotsIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    viewBox="0 0 24 24"
-  >
-    <path d="M9 2h6v2h3a2 2 0 0 1 2 2v9a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V6a2 2 0 0 1 2-2h3V2z" />
-    <circle cx="9" cy="10" r="1" />
-    <circle cx="15" cy="10" r="1" />
-    <path d="M8 16h8" strokeLinecap="round" />
-  </svg>
-);
-
-const AnalyticsIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    viewBox="0 0 24 24"
-  >
-    <path d="M4 18V6m4 12V10m4 8v-4m4 4V8m4 10V4" />
-  </svg>
-);
-
-const ConversationsIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    viewBox="0 0 24 24"
-  >
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
 
 // Main navigation items
 export const navItems = [
   {
     id: "dashboard",
-    icon: <DashboardIcon />,
+    icon: <DashboardIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Dashboard",
     href: `/dashboard`,
-    exact: true, // For exact route matching
+    exact: true,
   },
   {
     id: "chatbots",
-    icon: <ChatbotsIcon />,
+    icon: <ChatBotAI primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "My Chatbots",
     href: `/chatbots`,
   },
   {
     id: "analytics",
-    icon: <AnalyticsIcon />,
+    icon: <AnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Analytics",
     href: `/analytics`,
   },
   {
     id: "conversations",
-    icon: <ConversationsIcon />,
+    icon: <ConversationsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Conversations",
     href: `/conversations`,
   },
   {
     id: "template",
-    icon: <FiFileText size={20} />,
+    icon: <TemplatesIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Templates",
     href: `/template`,
   },
   {
     id: "contacts",
-    icon: <FiUsers size={20} />,
+    icon: <ContactsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Contacts",
     href: `/contacts`,
   },
   {
     id: "settings",
-    icon: <FiSettings size={20} />,
+    icon: <SettingsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Settings",
     href: `/settings`,
   },
   {
     id: "help",
-    icon: <FiHelpCircle size={20} />,
+    icon: <HelpIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
     label: "Help Center",
     href: `/help`,
   },
@@ -147,6 +102,12 @@ const workspaceLinks = [
     name: "API Keys",
     href: "/settings/workspace/api-keys",
     icon: <Key className="w-4 h-4" />,
+  },
+  {
+    id: "billing",
+    name: "Billing & Plans",
+    href: "/settings/workspace/billing",
+    icon: <FiCreditCard className="w-4 h-4" />,
   },
   {
     id: "usage-analytics",
@@ -201,15 +162,15 @@ export const settingsNavItems = [
       },
       {
         id: "security",
-        name: "Password & Security",
+        name: "Security",
         href: "/settings/account/security",
         icon: <FiLock className="w-4 h-4" />,
       },
       {
-        id: "billing",
-        name: "Billing & Plans",
-        href: "/settings/account/billing",
-        icon: <FiCreditCard className="w-4 h-4" />,
+        id: "notifications",
+        name: "Notifications",
+        href: "/settings/account/notifications",
+        icon: <Bell className="w-4 h-4" />,
       },
     ],
   },

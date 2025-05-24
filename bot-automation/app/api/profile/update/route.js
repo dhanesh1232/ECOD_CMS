@@ -1,8 +1,9 @@
 import dbConnect from "@/config/dbconnect";
-import { NextResponse } from "next/server";
 import { User } from "@/models/user/user";
 import cloudinary from "@/utils/cloudinary";
 import { validateSession } from "@/lib/auth";
+import { ErrorHandles } from "@/lib/server/errors";
+import { SuccessHandle } from "@/lib/server/success";
 
 export async function PUT(request) {
   await dbConnect();
@@ -11,7 +12,6 @@ export async function PUT(request) {
 
     const body = await request.json();
     const { image, name } = body;
-    console.log(body);
     // Handle image upload
     let imageUrl = image;
 
@@ -34,24 +34,10 @@ export async function PUT(request) {
     );
 
     if (!updatedUser) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+      return ErrorHandles.UserNotFound();
     }
-    return NextResponse.json(
-      { message: "Profile updated successfully" },
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return SuccessHandle.UserProfileUpdate();
   } catch (err) {
-    console.log(err);
-    return NextResponse.json(
-      {
-        message: "Internal server error please try again",
-      },
-      {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    return ErrorHandles.InternalServer();
   }
 }

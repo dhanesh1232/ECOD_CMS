@@ -14,14 +14,16 @@ import {
   FiUpload,
   FiCheck,
   FiX,
-  FiShield,
   FiUser,
   FiMail,
   FiPhone,
+  FiBriefcase,
 } from "react-icons/fi";
 import { BadgeCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMobileRange } from "@/hooks/mediaQuery";
+import { UserServices } from "@/lib/client/user";
+import { Input } from "@/components/ui/input";
 
 const AccountInfoSection = () => {
   const isTinyMobile = useMobileRange();
@@ -29,19 +31,19 @@ const AccountInfoSection = () => {
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspaceId;
-
-  const [activePlan, setActivePlan] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [userData, setUserData] = useState({
     profilePicture: "",
     fullName: "",
     email: "",
     phone: "",
     isVerified: false,
   });
-  const [tempData, setTempData] = useState({ ...formData });
-  const [imagePreview, setImagePreview] = useState(formData.profilePicture);
+  const [tempData, setTempData] = useState({ ...userData });
+  const [workspaces, setWorkspaces] = useState([]);
+  const [currentWorkspace, setCurrentWorkspace] = useState(null);
+  const [imagePreview, setImagePreview] = useState(userData.profilePicture);
   const [showCropper, setShowCropper] = useState(false);
   const [originalImage, setOriginalImage] = useState(null);
   const cropperRef = useRef(null);
@@ -49,19 +51,22 @@ const AccountInfoSection = () => {
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      setIsLoading(true);
       try {
-        const res = await fetch("/api/profile/user-info", {
-          method: "GET",
-          credentials: "include",
-        });
+        setIsLoading(true);
+        const res = await UserServices.fetchUserProfile();
+        if (res.status && !res.ok) {
+          if (!toastRef.current) {
+            showToast({
+              description: "Failed to fetch user profile",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
+        } else {
+          console.log(res);
+          const { user, currentWorkspace, workspaces } = res.data;
 
-        if (res.ok) {
-          const { user, existPlan } = await res.json();
-          console.log(user);
-
-          setActivePlan(existPlan || {});
-          setFormData({
+          setUserData({
             profilePicture: user.image || "",
             fullName: user.name || "",
             email: user.email || "",
@@ -75,14 +80,8 @@ const AccountInfoSection = () => {
             phone: user.phone || "",
           });
           setImagePreview(user.image || "");
-        } else {
-          if (!toastRef.current) {
-            showToast({
-              description: "Failed to fetch user data",
-              variant: "warning",
-            });
-            toastRef.current = true;
-          }
+          setWorkspaces(workspaces);
+          setCurrentWorkspace(currentWorkspace);
         }
       } catch (error) {
         if (!toastRef.current) {
@@ -243,20 +242,13 @@ const AccountInfoSection = () => {
     }
 
     try {
-      const res = await fetch("/api/profile/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          image: tempData.profilePicture,
-          name: tempData.fullName,
-          phone: tempData.phone,
-        }),
+      const res = await UserServices.updateUserProfile({
+        image: tempData.profilePicture,
+        name: tempData.fullName,
+        phone: tempData.phone,
       });
 
-      if (!res.ok) {
+      if (res.status && !res.ok) {
         const errorData = await res.json();
         if (!toastRef.current) {
           showToast({
@@ -267,7 +259,7 @@ const AccountInfoSection = () => {
         }
       }
 
-      setFormData({ ...tempData });
+      setUserData({ ...tempData });
       setImagePreview(tempData.profilePicture);
       setIsEditing(false);
       if (!toastRef.current) {
@@ -293,8 +285,8 @@ const AccountInfoSection = () => {
   };
 
   const handleCancel = () => {
-    setTempData({ ...formData });
-    setImagePreview(formData.profilePicture);
+    setTempData({ ...userData });
+    setImagePreview(userData.profilePicture);
     setIsEditing(false);
     if (originalImage) {
       URL.revokeObjectURL(originalImage);
@@ -306,6 +298,9 @@ const AccountInfoSection = () => {
     if (originalImage) {
       URL.revokeObjectURL(originalImage);
     }
+  };
+  const switchWorkspace = (workspaceId) => {
+    router.push(`/${workspaceId}`);
   };
 
   if (isLoading) {
@@ -384,6 +379,7 @@ const AccountInfoSection = () => {
 
       <div className="flex flex-col lg:flex-row gap-8">
         <ProfilePictureSection
+          verified={userData.isVerified}
           imagePreview={imagePreview}
           isEditing={isEditing}
           onImageChange={handleImageChange}
@@ -397,17 +393,17 @@ const AccountInfoSection = () => {
               isEditing={isEditing}
             >
               {isEditing ? (
-                <input
+                <Input
                   type="text"
                   name="fullName"
-                  value={tempData.fullName}
+                  value={tempData.fullName || ""}
                   onChange={handleInputChange}
                   className={`w-full p-2 md:p-3 rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 text-sm dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition`}
                   placeholder="Enter your full name"
                 />
               ) : (
                 <p className="bg-gray-50 dark:bg-gray-800 text-sm p-2 md:p-3 rounded-lg border dark:border-gray-700">
-                  {formData.fullName || "Not provided"}
+                  {userData.fullName || "Not provided"}
                 </p>
               )}
             </FormField>
@@ -418,15 +414,14 @@ const AccountInfoSection = () => {
               isEditing={false}
             >
               <div className="relative">
-                <input
+                <Input
                   type="email"
                   name="email"
-                  value={tempData.email}
+                  value={tempData.email || ""}
                   readOnly
                   disabled
                   className="w-full p-2 text-sm md:p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 opacity-80"
                 />
-                {formData.isVerified && <VerifiedBadge />}
               </div>
             </FormField>
 
@@ -451,15 +446,86 @@ const AccountInfoSection = () => {
                 />
               </div>
             </FormField>
+            <FormField
+              label="Current Workspace"
+              icon={<FiBriefcase size={16} className="text-indigo-600" />}
+              isEditing={false}
+            >
+              <p className="bg-gray-50 dark:bg-gray-800 text-sm p-2 md:p-3 rounded-lg border dark:border-gray-700">
+                {currentWorkspace
+                  ? workspaces.find((ws) => ws.id === currentWorkspace)?.name
+                  : "No active workspace"}
+              </p>
+            </FormField>
           </div>
         </div>
       </div>
 
-      <WorkspacePlanSection
-        activePlan={activePlan}
-        workspaceId={workspaceId}
-        router={router}
-      />
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          Your Workspaces
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {workspaces.map((workspace) => (
+            <WorkspaceCard
+              key={workspace.id}
+              workspace={workspace}
+              isCurrent={workspace.id === currentWorkspace}
+              onClick={() => switchWorkspace(workspace.id)}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const WorkspaceCard = ({ workspace, isCurrent, onClick }) => {
+  const planColors = {
+    free: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+    basic:
+      "bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400",
+    pro: "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
+    enterprise:
+      "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400",
+  };
+
+  return (
+    <motion.div
+      whileHover={{ y: -2 }}
+      onClick={onClick}
+      className={`p-4 rounded-lg border transition-all cursor-pointer ${
+        isCurrent
+          ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/10 dark:border-indigo-700"
+          : "border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-600"
+      }`}
+    >
+      <div className="flex items-start justify-between mb-2">
+        <h4 className="font-medium text-gray-900 dark:text-white">
+          {workspace.name}
+        </h4>
+        {isCurrent && (
+          <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
+            Current
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between mt-3">
+        <span
+          className={`text-xs px-2 py-1 rounded-full ${
+            planColors[workspace.subscription.plan] || planColors.free
+          }`}
+        >
+          {workspace.subscription.plan.charAt(0).toUpperCase() +
+            workspace.subscription.plan.slice(1)}
+        </span>
+
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="font-medium">{workspace.role}</span>
+        </div>
+      </div>
     </motion.div>
   );
 };
@@ -577,38 +643,66 @@ const Spinner = () => (
   </svg>
 );
 
-const ProfilePictureSection = ({ imagePreview, isEditing, onImageChange }) => (
-  <div className="flex flex-col items-center lg:items-start">
+const ProfilePictureSection = ({
+  verified,
+  imagePreview,
+  isEditing,
+  onImageChange,
+}) => (
+  <div className="flex flex-col items-center lg:items-start space-y-3">
     <div className="relative group">
-      <div className="md:w-32 w-20 h-20 md:h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg">
-        {imagePreview ? (
-          <Image
-            src={imagePreview}
-            alt="Profile"
-            width={128}
-            height={128}
-            className="object-cover w-full h-full"
-            priority
-          />
-        ) : (
-          <DefaultProfileIcon />
+      <div className="relative w-20 h-20 md:w-32 md:h-32 rounded-full bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg transition-all duration-300 group-hover:shadow-xl dark:shadow-gray-900/50">
+        <div className="h-full w-full overflow-hidden rounded-full flex items-center justify-center">
+          {imagePreview ? (
+            <Image
+              src={imagePreview}
+              alt="User profile picture"
+              width={128}
+              height={128}
+              className="object-cover w-full h-full"
+              priority
+            />
+          ) : (
+            <DefaultProfileIcon className="w-3/4 h-3/4 text-gray-400 dark:text-gray-600" />
+          )}
+        </div>
+
+        {verified && !isEditing && (
+          <span
+            className="absolute top-0 right-0 z-10"
+            aria-label="Verified account"
+          >
+            <VerifiedBadge />
+          </span>
         )}
       </div>
+
       {isEditing && (
-        <label className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition transform hover:scale-105">
+        <label
+          htmlFor="profile-upload"
+          className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          tabIndex={0}
+          aria-label="Upload profile picture"
+        >
           <FiUpload className="text-white" size={18} />
           <input
+            id="profile-upload"
             type="file"
             accept="image/*"
             onChange={onImageChange}
             className="hidden"
+            aria-describedby="file-requirements"
           />
         </label>
       )}
     </div>
+
     {isEditing && (
-      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
-        JPG, PNG (Max 5MB)
+      <p
+        id="file-requirements"
+        className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center max-w-[160px]"
+      >
+        Supports JPG, PNG (Max 5MB)
       </p>
     )}
   </div>
@@ -632,7 +726,7 @@ const DefaultProfileIcon = () => (
   </div>
 );
 
-const FormField = ({ label, icon, isEditing, children }) => (
+const FormField = ({ label, icon, children }) => (
   <div className="space-y-1">
     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
       {icon}
@@ -646,53 +740,6 @@ const VerifiedBadge = () => (
   <span className="absolute right-3 top-1.5 sm:top-2 md:top-3 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-700 text-green-700 dark:text-green-100 shadow-md ring-1 ring-green-300 dark:ring-green-600">
     <BadgeCheck size={14} className="stroke-[1.5]" />
   </span>
-);
-
-const WorkspacePlanSection = ({ activePlan, workspaceId, router }) => (
-  <div className="mt-8 p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 border border-indigo-100 dark:border-gray-700">
-    <div className="flex justify-between items-start sm:items-center gap-4 mb-4">
-      <div className="flex items-center gap-3">
-        <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900/50">
-          <FiShield className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-            {activePlan.plan || "Free"}
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {activePlan.description || "Basic features"}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        {activePlan.status === "active" ? (
-          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full text-sm font-medium">
-            Active
-          </span>
-        ) : (
-          <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-sm font-medium">
-            Inactive
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={() =>
-            router.push(`/${workspaceId}/settings/account/billing`)
-          }
-          className="px-4 py-2 hidden rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition lg:flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
-        >
-          Upgrade Plan
-        </button>
-      </div>
-    </div>
-    <button
-      type="button"
-      onClick={() => router.push(`/${workspaceId}/settings/account/billing`)}
-      className="px-4 py-2 lg:hidden w-full justify-center rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-medium text-sm"
-    >
-      Upgrade Plan
-    </button>
-  </div>
 );
 
 export default AccountInfoSection;

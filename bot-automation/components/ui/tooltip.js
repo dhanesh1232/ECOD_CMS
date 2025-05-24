@@ -43,7 +43,7 @@ const TooltipContent = React.forwardRef(
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-          "z-50 overflow-hidden rounded-md bg-gray-900 dark:bg-gray-200 px-3 py-1.5 text-xs text-gray-50 dark:text-gray-900 shadow-md",
+          "z-[9999] overflow-hidden rounded-md bg-gray-900 dark:bg-gray-200 px-3 py-1.5 text-xs text-gray-50 dark:text-gray-900 shadow-md",
           animations[animation],
           className
         )}

@@ -8,8 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { FiExternalLink } from "react-icons/fi";
 import SettingsBreadcrumb from "@/components/breadcrumb";
+import { useSettingsExpand } from "@/hooks/mediaQuery";
 
 const SettingsLayout = ({ children }) => {
+  const inRange = useSettingsExpand();
   const pathname = usePathname();
   const params = useParams();
   const workspaceId = params.workspaceId;
@@ -18,9 +20,14 @@ const SettingsLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [headerH, setHeader] = useState(0);
   const navRef = useRef();
+  const [expand, setExpand] = useState(false);
 
   // Check screen size on mount and resize
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const save = localStorage.getItem("sidebarCollapsed");
+      setExpand(save ? JSON.parse(save) : false);
+    }
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 640);
     };
@@ -76,7 +83,7 @@ const SettingsLayout = ({ children }) => {
     <div className="flex flex-col sm:flex-row h-full relative">
       <div
         ref={navRef}
-        className={`w-3/4 sm:w-64 border-r border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 sm:block ${
+        className={`w-3/4 sm:w-56 border-r border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 sm:block ${
           isMobile
             ? `fixed inset-0 z-40 transform ${
                 mobileNavOpen ? "translate-x-0" : "-translate-x-full"
@@ -183,13 +190,13 @@ const SettingsLayout = ({ children }) => {
           ))}
         </nav>
       </div>
-      {/* Settings Content */}
+      {/*Settings Right Side Content */}
       <div
-        className={`flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 ${
+        className={`flex-1 overflow-y-auto w-full p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 ${
           isMobile && mobileNavOpen ? "opacity-50 pointer-events-none" : ""
         }`}
       >
-        <div className="max-w-6xl mx-auto">
+        <div className={`max-w-6xl mx-auto`}>
           {/* Breadcrumbs - Mobile header */}
           <div className="sm:hidden mb-4 flex items-center">
             {isMobile && (
@@ -203,7 +210,11 @@ const SettingsLayout = ({ children }) => {
             <SettingsBreadcrumb pathname={pathname} />
           </div>
           {/* Content Card */}
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700">
+          <div
+            className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto ${
+              !expand && inRange && "w-96"
+            }`}
+          >
             {children}
           </div>
         </div>

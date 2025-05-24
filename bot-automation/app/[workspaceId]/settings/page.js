@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import {
   Card,
   CardHeader,
@@ -31,6 +33,11 @@ import { Building, Contact, Palette, Shield } from "lucide-react";
 import { FaSpinner } from "react-icons/fa";
 import { deepEqual } from "@/lib/utils";
 import Separator from "@/components/ui/separator";
+import dynamic from "next/dynamic";
+import LocationSearch from "@/components/workspaceLocation";
+const TimezoneSelect = dynamic(() => import("@/components/selectTimezone"), {
+  ssr: false,
+});
 
 const GeneralPage = () => {
   const { data: session } = useSession();
@@ -69,7 +76,6 @@ const GeneralPage = () => {
     },
   };
 
-  // State management
   const [state, setState] = useState({
     loading: true,
     saving: false,
@@ -78,9 +84,8 @@ const GeneralPage = () => {
     initialData: initialFormState,
   });
 
-  // Refs
   const hasChanges = !deepEqual(state.formData, state.initialData);
-  // Memoized fetch function
+
   const fetchWorkspaceSettings = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
@@ -121,7 +126,7 @@ const GeneralPage = () => {
         loading: false,
         workspace: data,
         formData: initialData,
-        initialData: JSON.parse(JSON.stringify(initialData)), // Deep clone
+        initialData: JSON.parse(JSON.stringify(initialData)),
       }));
     } catch (error) {
       setState((prev) => ({ ...prev, loading: false }));
@@ -136,13 +141,12 @@ const GeneralPage = () => {
     }
   }, [workspaceId, showToast]);
 
-  // Update the useEffect cleanup
   useEffect(() => {
     if (session && workspaceId) {
       fetchWorkspaceSettings();
     }
   }, [session, workspaceId, fetchWorkspaceSettings]);
-  // Handle form changes
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setState((prev) => ({
@@ -150,6 +154,19 @@ const GeneralPage = () => {
       formData: {
         ...prev.formData,
         [name]: value,
+      },
+    }));
+  };
+
+  const handlePhoneChange = (phoneNumber) => {
+    setState((prev) => ({
+      ...prev,
+      formData: {
+        ...prev.formData,
+        contactInfo: {
+          ...prev.formData.contactInfo,
+          phone: phoneNumber || "",
+        },
       },
     }));
   };
@@ -162,7 +179,7 @@ const GeneralPage = () => {
         ...prev.formData,
         [parent]: {
           ...prev.formData[parent],
-          [name]: value,
+          [name]: value !== null && value !== undefined ? value : "",
         },
       },
     }));
@@ -185,8 +202,18 @@ const GeneralPage = () => {
     }));
   };
 
-  // Domain whitelist handlers
-  const handleAddDomain = (add) => {
+  const handlePlaceSelected = (place) => {
+    const address = {
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+    };
+    console.log(place);
+  };
+
+  const handleAddDomain = (domain) => {
     setState((prev) => ({
       ...prev,
       formData: {
@@ -195,7 +222,7 @@ const GeneralPage = () => {
           ...prev.formData.security,
           widgetDomainWhitelist: [
             ...prev.formData.security.widgetDomainWhitelist,
-            add,
+            domain,
           ],
         },
       },
@@ -236,10 +263,8 @@ const GeneralPage = () => {
     });
   };
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!hasChanges) return;
 
     try {
@@ -248,14 +273,13 @@ const GeneralPage = () => {
         workspaceId,
         state.formData
       );
+
       if (updatedWorkspace.error) {
-        if (!toastRef.current) {
-          showToast({
-            title: updatedWorkspace.error.error || "Validation Failed",
-            description: updatedWorkspace.details[0].message,
-            variant: "warning",
-          });
-        }
+        showToast({
+          title: updatedWorkspace.error.error || "Validation Failed",
+          description: updatedWorkspace.details[0].message,
+          variant: "warning",
+        });
       } else {
         setState((prev) => ({
           ...prev,
@@ -264,36 +288,27 @@ const GeneralPage = () => {
           saving: false,
         }));
 
-        if (!toastRef.current) {
-          showToast({
-            description: "Workspace settings updated successfully",
-            variant: "success",
-          });
-          toastRef.current = true;
-        }
+        showToast({
+          description: "Workspace settings updated successfully",
+          variant: "success",
+        });
       }
     } catch (error) {
       setState((prev) => ({ ...prev, saving: false }));
-      if (!toastRef.current) {
-        console.log(error);
-        showToast({
-          description: error.message || "Failed to update workspace settings",
-          variant: "destructive",
-        });
-        toastRef.current = true;
-      }
+      showToast({
+        description: error.message || "Failed to update workspace settings",
+        variant: "destructive",
+      });
     }
   };
 
-  // Reset form
   const handleReset = () => {
     setState((prev) => ({
       ...prev,
-      formData: JSON.parse(JSON.stringify(prev.initialData)), // Deep clone
+      formData: JSON.parse(JSON.stringify(prev.initialData)),
     }));
   };
 
-  // Loading state
   if (state.loading && !state.workspace) {
     return (
       <div className="space-y-4 p-4 sm:p-6">
@@ -375,35 +390,14 @@ const GeneralPage = () => {
 
             <div className="space-y-2">
               <Label htmlFor="timezone">Timezone</Label>
-              <Select
+              <TimezoneSelect
                 value={state.formData.timezone}
                 onValueChange={(value) =>
-                  handleChange({ target: { name: "timezone", value } })
+                  handleChange({
+                    target: { name: "timezone", value },
+                  })
                 }
-              >
-                <SelectTrigger className="bg-white dark:bg-gray-900">
-                  <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="UTC">UTC</SelectItem>
-                  <SelectItem value="America/New_York">
-                    Eastern Time (ET)
-                  </SelectItem>
-                  <SelectItem value="America/Chicago">
-                    Central Time (CT)
-                  </SelectItem>
-                  <SelectItem value="America/Denver">
-                    Mountain Time (MT)
-                  </SelectItem>
-                  <SelectItem value="America/Los_Angeles">
-                    Pacific Time (PT)
-                  </SelectItem>
-                  <SelectItem value="Europe/London">London</SelectItem>
-                  <SelectItem value="Europe/Paris">Paris</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo</SelectItem>
-                  <SelectItem value="Asia/Shanghai">Shanghai</SelectItem>
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div className="space-y-2 md:col-span-2">
@@ -469,21 +463,27 @@ const GeneralPage = () => {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                type="tel"
+              <PhoneInput
+                international
                 id="phone"
                 name="phone"
-                value={state.formData.contactInfo.phone}
-                onChange={(e) => handleNestedChange("contactInfo", e)}
-                placeholder="+1 (555) 123-4567"
-                className="bg-white dark:bg-gray-900"
+                defaultCountry="IN"
+                onChange={handlePhoneChange}
+                value={state.formData.contactInfo.phone || ""}
+                className={`custom-phone-input w-full text-sm rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800`}
               />
             </div>
+
+            {process.env.NODE_ENV === "development" && (
+              <div className="space-y-2 md:col-span-2">
+                <LocationSearch onPlaceSelected={handlePlaceSelected} />
+              </div>
+            )}
 
             <div className="space-y-2 md:col-span-2">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
-                <h3 className="text-sm font-medium">Address</h3>
+                <h3 className="text-sm font-medium">Address Details</h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -491,7 +491,7 @@ const GeneralPage = () => {
                   <Input
                     id="street"
                     name="street"
-                    value={state.formData.contactInfo.address.street}
+                    value={state.formData.contactInfo?.address?.street || ""}
                     onChange={handleAddressChange}
                     placeholder="123 Main St"
                     className="bg-white dark:bg-gray-900"
@@ -502,7 +502,7 @@ const GeneralPage = () => {
                   <Input
                     id="city"
                     name="city"
-                    value={state.formData.contactInfo.address.city}
+                    value={state.formData.contactInfo?.address?.city || ""}
                     onChange={handleAddressChange}
                     placeholder="New York"
                     className="bg-white dark:bg-gray-900"
@@ -513,7 +513,7 @@ const GeneralPage = () => {
                   <Input
                     id="state"
                     name="state"
-                    value={state.formData.contactInfo.address.state}
+                    value={state.formData.contactInfo?.address?.state || ""}
                     onChange={handleAddressChange}
                     placeholder="NY"
                     className="bg-white dark:bg-gray-900"
@@ -524,7 +524,9 @@ const GeneralPage = () => {
                   <Input
                     id="postalCode"
                     name="postalCode"
-                    value={state.formData.contactInfo.address.postalCode}
+                    value={
+                      state.formData.contactInfo?.address?.postalCode || ""
+                    }
                     onChange={handleAddressChange}
                     placeholder="10001"
                     className="bg-white dark:bg-gray-900"
@@ -535,7 +537,7 @@ const GeneralPage = () => {
                   <Input
                     id="country"
                     name="country"
-                    value={state.formData.contactInfo.address.country}
+                    value={state.formData.contactInfo?.address?.country || ""}
                     onChange={handleAddressChange}
                     placeholder="United States"
                     className="bg-white dark:bg-gray-900"
@@ -567,7 +569,7 @@ const GeneralPage = () => {
             <div className="space-y-2">
               <Label htmlFor="logoUrl">Logo URL</Label>
               <ImageUpload
-                value={state.formData.branding.logoUrl}
+                value={state.formData.branding.logoUrl || ""}
                 onChange={(url) =>
                   handleNestedChange("branding", {
                     target: { name: "logoUrl", value: url },
@@ -580,7 +582,7 @@ const GeneralPage = () => {
             <div className="space-y-2">
               <Label htmlFor="faviconUrl">Favicon URL</Label>
               <ImageUpload
-                value={state.formData.branding.faviconUrl}
+                value={state.formData.branding.faviconUrl || ""}
                 onChange={(url) =>
                   handleNestedChange("branding", {
                     target: { name: "faviconUrl", value: url },
@@ -619,7 +621,7 @@ const GeneralPage = () => {
               <Input
                 id="customDomain"
                 name="customDomain"
-                value={state.formData.branding.customDomain}
+                value={state.formData.branding.customDomain || ""}
                 onChange={(e) => handleNestedChange("branding", e)}
                 placeholder="example.com"
                 className="bg-white dark:bg-gray-900"
@@ -675,13 +677,17 @@ const GeneralPage = () => {
                 name="apiKeyRotationDays"
                 min="1"
                 max="365"
-                value={state.formData.security.apiKeyRotationDays}
+                value={state.formData.security.apiKeyRotationDays || ""}
                 onChange={(e) => {
-                  const value = parseInt(e.target.value, 10);
+                  let inputValue = e.target.value;
+                  if (inputValue.length > 1 && inputValue.startsWith("0")) {
+                    inputValue = inputValue.slice(1);
+                  }
+                  const value = parseInt(inputValue, 10);
                   handleNestedChange("security", {
                     target: {
                       name: e.target.name,
-                      value: isNaN(value) ? 90 : value, // Default to 90 if invalid
+                      value: isNaN(value) ? 90 : value,
                     },
                   });
                 }}

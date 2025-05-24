@@ -5,6 +5,7 @@ import { User } from "@/models/user/user";
 import { validateSession } from "@/lib/auth";
 import dbConnect from "@/config/dbconnect";
 import { z } from "zod";
+import cloudinary from "@/utils/cloudinary";
 
 // Validation schemas
 const AddressSchema = z.object({
@@ -25,8 +26,12 @@ const ContactInfoSchema = z.object({
 const BrandingSchema = z.object({
   primaryColor: z.string().regex(/^#[0-9A-F]{6}$/i),
   secondaryColor: z.string().regex(/^#[0-9A-F]{6}$/i),
-  logoUrl: z.string().url().max(500).optional(),
-  faviconUrl: z.string().url().max(500).optional(),
+  logoUrl: z
+    .union([z.string().url().max(500), z.literal(""), z.undefined()])
+    .optional(),
+  faviconUrl: z
+    .union([z.string().url().max(500), z.literal(""), z.undefined()])
+    .optional(),
   customDomain: z.string().max(100).optional(),
 });
 
@@ -53,6 +58,64 @@ const WorkspaceSettingsSchema = z.object({
   branding: BrandingSchema.optional(),
   security: SecuritySchema.optional(),
 });
+
+// Helper function to upload base64 image to Cloudinary
+async function uploadToCloudinary(base64Data, folder = "workspace-assets") {
+  try {
+    const result = await cloudinary.uploader.upload(base64Data, {
+      folder,
+      resource_type: "auto",
+    });
+    return result.secure_url;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw new Error("Failed to upload image to Cloudinary");
+  }
+}
+
+// Helper function to process branding images
+async function processBrandingImages(branding) {
+  if (!branding) return branding;
+
+  const processedBranding = { ...branding };
+
+  // Process logo
+  if (branding.logoUrl && branding.logoUrl.startsWith("data:image")) {
+    processedBranding.logoUrl = await uploadToCloudinary(
+      branding.logoUrl,
+      "workspace-logos"
+    );
+  } else if (branding.logoUrl === "") {
+    processedBranding.logoUrl = "";
+  } else if (branding.logoUrl === undefined) {
+    processedBranding.logoUrl = undefined;
+  }
+
+  // Process favicon
+  if (branding.faviconUrl && branding.faviconUrl.startsWith("data:image")) {
+    processedBranding.faviconUrl = await uploadToCloudinary(
+      branding.faviconUrl,
+      "workspace-favicons"
+    );
+  } else if (branding.faviconUrl === "") {
+    processedBranding.faviconUrl = "";
+  } else if (branding.faviconUrl === undefined) {
+    processedBranding.faviconUrl = undefined;
+  }
+
+  return processedBranding;
+}
+
+async function preProcessRequest(body) {
+  const processedData = { ...body };
+
+  // Process branding images first
+  if (body.branding) {
+    processedData.branding = await processBrandingImages(body.branding);
+  }
+
+  return processedData;
+}
 
 export async function GET(request, { params }) {
   await dbConnect();
@@ -116,10 +179,12 @@ export async function PUT(request, { params }) {
         { status: 403 }
       );
     }
+
     // Validate input
-    const rawData = await request.json();
-    console.log(rawData);
-    const validatedData = WorkspaceSettingsSchema.parse(rawData);
+    const body = await request.json();
+    console.log(body);
+    const rawData = await preProcessRequest(body);
+    let validatedData = WorkspaceSettingsSchema.parse(rawData);
 
     // Update workspace
     const updatedWorkspace = await Workspace.findByIdAndUpdate(

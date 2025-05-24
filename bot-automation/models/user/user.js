@@ -4,6 +4,34 @@ import validator from "validator";
 import crypto from "crypto";
 import { RateLimiterMongo } from "rate-limiter-flexible";
 
+// Notification types configuration
+const NOTIFICATION_TYPES = {
+  WORKSPACE: {
+    INVITATION: "workspace_invitation",
+    INVITATION_ACCEPTED: "invitation_accepted",
+    INVITATION_EXPIRED: "invitation_expired",
+    ROLE_CHANGED: "role_changed",
+    REMOVED: "removed_from_workspace",
+  },
+  SUBSCRIPTION: {
+    TRIAL_ENDING: "trial_ending",
+    PAYMENT_FAILED: "payment_failed",
+    ACTIVATED: "subscription_activated",
+    RENEWED: "subscription_renewed",
+    CANCELLED: "subscription_cancelled",
+  },
+  SYSTEM: {
+    MAINTENANCE: "system_maintenance",
+    UPDATE: "system_update",
+    SECURITY: "security_alert",
+  },
+  MESSAGE: {
+    DIRECT: "direct_message",
+    MENTION: "mentioned",
+    REPLY: "reply_to_message",
+  },
+};
+
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -71,35 +99,69 @@ const userSchema = new mongoose.Schema(
         return this.provider !== "credentials";
       },
     },
-    // User notifications from workspaces or their own
-    notifications: [
-      {
-        type: {
-          type: String,
-          enum: [
-            "workspace_invitation",
-            "invitation_accepted",
-            "invitation_expired",
-            "trial_ending",
-            "payment_failed",
-            "subscription_activated",
-            "subscription_renewed",
-          ],
-          required: true,
+    notifications: {
+      type: [
+        {
+          type: {
+            type: String,
+            enum: Object.values(NOTIFICATION_TYPES).flatMap((category) =>
+              Object.values(category)
+            ),
+            required: true,
+          },
+          title: {
+            type: String,
+            required: true,
+          },
+          message: {
+            type: String,
+            required: true,
+          },
+          data: {
+            type: mongoose.Schema.Types.Mixed,
+            default: null,
+          },
+          read: {
+            type: Boolean,
+            default: false,
+          },
+          action: {
+            url: String,
+            label: String,
+          },
+          source: {
+            type: {
+              type: String,
+              enum: ["system", "user", "workspace", "subscription"],
+              required: true,
+            },
+            id: mongoose.Schema.Types.ObjectId,
+          },
+          priority: {
+            type: String,
+            enum: ["low", "medium", "high", "critical"],
+            default: "medium",
+          },
+          expiresAt: Date,
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
         },
-        message: String,
-        data: mongoose.Schema.Types.Mixed,
-        read: {
-          type: Boolean,
-          default: false,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    // User invitations from workspaces
+      ],
+      default: [],
+    },
+    unreadNotificationCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    role: {
+      type: String,
+      required: true,
+      enum: ["user", "super_admin", "support", "other"],
+      default: "user",
+    },
     invitation: [
       {
         invitedBy: {
@@ -128,9 +190,9 @@ const userSchema = new mongoose.Schema(
           type: Date,
           default: Date.now,
         },
-        expireSAt: {
+        expiresAt: {
           type: Date,
-          default: () => Date.now() * 7 * 24 * 60 * 1000, // 7 Days
+          default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 Days
         },
       },
     ],
@@ -166,7 +228,6 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
           },
-          // Other user-specific workspace settings
           notificationFrequency: {
             type: String,
             enum: ["realtime", "hourly", "daily"],
@@ -196,6 +257,10 @@ const userSchema = new mongoose.Schema(
           country: String,
           region: String,
           city: String,
+          coordinates: {
+            type: [Number], // [longitude, latitude]
+            index: "2dsphere",
+          },
         },
       },
     ],
@@ -235,14 +300,26 @@ const userSchema = new mongoose.Schema(
         message: "Image must be a valid URL or base64 encoded",
       },
     },
-    timezone: {
-      type: String,
-      default: "UTC",
-    },
     notificationPreferences: {
-      email: { type: Boolean, default: true },
-      push: { type: Boolean, default: true },
-      inApp: { type: Boolean, default: true },
+      email: {
+        workspace_invitation: { type: Boolean, default: true },
+        invitation_accepted: { type: Boolean, default: true },
+        invitation_expired: { type: Boolean, default: true },
+        trial_ending: { type: Boolean, default: true },
+        payment_failed: { type: Boolean, default: true },
+        subscription_activated: { type: Boolean, default: true },
+        subscription_renewed: { type: Boolean, default: true },
+        direct_message: { type: Boolean, default: true },
+        mentioned: { type: Boolean, default: true },
+      },
+      push: {
+        workspace_invitation: { type: Boolean, default: true },
+        direct_message: { type: Boolean, default: true },
+        mentioned: { type: Boolean, default: true },
+      },
+      inApp: {
+        all: { type: Boolean, default: true },
+      },
     },
     metadata: {
       createdAt: { type: Date, default: Date.now },
@@ -269,6 +346,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Indexes
+userSchema.index({ name: "text", email: "text" });
 userSchema.index({ "workspaces.role": 1 });
 userSchema.index({ accountLockedUntil: 1 }, { expireAfterSeconds: 0 });
 userSchema.index(
@@ -282,6 +360,8 @@ userSchema.index(
   }
 );
 userSchema.index({ currentWorkspace: 1 });
+userSchema.index({ "notifications.read": 1, "notifications.createdAt": -1 });
+userSchema.index({ "notifications.expiresAt": 1 }, { expireAfterSeconds: 0 });
 
 // Virtuals
 userSchema.virtual("activeWorkspaces", {
@@ -290,13 +370,12 @@ userSchema.virtual("activeWorkspaces", {
   foreignField: "_id",
   justOne: false,
   match: {
-    "workspaces.status": "active", // This matches the User's workspace entry status
+    "workspaces.status": "active",
   },
 });
 
 // Pre-save hooks
 userSchema.pre("save", async function (next) {
-  // Password hashing
   if (this.isModified("password")) {
     try {
       if (this.password) {
@@ -308,7 +387,6 @@ userSchema.pre("save", async function (next) {
     }
   }
 
-  // Workspace deduplication
   if (this.isModified("workspaces")) {
     const uniqueWorkspaces = [];
     const seenWorkspaces = new Set();
@@ -322,6 +400,13 @@ userSchema.pre("save", async function (next) {
     }
 
     this.workspaces = uniqueWorkspaces;
+  }
+
+  if (this.isModified("notifications")) {
+    // Update unread notification count
+    this.unreadNotificationCount = this.notifications.filter(
+      (n) => !n.read
+    ).length;
   }
 
   next();
@@ -356,15 +441,99 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+// Notification methods
+userSchema.methods.updateNotificationPreference = async function (
+  channel,
+  type,
+  value
+) {
+  if (!this.notificationPreferences[channel]) {
+    throw new Error(`Invalid notification channel: ${channel}`);
+  }
+
+  if (this.notificationPreferences[channel][type] === undefined) {
+    throw new Error(
+      `Invalid notification type: ${type} for channel ${channel}`
+    );
+  }
+
+  this.notificationPreferences[channel][type] = value;
+  await this.save();
+  return this.notificationPreferences;
+};
+userSchema.methods.addNotification = function (notification) {
+  const defaultNotification = {
+    read: false,
+    createdAt: new Date(),
+    priority: "medium",
+  };
+
+  const newNotification = {
+    ...defaultNotification,
+    ...notification,
+  };
+
+  this.notifications.unshift(newNotification); // Add to beginning of array
+  this.unreadNotificationCount += 1;
+
+  // Keep only the most recent 500 notifications
+  if (this.notifications.length > 500) {
+    this.notifications.pop();
+  }
+
+  return newNotification;
+};
+
+userSchema.methods.markNotificationsAsRead = function (notificationIds = []) {
+  let markedCount = 0;
+
+  this.notifications = this.notifications.map((notification) => {
+    if (
+      (!notificationIds.length || notificationIds.includes(notification._id)) &&
+      !notification.read
+    ) {
+      markedCount += 1;
+      return { ...notification.toObject(), read: true };
+    }
+    return notification;
+  });
+
+  this.unreadNotificationCount = Math.max(
+    0,
+    this.unreadNotificationCount - markedCount
+  );
+
+  return markedCount;
+};
+
+userSchema.methods.clearExpiredNotifications = function () {
+  const now = new Date();
+  const beforeCount = this.notifications.length;
+
+  this.notifications = this.notifications.filter(
+    (notification) => !notification.expiresAt || notification.expiresAt > now
+  );
+
+  // Recalculate unread count
+  this.unreadNotificationCount = this.notifications.filter(
+    (n) => !n.read
+  ).length;
+
+  return beforeCount - this.notifications.length;
+};
+
+// Password and authentication methods
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   return (
     this.passwordChangedAt &&
     parseInt(this.passwordChangedAt.getTime() / 1000, 10) > JWTTimestamp
   );
 };
+
 userSchema.methods.correctPassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto
@@ -375,19 +544,20 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
+// Workspace methods
 userSchema.methods.hasWorkspaceAccess = function (workspaceId) {
-  // Check user have workspace access or not ?
   return this.workspaces.some(
     (ws) => ws.workspace.equals(workspaceId) && ws.status === "active"
   );
 };
+
 userSchema.methods.getWorkspaceRole = function (workspaceId) {
-  // Get existing workspace role
   const workspace = this.workspaces.find(
     (ws) => ws.workspace.equals(workspaceId) && ws.status === "active"
   );
   return workspace?.role;
 };
+
 userSchema.methods.addToWorkspace = async function (
   workspaceId,
   role = "member",
@@ -396,7 +566,6 @@ userSchema.methods.addToWorkspace = async function (
 ) {
   const options = session ? { session } : {};
 
-  // Check if already in workspace
   const existingIndex = this.workspaces.findIndex(
     (ws) => ws.workspace && ws.workspace.toString() === workspaceId.toString()
   );
@@ -431,14 +600,10 @@ userSchema.methods.removeFromWorkspace = async function (workspaceId) {
   );
 
   if (index !== -1) {
-    // Mark status as 'suspended' or remove completely depending on your policy
     this.workspaces.splice(index, 1);
 
-    // If current workspace is being removed, unset it
     if (this.currentWorkspace && this.currentWorkspace.equals(workspaceId)) {
       this.currentWorkspace = null;
-
-      // Optionally set a new active workspace, if any
       const active = this.workspaces.find((ws) => ws.status === "active");
       if (active) {
         this.currentWorkspace = active.workspace;
@@ -450,6 +615,7 @@ userSchema.methods.removeFromWorkspace = async function (workspaceId) {
 
   return this;
 };
+
 userSchema.methods.updateLastActiveInWorkspace = async function (workspaceId) {
   const workspace = this.workspaces.find((ws) =>
     ws.workspace.equals(workspaceId)
@@ -460,27 +626,27 @@ userSchema.methods.updateLastActiveInWorkspace = async function (workspaceId) {
   }
   return this;
 };
+
+// Login tracking methods
 userSchema.methods.trackLogin = async function (req) {
   try {
-    // Safely get headers or default to empty object
-    const headers = req?.headers || new Headers();
+    const headers = req?.headers || {};
 
-    // Get IP address with multiple fallbacks
     const ip =
-      req?.ip || Array.isArray(headers["x-forwarded-for"])
+      req?.ip ||
+      (Array.isArray(headers["x-forwarded-for"])
         ? headers["x-forwarded-for"][0]
         : (typeof headers["x-forwarded-for"] === "string"
             ? headers["x-forwarded-for"].split(",").shift().trim()
             : null) ||
           req?.socket?.remoteAddress ||
           req?.connection?.remoteAddress ||
-          "unknown";
+          "unknown");
 
-    // Get user agent safely
     const userAgent = headers["user-agent"] || "unknown";
 
     this.lastLogin = new Date();
-    this.loginHistory.push({
+    this.loginHistory.unshift({
       timestamp: new Date(),
       ip,
       userAgent,
@@ -488,15 +654,14 @@ userSchema.methods.trackLogin = async function (req) {
       location: await this.constructor.getIpLocation(ip),
     });
 
-    if (this.loginHistory.length > 20) this.loginHistory.shift();
+    if (this.loginHistory.length > 20) this.loginHistory.pop();
     await this.save();
   } catch (error) {
     console.error("Error tracking login:", error);
-    // Continue without failing the request
   }
 };
+
 userSchema.methods.getDeviceType = function (userAgent) {
-  // Get Device Type
   if (/mobile/i.test(userAgent)) return "Mobile";
   if (/tablet/i.test(userAgent)) return "Tablet";
   if (/iPad|iPhone|iPod/.test(userAgent)) return "iOS";
@@ -506,30 +671,41 @@ userSchema.methods.getDeviceType = function (userAgent) {
   if (/Linux/.test(userAgent)) return "Linux";
   return "Unknown";
 };
+
 userSchema.methods.handleFailedLogin = async function () {
-  // User login failed then its works
   this.failedLoginAttempts += 1;
   if (this.failedLoginAttempts >= 5) {
-    this.accountLockedUntil = Date.now() + 30 * 60 * 1000; // 30Min Lock
+    this.accountLockedUntil = Date.now() + 30 * 60 * 1000;
+
+    // Add security notification
+    this.addNotification({
+      type: NOTIFICATION_TYPES.SYSTEM.SECURITY,
+      title: "Account Locked",
+      message:
+        "Your account has been temporarily locked due to multiple failed login attempts.",
+      priority: "high",
+      source: { type: "system" },
+    });
   }
   await this.save();
 };
+
 userSchema.methods.resetLoginAttempts = async function () {
-  // If previous logins are failed, after sometime user have successful then its will reset
   this.failedLoginAttempts = 0;
   this.accountLockedUntil = undefined;
   await this.save();
 };
-// Statics
+
+// Static methods
 userSchema.statics = {
+  NOTIFICATION_TYPES,
+
   isEmailTaken: async function (email, excludeUserId) {
-    //For checking mail already taken or not ?
     const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
     return !!user;
   },
 
   getIpLocation: async function (ip) {
-    // Get IP Location
     if (ip === "::1" || ip === "127.0.0.1" || ip.startsWith("192.168.")) {
       return { country: "Local", region: "Local", city: "Local" };
     }
@@ -541,6 +717,10 @@ userSchema.statics = {
         country: data.country_name || "Unknown",
         region: data.region || "Unknown",
         city: data.city || "Unknown",
+        coordinates:
+          data.longitude && data.latitude
+            ? [parseFloat(data.longitude), parseFloat(data.latitude)]
+            : undefined,
       };
     } catch (err) {
       return { country: "Unknown", region: "Unknown", city: "Unknown" };
@@ -558,42 +738,196 @@ userSchema.statics = {
     });
   },
 
-  sendSubscriptionNotification: async function (user, type, data) {
-    const notificationTypes = {
-      trial_ending: {
-        subject: "Your trial is ending soon",
-        template: "trial-ending",
+  sendWorkspaceNotification: async function (userId, workspaceId, type, data) {
+    const notificationConfigs = {
+      [NOTIFICATION_TYPES.WORKSPACE.INVITATION]: {
+        title: "Workspace Invitation",
+        message: `You've been invited to join a workspace as ${data.role}`,
       },
-      payment_failed: {
-        subject: "Payment failed for your subscription",
-        template: "payment-failed",
+      [NOTIFICATION_TYPES.WORKSPACE.INVITATION_ACCEPTED]: {
+        title: "Invitation Accepted",
+        message: `${data.userName} has accepted your workspace invitation`,
       },
-      subscription_activated: {
-        subject: "Subscription activated",
-        template: "subscription-activated",
+      [NOTIFICATION_TYPES.WORKSPACE.INVITATION_EXPIRED]: {
+        title: "Invitation Expired",
+        message: "Your workspace invitation has expired",
       },
-      subscription_renewed: {
-        subject: "Your subscription has been renewed",
-        template: "subscription-renewed",
+      [NOTIFICATION_TYPES.WORKSPACE.ROLE_CHANGED]: {
+        title: "Role Updated",
+        message: `Your role has been changed to ${data.newRole}`,
+      },
+      [NOTIFICATION_TYPES.WORKSPACE.REMOVED]: {
+        title: "Removed from Workspace",
+        message: "You have been removed from a workspace",
       },
     };
 
-    const config = notificationTypes[type];
-    if (!config) return;
+    const config = notificationConfigs[type];
+    if (!config) throw new Error("Invalid notification type");
 
-    console.log(`Sending ${type} notification to ${user.email}`);
-
-    await this.findByIdAndUpdate(user._id, {
-      $push: {
-        notifications: {
-          type,
-          message: config.subject,
-          data,
-          read: false,
-          createdAt: new Date(),
+    return this.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          notifications: {
+            type,
+            title: config.title,
+            message: config.message,
+            data,
+            source: {
+              type: "workspace",
+              id: workspaceId,
+            },
+            action:
+              type === NOTIFICATION_TYPES.WORKSPACE.INVITATION
+                ? {
+                    url: `/workspaces/invitations/${data.invitationId}`,
+                    label: "View Invitation",
+                  }
+                : undefined,
+          },
         },
+        $inc: { unreadNotificationCount: 1 },
       },
-    });
+      { new: true }
+    );
+  },
+
+  sendSubscriptionNotification: async function (userId, type, data) {
+    const notificationConfigs = {
+      [NOTIFICATION_TYPES.SUBSCRIPTION.TRIAL_ENDING]: {
+        title: "Trial Ending Soon",
+        message: `Your trial ends in ${data.daysRemaining} days`,
+      },
+      [NOTIFICATION_TYPES.SUBSCRIPTION.PAYMENT_FAILED]: {
+        title: "Payment Failed",
+        message:
+          "We couldn't process your payment. Please update your payment method.",
+        priority: "high",
+      },
+      [NOTIFICATION_TYPES.SUBSCRIPTION.ACTIVATED]: {
+        title: "Subscription Activated",
+        message: "Your subscription has been successfully activated",
+      },
+      [NOTIFICATION_TYPES.SUBSCRIPTION.RENEWED]: {
+        title: "Subscription Renewed",
+        message: "Your subscription has been renewed",
+      },
+      [NOTIFICATION_TYPES.SUBSCRIPTION.CANCELLED]: {
+        title: "Subscription Cancelled",
+        message: "Your subscription has been cancelled",
+      },
+    };
+
+    const config = notificationConfigs[type];
+    if (!config) throw new Error("Invalid notification type");
+
+    return this.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          notifications: {
+            type,
+            title: config.title,
+            message: config.message,
+            data,
+            priority: config.priority || "medium",
+            source: {
+              type: "subscription",
+            },
+            action:
+              type === NOTIFICATION_TYPES.SUBSCRIPTION.PAYMENT_FAILED
+                ? {
+                    url: "/billing/payment-methods",
+                    label: "Update Payment Method",
+                  }
+                : undefined,
+          },
+        },
+        $inc: { unreadNotificationCount: 1 },
+      },
+      { new: true }
+    );
+  },
+
+  sendSystemNotification: async function (userIds, type, data) {
+    const notificationConfigs = {
+      [NOTIFICATION_TYPES.SYSTEM.MAINTENANCE]: {
+        title: "Scheduled Maintenance",
+        message:
+          data.message || "We'll be performing scheduled maintenance soon",
+      },
+      [NOTIFICATION_TYPES.SYSTEM.UPDATE]: {
+        title: "System Update",
+        message: data.message || "A new update is available",
+      },
+      [NOTIFICATION_TYPES.SYSTEM.SECURITY]: {
+        title: "Security Alert",
+        message: data.message || "Important security notice",
+        priority: "high",
+      },
+    };
+
+    const config = notificationConfigs[type];
+    if (!config) throw new Error("Invalid notification type");
+
+    const bulkOps = Array.isArray(userIds)
+      ? userIds.map((userId) => ({
+          updateOne: {
+            filter: { _id: userId },
+            update: {
+              $push: {
+                notifications: {
+                  type,
+                  title: config.title,
+                  message: config.message,
+                  data,
+                  priority: config.priority || "medium",
+                  source: {
+                    type: "system",
+                  },
+                  action: data.actionUrl
+                    ? {
+                        url: data.actionUrl,
+                        label: data.actionLabel || "Learn More",
+                      }
+                    : undefined,
+                },
+              },
+              $inc: { unreadNotificationCount: 1 },
+            },
+          },
+        }))
+      : [
+          {
+            updateMany: {
+              filter: {},
+              update: {
+                $push: {
+                  notifications: {
+                    type,
+                    title: config.title,
+                    message: config.message,
+                    data,
+                    priority: config.priority || "medium",
+                    source: {
+                      type: "system",
+                    },
+                    action: data.actionUrl
+                      ? {
+                          url: data.actionUrl,
+                          label: data.actionLabel || "Learn More",
+                        }
+                      : undefined,
+                  },
+                },
+                $inc: { unreadNotificationCount: 1 },
+              },
+            },
+          },
+        ];
+
+    return this.bulkWrite(bulkOps);
   },
 };
 

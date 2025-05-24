@@ -124,7 +124,7 @@ const handleGoogleSignIn = async (profile) => {
         email: profile.email,
         provider: "google",
         isVerified: true,
-        role: "owner",
+        role: "user",
         image: profile.picture || "",
         requiresProfileCompletion: true,
         lastLogin: new Date(),

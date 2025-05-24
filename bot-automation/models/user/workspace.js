@@ -136,8 +136,26 @@ const workspaceSchema = new mongoose.Schema(
           message: (props) => `${props.value} is not a valid hex color`,
         },
       },
-      logoUrl: String,
-      faviconUrl: String,
+      logoUrl: {
+        type: String,
+        validate: {
+          validator: (v) =>
+            !v ||
+            validator.isURL(v) ||
+            /^data:image\/(png|jpeg|jpg|gif);base64,/.test(v),
+          message: "Image must be a valid URL or base64 encoded",
+        },
+      },
+      faviconUrl: {
+        type: String,
+        validate: {
+          validator: (v) =>
+            !v ||
+            validator.isURL(v) ||
+            /^data:image\/(png|jpeg|jpg|gif);base64,/.test(v),
+          message: "Image must be a valid URL or base64 encoded",
+        },
+      },
       customDomain: String,
     },
     security: {
@@ -255,13 +273,6 @@ const workspaceSchema = new mongoose.Schema(
       storage: { type: Number, default: PLANS.free.limits.storage },
     },
     settings: {
-      branding: {
-        primaryColor: { type: String, default: "#4f46e5" },
-        secondaryColor: { type: String, default: "#7c3aed" },
-        logoUrl: String,
-        faviconUrl: String,
-        customDomain: String,
-      },
       chat: {
         greetingMessage: {
           type: String,

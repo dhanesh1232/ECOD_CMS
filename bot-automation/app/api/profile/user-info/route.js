@@ -34,7 +34,7 @@ export async function GET(req) {
       .select("+image")
       .populate({
         path: "currentWorkspace",
-        select: "name slug domain logo settings",
+        select: "name slug domain logo role settings",
         model: Workspace,
       })
       .populate({

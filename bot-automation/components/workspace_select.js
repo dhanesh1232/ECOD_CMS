@@ -15,6 +15,7 @@ export default React.memo(function SelectWorkspace({
   className,
   mobile,
   isCollapsed,
+  isSetOpen,
 }) {
   const showToast = useToast();
   const [open, setOpen] = useState(false);
@@ -44,6 +45,10 @@ export default React.memo(function SelectWorkspace({
     }
   }, [showToast]);
 
+  const handleOpen = () => {
+    setOpen(!open);
+    isSetOpen();
+  };
   useEffect(() => {
     if (workspaces.length === 0) {
       fetchWorkspaces();
@@ -85,12 +90,12 @@ export default React.memo(function SelectWorkspace({
     <div className={className}>
       <Select
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleOpen}
         value={selectedWorkspace}
         onValueChange={handleWorkspaceChange}
         disabled={loading}
       >
-        <SelectTrigger className="w-full radix-select-trigger">
+        <SelectTrigger className="w-full radix-select-trigger text-sm">
           {loading ? (
             <div className="flex items-center gap-2 w-full">
               <svg
@@ -116,7 +121,7 @@ export default React.memo(function SelectWorkspace({
             </div>
           ) : (
             <SelectValue
-              className="mr-1"
+              className="mr-1 text-sm"
               placeholder={
                 isCollapsed
                   ? mobile
@@ -135,15 +140,17 @@ export default React.memo(function SelectWorkspace({
         </SelectTrigger>
         <SelectContent
           position="popper"
-          side={isCollapsed ? "right" : "bottom"}
-          align={isCollapsed ? "start" : "center"}
-          sideOffset={isCollapsed ? 25 : 5}
+          side={isCollapsed ? (mobile ? "bottom" : "right") : "bottom"}
+          align={isCollapsed ? (mobile ? "center" : "start") : "center"}
+          sideOffset={isCollapsed ? (mobile ? 5 : 25) : 5}
           className="radix-select-content"
           style={{
             minWidth: isCollapsed
-              ? "200px"
+              ? mobile
+                ? "var(--radix-select-trigger-width)"
+                : "200px"
               : "var(--radix-select-trigger-width)",
-            marginLeft: isCollapsed ? "45px" : "0",
+            marginLeft: isCollapsed ? (mobile ? "0" : "45px") : "0",
             zIndex: 1000,
           }}
         >

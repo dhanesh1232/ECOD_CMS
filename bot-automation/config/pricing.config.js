@@ -10,11 +10,19 @@ export const PLANS = {
     },
     limits: {
       chatbots: 1,
-      messages: 500,
+      messages: 300,
       members: 1,
-      storage: 2, // GB
+      storage: 1, // GB
       conversations: 100,
       integrations: 1,
+      automationRules: 0,
+      dripCampaigns: 0,
+      leadScoring: false,
+      visitorTracking: false,
+      multilingualBots: 1,
+      crmSync: false,
+      adCredits: 0,
+      exports: 0,
     },
     features: {
       channels: ["web"],
@@ -27,6 +35,14 @@ export const PLANS = {
       webhooks: false,
       sso: false,
       aiFeatures: false,
+      customFlows: false,
+      autoScheduling: false,
+      advancedReporting: false,
+      // AI Ads features
+      adCopyGeneration: false,
+      smartTargeting: false,
+      budgetSuggestions: false,
+      autoPublishing: false,
     },
     metadata: {
       recommended: false,
@@ -39,8 +55,8 @@ export const PLANS = {
     name: "Starter",
     description: "Perfect for small businesses getting started with automation",
     prices: {
-      monthly: 1999, // in paise (₹19.99)
-      yearly: 19999, // in paise (₹199.99)
+      monthly: 2499, // in paise (₹24.99)
+      yearly: 23999, // in paise (₹239.99) (~20% discount)
     },
     razorpayIds: {
       monthly: "plan_QS3bpF6uWaXCt6",
@@ -48,11 +64,19 @@ export const PLANS = {
     },
     limits: {
       chatbots: 3,
-      messages: 5000,
-      members: 3,
+      messages: 3000,
+      members: 5,
       storage: 10, // GB
-      conversations: 1000,
+      conversations: 2000,
       integrations: 3,
+      automationRules: 5,
+      dripCampaigns: 3,
+      leadScoring: true,
+      visitorTracking: true,
+      multilingualBots: 2,
+      crmSync: true,
+      adCredits: 0,
+      exports: 5,
     },
     features: {
       channels: ["web", "whatsapp"],
@@ -65,20 +89,28 @@ export const PLANS = {
       webhooks: true,
       sso: false,
       aiFeatures: false,
+      customFlows: true,
+      autoScheduling: true,
+      advancedReporting: false,
+      // AI Ads features
+      adCopyGeneration: false,
+      smartTargeting: false,
+      budgetSuggestions: false,
+      autoPublishing: false,
     },
     metadata: {
       recommended: true,
       popular: true,
-      trialDays: 14,
+      trialDays: 3,
     },
   },
   pro: {
     id: "pro",
     name: "Pro",
-    description: "Advanced features for growing businesses",
+    description: "Advanced features for growing businesses with AI-powered ads",
     prices: {
-      monthly: 4999, // in paise (₹49.99)
-      yearly: 49999, // in paise (₹499.99)
+      monthly: 5999, // in paise (₹59.99)
+      yearly: 59999, // in paise (₹599.99) (~16% discount)
     },
     razorpayIds: {
       monthly: "plan_QS3CWwOR3vrYNe",
@@ -86,11 +118,19 @@ export const PLANS = {
     },
     limits: {
       chatbots: 10,
-      messages: Infinity,
-      members: 10,
-      storage: 50, // GB
-      conversations: Infinity,
+      messages: 10000,
+      members: 15,
+      storage: 100, // GB
+      conversations: 5000,
       integrations: 10,
+      automationRules: 20,
+      dripCampaigns: 10,
+      leadScoring: true,
+      visitorTracking: true,
+      multilingualBots: 5,
+      crmSync: true,
+      adCredits: 5,
+      exports: 20,
     },
     features: {
       channels: ["web", "whatsapp", "facebook", "instagram"],
@@ -103,6 +143,14 @@ export const PLANS = {
       webhooks: true,
       sso: true,
       aiFeatures: true,
+      customFlows: true,
+      autoScheduling: true,
+      advancedReporting: true,
+      // AI Ads features
+      adCopyGeneration: true,
+      smartTargeting: true,
+      budgetSuggestions: true,
+      autoPublishing: true,
     },
     metadata: {
       recommended: false,
@@ -113,10 +161,11 @@ export const PLANS = {
   enterprise: {
     id: "enterprise",
     name: "Enterprise",
-    description: "Custom solutions for large organizations",
+    description:
+      "Custom solutions for large organizations with unlimited AI ads",
     prices: {
-      monthly: 9999, // in paise (₹99.99)
-      yearly: 99999, // in paise (₹999.99)
+      monthly: 14999, // in paise (₹149.99)
+      yearly: 149999, // in paise (₹1499.99) (~16% discount)
     },
     razorpayIds: {
       monthly: "plan_QS3Gm4vJXqYb9P",
@@ -129,6 +178,14 @@ export const PLANS = {
       storage: Infinity,
       conversations: Infinity,
       integrations: Infinity,
+      automationRules: Infinity,
+      dripCampaigns: Infinity,
+      leadScoring: true,
+      visitorTracking: true,
+      multilingualBots: Infinity,
+      crmSync: true,
+      adCredits: Infinity,
+      exports: Infinity,
     },
     features: {
       channels: ["web", "whatsapp", "facebook", "instagram", "telegram"],
@@ -141,6 +198,14 @@ export const PLANS = {
       webhooks: true,
       sso: true,
       aiFeatures: true,
+      customFlows: true,
+      autoScheduling: true,
+      advancedReporting: true,
+      // AI Ads features
+      adCopyGeneration: true,
+      smartTargeting: true,
+      budgetSuggestions: true,
+      autoPublishing: true,
     },
     metadata: {
       recommended: false,

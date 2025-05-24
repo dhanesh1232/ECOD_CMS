@@ -14,6 +14,7 @@ const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
 import { encryptData } from "@/utils/encryption";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { UserServices } from "@/lib/client/user";
 
 export default function ProtectLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,32 +27,23 @@ export default function ProtectLayout({ children }) {
 
   const checkProfileComplete = useCallback(async () => {
     if (initialCheckDone.current) return;
-
     try {
-      const res = await fetch("/api/profile/user-info");
-      const data = await res.json();
-      if (!res.ok && data.message.includes("not")) {
+      const data = await UserServices.fetchUserData();
+      if (data.status && data.status !== 200) {
         await signOut({ redirect: true, callbackUrl: "/auth/login" });
         return;
       }
-
-      if (data.requiresProfileCompletion) {
-        const encryptedName = encryptData(data.user.name);
+      if (data.user.requiresProfileCompletion) {
+        const encryptedName = encryptData(data.user.user_name);
         const newParams = new URLSearchParams(searchParams);
         newParams.set(
           "model",
           `update_req_${encodeURIComponent(encryptedName)}`
         );
 
-        if (!pathname.startsWith(`/${workspaceId}/settings`)) {
-          router.push(
-            `${workspaceId}/settings/account/profile?${newParams.toString()}`,
-            {
-              scroll: false,
-            }
-          );
-          return;
-        }
+        router.push(`${pathname}?${newParams.toString()}`, {
+          scroll: false,
+        });
       } else if (searchParams.has("model")) {
         const newParams = new URLSearchParams(searchParams);
         newParams.delete("model");

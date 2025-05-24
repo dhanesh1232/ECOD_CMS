@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   FiEye,
   FiEyeOff,
@@ -12,6 +12,7 @@ import { useSession } from "next-auth/react";
 import PasswordStrengthBar from "react-password-strength-bar";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/toast-provider";
+import { UserServices } from "@/lib/client/user";
 
 const PasswordAndSecurity = () => {
   const { data: session } = useSession();
@@ -27,51 +28,52 @@ const PasswordAndSecurity = () => {
     confirm: false,
   });
   const [touched, setTouched] = useState({});
-  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const toastRef = useRef(false);
 
   const validateField = useCallback(
     (name, value) => {
-      const newErrors = { ...errors };
+      let newErrors;
 
       switch (name) {
         case "newPassword":
           if (!value) {
-            newErrors.newPassword = "Password is required";
+            newErrors = "Password is required";
           } else {
-            delete newErrors.newPassword;
             if (value === form.currentPassword) {
-              newErrors.newPassword =
-                "New password must be different from current";
+              newErrors = "New password must be different from current";
             }
             if (value.length < 8) {
-              newErrors.newPassword = "Minimum 8 characters";
+              newErrors = "Minimum 8 characters";
             }
             if (!/[A-Z]/.test(value)) {
-              newErrors.newPassword = "Requires uppercase letter";
+              newErrors = "Requires uppercase letter";
             }
             if (!/[0-9]/.test(value)) {
-              newErrors.newPassword = "Requires number";
+              newErrors = "Requires number";
             }
             if (!/[^A-Za-z0-9]/.test(value)) {
-              newErrors.newPassword = "Requires special character";
+              newErrors = "Requires special character";
             }
           }
           break;
 
         case "confirmPassword":
           if (value !== form.newPassword) {
-            newErrors.confirmPassword = "Passwords don't match";
-          } else {
-            delete newErrors.confirmPassword;
+            newErrors = "Passwords don't match";
           }
           break;
       }
 
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
+      if (newErrors !== "") {
+        if (!toastRef.current) {
+          showToast({
+            description: "",
+          });
+        }
+      }
     },
-    [errors, form.currentPassword, form.newPassword]
+    [showToast, form.currentPassword, form.newPassword]
   );
 
   const handleBlur = useCallback(
@@ -89,34 +91,37 @@ const PasswordAndSecurity = () => {
     },
     [touched, validateField]
   );
+  useEffect(() => {
+    if (form.currentPassword.length >= 8) {
+      console.log("password length reached");
+    }
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrors({});
 
     try {
-      const res = await fetch("/api/profile/update/change-password", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: session?.user?.email,
-          ...form,
-        }),
+      const res = await UserServices.updateUserPassword({
+        email: session?.user?.email,
+        ...form,
       });
-
-      const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Password change failed");
+        const data = await res.json();
+        showToast({
+          title: "Failed",
+          description: data.message || "Password change failed",
+          variant: "destructive",
+        });
+      } else {
+        showToast({
+          title: "Success",
+          description: "Password changed successfully!",
+          variant: "success",
+        });
+        setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       }
-
-      showToast({
-        title: "Success",
-        description: "Password changed successfully!",
-        variant: "success",
-      });
-      setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err) {
       showToast({
         title: "Error",
@@ -128,6 +133,9 @@ const PasswordAndSecurity = () => {
     }
   };
 
+  const checkIsEmpty = () => {
+    return true;
+  };
   const securityItems = [
     {
       title: "Two-Factor Authentication",
@@ -334,17 +342,12 @@ const PasswordAndSecurity = () => {
                   </button>
                 )}
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                  <FiXCircle className="w-4 h-4" /> {errors.confirmPassword}
-                </p>
-              )}
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || Object.keys(errors).length > 0}
+              disabled={loading || checkIsEmpty()}
               className="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
