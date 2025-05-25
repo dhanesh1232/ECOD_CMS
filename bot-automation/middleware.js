@@ -92,17 +92,9 @@ export async function middleware(req) {
 
 // Helper functions
 function shouldSkipMiddleware(pathname) {
-  return [
-    "/api/",
-    "/auth/",
-    "/_next/",
-    "/static/",
-    "/404",
-    "/500",
-    "/forbidden",
-    "/create-workspace",
-    "/timezones.json",
-  ].some((path) => pathname.startsWith(path) || pathname === path);
+  return ["/api/", "/auth/", "/_next/", "/static/", "/favicon.ico"].some(
+    (path) => pathname.startsWith(path) || pathname === path
+  );
 }
 
 function safeRedirectToLogin(pathname, origin) {
@@ -192,6 +184,6 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|auth|static|404|500|forbidden|create-workspace|.*\\.json$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|auth|static|404|500|forbidden).*)",
   ],
 };
