@@ -32,9 +32,12 @@ import {
   DashboardIcon,
   HelpIcon,
   TemplatesIcon,
+  AdsIcon,
+  CampaignsIcon,
+  CreativeIcon,
+  AdsAnalyticsIcon,
+  BotIcon,
 } from "@/public/Images/svg_ecod";
-
-// Reusable SVG components for consistent icons
 
 // Main navigation items
 export const navItems = [
@@ -46,22 +49,68 @@ export const navItems = [
     exact: true,
   },
   {
-    id: "chatbots",
+    id: "chatbot",
     icon: <ChatBotAI primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-    label: "My Chatbots",
-    href: `/chatbots`,
+    label: "Chatbot",
+    href: `/chatbot`,
+    isParent: true,
+    subPages: [
+      {
+        id: "bots",
+        icon: <BotIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        label: "Bots",
+        href: "/chatbot/bots",
+      },
+      {
+        id: "bot-analytics",
+        icon: <AnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        label: "Analytics",
+        href: `/chatbot/bot-analytics`,
+      },
+      {
+        id: "conversations",
+        icon: (
+          <ConversationsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
+        ),
+        label: "Conversations",
+        href: `/chatbot/conversations`,
+      },
+      {
+        id: "contacts",
+        icon: <ContactsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        label: "Contacts",
+        href: `/chatbot/contacts`,
+      },
+    ],
   },
   {
-    id: "analytics",
-    icon: <AnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-    label: "Analytics",
-    href: `/analytics`,
-  },
-  {
-    id: "conversations",
-    icon: <ConversationsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-    label: "Conversations",
-    href: `/conversations`,
+    id: "ads",
+    label: "Ads Automation",
+    icon: <AdsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    href: "/ads",
+    isParent: true,
+    subPages: [
+      {
+        id: "campaigns",
+        label: "Campaigns",
+        icon: <CampaignsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        href: `/ads/campaigns`,
+      },
+      {
+        id: "ad-creative",
+        label: "Creative",
+        href: "/ads/ad-creative",
+        icon: <CreativeIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+      },
+      {
+        id: "analytics",
+        icon: (
+          <AdsAnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
+        ),
+        label: "Analytics",
+        href: `/ads/ads-analytics`,
+      },
+    ],
   },
   {
     id: "template",
@@ -69,12 +118,7 @@ export const navItems = [
     label: "Templates",
     href: `/template`,
   },
-  {
-    id: "contacts",
-    icon: <ContactsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-    label: "Contacts",
-    href: `/contacts`,
-  },
+
   {
     id: "settings",
     icon: <SettingsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,

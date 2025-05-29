@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "ECODIfy - WhatsApp Automation Bot for Businesses",
-    template: "%s | ECODIfy",
+    default: "ECODrIs - WhatsApp Automation Bot for Businesses",
+    template: "%s | ECODrIx",
   },
   description:
     "Automate your WhatsApp business communications with our powerful bot solution",

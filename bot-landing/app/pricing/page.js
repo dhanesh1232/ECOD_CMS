@@ -1,56 +1,73 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Head from "next/head";
 import Image from "next/image";
 import PieChart from "@/components/pie_chart";
 import BarChart from "@/components/bar_chart";
+import { PLANS, PricingUtils } from "@/data/pricing.plan";
 
 const PricingPage = () => {
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [hoveredCard, setHoveredCard] = useState(null);
   const [activeTab, setActiveTab] = useState("features");
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [currency, setCurrency] = useState("INR");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Get all plans from the configuration
+  const pricingTiers = Object.values(PLANS).map((plan) => ({
+    ...plan,
+    monthlyPrice: plan.prices.monthly / 100, // Convert paise to rupees
+    yearlyPrice: plan.prices.yearly / 100, // Convert paise to rupees
+    cta:
+      plan.id === "free"
+        ? "Get Started"
+        : plan.id === "enterprise"
+        ? "Contact Sales"
+        : `Start ${plan.metadata.trialDays}-day Trial`,
+    icon: getPlanIcon(plan.id),
+    features: { ...plan.features, list: getPlanFeaturesList(plan) },
+    yearlySavings: PricingUtils.getYearlySavings(plan.id),
+  }));
 
   // Sample data for charts
   const userGrowthData = {
-    labels: ["Standard", "Pro", "Enterprise"],
+    labels: pricingTiers.filter((p) => p.id !== "free").map((p) => p.name),
     datasets: [
       {
         label: "Average User Growth (6 months)",
-        data: [15, 42, 28],
-        backgroundColor: ["#6366F1", "#8B5CF6", "#A78BFA"],
+        data: [15, 42, 28].slice(0, pricingTiers.length - 1), // Adjust based on number of paid plans
+        backgroundColor: ["#6366F1", "#8B5CF6", "#A78BFA"].slice(
+          0,
+          pricingTiers.length - 1
+        ),
       },
     ],
   };
 
   const featureAdoptionData = {
-    labels: ["Basic Features", "Pro Features", "Enterprise Features"],
+    labels: pricingTiers
+      .filter((p) => p.id !== "free")
+      .map((p) => `${p.name} Features`),
     datasets: [
       {
-        data: [85, 65, 35],
-        backgroundColor: ["#EC4899", "#F43F5E", "#F59E0B"],
+        data: [85, 65, 35].slice(0, pricingTiers.length - 1),
+        backgroundColor: ["#EC4899", "#F43F5E", "#F59E0B"].slice(
+          0,
+          pricingTiers.length - 1
+        ),
       },
     ],
   };
 
-  const pricingTiers = [
-    {
-      name: "Standard",
-      description: "Perfect for small teams getting started",
-      monthlyPrice: 19,
-      yearlyPrice: 15,
-      features: [
-        "Up to 5 users",
-        "10 projects",
-        "5GB storage",
-        "Basic analytics",
-        "Email support",
-        "Community access",
-      ],
-      cta: "Get Started",
-      popular: false,
-      icon: (
+  function getPlanIcon(planId) {
+    const icons = {
+      free: (
         <svg
           className="w-10 h-10 text-blue-500"
           fill="none"
@@ -61,31 +78,13 @@ const PricingPage = () => {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
-            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
       ),
-    },
-    {
-      name: "Pro",
-      description: "For growing teams with advanced needs",
-      monthlyPrice: 49,
-      yearlyPrice: 39,
-      features: [
-        "Up to 20 users",
-        "Unlimited projects",
-        "50GB storage",
-        "Advanced analytics",
-        "Priority email support",
-        "API access",
-        "Custom workflows",
-        "Team management",
-      ],
-      cta: "Start Free Trial",
-      popular: true,
-      icon: (
+      starter: (
         <svg
-          className="w-10 h-10 text-purple-500"
+          className="w-10 h-10 text-green-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -98,30 +97,9 @@ const PricingPage = () => {
           />
         </svg>
       ),
-    },
-    {
-      name: "Enterprise",
-      description: "For organizations with custom requirements",
-      monthlyPrice: 99,
-      yearlyPrice: 79,
-      features: [
-        "Unlimited users",
-        "Unlimited projects",
-        "1TB storage",
-        "Advanced analytics",
-        "24/7 phone support",
-        "API access",
-        "Dedicated account manager",
-        "Custom integrations",
-        "Single sign-on (SSO)",
-        "Audit logs",
-        "Compliance reporting",
-      ],
-      cta: "Contact Sales",
-      popular: false,
-      icon: (
+      pro: (
         <svg
-          className="w-10 h-10 text-indigo-500"
+          className="w-10 h-10 text-purple-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -134,8 +112,60 @@ const PricingPage = () => {
           />
         </svg>
       ),
-    },
-  ];
+      enterprise: (
+        <svg
+          className="w-10 h-10 text-indigo-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      ),
+    };
+    return icons[planId] || icons.free;
+  }
+
+  function getPlanFeaturesList(plan) {
+    const baseFeatures = [
+      `${
+        plan.limits.chatbots === Infinity ? "Unlimited" : plan.limits.chatbots
+      } chatbots`,
+      `${
+        plan.limits.messages === Infinity
+          ? "Unlimited"
+          : plan.limits.messages.toLocaleString()
+      } messages/mo`,
+      `${
+        plan.limits.members === Infinity ? "Unlimited" : plan.limits.members
+      } team members`,
+      `${
+        plan.limits.storage === Infinity ? "Unlimited" : plan.limits.storage
+      }GB storage`,
+      plan.features.analyticsDashboard
+        ? "Advanced analytics"
+        : "Basic analytics",
+      plan.features.prioritySupport ? "24/7 Priority support" : "Email support",
+    ];
+
+    const premiumFeatures = [
+      plan.features.apiAccess && "API access",
+      plan.features.webhooks && "Webhooks",
+      plan.features.sso && "Single Sign-On (SSO)",
+      plan.features.whiteLabel && "White labeling",
+      plan.features.customFlows && "Custom workflows",
+      plan.features.aiFeatures && "AI features",
+      plan.features.adCopyGeneration && "AI Ad Copy Generation",
+      plan.features.smartTargeting && "Smart Targeting",
+    ].filter(Boolean);
+
+    return [...baseFeatures, ...premiumFeatures];
+  }
 
   const toggleBillingCycle = () => {
     setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly");
@@ -170,10 +200,20 @@ const PricingPage = () => {
       name: "Emma Rodriguez",
       role: "Marketing Director",
       quote:
-        "Perfect balance of price and features. The Standard plan was exactly what our small team needed to get started.",
+        "Perfect balance of price and features. The Starter plan was exactly what our small team needed to get started.",
       avatar: "/avatars/emma.jpg",
     },
   ];
+
+  const formatPrice = (price) => {
+    if (!isMounted) return "...";
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
 
   return (
     <div className="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-300 min-h-screen">
@@ -202,8 +242,7 @@ const PricingPage = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="text-xl text-gray-600 dark:text-gray-300 mb-8"
           >
-            {`Choose the plan that's right for you. Start with a 14-day free
-            trial, no credit card required.`}
+            {`Choose the plan that's right for you. Start with a free trial, no credit card required.`}
             <br /> Over{" "}
             <span className="font-semibold text-purple-600 dark:text-purple-400">
               15,000 businesses
@@ -239,7 +278,7 @@ const PricingPage = () => {
                   className="absolute -top-6 right-0"
                 >
                   <span className="inline-block px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
-                    20% savings
+                    Save up to 20%
                   </span>
                 </motion.div>
               )}
@@ -248,10 +287,10 @@ const PricingPage = () => {
         </div>
 
         {/* Pricing Tiers */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
           {pricingTiers.map((tier, index) => (
             <motion.div
-              key={tier.name}
+              key={tier.id}
               initial="hidden"
               animate="visible"
               whileHover="hover"
@@ -260,12 +299,12 @@ const PricingPage = () => {
               onMouseEnter={() => setHoveredCard(index)}
               onMouseLeave={() => setHoveredCard(null)}
               className={`relative rounded-xl p-8 border-2 transition-all duration-300 ${
-                tier.popular
+                tier.metadata.popular
                   ? "border-purple-500 dark:border-purple-400 bg-white dark:bg-gray-800 shadow-lg"
                   : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
               } ${hoveredCard === index ? "shadow-xl" : "shadow-md"}`}
             >
-              {tier.popular && (
+              {tier.metadata.popular && (
                 <motion.div
                   initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -273,6 +312,16 @@ const PricingPage = () => {
                   className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white text-xs font-bold px-4 py-1 rounded-full"
                 >
                   Most Popular
+                </motion.div>
+              )}
+              {tier.metadata.recommended && (
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-4 py-1 rounded-full"
+                >
+                  Recommended
                 </motion.div>
               )}
               <div className="flex items-center mb-4">
@@ -286,20 +335,28 @@ const PricingPage = () => {
               </div>
               <div className="mb-8">
                 <span className="text-4xl font-bold">
-                  $
-                  {billingCycle === "monthly"
-                    ? tier.monthlyPrice
-                    : tier.yearlyPrice}
+                  {formatPrice(
+                    billingCycle === "monthly"
+                      ? tier.monthlyPrice
+                      : tier.yearlyPrice / 12
+                  )}
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">/month</span>
-                {billingCycle === "yearly" && (
+                {billingCycle === "yearly" && tier.yearlySavings > 0 && (
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    billed annually at ${tier.yearlyPrice * 12}
+                    {`Billed annually at ${formatPrice(
+                      tier.yearlyPrice
+                    )} (save ${tier.yearlySavings}%)`}
+                  </p>
+                )}
+                {tier.id === "free" && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Forever free
                   </p>
                 )}
               </div>
               <ul className="space-y-3 mb-8">
-                {tier.features.map((feature, i) => (
+                {tier.features.list.map((feature, i) => (
                   <motion.li
                     key={i}
                     className="flex items-center"
@@ -327,9 +384,11 @@ const PricingPage = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 className={`w-full py-3 px-6 rounded-lg font-medium transition-colors duration-300 ${
-                  tier.popular
+                  tier.metadata.popular
                     ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-                    : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                    : tier.id === "free"
+                    ? "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
                 }`}
               >
                 {tier.cta}
@@ -396,143 +455,127 @@ const PricingPage = () => {
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
                   <th className="px-6 py-4 text-left">Feature</th>
-                  <th className="px-6 py-4 text-center">Standard</th>
-                  <th className="px-6 py-4 text-center">Pro</th>
-                  <th className="px-6 py-4 text-center">Enterprise</th>
+                  {pricingTiers.map((tier) => (
+                    <th key={tier.id} className="px-6 py-4 text-center">
+                      {tier.name}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {activeTab === "features" && (
                   <>
                     <tr>
-                      <td className="px-6 py-4">Projects</td>
-                      <td className="px-6 py-4 text-center">10</td>
-                      <td className="px-6 py-4 text-center">Unlimited</td>
-                      <td className="px-6 py-4 text-center">Unlimited</td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4">Storage</td>
-                      <td className="px-6 py-4 text-center">5GB</td>
-                      <td className="px-6 py-4 text-center">50GB</td>
-                      <td className="px-6 py-4 text-center">1TB+</td>
+                      <td className="px-6 py-4">Channels</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.features.channels.join(", ")}
+                        </td>
+                      ))}
                     </tr>
                     <tr>
                       <td className="px-6 py-4">API Access</td>
-                      <td className="px-6 py-4 text-center text-red-500">
-                        <svg
-                          className="w-5 h-5 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        <svg
-                          className="w-5 h-5 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        <svg
-                          className="w-5 h-5 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.features.apiAccess ? (
+                            <svg
+                              className="w-5 h-5 mx-auto text-green-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-5 h-5 mx-auto text-red-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          )}
+                        </td>
+                      ))}
                     </tr>
                     <tr>
-                      <td className="px-6 py-4">Custom Workflows</td>
-                      <td className="px-6 py-4 text-center text-red-500">
-                        <svg
-                          className="w-5 h-5 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        <svg
-                          className="w-5 h-5 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        <svg
-                          className="w-5 h-5 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </td>
+                      <td className="px-6 py-4">Custom Branding</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.features.customBranding ? "✓" : "✗"}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4">White Label</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.features.whiteLabel ? "✓" : "✗"}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4">AI Features</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.features.aiFeatures ? "✓" : "✗"}
+                        </td>
+                      ))}
                     </tr>
                   </>
                 )}
                 {activeTab === "limits" && (
                   <>
                     <tr>
-                      <td className="px-6 py-4">Users</td>
-                      <td className="px-6 py-4 text-center">5</td>
-                      <td className="px-6 py-4 text-center">20</td>
-                      <td className="px-6 py-4 text-center">Unlimited</td>
+                      <td className="px-6 py-4">Chatbots</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.limits.chatbots === Infinity
+                            ? "Unlimited"
+                            : tier.limits.chatbots}
+                        </td>
+                      ))}
                     </tr>
                     <tr>
-                      <td className="px-6 py-4">API Requests</td>
-                      <td className="px-6 py-4 text-center">-</td>
-                      <td className="px-6 py-4 text-center">10,000/mo</td>
-                      <td className="px-6 py-4 text-center">100,000/mo+</td>
+                      <td className="px-6 py-4">Messages/month</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.limits.messages === Infinity
+                            ? "Unlimited"
+                            : tier.limits.messages.toLocaleString()}
+                        </td>
+                      ))}
                     </tr>
                     <tr>
-                      <td className="px-6 py-4">Export Limits</td>
-                      <td className="px-6 py-4 text-center">Basic</td>
-                      <td className="px-6 py-4 text-center">Advanced</td>
-                      <td className="px-6 py-4 text-center">Unlimited</td>
+                      <td className="px-6 py-4">Storage</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.limits.storage === Infinity
+                            ? "Unlimited"
+                            : `${tier.limits.storage}GB`}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4">Team Members</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.limits.members === Infinity
+                            ? "Unlimited"
+                            : tier.limits.members}
+                        </td>
+                      ))}
                     </tr>
                   </>
                 )}
@@ -540,41 +583,37 @@ const PricingPage = () => {
                   <>
                     <tr>
                       <td className="px-6 py-4">Email Support</td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.id === "free" ? "Community" : "✓"}
+                        </td>
+                      ))}
                     </tr>
                     <tr>
                       <td className="px-6 py-4">Priority Support</td>
-                      <td className="px-6 py-4 text-center text-red-500">✗</td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4">24/7 Phone Support</td>
-                      <td className="px-6 py-4 text-center text-red-500">✗</td>
-                      <td className="px-6 py-4 text-center text-red-500">✗</td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.features.prioritySupport ? "✓" : "✗"}
+                        </td>
+                      ))}
                     </tr>
                     <tr>
                       <td className="px-6 py-4">Dedicated Account Manager</td>
-                      <td className="px-6 py-4 text-center text-red-500">✗</td>
-                      <td className="px-6 py-4 text-center text-red-500">✗</td>
-                      <td className="px-6 py-4 text-center text-green-500">
-                        ✓
-                      </td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.id === "enterprise" ? "✓" : "✗"}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4">Trial Period</td>
+                      {pricingTiers.map((tier) => (
+                        <td key={tier.id} className="px-6 py-4 text-center">
+                          {tier.metadata.trialDays
+                            ? `${tier.metadata.trialDays} days`
+                            : "None"}
+                        </td>
+                      ))}
                     </tr>
                   </>
                 )}
@@ -604,7 +643,7 @@ const PricingPage = () => {
                 <BarChart data={userGrowthData} />
               </div>
               <p className="text-gray-600 dark:text-gray-300 mt-4 text-sm">
-                Pro plan users experience 2.8x more growth compared to Standard
+                Pro plan users experience 2.8x more growth compared to Starter
                 in the first 6 months.
               </p>
             </motion.div>
@@ -738,7 +777,7 @@ const PricingPage = () => {
               {
                 question: "How does the free trial work?",
                 answer:
-                  "Your 14-day free trial gives you full access to all Pro plan features. No credit card is required to start, and you can cancel anytime during the trial.",
+                  "Your free trial gives you full access to all plan features. No credit card is required to start, and you can cancel anytime during the trial.",
               },
             ].map((faq, index) => (
               <motion.div

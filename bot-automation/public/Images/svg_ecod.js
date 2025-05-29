@@ -77,6 +77,14 @@ export const ChatBotAI = ({
     </svg>
   );
 };
+export const BotIcon = (props) => (
+  <svg {...CustomIcon(props)}>
+    <rect x="3" y="11" width="18" height="10" rx="2" />
+    <circle cx="12" cy="5" r="3" />
+    <circle cx="8" cy="16" r="1" fill={props.secondaryColor} />
+    <circle cx="16" cy="16" r="1" fill={props.secondaryColor} />
+  </svg>
+);
 export const DashboardIcon = (props) => (
   <svg {...CustomIcon(props)}>
     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z" />
@@ -133,5 +141,34 @@ export const HelpIcon = (props) => (
     <circle cx="12" cy="12" r="10" />
     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
     <path d="M12 17h.01" strokeLinecap="round" />
+  </svg>
+);
+export const AdsAnalyticsIcon = (props) => (
+  <svg {...CustomIcon(props)}>
+    <path d="M3 3v18h18" />
+    <path d="M18 17V9M12 17V5M6 17v-3" stroke={props.secondaryColor} />
+    <circle cx="18" cy="17" r="1" fill={props.primaryColor} />
+    <circle cx="12" cy="17" r="1" fill={props.primaryColor} />
+    <circle cx="6" cy="17" r="1" fill={props.primaryColor} />
+  </svg>
+);
+export const CreativeIcon = (props) => (
+  <svg {...CustomIcon(props)}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M9 9h6v6H9z" fill={props.secondaryColor} />
+    <path d="M9 3v6m6-6v6m-6 12v-6m6 6v-6" />
+  </svg>
+);
+export const CampaignsIcon = (props) => (
+  <svg {...CustomIcon(props)}>
+    <path d="M3 6l9-4 9 4m-9-4v20m-7-8l7 4m0-4l7-4" />
+    <circle cx="12" cy="10" r="1" fill={props.secondaryColor} />
+  </svg>
+);
+export const AdsIcon = (props) => (
+  <svg {...CustomIcon(props)}>
+    <path d="M12 6v15m-7-3l7-9m7 9l-7-9m-5 9h14" />
+    <circle cx="5" cy="18" r="1" fill={props.secondaryColor} />
+    <circle cx="19" cy="18" r="1" fill={props.secondaryColor} />
   </svg>
 );
