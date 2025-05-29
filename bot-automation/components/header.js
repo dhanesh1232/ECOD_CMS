@@ -7,7 +7,7 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useDarkMode } from "@/context/context";
-import { Sun, Moon, User, Lock, X } from "lucide-react";
+import { Sun, Moon, User, Lock, X, Bell } from "lucide-react";
 import { FiLogOut, FiMenu } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,15 +52,6 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
     return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const renderTitle = () => {
-    if (pathname === "/") return "Dashboard";
-    const parts = pathname.split("/");
-    const lastPart = parts[parts.length - 1];
-    // Remove all special characters
-    const cleaned = lastPart.replace(/[^a-zA-Z0-9]/g, " ");
-    return cleaned || "Dashboard";
-  };
-
   const toggleProfileMenu = () => {
     setMenuOpen((prev) => !prev); // Toggle the state
   };
@@ -75,10 +66,10 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 py-4 flex items-center justify-between shadow-sm transition-colors duration-300">
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
       >
         {mobileMenuOpen ? (
-          <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+          <X className="w-6 h-6 text-gray-700 dark:text-gray-300 opacity-0" />
         ) : (
           <FiMenu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
         )}
@@ -197,7 +188,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                   onClick={() => setMenuOpen(false)}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
-                  <User className="w-4 h-4" />
+                  <User className="mr-3 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <span className="text-sm">{session?.user?.name}</span>
                 </Link>
                 <Link
@@ -205,8 +196,28 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                   onClick={() => setMenuOpen(false)}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
-                  <Lock className="w-4 h-4" />
+                  <Lock className="mr-3 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <span>Security</span>
+                </Link>
+                <Link
+                  onClick={() => {
+                    mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
+                  }}
+                  href={`/${workspaceId}/settings/account/notifications`}
+                >
+                  <motion.span
+                    whileHover={{
+                      backgroundColor: "rgba(243, 244, 246, 0.5)",
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center px-4 py-2 text-sm rounded-md text-gray-700 dark:text-gray-200"
+                  >
+                    <Bell
+                      size={16}
+                      className="mr-3 h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                    />
+                    Notifications
+                  </motion.span>
                 </Link>
                 <div
                   onClick={handleSignOut}

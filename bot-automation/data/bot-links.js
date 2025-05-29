@@ -13,10 +13,12 @@ import {
   ChartBar,
   GlobeIcon,
   Key,
+  Megaphone,
   PaintBucket,
   Plug,
   Puzzle,
   Settings,
+  Target,
   Users,
 } from "lucide-react";
 import {
@@ -32,7 +34,6 @@ import {
   DashboardIcon,
   HelpIcon,
   TemplatesIcon,
-  AdsIcon,
   CampaignsIcon,
   CreativeIcon,
   AdsAnalyticsIcon,
@@ -40,7 +41,7 @@ import {
 } from "@/public/Images/svg_ecod";
 
 // Main navigation items
-export const navItems = [
+export const navLinks = [
   {
     id: "dashboard",
     icon: <DashboardIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
@@ -65,7 +66,7 @@ export const navItems = [
         id: "bot-analytics",
         icon: <AnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
         label: "Analytics",
-        href: `/chatbot/bot-analytics`,
+        href: `/chatbot/analytics`,
       },
       {
         id: "conversations",
@@ -86,20 +87,20 @@ export const navItems = [
   {
     id: "ads",
     label: "Ads Automation",
-    icon: <AdsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    icon: <Megaphone size={20} />,
     href: "/ads",
     isParent: true,
     subPages: [
       {
         id: "campaigns",
         label: "Campaigns",
-        icon: <CampaignsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        icon: <Target size={20} />,
         href: `/ads/campaigns`,
       },
       {
         id: "ad-creative",
         label: "Creative",
-        href: "/ads/ad-creative",
+        href: "/ads/creative",
         icon: <CreativeIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
       },
       {
@@ -108,7 +109,7 @@ export const navItems = [
           <AdsAnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
         ),
         label: "Analytics",
-        href: `/ads/ads-analytics`,
+        href: `/ads/analytics`,
       },
     ],
   },

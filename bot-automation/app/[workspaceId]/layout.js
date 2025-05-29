@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-const SideBar = dynamic(() => import("@/components/sidebar"));
+const PremiumSidebar = dynamic(() => import("@/components/sidebar"));
 const Header = dynamic(() => import("@/components/header"));
 import { useCallback, useState, useEffect, useRef } from "react";
 import {
@@ -15,6 +15,7 @@ import { signOut } from "next-auth/react";
 import { encryptData } from "@/utils/encryption";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserServices } from "@/lib/client/user";
+import NotificationButton from "@/components/notification";
 
 export default function ProtectLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -54,7 +55,7 @@ export default function ProtectLayout({ children }) {
     } finally {
       initialCheckDone.current = true;
     }
-  }, [searchParams, router, workspaceId, pathname]);
+  }, [searchParams, router, pathname]);
 
   useEffect(() => {
     checkProfileComplete();
@@ -64,7 +65,7 @@ export default function ProtectLayout({ children }) {
     <>
       <TooltipProvider delayDuration={300} skipDelayDuration={100}>
         <div className="flex h-full bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-          <SideBar
+          <PremiumSidebar
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
           />
@@ -79,6 +80,12 @@ export default function ProtectLayout({ children }) {
           </div>
         </div>
         <OverLayComponent />
+        <NotificationButton
+          size="default"
+          iconSize={20}
+          position="bottom-10 right-2"
+          className="md:hidden fixed bottom-4 right-8 z-40 bg-indigo-600 text-white shadow-lg rounded-full hover:bg-indigo-700"
+        />
       </TooltipProvider>
     </>
   );

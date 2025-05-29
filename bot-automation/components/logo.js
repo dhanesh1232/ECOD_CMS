@@ -1,5 +1,4 @@
 "use client";
-const { FaRobot } = require("react-icons/fa");
 
 const ChatBotAi = () => {
   return (
