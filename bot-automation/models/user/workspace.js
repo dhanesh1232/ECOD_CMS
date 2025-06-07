@@ -226,7 +226,15 @@ const workspaceSchema = new mongoose.Schema(
       },
       status: {
         type: String,
-        enum: ["active", "trialing", "past_due", "canceled", "unpaid"],
+        enum: [
+          "pending",
+          "active",
+          "trialing",
+          "past_due",
+          "paused",
+          "canceled",
+          "unpaid",
+        ],
         default: "active",
       },
       billingCycle: {

@@ -3,23 +3,26 @@ import mongoose from "mongoose";
 
 const paymentHistorySchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    workspace: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
     subscription: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" },
     plan: { type: String, enum: ["free", "starter", "pro", "enterprise"] },
     amount: {
       subtotal: Number,
       tax: Number,
-      discount: Number,
+      discount: { type: Number, default: 0 },
       total: Number,
     },
     razorpay: {
       paymentId: String,
-      orderId: String,
+      subscriptionId: String,
+      invoiceId: String,
       signature: String,
     },
     invoice: {
       number: String,
       url: String,
+      issuedAt: Date,
+      paidAt: Date,
     },
     status: {
       type: String,
@@ -43,9 +46,9 @@ paymentHistorySchema.virtual("formattedAmount").get(function () {
     total: (this.amount.total / 100).toFixed(2),
   };
 });
-paymentHistorySchema.virtual("userInfo", {
-  ref: "User",
-  localField: "user",
+paymentHistorySchema.virtual("workspaceInfo", {
+  ref: "Workspace",
+  localField: "workspace",
   foreignField: "_id",
   justOne: true,
 });

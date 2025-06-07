@@ -200,31 +200,23 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                   <span>Security</span>
                 </Link>
                 <Link
-                  onClick={() => {
-                    mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
-                  }}
+                  onClick={() => setMenuOpen(false)}
+                  className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                   href={`/${workspaceId}/settings/account/notifications`}
                 >
-                  <motion.span
-                    whileHover={{
-                      backgroundColor: "rgba(243, 244, 246, 0.5)",
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                    className="flex items-center px-4 py-2 text-sm rounded-md text-gray-700 dark:text-gray-200"
-                  >
-                    <Bell
-                      size={16}
-                      className="mr-3 h-4 w-4 text-indigo-600 dark:text-indigo-400"
-                    />
-                    Notifications
-                  </motion.span>
+                  <Bell
+                    size={16}
+                    className="mr-3 h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                  />
+                  <span>Notifications</span>
                 </Link>
+                <div className="border-b dark:border-gray-200 border-gray-600 my-1" />
                 <div
                   onClick={handleSignOut}
                   className="px-4 py-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-md transition-colors"
                 >
                   <FiLogOut className="w-4 h-4" />
-                  <span>Logout</span>
+                  <span>Sign Out</span>
                 </div>
               </motion.div>
             )}

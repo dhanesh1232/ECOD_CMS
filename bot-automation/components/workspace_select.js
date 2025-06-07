@@ -11,12 +11,7 @@ import {
 import { useParams } from "next/navigation";
 import { useToast } from "./ui/toast-provider";
 import { WorkspaceService } from "@/lib/client/team";
-export default React.memo(function SelectWorkspace({
-  className,
-  mobile,
-  isCollapsed,
-  isSetOpen,
-}) {
+export default React.memo(function SelectWorkspace({ className = "" }) {
   const showToast = useToast();
   const [open, setOpen] = useState(false);
   const params = useParams();
@@ -47,7 +42,6 @@ export default React.memo(function SelectWorkspace({
 
   const handleOpen = () => {
     setOpen(!open);
-    isSetOpen();
   };
   useEffect(() => {
     if (workspaces.length === 0) {
@@ -117,40 +111,25 @@ export default React.memo(function SelectWorkspace({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              {!isCollapsed && <span>Loading workspaces...</span>}
             </div>
           ) : (
             <SelectValue
               className="mr-1 text-sm"
-              placeholder={
-                isCollapsed
-                  ? mobile
-                    ? "Select Workspace"
-                    : ""
-                  : "Select Workspace"
-              }
+              placeholder={"Select Workspace"}
             >
-              {isCollapsed && !mobile
-                ? workspaces.find((each) => each.id === selectedWorkspace)
-                    ?.name?.[0]
-                : workspaces.find((each) => each.id === selectedWorkspace)
-                    ?.name}
+              {workspaces.find((each) => each.id === selectedWorkspace)?.name}
             </SelectValue>
           )}
         </SelectTrigger>
         <SelectContent
           position="popper"
-          side={isCollapsed ? (mobile ? "bottom" : "right") : "bottom"}
-          align={isCollapsed ? (mobile ? "center" : "start") : "center"}
-          sideOffset={isCollapsed ? (mobile ? 5 : 25) : 5}
+          side={"bottom"}
+          align={"center"}
+          sideOffset={10}
           className="radix-select-content"
           style={{
-            minWidth: isCollapsed
-              ? mobile
-                ? "var(--radix-select-trigger-width)"
-                : "200px"
-              : "var(--radix-select-trigger-width)",
-            marginLeft: isCollapsed ? (mobile ? "0" : "45px") : "0",
+            minWidth: "var(--radix-select-trigger-width)",
+            marginLeft: "0",
             zIndex: 1000,
           }}
         >

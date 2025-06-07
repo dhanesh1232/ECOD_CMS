@@ -12,7 +12,7 @@ export function ToastProvider({ children }) {
     const id = Math.random().toString(36);
     setToasts((prev) => [...prev, { id, title, description, variant }]);
 
-    // Auto-dismiss after 5 seconds
+    // Auto-dismiss after 3 seconds
     setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
     }, 3000);

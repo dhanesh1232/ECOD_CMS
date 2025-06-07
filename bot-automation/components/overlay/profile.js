@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -22,6 +22,11 @@ import { validatePhoneNumber } from "@/hooks/validator";
 import { UserServices } from "@/lib/client/user";
 import { useToast } from "../ui/toast-provider";
 import "react-phone-number-input/style.css";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
+import { SpinnerIcon } from "@/public/Images/svg_ecod";
+import { cn } from "@/lib/utils";
 
 const ConfettiEffect = ({ active }) => {
   const [dimensions, setDimensions] = useState({
@@ -284,47 +289,47 @@ const ProfileForm = ({
 
         <form onSubmit={handleProfile} className="space-y-2">
           <div>
-            <label
+            <Label
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
             >
               Full Name
-            </label>
+            </Label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 z-10">
                 <FiUser />
               </div>
-              <input
+              <Input
                 id="name"
                 name="name"
                 type="text"
                 value={profileState.name}
                 readOnly
                 disabled={true}
-                className={getInputClass("name")}
+                className={`${getInputClass("name")} z-0`}
               />
             </div>
           </div>
 
           <div>
-            <label
+            <Label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
             >
               Email Address
-            </label>
+            </Label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 z-10">
                 <FiMail />
               </div>
-              <input
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 value={profileState.email}
                 readOnly
                 disabled={true}
-                className={getInputClass("email")}
+                className={`${getInputClass("email")} z-0`}
               />
             </div>
           </div>
@@ -337,7 +342,7 @@ const ProfileForm = ({
               Phone Number
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 z-10">
                 <FiPhone />
               </div>
               <PhoneInput
@@ -362,17 +367,17 @@ const ProfileForm = ({
           </div>
 
           <div>
-            <label
+            <Label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
             >
               Password
-            </label>
+            </Label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 z-10">
                 <FiLock />
               </div>
-              <input
+              <Input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
@@ -380,16 +385,17 @@ const ProfileForm = ({
                 onChange={handleChange}
                 onBlur={() => handleBlur("password")}
                 placeholder="••••••••"
-                className={getInputClass("password")}
+                className={`${getInputClass("password")} z-0`}
               />
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex focus:outline-none focus:text-blue-600 items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute inset-y-0 right-0.5 top-0.5 flex focus:outline-none focus:text-blue-600 items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
-              </button>
+              </Button>
             </div>
 
             <PasswordStrengthBar
@@ -404,17 +410,17 @@ const ProfileForm = ({
           </div>
 
           <div>
-            <label
+            <Label
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
             >
               Confirm Password
-            </label>
+            </Label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 z-10">
                 <FiLock />
               </div>
-              <input
+              <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
@@ -422,18 +428,19 @@ const ProfileForm = ({
                 onChange={handleChange}
                 onBlur={() => handleBlur("confirmPassword")}
                 placeholder="••••••••"
-                className={getInputClass("confirmPassword")}
+                className={`${getInputClass("confirmPassword")} z-0`}
               />
-              <button
+              <Button
+                variant="ghost"
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute inset-y-0 right-0.5 top-0.5 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 aria-label={
                   showConfirmPassword ? "Hide password" : "Show password"
                 }
               >
                 {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-              </button>
+              </Button>
             </div>
           </div>
           <div className="flex items-start gap-2 pt-1">
@@ -447,7 +454,7 @@ const ProfileForm = ({
               className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
             />
             <div>
-              <label
+              <Label
                 htmlFor="terms"
                 className="text-sm text-gray-700 dark:text-gray-300"
               >
@@ -473,47 +480,34 @@ const ProfileForm = ({
                 >
                   Privacy <FiExternalLink className="ml-0.5" size={12} />
                 </button>
-              </label>
+              </Label>
             </div>
           </div>
 
-          <motion.button
+          <Button
+            variant="premium"
             type="submit"
             disabled={
               isSubmitting || (showAllErrors && Object.keys(errors).length > 0)
             }
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="relative w-full disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none"
           >
+            {/* Spinner that appears on top during loading */}
             {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Processing...
-              </span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <SpinnerIcon className="h-5 w-5" color="white" />
+              </div>
             ) : (
-              "Complete Profile"
+              <span
+                className={cn(
+                  "block transition-opacity",
+                  isSubmitting && "opacity-0"
+                )}
+              >
+                Complete Profile
+              </span>
             )}
-          </motion.button>
+          </Button>
         </form>
       </motion.div>
     </div>
@@ -522,6 +516,7 @@ const ProfileForm = ({
 
 const ProfileCompletion = () => {
   const showToast = useToast();
+  const toastRef = useRef(false);
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -546,14 +541,27 @@ const ProfileCompletion = () => {
 
   useEffect(() => {
     if (session?.user) {
-      const { name, email } = session.user;
-      setProfileState((prev) => ({
-        ...prev,
-        name: name || "",
-        email: email || "",
-      }));
+      const fecthProfile = async () => {
+        const userData = await UserServices.fetchUserProfile();
+        if (userData.status && !userData.ok) {
+          const data = await userData.json();
+          if (!toastRef.current) {
+            showToast({
+              description: data.message,
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
+        }
+        setProfileState((prev) => ({
+          ...prev,
+          name: userData.data.user.name,
+          email: userData.data.user.email,
+        }));
+      };
+      fecthProfile();
     }
-  }, [session]);
+  }, [session, showToast]);
 
   useEffect(() => {
     if (success) {
@@ -648,7 +656,6 @@ const ProfileCompletion = () => {
 
   const handleProfile = async (e) => {
     e.preventDefault();
-
     setTouched({
       name: true,
       email: true,
@@ -664,6 +671,7 @@ const ProfileCompletion = () => {
     setIsSubmitting(true);
 
     try {
+      console.log(isSubmitting);
       const data = await UserServices.updateUserPendingProfile({
         name: profileState.name,
         email: profileState.email,

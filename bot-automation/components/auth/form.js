@@ -27,6 +27,10 @@ import {
 import { decryptData } from "@/utils/encryption";
 import { useToast } from "../ui/toast-provider";
 import { FaWhatsapp } from "react-icons/fa";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import Link from "next/link";
 const AIFormWrapper = dynamic(() => import("./wrapper"));
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
@@ -616,7 +620,7 @@ export default function FormComponent() {
       return (
         <div key={label}>
           <div className="flex items-start pt-1">
-            <div className="flex items-center h-3 w-3 sm:h-5 sm:w-5">
+            <div className="flex items-center h-3 w-3 sm:h-4 sm:w-4">
               <input
                 id={field}
                 name={field}
@@ -624,16 +628,16 @@ export default function FormComponent() {
                 checked={value}
                 required={fieldConfig.validation?.required}
                 onChange={handleChange}
-                className="h-3 w-3 sm:h-5 sm:w-5 rounded dark:border-gray-600 border-gray-300 dark:bg-gray-700 bg-gray-100 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900"
+                className="h-3 w-3 sm:h-4 sm:w-4 rounded dark:border-gray-600 border-gray-300 dark:bg-gray-700 bg-gray-100 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900"
               />
             </div>
-            <div className="ml-3 text-xs sm:text-sm">
-              <label
+            <div className="ml-2 text-xs sm:text-sm">
+              <Label
                 htmlFor={field}
                 className="dark:text-gray-300 text-gray-700"
               >
                 {label}
-              </label>
+              </Label>
             </div>
           </div>
           {showError && (
@@ -660,12 +664,12 @@ export default function FormComponent() {
     if (type === "phone") {
       return (
         <div className="space-y-1" key={label}>
-          <label
+          <Label
             htmlFor={field}
             className="text-sm font-medium dark:text-gray-300 text-gray-700"
           >
             {label}
-          </label>
+          </Label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 flex items-center pl-2 sm:pl-3 pointer-events-none">
               {React.cloneElement(icon, {
@@ -714,22 +718,22 @@ export default function FormComponent() {
 
     return (
       <div className="space-y-1" key={label}>
-        <label
+        <Label
           htmlFor={field}
           className="text-sm font-medium dark:text-gray-300 text-gray-700"
         >
           {label}
-        </label>
+        </Label>
         <div className="relative group">
           {icon && (
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <div className="absolute z-10 inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
               {React.cloneElement(icon, {
                 className:
                   "text-gray-400 group-focus-within:text-blue-500 transition-colors",
               })}
             </div>
           )}
-          <input
+          <Input
             type={isPassword && !showPassword ? "password" : "text"}
             id={field}
             name={field}
@@ -746,7 +750,8 @@ export default function FormComponent() {
             } rounded-lg placeholder-gray-500 focus:outline-none focus:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all`}
           />
           {isPassword && value && (
-            <button
+            <Button
+              variant="ghost"
               type="button"
               className="absolute inset-y-0 outline-none focus:outline-none right-0 focus:text-blue-600 flex items-center pr-3 text-gray-400 hover:text-gray-500 dark:hover:text-gray-200 transition-colors"
               onClick={() =>
@@ -764,7 +769,7 @@ export default function FormComponent() {
               }
             >
               {showPassword ? <FiEyeOff /> : <FiEye />}
-            </button>
+            </Button>
           )}
         </div>
         {helpText && !showError && pageKey === "register" && (
@@ -784,21 +789,55 @@ export default function FormComponent() {
       <div className="space-y-2">
         {pageConfig.fields.includes("tabs") && (
           <>
-            <div className="flex items-center justify-center gap-2 w-full mt-3 p-1 dark:bg-gray-800 bg-gray-100 rounded-xl">
+            <div className="flex relative items-center justify-center gap-2 w-full mt-3 p-1 dark:bg-gray-800 bg-gray-100 rounded-xl">
+              <AnimatePresence initial={false}>
+                <motion.div
+                  layout
+                  className="absolute inset-0"
+                  initial={false}
+                  animate={{
+                    left: `${
+                      (FORM_CONFIG.tabs.findIndex((t) => t.id === activeTab) *
+                        100) /
+                      FORM_CONFIG.tabs.length
+                    }%`,
+                    width: `${100 / FORM_CONFIG.tabs.length}%`,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  <div className="absolute inset-1 dark:bg-gray-900 bg-white rounded-lg shadow-sm" />
+                </motion.div>
+              </AnimatePresence>
+
               {FORM_CONFIG.tabs.map((tab) => (
-                <button
+                <motion.button
                   key={tab.id}
                   type="button"
-                  className={`flex items-center justify-center flex-1 py-2 px-4 rounded-lg transition-all ${
+                  className={`relative flex items-center justify-center flex-1 py-2 px-4 rounded-lg z-10 ${
                     activeTab === tab.id
-                      ? "dark:bg-gray-900 bg-white text-gray-900 dark:text-white shadow-sm"
+                      ? "text-gray-900 dark:text-white"
                       : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   }`}
                   onClick={() => setActiveTab(tab.id)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.15 }}
                 >
-                  {tab.icon}
-                  {tab.label}
-                </button>
+                  <motion.span
+                    className="flex items-center justify-center gap-1.5"
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    {tab.icon}
+                    <motion.span
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {tab.label}
+                    </motion.span>
+                  </motion.span>
+                </motion.button>
               ))}
             </div>
 
@@ -880,9 +919,9 @@ export default function FormComponent() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="my-1"
+            className="my-1 flex items-center gap-1"
           >
-            <Logo hide={true} />
+            <Logo />
           </motion.div>
 
           {/* Success Message */}
@@ -1034,10 +1073,12 @@ export default function FormComponent() {
         {pageKey === "forgot-password" && (
           <button
             onClick={() => router.push("/auth/login")}
-            className="flex items-center self-start mb-4 text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="flex items-center my-3 self-start text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             <FiArrowLeft className="mr-1" />
-            Back to login
+            <span className="hover:underline underline-offset-1 capitalize">
+              Back to login
+            </span>
           </button>
         )}
 
@@ -1048,7 +1089,7 @@ export default function FormComponent() {
           transition={{ duration: 0.5 }}
           className="my-1"
         >
-          <Logo hide={true} />
+          <Logo />
         </motion.div>
 
         {/* Title and Subtitle */}
@@ -1086,13 +1127,11 @@ export default function FormComponent() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <motion.button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-blue-500/20 flex items-center justify-center gap-2 group"
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
+              className="w-full py-2.5 px-4 font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-blue-500/20 flex items-center justify-center gap-2 group"
+              variant="premium"
             >
               {isLoading ? (
                 <>
@@ -1124,7 +1163,7 @@ export default function FormComponent() {
                   <FiArrowRight className="transition-transform group-hover:translate-x-1" />
                 </>
               )}
-            </motion.button>
+            </Button>
           </motion.div>
         </motion.form>
 
@@ -1173,6 +1212,17 @@ export default function FormComponent() {
               ))}
             </motion.div>
           </>
+        )}
+        {pageKey === "forgot-password" && (
+          <span className="flex mt-2 text-sm items-center gap-1 text-gray-950 dark:text-gray-50">
+            Remember password{" "}
+            <Link
+              href="/auth/login"
+              className="hover:underline underline-offset-1 text-blue-400 hover:text-blue-600"
+            >
+              Login
+            </Link>
+          </span>
         )}
         {/* Footer Navigation */}
         {pageKey !== "forgot-password" && (

@@ -1,9 +1,18 @@
 "use client";
 
-import { CheckCircle, XCircle, Loader, Download, Undo2 } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Loader,
+  Download,
+  Undo2,
+  RotateCcw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { generateInvoicePDF } from "@/lib/client/generateInvoice";
+import { useState } from "react";
+import { SpinnerIcon } from "@/public/Images/svg_ecod";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -13,32 +22,31 @@ const formatDate = (dateString) => {
   const year = String(date.getFullYear()).slice(-2); // Extract last two digits of the year
   return `${month}/${day}/${year}`; // Return in MM/DD/YY format
 };
-
-const PaymentHistoryTable = ({ paymentHistory }) => {
+const statusConfig = {
+  paid: {
+    color: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+    icon: <CheckCircle className="h-4 w-4" />,
+    label: "Paid",
+  },
+  failed: {
+    color: "bg-rose-500/20 text-rose-600 dark:text-rose-400",
+    icon: <XCircle className="h-4 w-4" />,
+    label: "Failed",
+  },
+  pending: {
+    color: "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+    icon: <Loader className="h-4 w-4 animate-spin" />,
+    label: "Processing...",
+  },
+  refunded: {
+    color: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+    icon: <Undo2 className="h-4 w-4" />,
+    label: "Refunded",
+  },
+};
+const PaymentHistoryTable = ({ paymentHistory, onReload, onRefresh }) => {
+  const [invoiceLoader, setInvoiceLoader] = useState(false);
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      paid: {
-        color: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
-        icon: <CheckCircle className="h-4 w-4" />,
-        label: "Paid",
-      },
-      failed: {
-        color: "bg-rose-500/20 text-rose-600 dark:text-rose-400",
-        icon: <XCircle className="h-4 w-4" />,
-        label: "Failed",
-      },
-      pending: {
-        color: "bg-amber-500/20 text-amber-600 dark:text-amber-400",
-        icon: <Loader className="h-4 w-4 animate-spin" />,
-        label: "Processing",
-      },
-      refunded: {
-        color: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
-        icon: <Undo2 className="h-4 w-4" />,
-        label: "Refunded",
-      },
-    };
-
     const config = statusConfig[status] || statusConfig.pending;
 
     return (
@@ -50,17 +58,39 @@ const PaymentHistoryTable = ({ paymentHistory }) => {
       </div>
     );
   };
+  const generateInvoicePDF = (invoice) => {
+    console.log(invoice);
+    setInvoiceLoader(true);
+    setTimeout(() => {
+      setInvoiceLoader(false);
+    }, 5000);
+  };
 
   return (
     <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-          <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+            <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h3 className="text-lg font-semibold">Payment History</h3>
         </div>
-        <h3 className="text-lg font-semibold">Payment History</h3>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" type="button" onClick={onReload}>
+              <RotateCcw size={16} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" arrow animation="fade">
+            Refresh
+          </TooltipContent>
+        </Tooltip>
       </div>
-
-      {paymentHistory ? (
+      {onRefresh ? (
+        <span className="flex items-center justify-center">
+          <SpinnerIcon />
+        </span>
+      ) : paymentHistory ? (
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="text-left text-sm text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
@@ -90,17 +120,29 @@ const PaymentHistoryTable = ({ paymentHistory }) => {
                     <td className="py-4 px-2">
                       {getStatusBadge(payment.status)}
                     </td>
-                    <td className="py-4 px-2 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={payment.status !== "paid"}
-                        className="text-blue-600 dark:text-blue-400 outline-none active:outline-none active:ring-0 focus:outline-none focus-within:outline-none focus:ring-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                        onClick={() => generateInvoicePDF(payment)}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Invoice
-                      </Button>
+                    <td className="py-4 px-2 text-right flex items-center justify-center">
+                      {invoiceLoader ? (
+                        <SpinnerIcon />
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              //disabled={payment.status === "pending"}
+                              className="text-blue-600 dark:text-blue-400 outline-none active:outline-none active:ring-0 focus:outline-none focus-within:outline-none focus:ring-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              onClick={() =>
+                                generateInvoicePDF(payment.invoice.number)
+                              }
+                            >
+                              <Download className="h-4 w-4 md:h-6 md:w-6" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent arrow side="top">
+                            Download
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </td>
                   </tr>
                 );

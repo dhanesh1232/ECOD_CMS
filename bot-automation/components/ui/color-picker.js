@@ -63,7 +63,7 @@ export const ColorPicker = ({ color, onChange }) => {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="w-[220px] justify-between px-3 font-normal hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+          className="sm:w-[120px] md:w-[150px] w-[200px] justify-between px-3 font-normal hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
         >
           <div className="flex items-center">
             <motion.div

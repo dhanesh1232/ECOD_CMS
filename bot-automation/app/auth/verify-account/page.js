@@ -7,6 +7,8 @@ import Logo from "@/components/logo";
 import { decryptData } from "@/utils/encryption";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/components/ui/toast-provider";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 const VerifyAccount = () => {
   const showToast = useToast();
@@ -108,7 +110,6 @@ const VerifyAccount = () => {
             description = `${data.field} already in use`;
             redirectPath = "/auth/login";
           }
-
           showToast({
             title: "Error",
             description,
@@ -191,8 +192,8 @@ const VerifyAccount = () => {
 
         <div className="w-full space-y-4 max-w-md">
           <div>
-            <label className="text-white text-sm">Email</label>
-            <input
+            <Label className="text-white text-sm">Email</Label>
+            <Input
               readOnly
               value={state.email || ""}
               className="rounded w-full p-2 text-blue-500 bg-gray-100 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 outline-none"
@@ -200,10 +201,10 @@ const VerifyAccount = () => {
           </div>
 
           <div>
-            <label className="text-white text-sm">Verification Code</label>
+            <Label className="text-white text-sm">Verification Code</Label>
             <div className="flex justify-between gap-1 sm:gap-2">
               {otp.map((digit, idx) => (
-                <input
+                <Input
                   key={idx}
                   ref={(el) => (inputRefs.current[idx] = el)}
                   type="text"

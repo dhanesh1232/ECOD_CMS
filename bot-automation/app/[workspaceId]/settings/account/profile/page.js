@@ -19,11 +19,12 @@ import {
   FiPhone,
   FiBriefcase,
 } from "react-icons/fi";
-import { BadgeCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMobileRange } from "@/hooks/mediaQuery";
 import { UserServices } from "@/lib/client/user";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { UserIcon, VerifiedBadge } from "@/public/Images/svg_ecod";
 
 const AccountInfoSection = () => {
   const isTinyMobile = useMobileRange();
@@ -386,7 +387,23 @@ const AccountInfoSection = () => {
         />
 
         <div className="flex-1 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-6">
+            <FormField
+              label="Email Address"
+              icon={<FiMail size={16} className="text-indigo-600" />}
+              isEditing={false}
+            >
+              <div className="relative">
+                <Input
+                  type="email"
+                  name="email"
+                  value={tempData.email || ""}
+                  readOnly
+                  disabled
+                  className="w-full p-2 text-sm md:p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 opacity-80"
+                />
+              </div>
+            </FormField>
             <FormField
               label="Full Name"
               icon={<FiUser size={16} className="text-indigo-600" />}
@@ -407,24 +424,6 @@ const AccountInfoSection = () => {
                 </p>
               )}
             </FormField>
-
-            <FormField
-              label="Email Address"
-              icon={<FiMail size={16} className="text-indigo-600" />}
-              isEditing={false}
-            >
-              <div className="relative">
-                <Input
-                  type="email"
-                  name="email"
-                  value={tempData.email || ""}
-                  readOnly
-                  disabled
-                  className="w-full p-2 text-sm md:p-3 rounded-lg border dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 opacity-80"
-                />
-              </div>
-            </FormField>
-
             <FormField
               label="Phone Number"
               icon={<FiPhone size={16} className="text-indigo-600" />}
@@ -466,7 +465,7 @@ const AccountInfoSection = () => {
           Your Workspaces
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
           {workspaces.map((workspace) => (
             <WorkspaceCard
               key={workspace.id}
@@ -577,33 +576,38 @@ const LoadingSkeleton = () => (
 );
 
 const EditButton = ({ onClick, isTinyMobile }) => (
-  <button
+  <Button
+    rounded="lg"
     onClick={onClick}
     className={`flex items-center gap-2 ${
       isTinyMobile ? "px-2 py-2 text-xs" : "px-4 py-2 text-sm"
     } font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition hover:shadow-md`}
   >
     <FiEdit2 size={isTinyMobile ? 14 : 16} /> Edit
-  </button>
+  </Button>
 );
 
 const EditControls = ({ onCancel, onSave, isLoading, isTinyMobile }) => (
   <div className="flex gap-2 mt-0 justify-end">
-    <button
+    <Button
+      variant="destructive"
+      rounded="lg"
       onClick={onCancel}
       className={`flex items-center gap-1.5 ${
         isTinyMobile ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
-      } font-medium text-gray-700 dark:text-gray-200 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-100/90 dark:hover:bg-gray-700/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-xs`}
+      } font-medium shadow-sm hover:shadow-xs`}
     >
       <FiX size={isTinyMobile ? 14 : 16} />
       {!isTinyMobile && "Cancel"}
-    </button>
-    <button
+    </Button>
+    <Button
+      rounded="lg"
+      variant="premium"
       onClick={onSave}
       disabled={isLoading}
       className={`flex items-center gap-1.5 ${
         isTinyMobile ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
-      } font-medium text-white bg-green-600/90 hover:bg-green-700/90 backdrop-blur-sm rounded-lg transition-all duration-200 shadow-sm hover:shadow-xs disabled:opacity-70 disabled:cursor-not-allowed`}
+      } font-medium shadow-sm hover:shadow-xs disabled:opacity-70 disabled:cursor-not-allowed`}
     >
       {isLoading ? (
         <>
@@ -616,7 +620,7 @@ const EditControls = ({ onCancel, onSave, isLoading, isTinyMobile }) => (
           {!isTinyMobile && "Save"}
         </>
       )}
-    </button>
+    </Button>
   </div>
 );
 
@@ -648,81 +652,86 @@ const ProfilePictureSection = ({
   imagePreview,
   isEditing,
   onImageChange,
+  isUploading = false, // Added loading state
 }) => (
-  <div className="flex flex-col items-center lg:items-start space-y-3">
+  <div className="flex flex-col items-center space-y-4">
+    {/* Profile picture container with enhanced styling */}
     <div className="relative group">
-      <div className="relative w-20 h-20 md:w-32 md:h-32 rounded-full bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-800 shadow-lg transition-all duration-300 group-hover:shadow-xl dark:shadow-gray-900/50">
-        <div className="h-full w-full overflow-hidden rounded-full flex items-center justify-center">
+      <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 border-4 border-white dark:border-gray-800 shadow-lg ring-2 ring-offset-2 ring-gray-200/50 dark:ring-gray-700/50 transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:ring-primary/30">
+        {/* Loading overlay */}
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/30 dark:bg-black/50 rounded-full flex items-center justify-center z-10">
+            <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-white"></div>
+          </div>
+        )}
+
+        {/* Profile image or default */}
+        <div className="h-full w-full overflow-hidden rounded-full flex items-center justify-center relative">
           {imagePreview ? (
             <Image
               src={imagePreview}
               alt="User profile picture"
-              width={128}
-              height={128}
-              className="object-cover w-full h-full"
+              width={144}
+              height={144}
+              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
               priority
             />
           ) : (
-            <DefaultProfileIcon className="w-3/4 h-3/4 text-gray-400 dark:text-gray-600" />
+            <div className="bg-gray-200 dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-full w-full h-full flex items-center justify-center">
+              <UserIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+            </div>
           )}
         </div>
 
-        {verified && !isEditing && (
-          <span
-            className="absolute top-0 right-0 z-10"
-            aria-label="Verified account"
-          >
-            <VerifiedBadge />
-          </span>
+        {/* Edit badge positioned at bottom right */}
+        {isEditing && !isUploading && (
+          <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-indigo-600 to-purple-600 p-2 rounded-full shadow-lg cursor-pointer hover:scale-105 transition-transform duration-200 z-20 ring-2 ring-white dark:ring-gray-900">
+            <label
+              htmlFor="profile-upload"
+              className="flex items-center justify-center cursor-pointer"
+              aria-label="Upload profile picture"
+            >
+              <FiUpload className="text-white" size={18} />
+              <input
+                id="profile-upload"
+                type="file"
+                accept="image/*"
+                onChange={onImageChange}
+                className="hidden"
+                aria-describedby="file-requirements"
+                disabled={isUploading}
+              />
+            </label>
+          </div>
         )}
       </div>
-
-      {isEditing && (
-        <label
-          htmlFor="profile-upload"
-          className="absolute -bottom-2 -right-2 bg-indigo-600 p-2 rounded-full shadow-lg cursor-pointer hover:bg-indigo-700 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
-          tabIndex={0}
-          aria-label="Upload profile picture"
-        >
-          <FiUpload className="text-white" size={18} />
-          <input
-            id="profile-upload"
-            type="file"
-            accept="image/*"
-            onChange={onImageChange}
-            className="hidden"
-            aria-describedby="file-requirements"
-          />
-        </label>
-      )}
     </div>
 
-    {isEditing && (
-      <p
-        id="file-requirements"
-        className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center max-w-[160px]"
-      >
-        Supports JPG, PNG (Max 5MB)
-      </p>
-    )}
-  </div>
-);
+    {/* Verification and file info section */}
+    <div className="flex flex-col items-center space-y-2">
+      {verified && (
+        <div className="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-full border border-green-200 dark:border-green-800/50">
+          <VerifiedBadge className="text-green-500 dark:text-green-400" />
+          <span className="text-xs font-medium text-green-700 dark:text-green-300">
+            Verified Account
+          </span>
+        </div>
+      )}
 
-const DefaultProfileIcon = () => (
-  <div className="flex items-center justify-center w-full h-full text-gray-400">
-    <svg
-      className="w-16 h-16"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-      />
-    </svg>
+      {isEditing && (
+        <div className="text-center">
+          <p
+            id="file-requirements"
+            className="text-xs text-gray-500 dark:text-gray-400"
+          >
+            Supports JPG, PNG (Max 5MB)
+          </p>
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+            Recommended: 400×400 pixels
+          </p>
+        </div>
+      )}
+    </div>
   </div>
 );
 
@@ -734,12 +743,6 @@ const FormField = ({ label, icon, children }) => (
     </label>
     {children}
   </div>
-);
-
-const VerifiedBadge = () => (
-  <span className="absolute right-3 top-1.5 sm:top-2 md:top-3 flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-700 text-green-700 dark:text-green-100 shadow-md ring-1 ring-green-300 dark:ring-green-600">
-    <BadgeCheck size={14} className="stroke-[1.5]" />
-  </span>
 );
 
 export default AccountInfoSection;

@@ -5,6 +5,7 @@ import { validateSession } from "@/lib/auth";
 import { Subscription } from "@/models/payment/subscription";
 import { Workspace } from "@/models/user/workspace";
 import { User } from "@/models/user/user";
+import { ErrorHandles } from "@/lib/server/errors";
 
 export async function GET(req, { params }) {
   try {
@@ -19,10 +20,7 @@ export async function GET(req, { params }) {
       .lean();
 
     if (!workspace) {
-      return NextResponse.json(
-        { message: "Workspace not found" },
-        { status: 404 }
-      );
+      return ErrorHandles.UserNotFound("Workspace not found");
     }
     // Check if user has access to this workspace
     const userWorkspaceAccess = workspace.members.some(
@@ -32,17 +30,22 @@ export async function GET(req, { params }) {
     );
 
     if (!userWorkspaceAccess) {
-      return NextResponse.json(
-        { message: "You don't have access to this workspace" },
-        { status: 403 }
-      );
+      return ErrorHandles.Forbidden("You don't have access to this workspace");
     }
 
     // Get full subscription details
     const subscription = await Subscription.findOne({
       workspace: workspace._id,
       status: {
-        $in: ["active", "trialing", "past_due", "unpaid"],
+        $in: [
+          "pending",
+          "active",
+          "trialing",
+          "past_due",
+          "paused",
+          "canceled",
+          "unpaid",
+        ],
       },
     })
       .select("+usage +limits +features")
@@ -119,6 +122,7 @@ export async function GET(req, { params }) {
           subscription.trialEnd > currentDate,
       },
       subscription: {
+        workspace: workspace._id,
         id: subscription._id,
         plan: subscription.plan,
         status: subscription.status,

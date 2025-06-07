@@ -16,4 +16,21 @@ export const SuccessHandle = {
   ) => {
     return createSuccessResponse(200, message, data);
   },
+  DefaultSuccess: (message = "API Success") => {
+    return createSuccessResponse(200, message);
+  },
+
+  //subscription create
+  createSub: (data, message = "Successfully plan created, finish payment") => {
+    return createSuccessResponse(200, message, data);
+  },
+  SubscriptionSuccess: (
+    data,
+    message = "Subscription verified successfully"
+  ) => {
+    return createSuccessResponse(200, message, data);
+  },
+  SubscriptionHistory: (data) => {
+    return NextResponse.json(data, { status: 200, headers });
+  },
 };

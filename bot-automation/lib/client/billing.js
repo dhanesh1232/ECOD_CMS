@@ -1,49 +1,81 @@
 // lib/billing.js
+const headers = { "Content-Type": "application/json" };
+
+async function handleResponse(res) {
+  // Response handle section
+  if (!res.ok) {
+    return res;
+  }
+  return await res.json();
+}
+
+const fetchWithRetry = async (url, options, retries = 3) => {
+  // API Call from here to fecth data via api with multi retries
+  try {
+    const res = await fetch(url, options);
+    return await handleResponse(res);
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    return err;
+  }
+};
+// All API calls
 export const billingService = {
-  getSubscription: async (workspaceId) => {
-    return fetch(`/api/workspace/${workspaceId}/subscription`, {
+  getSubscription: async (workspaceId, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/subscription`, {
       method: "GET",
       credentials: "include",
-    }).then(handleResponse);
+      headers,
+      ...options,
+    });
   },
-
-  createPaymentOrder: async (data, workspaceId) => {
-    console.log(data);
-    return fetch(
-      `/api/workspace/${workspaceId}/subscription/create-payment-order`,
+  createPaymentOrder: async (workspaceId, data, options = {}) => {
+    return fetchWithRetry(
+      `/api/workspace/${workspaceId}/subscription/create-payment`,
       {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(data),
+        ...options,
       }
-    ).then(handleResponse);
+    );
   },
-
-  verifyPayment: async (paymentData, workspaceId) => {
-    return fetch(`/api/workspace/${workspaceId}/subscription/verify-payment`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        razorpay_payment_id: paymentData.razorpay_payment_id,
-        razorpay_order_id: paymentData.razorpay_order_id,
-        razorpay_signature: paymentData.razorpay_signature,
-        planId: paymentData.planId,
-        currency: paymentData.currency,
-        period: paymentData.period,
-      }),
-    }).then(handleResponse);
+  verifyPayment: async (workspaceId, paymentData, options = {}) => {
+    return fetchWithRetry(
+      `/api/workspace/${workspaceId}/subscription/verify-payment`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers,
+        body: JSON.stringify(paymentData),
+        ...options,
+      }
+    );
   },
-
-  getPaymentHistory: async (workspace, workspaceId) => {
-    return fetch(
-      `/api/workspace/${workspaceId}/subscription/payment-history?workspace=${workspace}`,
+  checkWebhookConfirmation: async (workspaceId, paymentId, options = {}) => {
+    return fetchWithRetry(
+      `/api/workspace/${workspaceId}/subscription/confirm/${paymentId}`,
       {
         method: "GET",
         credentials: "include",
+        ...options,
       }
-    ).then(handleResponse);
+    );
+  },
+  getPaymentHistory: async (workspaceId, options = {}) => {
+    return fetchWithRetry(
+      `/api/workspace/${workspaceId}/subscription/history`,
+      {
+        method: "GET",
+        headers,
+        credentials: "include",
+        ...options,
+      }
+    );
   },
 
   cancelSubscription: async () => {
@@ -53,12 +85,3 @@ export const billingService = {
     }).then(handleResponse);
   },
 };
-
-function handleResponse(response) {
-  return response.json().then((data) => {
-    if (!response.ok) {
-      throw new Error(data.error || "Request failed");
-    }
-    return data;
-  });
-}

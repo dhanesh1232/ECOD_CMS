@@ -15,12 +15,12 @@ import {
   StarsIcon,
   CheckCircle,
   Rocket,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import PlanSummaryCard from "@/components/settings/PlanSummaryCard";
-import UsageStatsCard from "@/components/settings/UsageStatsCard";
 import PaymentMethodForm from "@/components/settings/PaymentMethodForm";
 import PaymentHistoryTable from "@/components/settings/PaymentHistoryTable";
 import CancellationModal from "@/components/settings/CancellationModal";
@@ -66,6 +66,7 @@ const BillingPage = () => {
   const [showPlans, setShowPlans] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [userCred, setUserCred] = useState({});
+  const [isLoadinghistory, setIsLoadingHistory] = useState(false);
   const [currency] = useState("INR");
   const [billingPeriod, setBillingPeriod] = useState("monthly");
   const [paymentHistory, setPaymentHistory] = useState([]);
@@ -84,11 +85,48 @@ const BillingPage = () => {
     };
   };
 
+  const fetchHistory = useCallback(async () => {
+    try {
+      setIsLoadingHistory(true);
+      const history = await billingService.getPaymentHistory(workspaceId);
+      if (history.status && !history.ok) {
+        const data = await history.json();
+        if (!toastRef.current) {
+          showToast({ description: data.message, variant: "warning" });
+          toastRef.current = true;
+        }
+        setIsLoadingHistory(false);
+        return;
+      }
+      setPaymentHistory(history);
+      setIsLoadingHistory(false);
+    } catch (err) {
+      if (!toastRef.current) {
+        showToast({
+          title: "Retry",
+          description:
+            err.message || "Failed to fetch subscription history data.",
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [showToast, workspaceId]);
+
   const fetchSubscription = useCallback(async () => {
+    if (!workspaceId) return;
     try {
       setIsProcessing(true);
       const data = await billingService.getSubscription(workspaceId);
-      console.log(data.data.user);
+      if (data.status && !data.ok) {
+        const value = await data.json();
+        if (!toastRef.current) {
+          showToast({ description: value.message, variant: "warning" });
+          toastRef.current = true;
+        }
+      }
       setUserCred({
         phone: data?.data?.user?.phone,
         email: data?.data?.user?.email,
@@ -96,25 +134,7 @@ const BillingPage = () => {
       });
       setSubscription(data?.data?.subscription);
       setError("");
-      try {
-        setIsProcessing(false);
-        if (data?.data?.subscription?.plan !== "free") {
-          const paymentHistory = await billingService.getPaymentHistory(
-            data?.user?.subscription.user,
-            workspaceId
-          );
-          setPaymentHistory([...paymentHistory?.paymentHistory] || []);
-          console.log("Payment history:", paymentHistory.paymentHistory);
-        }
-      } catch (err) {
-        if (!toastRef.current) {
-          showToast({
-            description: "Failed to fetch subscription history data.",
-            variant: "warning",
-          });
-          toastRef.current = true;
-        }
-      }
+      setIsProcessing(false);
     } catch (err) {
       showToast({ description: err.message, variant: "warning" });
     } finally {
@@ -124,10 +144,26 @@ const BillingPage = () => {
   }, [showToast, workspaceId]);
 
   useEffect(() => {
+    if (!workspaceId) return;
     fetchSubscription();
     const pop = searchParams.get("plans_comp");
     setShowPlans(!!pop);
-  }, [fetchSubscription, searchParams]);
+  }, [fetchSubscription, workspaceId, searchParams]);
+
+  useEffect(() => {
+    if (
+      subscription?.plan.toLowerCase() !== "free" &&
+      subscription &&
+      workspaceId
+    ) {
+      fetchHistory();
+    }
+  }, [fetchHistory, subscription, workspaceId]);
+  const handleRefresh = () => {
+    if (subscription && workspaceId) {
+      fetchHistory();
+    }
+  };
 
   const handlePlansTab = () => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -138,7 +174,6 @@ const BillingPage = () => {
 
   const handlePlanSelection = async (planId) => {
     if (!PLANS[planId].prices) return;
-    console.log(planId);
 
     const obj = {
       plan_name: encryptData(planId),
@@ -208,6 +243,9 @@ const BillingPage = () => {
           <Button
             variant="outline"
             className="w-full"
+            disabled={
+              subscription?.plan === planId || planId.toLowerCase() === "free"
+            }
             onClick={() => handlePlanSelection(planId)}
           >
             View Details <ChevronRight className="ml-2 h-4 w-4" />
@@ -259,8 +297,6 @@ const BillingPage = () => {
                 <CheckCircle />
                 Current Plan
               </span>
-            ) : planId === "enterprise" ? (
-              "Contact Us"
             ) : (
               <span className="flex items-center justify-center gap-2">
                 <Rocket />
@@ -418,6 +454,13 @@ const BillingPage = () => {
       <div className="flex-1 p-2 py-4 sm:p-6 bg-background rounded-2xl space-y-8">
         {showPlans ? (
           <div className="space-y-8">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex items-center gap-1"
+            >
+              <ArrowLeft /> Back
+            </button>
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
               <div>
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
@@ -486,10 +529,8 @@ const BillingPage = () => {
               onCancel={() => setShowCancelModal(true)}
             />
 
-            <UsageStatsCard subscription={subscription} />
-
             {subscription.plan.toLowerCase() !== "free" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <PaymentMethodForm
                   subscription={subscription}
                   onUpdatePaymentMethod={async () => {
@@ -498,24 +539,11 @@ const BillingPage = () => {
                     window.location.href = url;
                   }}
                 />
-
-                <div className="space-y-6">
-                  <div className="p-6 bg-muted/50 rounded-xl">
-                    <h3 className="text-lg font-semibold mb-4">
-                      Plan Recommendations
-                    </h3>
-                    <Button
-                      className="w-full"
-                      onClick={handlePlansTab}
-                      variant="premium"
-                      size="lg"
-                      disabled={isProcessing}
-                    >
-                      Explore Premium Plans
-                    </Button>
-                  </div>
-                  <PaymentHistoryTable paymentHistory={paymentHistory} />
-                </div>
+                <PaymentHistoryTable
+                  onReload={handleRefresh}
+                  onRefresh={isLoadinghistory}
+                  paymentHistory={paymentHistory}
+                />
               </div>
             )}
 
@@ -531,7 +559,12 @@ const BillingPage = () => {
                   if (!res.ok) throw new Error("Cancellation failed");
                   fetchSubscription();
                   if (!toastRef.current) {
-                    showToast({ title: "Cancellation Successful" });
+                    showToast({
+                      title: "Success",
+                      variant: "success",
+                      description:
+                        "You have successfully cancelled current plan",
+                    });
                     toastRef.current = true;
                   }
                 } catch (error) {

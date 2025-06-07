@@ -11,9 +11,25 @@ import {
   RotateCw,
   Wallet,
   ArrowUp,
+  Users,
+  Database,
+  Plug,
+  BookOpen,
+  FileText,
+  BarChart2,
+  Shield,
+  Mic,
+  Cpu,
+  Mail,
+  Calendar,
+  Globe,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { PLANS } from "@/config/pricing.config";
 
 const PlanSummaryCard = ({
   subscription,
@@ -21,244 +37,385 @@ const PlanSummaryCard = ({
   onUpgrade,
   onCancel,
   onReactivate,
+  usageData = {},
 }) => {
-  const planConfig = {
-    free: {
-      name: "Free Plan",
-      features: ["Web Channel", "1 Chatbot", "500 messages/month"],
-      limits: { chatbots: 1, messages: 500 },
-      color: "bg-gray-100 dark:bg-gray-800",
-    },
-    starter: {
-      name: "Starter Plan",
-      features: [
-        "Web + WhatsApp",
-        "3 Chatbots",
-        "5000 messages/month",
-        "Basic Analytics",
-      ],
-      limits: { chatbots: 3, messages: 5000 },
-      color: "bg-blue-100 dark:bg-blue-900/20",
-    },
-    pro: {
-      name: "Professional Plan",
-      features: [
-        "All Channels",
-        "10 Chatbots",
-        "Unlimited messages",
-        "Advanced Analytics",
-        "File Attachments",
-      ],
-      limits: { chatbots: 10, messages: Infinity },
-      color: "bg-purple-100 dark:bg-purple-900/20",
-    },
-    enterprise: {
-      name: "Enterprise Plan",
-      features: [
-        "Custom Channels",
-        "Unlimited Chatbots",
-        "Priority Support",
-        "Dedicated Account Manager",
-        "White Labeling",
-      ],
-      limits: { chatbots: Infinity, messages: Infinity },
-      color: "bg-rose-100 dark:bg-rose-900/20",
-    },
-  };
+  // Get the full plan configuration
+  const plan = subscription ? PLANS[subscription.plan] : PLANS.free;
 
+  // Enhanced status handling
   const getStatusBadge = (status) => {
     const statusMap = {
       active: {
-        class: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+        variant: "success",
         icon: <CheckCircle className="h-4 w-4" />,
+        text: "Active",
       },
       past_due: {
-        class: "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+        variant: "warning",
         icon: <AlertTriangle className="h-4 w-4" />,
+        text: "Payment Due",
       },
       grace_period: {
-        class: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+        variant: "info",
         icon: <RotateCw className="h-4 w-4 animate-spin" />,
+        text: "Grace Period",
       },
       canceled: {
-        class: "bg-rose-500/20 text-rose-600 dark:text-rose-400",
+        variant: "destructive",
         icon: <XCircle className="h-4 w-4" />,
+        text: "Canceled",
       },
       unpaid: {
-        class: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
+        variant: "warning",
         icon: <Wallet className="h-4 w-4" />,
+        text: "Unpaid",
       },
       trialing: {
-        class: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+        variant: "info",
         icon: <Loader className="h-4 w-4 animate-spin" />,
+        text: "Trial Active",
+      },
+      pending: {
+        variant: "secondary",
+        icon: <Loader className="h-4 w-4 animate-spin" />,
+        text: "Pending",
       },
     };
 
+    const statusConfig = statusMap[status] || {
+      variant: "secondary",
+      icon: null,
+      text: status.replace(/_/g, " "),
+    };
+
     return (
-      <div
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${statusMap[status]?.class}`}
-      >
-        {statusMap[status]?.icon}
-        <span className="capitalize">{status.replace(/_/g, " ")}</span>
+      <Badge variant={statusConfig.variant} className="gap-2 capitalize">
+        {statusConfig.icon}
+        {statusConfig.text}
+      </Badge>
+    );
+  };
+
+  // Enhanced usage display with icons and better formatting
+  const renderUsageItem = (resource, used, limit, icon) => {
+    const isUnlimited = limit === Infinity;
+    const percentage = isUnlimited ? 100 : Math.min((used / limit) * 100, 100);
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            {icon}
+            <span className="capitalize">
+              {resource.replace(/([A-Z])/g, " $1")}
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {used.toLocaleString()}
+            {isUnlimited ? "" : ` / ${limit.toLocaleString()}`}
+          </span>
+        </div>
+        <Progress
+          value={percentage}
+          indicatorClass={
+            percentage > 90
+              ? "bg-red-500"
+              : percentage > 75
+              ? "bg-orange-500"
+              : "bg-primary"
+          }
+        />
       </div>
     );
   };
 
-  const renderUsageProgress = (used = 0, limit) => {
-    if (limit === Infinity) {
-      return (
-        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 animate-gradient-x" />
-        </div>
-      );
+  // Get all usage items to display
+  const getUsageItems = () => {
+    if (!subscription) return [];
+
+    const commonItems = [
+      {
+        resource: "chatbots",
+        used: usageData.chatbotsCreated || 0,
+        limit: plan.limits.chatbots,
+        icon: <Bot className="h-4 w-4" />,
+      },
+      {
+        resource: "messages",
+        used: usageData.messagesUsed || 0,
+        limit: plan.limits.messages,
+        icon: <MessageSquare className="h-4 w-4" />,
+      },
+      {
+        resource: "members",
+        used: usageData.teamMembers || 0,
+        limit: plan.limits.members,
+        icon: <Users className="h-4 w-4" />,
+      },
+      {
+        resource: "storage",
+        used: usageData.storageUsed || 0,
+        limit: plan.limits.storage,
+        icon: <Database className="h-4 w-4" />,
+      },
+    ];
+
+    // Add plan-specific usage items
+    const additionalItems = [];
+
+    if (plan.limits.integrations > 0) {
+      additionalItems.push({
+        resource: "integrations",
+        used: usageData.integrations || 0,
+        limit: plan.limits.integrations,
+        icon: <Plug className="h-4 w-4" />,
+      });
     }
 
-    const percentage = Math.min((used / limit) * 100, 100);
-    return (
-      <div className="space-y-2">
-        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-          <div
-            className="h-2.5 rounded-full bg-blue-600 transition-all duration-500"
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-          <span>{used.toLocaleString()} used</span>
-          <span>{limit === Infinity ? "∞" : limit.toLocaleString()} limit</span>
-        </div>
-      </div>
-    );
+    if (plan.limits.knowledgeBases > 0) {
+      additionalItems.push({
+        resource: "knowledgeBases",
+        used: usageData.knowledgeBases || 0,
+        limit: plan.limits.knowledgeBases,
+        icon: <BookOpen className="h-4 w-4" />,
+      });
+    }
+
+    if (plan.limits.trainingDocuments > 0) {
+      additionalItems.push({
+        resource: "trainingDocuments",
+        used: usageData.trainingDocuments || 0,
+        limit: plan.limits.trainingDocuments,
+        icon: <FileText className="h-4 w-4" />,
+      });
+    }
+
+    return [...commonItems, ...additionalItems];
   };
 
+  // Get key features to highlight
+  const getKeyFeatures = () => {
+    if (!plan) return [];
+
+    const features = [];
+
+    // Channels
+    if (plan.features.channels?.length) {
+      features.push({
+        name: "Channels",
+        value: plan.features.channels.join(", "),
+        icon: <Globe className="h-4 w-4" />,
+      });
+    }
+
+    // Key limits
+    if (plan.limits.automationRules > 0) {
+      features.push({
+        name: "Automation Rules",
+        value:
+          plan.limits.automationRules === Infinity
+            ? "Unlimited"
+            : plan.limits.automationRules,
+        icon: <Cpu className="h-4 w-4" />,
+      });
+    }
+
+    // Key features
+    if (plan.features.aiFeatures) {
+      features.push({
+        name: "AI Features",
+        value: "Enabled",
+        icon: <Zap className="h-4 w-4" />,
+      });
+    }
+
+    if (plan.features.prioritySupport) {
+      features.push({
+        name: "Support",
+        value: "Priority",
+        icon: <Shield className="h-4 w-4" />,
+      });
+    }
+
+    if (plan.features.voiceInteraction) {
+      features.push({
+        name: "Voice",
+        value: "Enabled",
+        icon: <Mic className="h-4 w-4" />,
+      });
+    }
+
+    return features.slice(0, 4); // Show top 4 features
+  };
+
+  // Trial days calculation
   const getTrialDaysRemaining = () => {
     if (!subscription?.trialEndDate || subscription.status !== "trialing")
       return 0;
     const diff = new Date(subscription.trialEndDate) - new Date();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
-  console.log(subscription);
+
+  // Renewal date display
+  const getRenewalDate = () => {
+    if (!subscription?.renewalDate) return null;
+    return new Date(subscription.renewalDate).toLocaleDateString();
+  };
+
+  // Determine the main action for the card
+  const getMainAction = () => {
+    if (!subscription) return null;
+
+    if (subscription.status === "canceled") {
+      return {
+        label: "Reactivate Plan",
+        icon: <Zap className="h-4 w-4" />,
+        onClick: onReactivate,
+        variant: "default",
+      };
+    }
+
+    if (subscription.plan === "free") {
+      return {
+        label: "Upgrade Plan",
+        icon: <ArrowUp className="h-4 w-4" />,
+        onClick: onUpgrade,
+        variant: "default",
+      };
+    }
+
+    return {
+      label: "Change Plan",
+      icon: <CreditCard className="h-4 w-4" />,
+      onClick: onUpgrade,
+      variant: "outline",
+    };
+  };
+
+  const mainAction = getMainAction();
 
   return (
-    <div
-      className={`p-6 rounded-xl border ${
-        planConfig[subscription?.plan]?.color || "bg-gray-50 dark:bg-gray-800"
-      } border-gray-100 dark:border-gray-700`}
-    >
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            {subscription ? planConfig[subscription.plan].name : "Loading..."}
-          </h2>
-          {subscription && getStatusBadge(subscription.status)}
-        </div>
-
-        {subscription?.renewalInterval !== "lifetime" && (
-          <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-full">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Billed{" "}
-              {subscription?.renewalInterval === "yearly"
-                ? "Yearly"
-                : "Monthly"}
-            </span>
+    <div className="border rounded-lg overflow-hidden">
+      {/* Plan header with status */}
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 border-b">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-2 ">
+            <h2 className="text-2xl font-bold">{plan?.name || "Loading..."}</h2>
+            <p className="text-sm text-muted-foreground">
+              {plan?.description || "Loading plan details..."}
+            </p>
           </div>
-        )}
+          <div className="flex items-center gap-3">
+            {subscription && getStatusBadge(subscription.status)}
+            {subscription?.billingCycle !== "lifetime" && (
+              <Badge variant="outline" className="gap-2">
+                {subscription?.billingCycle === "yearly" ? (
+                  <>
+                    <Calendar className="h-4 w-4" />
+                    Billed Yearly
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-4 w-4" />
+                    Billed Monthly
+                  </>
+                )}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
+      {/* Trial notice */}
       {subscription?.status === "trialing" && getTrialDaysRemaining() > 0 && (
-        <div className="mb-6">
-          <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-              {getTrialDaysRemaining()} days remaining in trial
-            </span>
-          </div>
+        <div className="bg-blue-50 dark:bg-blue-900/10 px-6 py-3 border-b flex items-center gap-3">
+          <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <span className="text-sm text-blue-600 dark:text-blue-400">
+            {getTrialDaysRemaining()} days remaining in your free trial
+          </span>
         </div>
       )}
 
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            <span>Plan Features</span>
+      {/* Renewal notice */}
+      {subscription?.renewalDate && subscription.status === "active" && (
+        <div className="bg-green-50 dark:bg-green-900/10 px-6 py-3 border-b flex items-center gap-3">
+          <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <span className="text-sm text-green-600 dark:text-green-400">
+            Renews on {getRenewalDate()}
+          </span>
+        </div>
+      )}
+
+      <div className="p-6 space-y-8">
+        {/* Key features summary */}
+        <div className="grid grid-cols-2 gap-4">
+          {getKeyFeatures().map((feature, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-primary/10 text-primary">
+                {feature.icon}
+              </div>
+              <div>
+                <p className="text-sm font-medium">{feature.name}</p>
+                <p className="text-sm text-muted-foreground">{feature.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Usage statistics */}
+        <div className="space-y-6">
+          <h3 className="font-medium flex items-center gap-2">
+            <BarChart2 className="h-5 w-5" />
+            Usage Summary
           </h3>
-          <ul className="space-y-2">
+
+          <div className="space-y-4">
             {subscription ? (
-              planConfig[subscription.plan].features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400 flex-shrink-0" />
-                  <span className="text-gray-700 dark:text-gray-300 text-sm">
-                    {feature}
-                  </span>
-                </li>
+              getUsageItems().map((item, index) => (
+                <div key={index}>
+                  {renderUsageItem(
+                    item.resource,
+                    item.used,
+                    item.limit,
+                    item.icon
+                  )}
+                </div>
               ))
             ) : (
               <Skeleton className="h-4 w-full" />
             )}
-          </ul>
+          </div>
         </div>
 
-        <div>
-          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-            <Bot className="h-5 w-5" />
-            <span>Chatbots</span>
-          </h3>
-          {subscription ? (
-            renderUsageProgress(
-              subscription.usage?.chatbotsCreated || 0,
-              planConfig[subscription.plan].limits.chatbots
-            )
-          ) : (
-            <Skeleton className="h-2.5 w-full rounded-full" />
-          )}
-        </div>
-
-        <div>
-          <h3 className="font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            <span>Messages</span>
-          </h3>
-          {subscription ? (
-            renderUsageProgress(
-              subscription.usage?.messagesUsed || 0,
-              planConfig[subscription.plan].limits.messages
-            )
-          ) : (
-            <Skeleton className="h-2.5 w-full rounded-full" />
-          )}
-        </div>
-
-        <div className="pt-4">
-          {subscription ? (
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+          {mainAction && (
             <Button
-              onClick={
-                subscription.status === "canceled"
-                  ? onReactivate
-                  : subscription.plan === "free"
-                  ? onUpgrade
-                  : onCancel
-              }
+              onClick={mainAction.onClick}
               disabled={isProcessing}
-              className="w-full gap-2"
-              variant={
-                subscription.status === "canceled"
-                  ? "default"
-                  : subscription.plan === "free"
-                  ? "default"
-                  : "destructive"
-              }
+              className="flex-1 gap-2 py-2"
+              variant={mainAction.variant}
             >
               {isProcessing ? (
                 <Loader className="h-4 w-4 animate-spin" />
-              ) : subscription.status === "canceled" ? (
+              ) : (
                 <>
-                  <Zap className="h-4 w-4" />
-                  Reactivate Plan
+                  {mainAction.icon}
+                  {mainAction.label}
                 </>
-              ) : subscription.plan === "free" ? (
-                <>
-                  <ArrowUp className="h-4 w-4" />
-                  Upgrade Plan
-                </>
+              )}
+            </Button>
+          )}
+
+          {subscription && subscription.plan !== "free" && (
+            <Button
+              onClick={onCancel}
+              disabled={isProcessing || subscription.status === "canceled"}
+              variant="destructive"
+              className="flex-1 gap-2 py-2"
+            >
+              {isProcessing ? (
+                <Loader className="h-4 w-4 animate-spin" />
               ) : (
                 <>
                   <XCircle className="h-4 w-4" />
@@ -266,8 +423,6 @@ const PlanSummaryCard = ({
                 </>
               )}
             </Button>
-          ) : (
-            <Skeleton className="h-10 w-full rounded-lg" />
           )}
         </div>
       </div>

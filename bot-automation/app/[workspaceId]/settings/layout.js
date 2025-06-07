@@ -192,7 +192,7 @@ const SettingsLayout = ({ children }) => {
       </div>
       {/*Settings Right Side Content */}
       <div
-        className={`flex-1 overflow-y-auto w-full p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 ${
+        className={`flex-1 overflow-y-auto scrollbar-transparent w-full p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 ${
           isMobile && mobileNavOpen ? "opacity-50 pointer-events-none" : ""
         }`}
       >
@@ -211,9 +211,7 @@ const SettingsLayout = ({ children }) => {
           </div>
           {/* Content Card */}
           <div
-            className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto ${
-              !expand && inRange && "w-96"
-            }`}
+            className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-transparent w-full`}
           >
             {children}
           </div>

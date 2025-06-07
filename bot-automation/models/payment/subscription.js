@@ -20,7 +20,15 @@ const subscriptionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["active", "trialing", "past_due", "canceled", "unpaid"],
+      enum: [
+        "pending",
+        "active",
+        "trialing",
+        "past_due",
+        "paused",
+        "canceled",
+        "unpaid",
+      ],
       default: "active",
       index: true,
     },
@@ -40,7 +48,6 @@ const subscriptionSchema = new mongoose.Schema(
       required: function () {
         return this.plan !== "free";
       },
-      default: null,
     },
     trialStart: Date,
     trialEnd: Date,
@@ -127,6 +134,7 @@ const subscriptionSchema = new mongoose.Schema(
 // Indexes
 subscriptionSchema.index({ currentPeriodEnd: 1 });
 subscriptionSchema.index({ "metadata.createdAt": 1 });
+subscriptionSchema.index({ status: 1, currentPeriodEnd: 1 });
 
 // Virtuals
 subscriptionSchema.virtual("isActive").get(function () {

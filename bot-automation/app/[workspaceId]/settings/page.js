@@ -591,8 +591,8 @@ const GeneralPage = () => {
                 placeholder="Upload favicon"
               />
             </div>
-            <div className="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:gap-6">
-              <div className="space-y-2 flex flex-col">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 w-full">
+              <div className="sm:space-y-2 space-x-2 sm:space-x-0 flex  flex-row sm:flex-col items-center sm:items-start">
                 <Label>Primary Color</Label>
                 <ColorPicker
                   color={state.formData.branding.primaryColor}
@@ -603,7 +603,7 @@ const GeneralPage = () => {
                   }
                 />
               </div>
-              <div className="space-y-2 flex flex-col">
+              <div className="sm:space-y-2 space-x-2 sm:space-x-0 flex flex-row sm:flex-col items-center sm:items-start">
                 <Label>Secondary Color</Label>
                 <ColorPicker
                   color={state.formData.branding.secondaryColor}

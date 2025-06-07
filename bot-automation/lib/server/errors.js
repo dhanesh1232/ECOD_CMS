@@ -24,8 +24,8 @@ export const ErrorHandles = {
   },
 
   // 404 Not Found
-  UserNotFound: async () => {
-    return createErrorResponse(404, "User not found");
+  UserNotFound: async (message = "User not found") => {
+    return createErrorResponse(404, message);
   },
   ResourceNotFound: async (message = "Requested resource not found") => {
     return createErrorResponse(404, message);

@@ -13,11 +13,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return isNaN(date) ? "Invalid date" : format(date, "MMM do, yyyy");
+  if (isNaN(date)) return "Invalid date";
+  const day = String(date.getDate()).padStart(2, "0"); // Ensure two-digit day
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Ensure two-digit month
+  const year = String(date.getFullYear()).slice(-2); // Extract last two digits of the year
+  return `${month}/${day}/${year}`; // Return in MM/DD/YY format
 };
 
 const CancellationModal = ({
@@ -49,6 +52,7 @@ const CancellationModal = ({
     }
   };
 
+  console.log(subscription);
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -75,14 +79,15 @@ const CancellationModal = ({
                     benefits immediately.
                   </p>
                   <p className="font-medium">
-                    Next payment: {formatDate(subscription.endDate)}
+                    Next payment: {formatDate(subscription.currentPeriodEnd)}
                   </p>
                 </>
               ) : (
                 <>
                   <p>
                     Your access will continue until{" "}
-                    {formatDate(subscription.endDate)}. Choose an option:
+                    {formatDate(subscription.currentPeriodEnd)}. Choose an
+                    option:
                   </p>
 
                   <div className="p-4 rounded-lg">
@@ -93,7 +98,6 @@ const CancellationModal = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="bg-blue-600 "
                           onClick={() => handleAction("downgrade")}
                           disabled={processing}
                         >
@@ -119,7 +123,8 @@ const CancellationModal = ({
           </AlertDialogCancel>
 
           {subscription?.status === "canceled" ? (
-            <AlertDialogAction
+            <Button
+              variant="link"
               onClick={() => handleAction("reactivate")}
               disabled={processing}
             >
@@ -129,9 +134,10 @@ const CancellationModal = ({
                 <Zap className="h-4 w-4 mr-2" />
               )}
               Reactivate Plan
-            </AlertDialogAction>
+            </Button>
           ) : (
-            <AlertDialogAction
+            <Button
+              variant="destructive"
               onClick={() => handleAction("cancel")}
               disabled={processing}
             >
@@ -141,7 +147,7 @@ const CancellationModal = ({
                 <XCircle className="h-4 w-4 mr-2" />
               )}
               Confirm Cancellation
-            </AlertDialogAction>
+            </Button>
           )}
         </AlertDialogFooter>
       </AlertDialogContent>

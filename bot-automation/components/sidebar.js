@@ -7,6 +7,7 @@ import {
   useSearchParams,
 } from "next/navigation";
 import Link from "next/link";
+import SelectWorkspace from "@/components/workspace_select";
 import {
   ChevronDown,
   Search,
@@ -27,6 +28,8 @@ import {
   motion,
   AnimatePresence,
 } from "framer-motion";
+import { useToast } from "./ui/toast-provider";
+import { UserServices } from "@/lib/client/user";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -39,9 +42,45 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const [hoverProp, setHoverProp] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "",
+    role: "",
+  });
   const navRef = useRef(null);
   const userRef = useRef(null);
+  const showToast = useToast();
+  const toastRef = useRef(false);
   const { scrollY } = useScroll({ container: navRef });
+
+  useEffect(() => {
+    const renderProfile = async () => {
+      try {
+        const data = await UserServices.fetchUserProfile();
+        if (data.status && !data.ok) {
+          if (!toastRef.current) {
+            showToast({
+              description: "Failed to fetch Profile",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
+        }
+        setProfile({
+          name: data.data?.user?.name,
+          role: data.data?.user?.role,
+        });
+      } catch (err) {
+        if (!toastRef.current) {
+          showToast({
+            description: err || "failed ti fetch profile",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
+      }
+    };
+    renderProfile();
+  }, [showToast]);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 10);
@@ -78,11 +117,6 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         const hasActiveSubpage = item.subPages.some(
           (subItem) => pathname === `/${workspaceId}${subItem.href}`
         );
-
-        // Expand if:
-        // 1. Current path matches the parent href
-        // 2. Current path matches any subpage href
-        // 3. Parent is marked as expanded by default
         initialExpanded[item.id] =
           pathname.startsWith(`/${workspaceId}${item.href}`) ||
           hasActiveSubpage ||
@@ -227,8 +261,10 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               </div>
             </Link>
           </div>
+
           {/* Search and Create Section */}
           <div className="px-5 pt-5 pb-3 space-y-3 sticky top-[72px] z-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent">
+            <SelectWorkspace />
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -254,7 +290,6 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 />
               </div>
             </motion.div>
-
             <motion.div
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
@@ -559,10 +594,10 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 </motion.div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                    John Doe
+                    {profile.name}
                   </p>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 truncate">
-                    Premium Member
+                  <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 truncate capitalize font-semibold">
+                    {profile.role}
                   </p>
                 </div>
                 <motion.button
@@ -653,7 +688,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                       </Link>
                       <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                       <Link
-                        href="/help"
+                        href={`/${workspaceId}/help`}
                         onClick={() => {
                           mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
                         }}
