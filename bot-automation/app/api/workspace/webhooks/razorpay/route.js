@@ -41,6 +41,25 @@ export async function POST(req) {
 
     // Handle different event types
     switch (eventType) {
+      case "payment.authorized":
+        console.log(
+          `Payment authorized at ${new Date().toLocaleString()}: ${payload.id}`
+        );
+        const payment = body.payload?.payment?.entity;
+        console.log(payment);
+        await razorpay.payments.capture(payment.id, payment.amount);
+        break;
+
+      case "payment.captured":
+        console.log(
+          `Payment captured at ${new Date().toLocaleString()}: ${payload.id}`
+        );
+        break;
+      case "payment.failed":
+        console.log(
+          `Payment failed at ${new Date().toLocaleString()}: ${payload.id}`
+        );
+        break;
       case "subscription.activated":
         //await handleSubscriptionActivated(subscription, workspace, payload);
         console.log(
@@ -77,26 +96,6 @@ export async function POST(req) {
           `Subscription authenticated at ${new Date().toLocaleString()}: ${
             payload.id
           }`
-        );
-        break;
-
-      case "payment.authorized":
-        console.log(
-          `Payment authorized at ${new Date().toLocaleString()}: ${payload.id}`
-        );
-        const payment = body.payload?.payment?.entity;
-        console.log(payment);
-        await razorpay.payments.capture(payment.id, payment.amount);
-        break;
-
-      case "payment.captured":
-        console.log(
-          `Payment captured at ${new Date().toLocaleString()}: ${payload.id}`
-        );
-        break;
-      case "payment.failed":
-        console.log(
-          `Payment failed at ${new Date().toLocaleString()}: ${payload.id}`
         );
         break;
       case "subscription.completed":

@@ -24,6 +24,9 @@ export const SuccessHandle = {
   createSub: (data, message = "Successfully plan created, finish payment") => {
     return createSuccessResponse(200, message, data);
   },
+  couponValidationSuccess: (data, message) => {
+    return createSuccessResponse(200, message, data);
+  },
   SubscriptionSuccess: (
     data,
     message = "Subscription verified successfully"

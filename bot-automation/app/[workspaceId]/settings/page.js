@@ -32,7 +32,7 @@ import { ImageUpload } from "@/components/ui/image-upload";
 import { Building, Contact, Palette, Shield } from "lucide-react";
 import { FaSpinner } from "react-icons/fa";
 import { deepEqual } from "@/lib/utils";
-import Separator from "@/components/ui/separator";
+import { Separator } from "@/components/ui/separator";
 import dynamic from "next/dynamic";
 import LocationSearch from "@/components/workspaceLocation";
 const TimezoneSelect = dynamic(() => import("@/components/selectTimezone"), {
@@ -86,6 +86,11 @@ const GeneralPage = () => {
 
   const hasChanges = !deepEqual(state.formData, state.initialData);
 
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
   const fetchWorkspaceSettings = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true }));

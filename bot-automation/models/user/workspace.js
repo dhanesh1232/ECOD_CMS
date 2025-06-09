@@ -242,6 +242,12 @@ const workspaceSchema = new mongoose.Schema(
         enum: ["monthly", "yearly", "lifetime"],
         default: "lifetime",
       },
+      discount: {
+        code: String,
+        type: String,
+        value: Number,
+        appliesFor: { type: Number },
+      },
       currentPeriodStart: Date,
       currentPeriodEnd: Date,
       trialEnd: Date,
@@ -251,20 +257,32 @@ const workspaceSchema = new mongoose.Schema(
         default: null,
       },
       gatewaySubscriptionId: String,
-      invoiceSettings: {
+      // Enhanced billing details schema
+      billingDetails: {
+        contact: {
+          name: String,
+          email: {
+            type: String,
+            validate: [validator.isEmail, "Please provide a valid email"],
+          },
+          phone: String,
+        },
+        address: {
+          line1: { type: String, required: true },
+          line2: String,
+          city: { type: String, required: true },
+          state: { type: String, required: true },
+          postalCode: { type: String, required: true },
+          country: { type: String, required: true },
+        },
+        taxInfo: {
+          taxId: String,
+          vatId: String,
+          companyName: String,
+        },
         billingEmail: {
           type: String,
           validate: [validator.isEmail, "Please provide a valid email"],
-        },
-        taxId: String,
-        companyName: String,
-        address: {
-          line1: String,
-          line2: String,
-          city: String,
-          state: String,
-          postalCode: String,
-          country: String,
         },
       },
     },
@@ -478,7 +496,8 @@ workspaceSchema.methods = {
       planName: plan.name,
       currentPrice: PricingUtils.calculatePrice(
         this.subscription.plan,
-        this.subscription.billingCycle
+        this.subscription.billingCycle,
+        this.subscription.discount.value
       ),
       features: plan.features,
       limits: plan.limits,

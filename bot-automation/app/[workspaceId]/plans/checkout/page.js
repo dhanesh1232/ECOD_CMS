@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast-provider";
-import { PLANS, TAX_RATES } from "@/config/pricing.config";
+import { PLANS, PricingUtils } from "@/config/pricing.config";
 import { billingService } from "@/lib/client/billing";
 import { decryptData, encryptData } from "@/utils/encryption";
 import Link from "next/link";
@@ -31,11 +31,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Minus, Plus } from "lucide-react";
 
 // LocalStorage keys
 const STORAGE_KEYS = {
   PLAN: "selected_plan",
   DURATION: "selected_duration",
+  SHOW_COUPON: "show_coupon",
+  COUPON_CODE: "coupon_code",
+  VALID_COUPON: "valid_coupon",
+  COUPON_DATA: "coupon_data",
 };
 
 const PlanInfoCheckoutPage = () => {
@@ -43,6 +49,39 @@ const PlanInfoCheckoutPage = () => {
   const router = useRouter();
   const params = useParams();
   const workspaceId = params.workspaceId;
+  const [couponState, setCouponState] = useState(() => {
+    const coupon = localStorage.getItem(STORAGE_KEYS.COUPON_CODE);
+    const valid = localStorage.getItem(STORAGE_KEYS.VALID_COUPON);
+    const shown = localStorage.getItem(STORAGE_KEYS.SHOW_COUPON);
+    const couponData = localStorage.getItem(STORAGE_KEYS.COUPON_DATA);
+
+    let discount = { percentage: 0, fixed: 0, trial: 0 };
+
+    try {
+      const parsed = couponData ? JSON.parse(couponData) : null;
+      if (parsed && typeof parsed.discount === "object") {
+        discount = {
+          percentage: parsed.discount.percentage || 0,
+          fixed: parsed.discount.fixed || 0,
+          trial: parsed.discount.trial || 0,
+        };
+      }
+    } catch (e) {
+      console.warn("Invalid couponData in localStorage:", e);
+    }
+
+    return {
+      code: coupon ? JSON.parse(coupon) : "",
+      discount,
+      isValid: valid ? JSON.parse(valid) : false,
+      isShow: shown ? JSON.parse(shown) : false,
+      isValidating: false,
+      hasChanged: false,
+      isInitialLoad: true,
+      error: false,
+    };
+  });
+
   const [formData, setFormData] = useState({});
   const [selectedDuration, setSelectedDuration] = useState("monthly");
   const [isAgreed, setIsAgreed] = useState(false);
@@ -108,16 +147,17 @@ const PlanInfoCheckoutPage = () => {
     [showToast]
   );
 
-  // Memoized calculation of prices
-  const calculatePrices = useCallback(() => {
-    if (!plan || !plan.prices) return null;
-    const subtotal = plan.prices[selectedDuration];
-    const tax = subtotal * TAX_RATES.INR;
-    const total = subtotal + tax;
-    return { subtotal, tax, total };
-  }, [plan, selectedDuration]);
+  const prices = PricingUtils.calculatePrice(
+    plan_name,
+    selectedDuration,
+    couponState.discount
+  );
 
-  const prices = calculatePrices();
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  }, [couponState]);
 
   useEffect(() => {
     if (isMount) {
@@ -170,7 +210,7 @@ const PlanInfoCheckoutPage = () => {
           showToast({
             title: "Invalid Request",
             description: "Could not process your request. Please try again.",
-            variant: "error",
+            variant: "destructive",
           });
           toastRef.current = true;
         }
@@ -194,6 +234,148 @@ const PlanInfoCheckoutPage = () => {
     // Save the new duration to localStorage
     saveToLocalStorage(STORAGE_KEYS.DURATION, duration);
   };
+
+  const handleCouponApply = useCallback(
+    async (couponCodeParam = null) => {
+      const couponCode = couponCodeParam || couponState.code.trim();
+      if (!couponCode) return;
+
+      setCouponState((prev) => ({ ...prev, isValidating: true }));
+
+      try {
+        const response = await billingService.validateCoupon(
+          workspaceId,
+          couponCode
+        );
+
+        if (response.status && !response.ok) {
+          const data = await response.json();
+
+          if (!toastRef.current) {
+            showToast({
+              title: "Invalid Coupon",
+              description: data.message || "This coupon code is not valid",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
+
+          // Clear invalid coupon from storage
+          saveToLocalStorage(STORAGE_KEYS.COUPON_CODE, "");
+          saveToLocalStorage(STORAGE_KEYS.VALID_COUPON, false);
+          saveToLocalStorage(STORAGE_KEYS.COUPON_DATA, null);
+
+          setCouponState((prev) => ({
+            ...prev,
+            isValid: false,
+            isValidating: false,
+            discount: {
+              percentage: 0,
+              fixed: 0,
+              trial: 0,
+            },
+            error: true,
+          }));
+          return;
+        }
+
+        const data = response.data;
+
+        if (!toastRef.current) {
+          showToast({
+            title: "Coupon Applied",
+            description:
+              data.message || "Discount has been applied to your plan",
+            variant: "success",
+          });
+          toastRef.current = true;
+        }
+
+        const newDiscount = {
+          percentage: data.type === "percentage" ? data.value : 0,
+          fixed: data.type === "fixed" ? data.value : 0,
+          trial: data.type === "trial" ? data.value : 0,
+        };
+
+        // Save coupon data to localStorage
+        saveToLocalStorage(STORAGE_KEYS.COUPON_CODE, couponCode);
+        saveToLocalStorage(STORAGE_KEYS.VALID_COUPON, data.isValid);
+        saveToLocalStorage(STORAGE_KEYS.COUPON_DATA, {
+          code: couponCode,
+          discount: newDiscount,
+          type: data.type,
+        });
+
+        setCouponState((prev) => ({
+          ...prev,
+          isValid: data.isValid,
+          discount: newDiscount,
+          code: couponCode,
+          hasChanged: false,
+          isValidating: false,
+          isInitialLoad: false,
+          error: false,
+        }));
+      } catch (error) {
+        if (!toastRef.current) {
+          showToast({
+            title: "Coupon Error",
+            description: error.message || "Failed to validate coupon",
+            variant: "destructive",
+          });
+          toastRef.current = true;
+        }
+
+        // Clear invalid coupon from storage
+        saveToLocalStorage(STORAGE_KEYS.COUPON_CODE, "");
+        saveToLocalStorage(STORAGE_KEYS.VALID_COUPON, false);
+        saveToLocalStorage(STORAGE_KEYS.COUPON_DATA, null);
+
+        setCouponState((prev) => ({
+          ...prev,
+          isValid: false,
+          error: true,
+          isValidating: false,
+          discount: {
+            percentage: 0,
+            fixed: 0,
+            trial: 0,
+          },
+        }));
+      }
+    },
+    [couponState.code, saveToLocalStorage, showToast, workspaceId]
+  );
+
+  // Load and validate coupon on initial render if exists
+  useEffect(() => {
+    const savedCode = loadFromLocalStorage(STORAGE_KEYS.COUPON_CODE);
+    const isValid = loadFromLocalStorage(STORAGE_KEYS.VALID_COUPON);
+    const couponData = loadFromLocalStorage(STORAGE_KEYS.COUPON_DATA);
+
+    if (couponState.isInitialLoad && savedCode && isValid && couponData) {
+      // Only validate if we don't have complete data
+      if (
+        !couponData.discount ||
+        (couponData.discount.percentage === 0 &&
+          couponData.discount.fixed === 0 &&
+          couponData.discount.trial === 0)
+      ) {
+        handleCouponApply(savedCode);
+      } else {
+        // Use the stored coupon data
+        setCouponState((prev) => ({
+          ...prev,
+          code: savedCode,
+          isValid: isValid,
+          discount: couponData.discount,
+          isInitialLoad: false,
+        }));
+      }
+    } else {
+      setCouponState((prev) => ({ ...prev, isInitialLoad: false }));
+    }
+  }, [handleCouponApply, loadFromLocalStorage, couponState.isInitialLoad]);
 
   // plan trial days configurations
   const trialDays = plan?.metadata?.trialDays || 0;
@@ -397,11 +579,10 @@ const PlanInfoCheckoutPage = () => {
         });
       }
     } catch (error) {
-      console.error("Payment error:", error);
       showToast({
         title: "Payment Error",
         description: error.message || "Failed to initialize payment gateway",
-        variant: "error",
+        variant: "destructive",
       });
       setPaymentStatus({
         loading: false,
@@ -431,9 +612,7 @@ const PlanInfoCheckoutPage = () => {
           setShowVerificationModal(open);
         }}
       >
-        <AlertDialogContent
-        //hideClose={paymentStatus.verifying || paymentStatus.success}
-        >
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center">
               {paymentStatus.success
@@ -488,13 +667,14 @@ const PlanInfoCheckoutPage = () => {
           </div>
         </AlertDialogContent>
       </AlertDialog>
-      <div className="w-full p-4 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
+      <div className="w-full p-4 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto scrollbar-transparent">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push(`/${workspaceId}/plans`)}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors"
-              aria-label="Go back"
+              aria-label="Go back to plans"
+              title="Go back to plans"
             >
               <ArrowLeftIcon className="w-5 h-5" />
               <span className="hidden sm:inline">Back</span>
@@ -653,7 +833,7 @@ const PlanInfoCheckoutPage = () => {
                       )}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 capitalize">
                         {feature.replace(/([A-Z])/g, " $1").trim()}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -701,7 +881,7 @@ const PlanInfoCheckoutPage = () => {
                     <label className="text-sm text-gray-600 dark:text-gray-400 font-bold">
                       Email
                     </label>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100 mt-1">
                       {email || "Not provided"}
                     </p>
                   </div>
@@ -709,11 +889,101 @@ const PlanInfoCheckoutPage = () => {
                     <label className="text-sm text-gray-600 dark:text-gray-400 font-bold">
                       Phone
                     </label>
-                    <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
+                    <p className="font-medium text-sm sm:text-base text-gray-900 dark:text-gray-100 mt-1">
                       {phone || "Not provided"}
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-700/20 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between py-1">
+                  <h3 className="text-lg font-medium text-blue-900 dark:text-gray-100">
+                    Coupon Code
+                  </h3>
+                  {!couponState.isValid && (
+                    <Button
+                      size="xs"
+                      variant={couponState.isShow ? `destructive` : `ghost`}
+                      onClick={() => {
+                        setCouponState((prev) => ({
+                          ...prev,
+                          isShow: !prev.isShow,
+                        }));
+                        saveToLocalStorage(
+                          STORAGE_KEYS.SHOW_COUPON,
+                          !couponState.isShow
+                        );
+                      }}
+                    >
+                      {couponState.isShow ? <Minus /> : <Plus />}
+                    </Button>
+                  )}
+                </div>
+
+                {couponState.isShow && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Enter your coupon code"
+                      value={couponState.code}
+                      onChange={(e) =>
+                        setCouponState((prev) => ({
+                          ...prev,
+                          code: e.target.value,
+                          hasChanged: prev.code !== e.target.value,
+                          isValid: prev.code === e.target.value && prev.isValid,
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && couponState.code.trim()) {
+                          handleCouponApply();
+                        }
+                      }}
+                    />
+                    <Button
+                      variant={couponState.isValid ? "default" : "premium"}
+                      size="md"
+                      disabled={
+                        !couponState.code.trim() || // Disabled if empty
+                        couponState.isValidating || // Disabled while validating
+                        (couponState.isValid && !couponState.hasChanged) // Disabled if already valid and unchanged
+                      }
+                      className="flex-shrink-0"
+                      onClick={() => handleCouponApply()}
+                    >
+                      {couponState.isValidating ? (
+                        <SpinnerIcon size="sm" color="white" />
+                      ) : couponState.isValid ? (
+                        "Applied"
+                      ) : (
+                        "Apply"
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Coupon status messages */}
+                {couponState.isValidating ? (
+                  <div className="mt-2 text-sm text-blue-600">
+                    Validating coupon...
+                  </div>
+                ) : couponState.isValid ? (
+                  <div className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">
+                    {couponState.discount.trial > 0
+                      ? `🎉 You've unlocked a ${couponState.discount.trial}-day free trial!`
+                      : couponState.discount.percentage > 0
+                      ? `✅ ${couponState.discount.percentage}% discount applied!`
+                      : `✅ ₹${couponState.discount.fixed} discount applied!`}
+                  </div>
+                ) : couponState.code &&
+                  couponState.error &&
+                  !couponState.isValid &&
+                  !couponState.isValidating ? (
+                  <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+                    Invalid coupon code. Please try another one.
+                  </div>
+                ) : null}
               </div>
 
               {/* Price Summary */}
@@ -725,7 +995,7 @@ const PlanInfoCheckoutPage = () => {
                     </span>
                     <span className="font-medium">
                       ₹
-                      {prices.subtotal.toLocaleString("en-IN", {
+                      {prices.base.toLocaleString("en-IN", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -741,6 +1011,33 @@ const PlanInfoCheckoutPage = () => {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600 dark:text-gray-300">
+                      Discount:
+                    </span>
+                    <span className="font-medium flex items-center gap-1">
+                      ₹
+                      {prices.discount.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                      {couponState.discount.percentage > 0 && (
+                        <span className="text-green-600 dark:text-green-400">
+                          ({couponState.discount.percentage}% OFF)
+                        </span>
+                      )}
+                      {couponState.discount.fixed > 0 && (
+                        <span className="text-green-600 dark:text-green-400">
+                          (₹
+                          {couponState.discount.fixed.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                          )
+                        </span>
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
@@ -806,18 +1103,25 @@ const PlanInfoCheckoutPage = () => {
                     </span>
                   </label>
 
-                  <button
+                  <Button
+                    variant="premium"
+                    size="lg"
+                    fullWidth={true}
                     onClick={handleCheckout}
-                    disabled={!isAgreed || paymentStatus.loading}
-                    className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-colors flex items-center justify-center gap-2 ${
-                      !isAgreed || paymentStatus.loading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg"
-                    }`}
+                    disabled={
+                      !isAgreed ||
+                      paymentStatus.loading ||
+                      (couponState.isShow &&
+                        !couponState.code &&
+                        !couponState.isValid)
+                    }
                   >
                     {paymentStatus.loading ? (
                       <>
-                        <SpinnerIcon className="w-5 h-5 animate-spin" />
+                        <SpinnerIcon
+                          className="w-5 h-5 animate-spin"
+                          color="red"
+                        />
                         Processing...
                       </>
                     ) : (
@@ -829,7 +1133,7 @@ const PlanInfoCheckoutPage = () => {
                             })}`}
                       </>
                     )}
-                  </button>
+                  </Button>
 
                   <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                     {`Your payment is secured with 256-bit SSL encryption. We
@@ -864,7 +1168,7 @@ const PlanInfoCheckoutPage = () => {
 };
 
 const LoadingSkeleton = () => (
-  <div className="w-full p-4 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
+  <div className="w-full p-4 sm:p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto scrollbar-transparent">
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header Skeleton */}
       <div className="flex items-center justify-between">

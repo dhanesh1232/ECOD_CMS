@@ -1,238 +1,200 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-// Sub-schemas for different payment methods
-const cardDetailsSchema = new mongoose.Schema(
+/**
+ * Payment Method Schema
+ */
+const methodSchema = new Schema(
   {
-    brand: {
+    method: {
       type: String,
-      required: function () {
-        return this.parent().type === "card";
+      enum: ["card", "upi", "netbanking", "wallet"],
+      required: [true, "Payment method type is required"],
+    },
+    card: {
+      last4: {
+        type: String,
+        required: function () {
+          return this.method === "card";
+        },
+        validate: {
+          validator: (v) => /^\d{4}$/.test(v),
+          message: (props) => `${props.value} is not a valid last 4 digits`,
+        },
       },
-      enum: ["visa", "mastercard", "amex", "discover", "rupay", "other"],
-    },
-    last4: {
-      type: String,
-      required: function () {
-        return this.parent().type === "card";
+      network: {
+        type: String,
+        required: function () {
+          return this.method === "card";
+        },
+        enum: [
+          "visa",
+          "mastercard",
+          "amex",
+          "rupay",
+          "discover",
+          "jcb",
+          "diners",
+        ],
       },
-      validate: /^\d{4}$/,
-    },
-    expMonth: {
-      type: Number,
-      required: function () {
-        return this.parent().type === "card";
+      type: {
+        type: String,
+        required: function () {
+          return this.method === "card";
+        },
+        enum: ["credit", "debit", "prepaid"],
       },
-      min: 1,
-      max: 12,
-    },
-    expYear: {
-      type: Number,
-      required: function () {
-        return this.parent().type === "card";
+      issuer: {
+        type: String,
+        required: function () {
+          return this.method === "card";
+        },
       },
-      min: new Date().getFullYear(),
-      max: new Date().getFullYear() + 20,
-    },
-    country: String,
-    funding: {
-      type: String,
-      enum: ["credit", "debit", "prepaid", "unknown"],
-    },
-    fingerprint: {
-      type: String,
-      select: false, // Sensitive data, exclude by default
-    },
-  },
-  { _id: false }
-);
-
-const upiDetailsSchema = new mongoose.Schema(
-  {
-    vpa: {
-      type: String,
-      required: function () {
-        return this.parent().type === "upi";
+      expiryMonth: {
+        type: Number,
+        min: 1,
+        max: 12,
       },
-      validate: {
-        validator: (v) => /^[\w.-]+@[\w-]+$/.test(v),
-        message: "Invalid UPI ID format",
+      expiryYear: {
+        type: Number,
+        min: new Date().getFullYear(),
       },
-    },
-  },
-  { _id: false }
-);
-
-const walletDetailsSchema = new mongoose.Schema(
-  {
-    provider: {
-      type: String,
-      required: function () {
-        return this.parent().type === "wallet";
-      },
-      enum: ["paytm", "phonepe", "amazonpay", "gpay"],
-    },
-    phone: {
-      type: String,
-      validate: {
-        validator: (v) => /^\+?\d{10,14}$/.test(v),
-        message: "Invalid phone number format",
+      isInternational: {
+        type: Boolean,
+        default: false,
       },
     },
-  },
-  { _id: false }
-);
-
-const paymentMethodSchema = new mongoose.Schema(
-  {
-    workspace: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Workspace",
-      required: true,
-      index: true,
+    upi: {
+      vpa: {
+        type: String,
+        required: function () {
+          return this.method === "upi";
+        },
+        validate: {
+          validator: (v) => /^[\w.-]+@[\w]+$/.test(v),
+          message: (props) => `${props.value} is not a valid VPA`,
+        },
+      },
+      handle: {
+        type: String,
+      },
     },
-    gateway: {
-      type: String,
-      required: true,
-      enum: ["stripe", "paypal", "razorpay", "phonepe"],
-      index: true,
+    netbanking: {
+      bank: {
+        type: String,
+        required: function () {
+          return this.method === "netbanking";
+        },
+      },
+      ifsc: {
+        type: String,
+        validate: {
+          validator: (v) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(v),
+          message: (props) => `${props.value} is not a valid IFSC code`,
+        },
+      },
+      accountNumberLast4: {
+        type: String,
+        validate: {
+          validator: (v) => /^\d{4}$/.test(v),
+          message: (props) => `${props.value} is not a valid last 4 digits`,
+        },
+      },
     },
-    gatewayCustomerId: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      required: true,
-      enum: ["card", "bank_account", "wallet", "upi", "netbanking"],
-      index: true,
+    wallet: {
+      provider: {
+        type: String,
+        required: function () {
+          return this.method === "wallet";
+        },
+        enum: ["paytm", "phonepe", "amazonpay", "mobikwik", "freecharge"],
+      },
+      phoneLast4: {
+        type: String,
+        validate: {
+          validator: (v) => /^\d{4}$/.test(v),
+          message: (props) => `${props.value} is not a valid last 4 digits`,
+        },
+      },
     },
     isDefault: {
       type: Boolean,
       default: false,
+    },
+    fingerprint: {
+      type: String,
+      select: false, // Not returned by default in queries
+    },
+  },
+  {
+    timestamps: true, // Automatically adds createdAt and updatedAt
+    discriminatorKey: "method", // For discriminators if needed
+  }
+);
+
+/**
+ * Payment Method Collection Schema
+ */
+const paymentMethodSchema = new Schema(
+  {
+    workspace: {
+      type: Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: [true, "Workspace reference is required"],
+      index: true, // Add index for faster queries
+    },
+    subscription: {
+      type: Schema.Types.ObjectId,
+      ref: "Subscription",
+      required: [true, "Subscription reference is required"],
       index: true,
     },
-    status: {
-      type: String,
-      enum: ["active", "inactive", "pending_verification"],
-      default: "active",
+    methods: [methodSchema],
+    currentMethodIndex: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
-    verification: {
-      method: {
-        type: String,
-        enum: ["otp", "redirect", "none"],
-      },
-      attempts: {
-        type: Number,
-        default: 0,
-      },
-      lastAttempt: Date,
+    provider: {
+      type: String,
+      enum: ["razorpay", "stripe", "paypal"],
+      required: [true, "Payment provider is required"],
     },
     metadata: {
-      clientIp: String,
-      userAgent: String,
-      deviceFingerprint: String,
-    },
-    details: {
-      type: mongoose.Schema.Types.Mixed,
-      required: true,
-      validate: {
-        validator: function () {
-          switch (this.type) {
-            case "card":
-              return this.details.last4 && this.details.expMonth;
-            case "upi":
-              return this.details.vpa;
-            case "wallet":
-              return this.details.provider;
-            default:
-              return true;
-          }
-        },
-        message: "Invalid details for payment method type",
-      },
+      type: Schema.Types.Mixed,
+      select: false, // Not returned by default in queries
     },
   },
   {
     timestamps: true,
-    discriminatorKey: "type",
-    toJSON: {
-      virtuals: true,
-      transform: function (doc, ret) {
-        delete ret.details.fingerprint;
-        delete ret.__v;
-        return ret;
-      },
-    },
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
-// Compound indexes
-paymentMethodSchema.index({ user: 1, isDefault: 1 });
-paymentMethodSchema.index(
-  { gateway: 1, "details.vpa": 1 },
-  {
-    partialFilterExpression: { type: "upi" },
-  }
-);
-
-// Virtuals
-paymentMethodSchema.virtual("maskedIdentifier").get(function () {
-  switch (this.type) {
-    case "card":
-      return `•••• ${this.details.last4}`;
-    case "upi":
-      const [user, handle] = this.details.vpa.split("@");
-      return `${user.slice(0, 2)}•••@${handle}`;
-    case "wallet":
-      return `${
-        this.details.provider
-      } •••• ${this.details.phone?.slice(-4) || ""}`;
-    default:
-      return "•••• •••• ••••";
-  }
+// Virtual for current method
+paymentMethodSchema.virtual("currentMethod").get(function () {
+  return this.methods[this.currentMethodIndex];
 });
 
-paymentMethodSchema.virtual("expiryDate").get(function () {
-  if (this.type === "card") {
-    return `${String(this.details.expMonth).padStart(2, "0")}/${String(
-      this.details.expYear
-    ).slice(-2)}`;
-  }
-  return null;
-});
+// Indexes for faster queries
+paymentMethodSchema.index({ workspace: 1, subscription: 1 }, { unique: true });
+paymentMethodSchema.index({ "methods.fingerprint": 1 }, { sparse: true });
 
-// Pre-save hooks
-paymentMethodSchema.pre("save", async function (next) {
-  if (this.isDefault) {
-    await this.constructor.updateMany(
-      { user: this.user },
-      { $set: { isDefault: false } }
-    );
-  }
+// Middleware to update timestamps
+paymentMethodSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
   next();
 });
 
-// Query helpers
-paymentMethodSchema.query.byUser = function (userId) {
-  return this.where({ user: userId });
-};
-
-paymentMethodSchema.query.activeMethods = function () {
-  return this.where({ status: "active" });
-};
-
 // Static methods
-paymentMethodSchema.statics.findDefaultForUser = async function (userId) {
-  return this.findOne({ user: userId, isDefault: true });
+paymentMethodSchema.statics.findByWorkspace = async function (workspaceId) {
+  return this.findOne({ workspace: workspaceId });
 };
 
-// Instance methods
-paymentMethodSchema.methods.toClientJSON = function () {
-  const obj = this.toJSON();
-  obj.metadata = undefined;
-  return obj;
-};
-
-export const PaymentMethod =
+// Create or retrieve model
+const PaymentMethod =
   mongoose.models.PaymentMethod ||
   mongoose.model("PaymentMethod", paymentMethodSchema);
+
+module.exports = PaymentMethod;

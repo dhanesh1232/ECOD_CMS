@@ -15,6 +15,12 @@ const NotificationPage = () => {
   const toastRef = useRef(false);
 
   useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
+
+  useEffect(() => {
     const fetchPreferences = async () => {
       try {
         const response = await UserServices.fetchUserProfile();

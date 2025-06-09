@@ -73,6 +73,7 @@ const PasswordAndSecurity = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  const toastRef = useRef(false);
   const [visibility, setVisibility] = useState({
     current: false,
     new: false,
@@ -86,6 +87,11 @@ const PasswordAndSecurity = () => {
     { text: "Special character", valid: false },
     { text: "Different from current", valid: false },
   ]);
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
 
   // Validate password requirements in real-time
   useEffect(() => {
@@ -136,11 +142,14 @@ const PasswordAndSecurity = () => {
     }
 
     if (error) {
-      showToast({
-        title: name,
-        description: error,
-        variant: "warning",
-      });
+      if (!toastRef.current) {
+        showToast({
+          title: name,
+          description: error,
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
     }
     return !error;
   };
@@ -186,18 +195,23 @@ const PasswordAndSecurity = () => {
       }
 
       await update();
-
-      showToast({
-        title: "Success",
-        description: "Password changed successfully!",
-        variant: "success",
-      });
+      if (!toastRef.current) {
+        showToast({
+          title: "Success",
+          description: "Password changed successfully!",
+          variant: "success",
+        });
+        toastRef.current = true;
+      }
     } catch (err) {
-      showToast({
-        title: "Error",
-        description: err.message || "Failed to update password",
-        variant: "destructive",
-      });
+      if (!toastRef.current) {
+        showToast({
+          title: "Error",
+          description: err.message || "Failed to update password",
+          variant: "destructive",
+        });
+        toastRef.current = true;
+      }
     } finally {
       setLoading(false);
     }

@@ -25,12 +25,24 @@ const fetchWithRetry = async (url, options, retries = 3) => {
 // All API calls
 export const billingService = {
   getSubscription: async (workspaceId, options = {}) => {
+    console.log("Fetching subscription for workspace:", workspaceId);
     return fetchWithRetry(`/api/workspace/${workspaceId}/subscription`, {
       method: "GET",
       credentials: "include",
       headers,
       ...options,
     });
+  },
+  validateCoupon: async (workspaceId, couponCode, options = {}) => {
+    return fetchWithRetry(
+      `/api/workspace/${workspaceId}/subscription/validate-coupon?coupon=${couponCode}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers,
+        ...options,
+      }
+    );
   },
   createPaymentOrder: async (workspaceId, data, options = {}) => {
     return fetchWithRetry(

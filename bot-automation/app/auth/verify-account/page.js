@@ -21,8 +21,13 @@ const VerifyAccount = () => {
   const [isVerify, setIsVerify] = useState(false);
   const [otp, setOtp] = useState(Array(6).fill(""));
   const inputRefs = useRef([]);
-  const toastShownRef = useRef(false); // Track if toast has been shown
+  const toastRef = useRef(false); // Track if toast has been shown
 
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
   // Handle URL parameters and initial verification
   useEffect(() => {
     const email = searchParams.get("email");
@@ -37,23 +42,23 @@ const VerifyAccount = () => {
           email: enMail,
         });
       } catch (error) {
-        if (!toastShownRef.current) {
+        if (!toastRef.current) {
           showToast({
             title: "Error",
             description: "Invalid verification link",
             variant: "destructive",
           });
-          toastShownRef.current = true;
+          toastRef.current = true;
           router.push("/auth/register");
         }
       }
-    } else if (!toastShownRef.current) {
+    } else if (!toastRef.current) {
       showToast({
         title: "Error",
         description: "Verification link is incomplete",
         variant: "destructive",
       });
-      toastShownRef.current = true;
+      toastRef.current = true;
       router.push("/auth/register");
     }
   }, [searchParams, showToast, router]);
@@ -61,13 +66,13 @@ const VerifyAccount = () => {
   // Handle verification logic
   const handleVerify = useCallback(async () => {
     if (!state.code || !state.email) {
-      if (!toastShownRef.current) {
+      if (!toastRef.current) {
         showToast({
           title: "Error",
           description: "Verification link is incomplete",
           variant: "destructive",
         });
-        toastShownRef.current = true;
+        toastRef.current = true;
       }
       return;
     }
@@ -83,13 +88,13 @@ const VerifyAccount = () => {
       const data = await res.json();
 
       if (res.ok) {
-        if (!toastShownRef.current) {
+        if (!toastRef.current) {
           showToast({
             title: "Success",
             description: data.message || "Account verified successfully",
             variant: "success",
           });
-          toastShownRef.current = true;
+          toastRef.current = true;
         }
 
         const options = {
@@ -99,7 +104,7 @@ const VerifyAccount = () => {
         };
         await signIn("credentials", options);
       } else {
-        if (!toastShownRef.current) {
+        if (!toastRef.current) {
           let description = data.message || "Verification failed";
           let redirectPath = "/auth/register";
 
@@ -115,18 +120,18 @@ const VerifyAccount = () => {
             description,
             variant: "destructive",
           });
-          toastShownRef.current = true;
+          toastRef.current = true;
           router.push(redirectPath);
         }
       }
     } catch (err) {
-      if (!toastShownRef.current) {
+      if (!toastRef.current) {
         showToast({
           title: "Error",
           description: "Something went wrong. Please try again.",
           variant: "destructive",
         });
-        toastShownRef.current = true;
+        toastRef.current = true;
       }
     } finally {
       setIsVerify(false);
@@ -156,7 +161,7 @@ const VerifyAccount = () => {
         body: JSON.stringify({ email: state.email }),
       });
 
-      if (!toastShownRef.current) {
+      if (!toastRef.current) {
         showToast({
           title: res.ok ? "Success" : "Error",
           description: res.ok
@@ -164,16 +169,16 @@ const VerifyAccount = () => {
             : "Failed to resend confirmation email.",
           variant: res.ok ? "success" : "warning",
         });
-        toastShownRef.current = true;
+        toastRef.current = true;
       }
     } catch (error) {
-      if (!toastShownRef.current) {
+      if (!toastRef.current) {
         showToast({
           title: "Error",
           description: "Failed to resend confirmation email.",
           variant: "warning",
         });
-        toastShownRef.current = true;
+        toastRef.current = true;
       }
     }
   };

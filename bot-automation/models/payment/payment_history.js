@@ -1,41 +1,69 @@
 // models/paymentHistory.js
+import { PLANS } from "@/config/pricing.config";
 import mongoose from "mongoose";
 
 const paymentHistorySchema = new mongoose.Schema(
   {
     workspace: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
     subscription: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" },
-    plan: { type: String, enum: ["free", "starter", "pro", "enterprise"] },
-    amount: {
-      subtotal: Number,
-      tax: Number,
-      discount: { type: Number, default: 0 },
-      total: Number,
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Who initiated the payment
+    plan: { type: String, enum: Object.keys(PLANS), required: true },
+    billingCycle: {
+      type: String,
+      enum: ["monthly", "yearly"],
+      required: true,
     },
-    razorpay: {
+
+    amount: {
+      subtotal: { type: Number, required: true }, // Before tax and discount
+      tax: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
+      total: { type: Number, required: true },
+      currency: { type: String, default: "INR" },
+    },
+    gateway: {
+      name: {
+        type: String,
+        enum: ["razorpay", "stripe", "paypal"],
+        required: true,
+      },
       paymentId: String,
       subscriptionId: String,
       invoiceId: String,
       signature: String,
+      receipt: String,
     },
     invoice: {
-      number: String,
-      url: String,
-      issuedAt: Date,
-      paidAt: Date,
+      number: { type: String, required: true },
+      date: { type: Date, default: Date.now },
+      dueDate: Date,
+      status: {
+        type: String,
+        enum: ["draft", "open", "paid", "void", "uncollectible"],
+        default: "open",
+      },
+      pdfUrl: String,
+      hostedUrl: String,
+    },
+    refund: {
+      amount: Number,
+      reason: String,
+      date: Date,
+      gatewayRefundId: String,
+    },
+    paymentMethod: {
+      type: { type: String, enum: ["card", "netbanking", "upi", "wallet"] },
+      last4: String,
+      brand: String,
+      expiry: String,
     },
     status: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: ["pending", "succeeded", "failed", "refunded", "disputed"],
       default: "pending",
     },
-    period: {
-      type: String,
-      enum: ["monthly", "yearly"],
-      default: "monthly",
-    },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 paymentHistorySchema.virtual("formattedAmount").get(function () {

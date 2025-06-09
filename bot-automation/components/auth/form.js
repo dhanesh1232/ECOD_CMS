@@ -231,11 +231,6 @@ const inputVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const buttonVariants = {
-  hover: { scale: 1.02, boxShadow: "0 4px 20px rgba(59, 130, 246, 0.25)" },
-  tap: { scale: 0.98 },
-};
-
 const successVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -270,7 +265,6 @@ export default function FormComponent() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(errorParam || "");
   const [isMounted, setIsMounted] = useState(false);
   const [count, setCount] = useState(5);
   const [verify, setVerify] = useState({
@@ -282,6 +276,11 @@ export default function FormComponent() {
     return () => setIsMounted(false);
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
   useEffect(() => {
     if (formState.isPasswordReset) {
       setCount(5);
@@ -319,13 +318,18 @@ export default function FormComponent() {
   // Handle error from query params
   useEffect(() => {
     if (errorParam) {
-      setError(
-        errorParam === "CredentialsSignin"
-          ? "Invalid email or password"
-          : errorParam
-      );
+      if (!toastRef.current) {
+        showToast({
+          variant: "destructive",
+          description:
+            errorParam === "CredentialsSignin"
+              ? "Invalid email or password"
+              : errorParam,
+        });
+        toastRef.current = true;
+      }
     }
-  }, [errorParam]);
+  }, [errorParam, showToast]);
 
   const handleClickOpenGmail = () => {
     console.log(navigator);
@@ -460,7 +464,6 @@ export default function FormComponent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
     if (!validateForm()) {
       return;
@@ -508,7 +511,13 @@ export default function FormComponent() {
         } catch (error) {
           // Log any unexpected errors and display a generic error message
           console.error("Login Error:", error);
-          setError("An unexpected error occurred. Please try again.");
+          if (!toastRef.current) {
+            showToast({
+              description: "An unexpected error occurred. Please try again.",
+              variant: "warning",
+            });
+            toastRef.current = true;
+          }
         }
       } else if (pageKey === "register") {
         const { phone, email, name, password, terms } = formState;
@@ -554,8 +563,14 @@ export default function FormComponent() {
         });
 
         const data = await res.json();
-        if (!res.ok) {
-          setError(data.message || "Failed to send reset link");
+        if (res.status && !res.ok) {
+          if (!toastRef.current) {
+            showToast({
+              description: data.message || "Failed to send reset link",
+              variant: "destructive",
+            });
+            toastRef.current = true;
+          }
         } else {
           setFormState((prev) => ({
             ...prev,
@@ -565,7 +580,15 @@ export default function FormComponent() {
       } else if (pageKey === "reset-password") {
         const { token, email } = verify;
         if (!token || !email) {
-          setError("Invalid password reset link");
+          if (!toastRef.current) {
+            showToast({
+              title: "Invalid",
+              description: "Invalid password reset link",
+              variant: "destructive",
+            });
+            toastRef.current = true;
+          }
+
           return;
         }
 
@@ -582,8 +605,14 @@ export default function FormComponent() {
         });
 
         const data = await res.json();
-        if (!res.ok) {
-          setError(data.message || "Failed to reset password");
+        if (res.status && !res.ok) {
+          if (!toastRef.current) {
+            showToast({
+              description: data.message || "Failed to reset password",
+              variant: "destructive",
+            });
+            toastRef.current = true;
+          }
         } else {
           setFormState((prev) => ({
             ...prev,
@@ -599,7 +628,6 @@ export default function FormComponent() {
         });
         toastRef.current = true;
       }
-      setError(err.message || "An error occurred");
     } finally {
       setIsLoading(false);
     }

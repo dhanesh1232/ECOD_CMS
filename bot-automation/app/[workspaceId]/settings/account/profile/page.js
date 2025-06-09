@@ -101,6 +101,11 @@ const AccountInfoSection = () => {
     fetchUserDetails();
   }, [showToast]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setTempData((prev) => ({ ...prev, [name]: value }));

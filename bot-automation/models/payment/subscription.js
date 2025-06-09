@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { PLANS, PricingUtils, TAX_RATES } from "@/config/pricing.config";
 import { razorpay } from "@/lib/payment_gt";
+import validator from "validator";
 
 const subscriptionSchema = new mongoose.Schema(
   {
@@ -49,6 +50,7 @@ const subscriptionSchema = new mongoose.Schema(
         return this.plan !== "free";
       },
     },
+
     trialStart: Date,
     trialEnd: Date,
     canceledAt: Date,
@@ -64,6 +66,52 @@ const subscriptionSchema = new mongoose.Schema(
     },
     gatewayCustomerId: String,
     gatewayPlanId: String,
+    discount: {
+      code: String,
+      type: String,
+      value: Number,
+      appliesFor: { type: Number },
+    },
+    billingDetails: {
+      contact: {
+        name: String,
+        email: {
+          type: String,
+          validate: [validator.isEmail, "Please provide a valid email"],
+        },
+        phone: String,
+      },
+      address: {
+        line1: { type: String, required: true },
+        line2: String,
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        postalCode: { type: String, required: true },
+        country: { type: String, required: true },
+      },
+      taxInfo: {
+        taxId: String,
+        vatId: String,
+        companyName: String,
+      },
+      billingEmail: {
+        type: String,
+        validate: [validator.isEmail, "Please provide a valid email"],
+      },
+    },
+    // Subscription lifecycle management
+    subscriptionLifecycle: {
+      initialSignupDate: { type: Date, required: true },
+      lastRenewalDate: Date,
+      nextBillingDate: Date,
+      cancellationRequestDate: Date,
+      cancellationEffectiveDate: Date,
+      pauseStartDate: Date,
+      pauseEndDate: Date,
+      renewalAttempts: { type: Number, default: 0 },
+      billingRetryCount: { type: Number, default: 0 },
+    },
+    // Invoice history
     latestInvoice: {
       id: String,
       amount: Number,
@@ -82,6 +130,7 @@ const subscriptionSchema = new mongoose.Schema(
         pdfUrl: String,
       },
     ],
+    // Usage tracking
     usage: {
       chatbots: { type: Number, default: 0 },
       messages: { type: Number, default: 0 },
@@ -104,10 +153,19 @@ const subscriptionSchema = new mongoose.Schema(
       prioritySupport: Boolean,
       whiteLabel: Boolean,
     },
+    // Notifications
     notifications: {
       upcomingRenewal: { sent: Boolean, sentAt: Date },
       paymentFailed: { sent: Boolean, sentAt: Date },
       subscriptionEnding: { sent: Boolean, sentAt: Date },
+    },
+    // Usage overage tracking
+    usageOverage: {
+      chatbots: { type: Number, default: 0 },
+      messages: { type: Number, default: 0 },
+      members: { type: Number, default: 0 },
+      storage: { type: Number, default: 0 },
+      lastCalculated: Date,
     },
     metadata: {
       createdAt: { type: Date, default: Date.now },
@@ -205,9 +263,28 @@ subscriptionSchema.pre("save", function (next) {
 
 // Methods
 subscriptionSchema.methods = {
-  generateInvoice: function () {
+  checkUsageOverage: async function () {
+    const overages = {};
+    const resources = ["chatbots", "messages", "members", "storage"];
+
+    resources.forEach((resource) => {
+      const overage = this.usage[resource] - this.limits[resource];
+      if (overage > 0) {
+        overages[resource] = overage;
+      }
+    });
+
+    this.usageOverage = overages;
+    this.usageOverage.lastCalculated = new Date();
+    return overages;
+  },
+  generateInvoice: async function () {
     const plan = PLANS[this.plan];
-    const priceInfo = PricingUtils.calculatePrice(this.plan, this.billingCycle);
+    const priceInfo = PricingUtils.calculatePrice(
+      this.plan,
+      this.billingCycle,
+      this.discount.value
+    );
 
     return {
       invoiceNumber: `INV-${this._id.toString().substring(0, 8).toUpperCase()}`,
