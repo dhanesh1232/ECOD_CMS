@@ -9,6 +9,7 @@ import { Workspace } from "@/models/user/workspace";
 import mongoose from "mongoose";
 import { generateRandomSlug } from "@/lib/slugGenerator";
 
+const isAdmin = process.env.SUPER_ADMIN_EMAIL;
 // Enhanced credentials authentication
 const authorizeCredentials = async (credentials) => {
   await dbConnect();
@@ -50,7 +51,7 @@ const authorizeCredentials = async (credentials) => {
     });
 
     // Get workspace slug
-    let workspaceSlug = user.currentWorkspace?.slug;
+    let workspaceSlug = isAdmin !== user.email && user.currentWorkspace?.slug;
     if (!workspaceSlug) {
       const workspace = await Workspace.findOne({
         "members.user": user._id,
@@ -64,10 +65,10 @@ const authorizeCredentials = async (credentials) => {
       email: user.email,
       phone: user.phone || null,
       image: user.image || null,
-      role: user.role || "member",
+      role: user.email === isAdmin ? "super_admin" : user.role || "member",
       requiresProfileCompletion: user.requiresProfileCompletion ?? true,
       provider: "credentials",
-      workspaceSlug,
+      ...(isAdmin !== user.email && { workspaceSlug }),
     };
   } catch (error) {
     console.error("Credentials auth error:", error.message);
@@ -124,7 +125,7 @@ const handleGoogleSignIn = async (profile) => {
         email: profile.email,
         provider: "google",
         isVerified: true,
-        role: "user",
+        role: profile.email === isAdmin ? "super_admin" : "user",
         image: profile.picture || "",
         requiresProfileCompletion: true,
         lastLogin: new Date(),
@@ -132,24 +133,21 @@ const handleGoogleSignIn = async (profile) => {
 
       userData = await user.save({ session });
 
-      // Create workspace
-      const workspace = await Workspace.createWithOwner(
-        userData._id,
-        {
-          name: `${profile.name}'s Workspace`,
-          slug: generateRandomSlug(),
-        },
-        session
-      );
-
-      workspaceSlug = workspace.slug;
-
-      // Add workspace to user - pass just the ID
-      await userData.addToWorkspace(workspace._id, "owner", null, session);
-
-      // Set current workspace - just the ID
-      userData.currentWorkspace = workspace._id;
-      await userData.save({ session });
+      if (profile.email !== isAdmin) {
+        // Create workspace
+        const workspace = await Workspace.createWithOwner(
+          userData._id,
+          {
+            name: `${profile.name}'s Workspace`,
+            slug: generateRandomSlug(),
+          },
+          session
+        );
+        workspaceSlug = workspace.slug;
+        await userData.addToWorkspace(workspace._id, "owner", null, session);
+        userData.currentWorkspace = workspace._id;
+        await userData.save({ session });
+      }
     } else {
       // Update existing user
       userData = await User.findOneAndUpdate(
@@ -175,7 +173,7 @@ const handleGoogleSignIn = async (profile) => {
       role: userData.role,
       provider: "google",
       requiresProfileCompletion: userData.requiresProfileCompletion ?? true,
-      workspaceSlug,
+      ...(isAdmin !== userData.email && { workspaceSlug }),
     };
   } catch (error) {
     if (session.inTransaction()) {
@@ -246,7 +244,7 @@ export const authOptions = {
           Object.assign(user, userData);
         }
 
-        if (user.email) {
+        if (user.email && user.email !== isAdmin) {
           await sendLoginAlertEmail(user.name, user.email);
         }
 
@@ -265,20 +263,26 @@ export const authOptions = {
         token.picture = user.image;
         token.role = user.role;
         token.provider = account?.provider || "credentials";
-        token.workspaceSlug = user.workspaceSlug;
+        if (user.email !== isAdmin || user.role !== "super_admin") {
+          token.workspaceSlug = user.workspaceSlug || null;
+        } else {
+          token.workspaceSlug = null;
+        }
       }
-      if (token.userId && !token.workspaceSlug) {
-        const dbUser = await User.findById(token.userId)
-          .select("currentWorkspace")
-          .populate("currentWorkspace", "slug");
+      if (isAdmin !== token.email || token.role !== "super_admin") {
+        if (token.userId && !token.workspaceSlug) {
+          const dbUser = await User.findById(token.userId)
+            .select("currentWorkspace")
+            .populate("currentWorkspace", "slug");
 
-        token.workspaceSlug = dbUser?.currentWorkspace?.slug;
+          token.workspaceSlug = dbUser?.currentWorkspace?.slug;
 
-        if (!token.workspaceSlug) {
-          const workspace = await Workspace.findOne({
-            "members.user": token.userId,
-          }).select("slug");
-          token.workspaceSlug = workspace?.slug || null;
+          if (!token.workspaceSlug) {
+            const workspace = await Workspace.findOne({
+              "members.user": token.userId,
+            }).select("slug");
+            token.workspaceSlug = workspace?.slug || null;
+          }
         }
       }
       return token;
@@ -292,11 +296,17 @@ export const authOptions = {
         image: token.picture,
         role: token.role,
         provider: token.provider,
-        workspaceSlug: token.workspaceSlug,
+        ...((token.email !== isAdmin || token.role !== "super_admin") && {
+          workspaceSlug: token.workspaceSlug,
+        }),
       };
 
       // Ensure we always have a workspace slug
-      if (!session.user.workspaceSlug && token.userId) {
+      if (
+        !session.user.workspaceSlug &&
+        token.userId &&
+        (isAdmin !== token.email || token.role !== "super_admin")
+      ) {
         const workspaces = await Workspace.findOne({
           "members.user": token.userId,
         }).select("slug");
@@ -310,11 +320,10 @@ export const authOptions = {
   events: {
     async signIn({ user, isNewUser }) {
       if (isNewUser && user.provider === "google") {
-        await NewSignupGoogleMail(user.name, user.email);
+        if (user.email !== isAdmin) {
+          await NewSignupGoogleMail(user.name, user.email);
+        }
       }
-    },
-    async signOut() {
-      // Optional: Add cleanup logic
     },
   },
 };

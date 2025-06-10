@@ -266,9 +266,9 @@ export default function Page() {
         )}
 
         {plan.metadata.recommended && (
-          <div className="absolute top-0.5 right-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
-            <BadgeCheck size="small" className="h-4 w-4 text-blue-500" />
-            <span className="font-bold text-sm">Recommended</span>
+          <div className="absolute top-1 right-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
+            <BadgeCheck size={16} className="text-blue-500" />
+            <span className="font-bold text-xs md:text-sm">Recommended</span>
           </div>
         )}
 
@@ -400,20 +400,17 @@ export default function Page() {
       </div>
       <Tabs className="p-4 w-full">
         <TabsList className="grid grid-cols-2 w-full">
-          <TabsTrigger
-            value="features"
-            isActive={activeTab === "features"}
-            onClick={() => setActiveTab("features")}
-          >
-            Features
-          </TabsTrigger>
-          <TabsTrigger
-            value="limits"
-            isActive={activeTab === "limits"}
-            onClick={() => setActiveTab("limits")}
-          >
-            Limits
-          </TabsTrigger>
+          {["features", "limits"].map((tab) => (
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              isActive={activeTab === tab}
+              onClick={() => setActiveTab(tab)}
+              className="capitalize"
+            >
+              {tab}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         {activeTab === "features" && (
@@ -570,7 +567,7 @@ export default function Page() {
                         key={limitKey}
                         className="border-b hover:bg-muted/50 transition-colors"
                       >
-                        <td className="p-4 pl-6 font-medium text-sm md:text-base backdrop-blur-sm sticky left-0 bg-background z-10">
+                        <td className="p-4 pl-6 font-medium text-sm md:text-base backdrop-blur-sm sticky left-0 bg-background z-10 flex gap-1 items-center">
                           {limitIcons[limitKey] || <Zap className="h-4 w-4" />}
                           <span className="truncate">
                             {limitKey
@@ -637,24 +634,23 @@ export default function Page() {
             </p>
           </div>
           <TabsList className="grid w-full grid-cols-2 max-w-xs">
-            <TabsTrigger
-              isActive={billingPeriod === "monthly"}
-              value="monthly"
-              onClick={() => setBillingPeriod("monthly")}
-            >
-              Monthly
-            </TabsTrigger>
-            <TabsTrigger
-              value="yearly"
-              isActive={billingPeriod === "yearly"}
-              onClick={() => setBillingPeriod("yearly")}
-            >
-              Yearly (Save 20%)
-            </TabsTrigger>
+            {["monthly", "yearly"].map((tab) => {
+              return (
+                <TabsTrigger
+                  value={tab}
+                  key={tab}
+                  className="capitalize"
+                  isActive={billingPeriod === tab}
+                  onClick={() => setBillingPeriod(tab)}
+                >
+                  {tab} {tab === "yearly" && "20% OFF"}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {Object.entries(PLANS).map(([planId, plan]) => (
             <PlanCard key={planId} planId={planId} plan={plan} />
           ))}

@@ -8,6 +8,7 @@ import { decryptData } from "@/utils/encryption";
 import { Workspace } from "@/models/user/workspace";
 import { generateRandomSlug } from "@/lib/slugGenerator";
 
+const isAdmin = process.env.SUPER_ADMIN_EMAIL;
 // Configure rate limiting (5 attempts per hour per IP)
 const limiter = rateLimit({
   interval: 60 * 60 * 1000, // 1 hour
@@ -133,7 +134,7 @@ export async function POST(req) {
 
       const pw = decryptData(tempUser.password);
       // Create new user
-      // Create the user
+
       const [newUser] = await User.create(
         [
           {
@@ -142,36 +143,37 @@ export async function POST(req) {
             name: tempUser.name,
             phone: tempUser.phone,
             isVerified: true,
+            role: tempUser.email === isAdmin ? "super_admin" : "user",
             termsAccepted: tempUser.termsAccepted || true,
             provider: "credentials",
           },
         ],
         { session }
       );
+      if (isAdmin !== newUser.email) {
+        // Create the workspace
+        const workspace = await Workspace.createWithOwner(
+          newUser._id,
+          {
+            name: `${newUser.name}'s Workspace`,
+            slug: generateRandomSlug(),
+          },
+          session
+        );
 
-      // Create the workspace
-      const workspace = await Workspace.createWithOwner(
-        newUser._id,
-        {
-          name: `${newUser.name}'s Workspace`,
-          slug: generateRandomSlug(),
-        },
-        session
-      );
+        // Manually add the workspace to the user's workspaces array
+        newUser.workspaces.push({
+          workspace: workspace._id,
+          role: "owner",
+          status: "active",
+          joinedAt: new Date(),
+        });
 
-      // Manually add the workspace to the user's workspaces array
-      newUser.workspaces.push({
-        workspace: workspace._id,
-        role: "owner",
-        status: "active",
-        joinedAt: new Date(),
-      });
-
-      // Set currentWorkspace if not set
-      if (!newUser.currentWorkspace) {
-        newUser.currentWorkspace = workspace._id;
+        // Set currentWorkspace if not set
+        if (!newUser.currentWorkspace) {
+          newUser.currentWorkspace = workspace._id;
+        }
       }
-
       // Save the user
       await newUser.save({ session });
 

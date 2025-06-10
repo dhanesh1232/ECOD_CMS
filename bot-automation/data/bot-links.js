@@ -20,6 +20,33 @@ import {
   Settings,
   Target,
   Users,
+  LayoutDashboard,
+  List,
+  HeartPulse,
+  Building2,
+  Bot,
+  BadgeDollarSign,
+  CreditCard,
+  Percent,
+  Mail,
+  Flag,
+  LifeBuoy,
+  Lightbulb,
+  Code,
+  Activity,
+  Monitor,
+  Layers,
+  Landmark,
+  Cpu,
+  HelpCircle,
+  Terminal,
+  Home,
+  Ticket, // for "All Coupons"
+  CirclePlus, // cleaner than PlusCircle
+  LineChart, // cleaner alt to BarChart3
+  BadgeCheck, // better than ShieldCheck
+  ArchiveX, // better conveys "archived/disabled"
+  SlidersHorizontal, // more admin-style for "Settings"
 } from "lucide-react";
 import {
   ArrowPathIcon,
@@ -34,7 +61,6 @@ import {
   DashboardIcon,
   HelpIcon,
   TemplatesIcon,
-  CampaignsIcon,
   CreativeIcon,
   AdsAnalyticsIcon,
   BotIcon,
@@ -276,5 +302,181 @@ export const settingsNavItems = [
         external: true,
       },
     ],
+  },
+];
+
+export const SUPER_ADMIN_NAV = [
+  {
+    label: "Home",
+    icon: <Home className="w-5 h-5" />,
+    href: "/admin",
+    id: "home",
+  },
+  {
+    label: "Platform",
+    id: "platform",
+    isParent: true,
+    icon: <Monitor className="w-5 h-5" />,
+    subPages: [
+      {
+        label: "Dashboard",
+        href: "/admin/dashboard",
+        icon: <LayoutDashboard className="w-5 h-5" />,
+      },
+      {
+        label: "Activity Logs",
+        href: "/admin/dashboard/logs",
+        icon: <List className="w-5 h-5" />,
+      },
+      {
+        label: "Health Monitor",
+        href: "/admin/dashboard/health",
+        icon: <HeartPulse className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    label: "Tenants",
+    id: "tenants",
+    isParent: true,
+    icon: <Layers className="w-5 h-5" />,
+    subPages: [
+      {
+        label: "All Workspaces",
+        href: "/admin/workspaces",
+        icon: <Building2 className="w-5 h-5" />,
+      },
+      {
+        label: "All Users",
+        href: "/admin/users",
+        icon: <Users className="w-5 h-5" />,
+      },
+      {
+        label: "Chatbots",
+        href: "/admin/chatbots",
+        icon: <Bot className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    label: "Monetization",
+    id: "monetization",
+    isParent: true,
+    icon: <Landmark className="w-5 h-5" />,
+    subPages: [
+      {
+        label: "Plans & Pricing",
+        href: "/admin/plans",
+        icon: <BadgeDollarSign className="w-5 h-5" />,
+      },
+      {
+        label: "Subscriptions",
+        href: "/admin/subscriptions",
+        icon: <CreditCard className="w-5 h-5" />,
+      },
+      {
+        label: "Coupons",
+        href: "/admin/coupons",
+        icon: <Percent className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    label: "System",
+    id: "system",
+    isParent: true,
+    icon: <Cpu className="w-5 h-5" />,
+    subPages: [
+      {
+        label: "Settings",
+        href: "/admin/settings",
+        icon: <Settings className="w-5 h-5" />,
+      },
+      {
+        label: "Email Templates",
+        href: "/admin/settings/emails",
+        icon: <Mail className="w-5 h-5" />,
+      },
+      {
+        label: "Feature Flags",
+        href: "/admin/settings/flags",
+        icon: <Flag className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    label: "Support",
+    id: "support",
+    isParent: true,
+    icon: <HelpCircle className="w-5 h-5" />,
+    subPages: [
+      {
+        label: "Tickets",
+        href: "/admin/support/tickets",
+        icon: <LifeBuoy className="w-5 h-5" />,
+      },
+      {
+        label: "Feature Requests",
+        href: "/admin/features",
+        icon: <Lightbulb className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    label: "Developer",
+    id: "developer",
+    isParent: true,
+    icon: <Terminal className="w-5 h-5" />,
+    subPages: [
+      {
+        label: "API Usage",
+        href: "/admin/developer/api-usage",
+        icon: <Code className="w-5 h-5" />,
+      },
+      {
+        label: "Webhook Logs",
+        href: "/admin/developer/integrations/logs",
+        icon: <Activity className="w-5 h-5" />,
+      },
+    ],
+  },
+];
+
+export const SUPER_ADMIN_COUPON_NAVS = [
+  {
+    id: "all",
+    title: "All Coupons",
+    icon: <Ticket className="w-4 h-4" />,
+    href: "/admin/coupons",
+  },
+  {
+    id: "create",
+    title: "Create Coupon",
+    icon: <CirclePlus className="w-4 h-4" />,
+    href: "/admin/coupons/create",
+  },
+  {
+    id: "analytics",
+    title: "Usage Analytics",
+    icon: <LineChart className="w-4 h-4" />,
+    href: "/admin/coupons/analytics",
+  },
+  {
+    id: "rules",
+    title: "Coupon Rules",
+    icon: <BadgeCheck className="w-4 h-4" />,
+    href: "/admin/coupons/rules",
+  },
+  {
+    id: "archived",
+    title: "Archived",
+    icon: <ArchiveX className="w-4 h-4" />,
+    href: "/admin/coupons/archived",
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    icon: <SlidersHorizontal className="w-4 h-4" />,
+    href: "/admin/coupons/settings",
   },
 ];

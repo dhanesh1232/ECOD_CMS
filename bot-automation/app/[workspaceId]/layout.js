@@ -4,12 +4,7 @@ import dynamic from "next/dynamic";
 const PremiumSidebar = dynamic(() => import("@/components/sidebar"));
 const Header = dynamic(() => import("@/components/header"));
 import { useCallback, useState, useEffect, useRef } from "react";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
 import { encryptData } from "@/utils/encryption";
@@ -20,11 +15,20 @@ import NotificationButton from "@/components/notification";
 export default function ProtectLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
-  const params = useParams();
-  const workspaceId = params.workspaceId;
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialCheckDone = useRef(false);
+
+  useEffect(() => {
+    const segments = pathname.split("/").filter(Boolean);
+    const rawSlug = segments[segments.length - 1] || "Dashboard";
+
+    const formattedTitle = rawSlug
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+    document.title = `${formattedTitle} | ECODrIx`;
+  }, [pathname]);
 
   const checkProfileComplete = useCallback(async () => {
     if (initialCheckDone.current) return;

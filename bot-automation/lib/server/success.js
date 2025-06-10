@@ -36,4 +36,18 @@ export const SuccessHandle = {
   SubscriptionHistory: (data) => {
     return NextResponse.json(data, { status: 200, headers });
   },
+
+  /// Admin Panel
+  PlansSuccessFetch: (data, message = "Plans fetched successfully") => {
+    return createSuccessResponse(200, message, data);
+  },
+  PlanIdFetch: (data, message = "Plan Id fetched successfully") => {
+    return createSuccessResponse(200, message, data);
+  },
+  SubscriptionsDataSuccess: (
+    data,
+    message = "Subscriptions fetched successfully"
+  ) => {
+    return createSuccessResponse(200, message, data);
+  },
 };

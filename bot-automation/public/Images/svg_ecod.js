@@ -350,3 +350,34 @@ export const UserIcon = ({ className }) => (
     />
   </svg>
 );
+
+export function MenuCouponIcon(props) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      {/* Coupon base (ticket shape) */}
+      <path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2" />
+      <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+      <path d="M4 12h16" />
+
+      {/* Perforation lines */}
+      <circle cx={8.5} cy={12} r={0.5} fill="currentColor" />
+      <circle cx={15.5} cy={12} r={0.5} fill="currentColor" />
+
+      {/* Menu lines inside coupon */}
+      <line x1={10} y1={8} x2={18} y2={8} />
+      <line x1={10} y1={12} x2={14} y2={12} />
+      <line x1={10} y1={16} x2={18} y2={16} />
+    </svg>
+  );
+}
