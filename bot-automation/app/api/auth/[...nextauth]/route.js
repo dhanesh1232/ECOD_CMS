@@ -263,32 +263,39 @@ export const authOptions = {
         token.picture = user.image;
         token.role = user.role;
         token.provider = account?.provider || "credentials";
-        if (user.email !== isAdmin || user.role !== "super_admin") {
+
+        const isSuperAdmin =
+          user.email === isAdmin && user.role === "super_admin";
+        if (!isSuperAdmin) {
           token.workspaceSlug = user.workspaceSlug || null;
-        } else {
-          token.workspaceSlug = null;
         }
       }
-      if (isAdmin !== token.email || token.role !== "super_admin") {
-        if (token.userId && !token.workspaceSlug) {
-          const dbUser = await User.findById(token.userId)
-            .select("currentWorkspace")
-            .populate("currentWorkspace", "slug");
 
-          token.workspaceSlug = dbUser?.currentWorkspace?.slug;
+      if (
+        token.userId &&
+        !token.workspaceSlug &&
+        (token.email !== isAdmin || token.role !== "super_admin")
+      ) {
+        const dbUser = await User.findById(token.userId)
+          .select("currentWorkspace")
+          .populate("currentWorkspace", "slug");
 
-          if (!token.workspaceSlug) {
-            const workspace = await Workspace.findOne({
-              "members.user": token.userId,
-            }).select("slug");
-            token.workspaceSlug = workspace?.slug || null;
-          }
+        token.workspaceSlug = dbUser?.currentWorkspace?.slug;
+
+        if (!token.workspaceSlug) {
+          const workspace = await Workspace.findOne({
+            "members.user": token.userId,
+          }).select("slug");
+
+          token.workspaceSlug = workspace?.slug || null;
         }
       }
+
       return token;
     },
-
     async session({ session, token }) {
+      const isSuperAdmin =
+        token.email === isAdmin && token.role === "super_admin";
       session.user = {
         id: token.userId,
         name: token.name,
@@ -296,22 +303,15 @@ export const authOptions = {
         image: token.picture,
         role: token.role,
         provider: token.provider,
-        ...((token.email !== isAdmin || token.role !== "super_admin") && {
-          workspaceSlug: token.workspaceSlug,
-        }),
+        ...(isSuperAdmin ? {} : { workspaceSlug: token.workspaceSlug }),
       };
 
-      // Ensure we always have a workspace slug
-      if (
-        !session.user.workspaceSlug &&
-        token.userId &&
-        (isAdmin !== token.email || token.role !== "super_admin")
-      ) {
-        const workspaces = await Workspace.findOne({
+      if (!isSuperAdmin && !session.user.workspaceSlug && token.userId) {
+        const workspace = await Workspace.findOne({
           "members.user": token.userId,
         }).select("slug");
 
-        session.user.workspaceSlug = workspaces[0]?.slug || null;
+        session.user.workspaceSlug = workspace?.slug || null;
       }
 
       return session;
