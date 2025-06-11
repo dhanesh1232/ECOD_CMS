@@ -37,7 +37,7 @@ export default function Layout({ children }) {
           <Link
             key={id}
             href={href}
-            className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
+            className={`flex truncate flex-nowrap items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors ${
               isActive
                 ? "bg-indigo-50 text-indigo-700 dark:bg-gray-700 dark:text-indigo-400"
                 : "text-gray-600 hover:bg-gray-100 hover:text-black dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
@@ -90,7 +90,7 @@ export default function Layout({ children }) {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 p-2 sm:p-4 bg-gray-50 dark:bg-gray-900 dark:text-gray-100 h-full">
+      <main className="flex-1 p-2 sm:p-4 overflow-y-auto scrollbar-transparent">
         <div className="flex items-center justify-start gap-4 mb-2">
           {/* Mobile menu button */}
           <Button
@@ -108,7 +108,7 @@ export default function Layout({ children }) {
           </h3>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
           {children}
         </div>
       </main>

@@ -54,4 +54,39 @@ export const AdminServices = {
       ...options,
     });
   },
+  // Coupon Handles
+  fetchCouponRules: async (options = {}) => {
+    return fetchWithRetry("/api/admin/coupons/rules", {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
+  createCoupon: async (formData, options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons/create`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      ...options,
+      body: JSON.stringify(formData),
+    });
+  },
+  getCoupon: async (couponId, options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons/${couponId}`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
+  updateCoupon: async (couponId, formData, options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons/${couponId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers,
+      ...options,
+      body: JSON.stringify(formData),
+    });
+  },
 };

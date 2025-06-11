@@ -17,17 +17,16 @@ import {
   motion,
   AnimatePresence,
 } from "framer-motion";
-import { useToast } from "../ui/toast-provider";
-import { UserServices } from "@/lib/client/user";
+import { useSession } from "next-auth/react";
 
 const AdminSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const workspaceId = params.workspaceId;
   const [expandedItems, setExpandedItems] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
   const [hoverProp, setHoverProp] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -37,39 +36,17 @@ const AdminSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   });
   const navRef = useRef(null);
   const userRef = useRef(null);
-  const showToast = useToast();
-  const toastRef = useRef(false);
   const { scrollY } = useScroll({ container: navRef });
 
   useEffect(() => {
     const renderProfile = async () => {
-      try {
-        const data = await UserServices.fetchUserProfile();
-        if (data.status && !data.ok) {
-          if (!toastRef.current) {
-            showToast({
-              description: "Failed to fetch Profile",
-              variant: "warning",
-            });
-            toastRef.current = true;
-          }
-        }
-        setProfile({
-          name: data.data?.user?.name,
-          role: data.data?.user?.role,
-        });
-      } catch (err) {
-        if (!toastRef.current) {
-          showToast({
-            description: err || "failed ti fetch profile",
-            variant: "warning",
-          });
-          toastRef.current = true;
-        }
-      }
+      setProfile({
+        name: session?.user?.name,
+        role: session?.user?.role,
+      });
     };
     renderProfile();
-  }, [showToast]);
+  }, [session.user]);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 10);

@@ -66,7 +66,7 @@ const subscriptionSchema = new mongoose.Schema(
     },
     gatewayCustomerId: String,
     gatewayPlanId: String,
-    discount: {
+    coupon: {
       code: String,
       type: String,
       value: Number,
@@ -82,12 +82,57 @@ const subscriptionSchema = new mongoose.Schema(
         phone: String,
       },
       address: {
-        line1: { type: String, required: true },
+        line1: {
+          type: String,
+          validate: {
+            validator: function (v) {
+              const rootDoc = this.ownerDocument?.();
+              return rootDoc?.plan === "free" || !!v;
+            },
+            message: "Address line1 is required for paid plans",
+          },
+        },
         line2: String,
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        postalCode: { type: String, required: true },
-        country: { type: String, required: true },
+        city: {
+          type: String,
+          validate: {
+            validator: function (v) {
+              const rootDoc = this.ownerDocument?.();
+              return rootDoc?.plan === "free" || !!v;
+            },
+            message: "City is required for paid plans",
+          },
+        },
+        state: {
+          type: String,
+          validate: {
+            validator: function (v) {
+              const rootDoc = this.ownerDocument?.();
+              return rootDoc?.plan === "free" || !!v;
+            },
+            message: "State is required for paid plans",
+          },
+        },
+        postalCode: {
+          type: String,
+          validate: {
+            validator: function (v) {
+              const rootDoc = this.ownerDocument?.();
+              return rootDoc?.plan === "free" || !!v;
+            },
+            message: "Postal code is required for paid plans",
+          },
+        },
+        country: {
+          type: String,
+          validate: {
+            validator: function (v) {
+              const rootDoc = this.ownerDocument?.();
+              return rootDoc?.plan === "free" || !!v;
+            },
+            message: "Country is required for paid plans",
+          },
+        },
       },
       taxInfo: {
         taxId: String,
@@ -96,7 +141,21 @@ const subscriptionSchema = new mongoose.Schema(
       },
       billingEmail: {
         type: String,
-        validate: [validator.isEmail, "Please provide a valid email"],
+        validate: [
+          {
+            validator: function (v) {
+              const rootDoc = this.ownerDocument?.();
+              return rootDoc?.plan === "free" || !!v;
+            },
+            message: "Billing email is required for paid plans",
+          },
+          {
+            validator: function (v) {
+              return !v || validator.isEmail(v);
+            },
+            message: "Please provide a valid email",
+          },
+        ],
       },
     },
     // Subscription lifecycle management
@@ -463,7 +522,14 @@ subscriptionSchema.methods = {
 
 // Statics
 subscriptionSchema.statics = {
-  async createWithPricing(workspaceId, planId, billingCycle, session = null) {
+  async createWithPricing(
+    workspaceId,
+    planId,
+    billingCycle,
+    subscriptionId,
+    gatewayPlanId,
+    session = null
+  ) {
     const options = session ? { session } : {};
     const plan = PLANS[planId];
     if (!plan) throw new Error("Invalid plan");
@@ -483,26 +549,20 @@ subscriptionSchema.statics = {
       limits: plan.limits,
       features: plan.features,
       paymentGateway: planId === "free" ? null : "razorpay",
+      subscriptionLifecycle: {
+        initialSignupDate: new Date(),
+      },
     };
 
     if (planId !== "free") {
-      const razorpaySub = await razorpay.subscriptions.create({
-        plan_id: plan.razorpayIds[billingCycle],
-        total_count: billingCycle === "yearly" ? 1 : 12,
-        customer_notify: 1,
-        notes: {
-          workspaceId: workspaceId.toString(),
-        },
-      });
-
-      subscriptionData.gatewaySubscriptionId = razorpaySub.id;
-      subscriptionData.gatewayPlanId = plan.razorpayIds[billingCycle];
+      subscriptionData.gatewaySubscriptionId = subscriptionId;
+      subscriptionData.gatewayPlanId = gatewayPlanId;
     }
 
     return await Subscription.create([subscriptionData], options).then(
       (res) => res[0]
     );
-  },
+  }, // Some changes made on this
 
   calculateProratedCost: async function (
     subscriptionId,
@@ -592,7 +652,7 @@ subscriptionSchema.statics = {
     return subscription;
   },
 
-  handlePaymentFailed: async function (payload) {
+  _handlePaymentFailed: async function (payload) {
     const subscription = await this.findOne({
       gatewaySubscriptionId: payload.subscription_id,
     });

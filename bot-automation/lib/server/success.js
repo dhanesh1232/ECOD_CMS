@@ -50,4 +50,8 @@ export const SuccessHandle = {
   ) => {
     return createSuccessResponse(200, message, data);
   },
+  // Coupon
+  CouponSuccessHandle: (data, message = "") => {
+    return createSuccessResponse(200, message, data);
+  },
 };

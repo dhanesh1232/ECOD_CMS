@@ -268,12 +268,57 @@ const workspaceSchema = new mongoose.Schema(
           phone: String,
         },
         address: {
-          line1: { type: String, required: true },
+          line1: {
+            type: String,
+            validate: {
+              validator: function (v) {
+                const rootDoc = this.ownerDocument?.();
+                return rootDoc?.plan === "free" || !!v;
+              },
+              message: "Address line1 is required for paid plans",
+            },
+          },
           line2: String,
-          city: { type: String, required: true },
-          state: { type: String, required: true },
-          postalCode: { type: String, required: true },
-          country: { type: String, required: true },
+          city: {
+            type: String,
+            validate: {
+              validator: function (v) {
+                const rootDoc = this.ownerDocument?.();
+                return rootDoc?.plan === "free" || !!v;
+              },
+              message: "City is required for paid plans",
+            },
+          },
+          state: {
+            type: String,
+            validate: {
+              validator: function (v) {
+                const rootDoc = this.ownerDocument?.();
+                return rootDoc?.plan === "free" || !!v;
+              },
+              message: "State is required for paid plans",
+            },
+          },
+          postalCode: {
+            type: String,
+            validate: {
+              validator: function (v) {
+                const rootDoc = this.ownerDocument?.();
+                return rootDoc?.plan === "free" || !!v;
+              },
+              message: "Postal code is required for paid plans",
+            },
+          },
+          country: {
+            type: String,
+            validate: {
+              validator: function (v) {
+                const rootDoc = this.ownerDocument?.();
+                return rootDoc?.plan === "free" || !!v;
+              },
+              message: "Country is required for paid plans",
+            },
+          },
         },
         taxInfo: {
           taxId: String,

@@ -2,7 +2,7 @@ import dbConnect from "@/config/dbconnect";
 import { validateSession } from "@/lib/auth";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
-import { Discount } from "@/models/payment/discount";
+import { Coupon } from "@/models/payment/coupon";
 const coupons = [
   "SAVE20NOW", // 9 chars
   "TRIAL2024", // 9 chars
