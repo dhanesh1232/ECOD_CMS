@@ -74,7 +74,7 @@ export default function CouponSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-6">Coupon Settings</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">

@@ -2,10 +2,12 @@ import dbConnect from "@/config/dbconnect";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
 import { Coupon } from "@/models/payment/coupon";
-
+import "@/models/payment/couponRules";
+import mongoose from "mongoose";
 export async function GET(request, { params }) {
   try {
     await dbConnect();
+    console.log("Registred :", mongoose.modelNames());
     const { couponId } = await params;
 
     if (!couponId) {
