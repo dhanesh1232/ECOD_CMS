@@ -1,6 +1,5 @@
 // models/payment/coupon.js
 import mongoose from "mongoose";
-import { CouponRule } from "../payment/couponRules";
 const couponSchema = new mongoose.Schema(
   {
     title: {

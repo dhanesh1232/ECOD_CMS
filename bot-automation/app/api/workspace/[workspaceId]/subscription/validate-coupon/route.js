@@ -3,7 +3,7 @@ import { validateSession } from "@/lib/auth";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
 import { Coupon } from "@/models/payment/coupon";
-import { CouponRule } from "@/models/payment/couponRules";
+import "@/models/payment/couponRule";
 export async function GET(request, { params }) {
   await dbConnect();
   try {

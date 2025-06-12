@@ -1,7 +1,7 @@
 import dbConnect from "@/config/dbconnect";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
-import { CouponRule } from "@/models/payment/couponRules";
+import { CouponRule } from "@/models/payment/couponRule";
 
 export async function PUT(request, { params }) {
   try {
