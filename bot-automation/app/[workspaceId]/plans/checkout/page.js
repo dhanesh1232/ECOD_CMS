@@ -154,6 +154,12 @@ const PlanInfoCheckoutPage = () => {
   );
 
   useEffect(() => {
+    if (couponState.hasChanged) {
+      saveToLocalStorage(STORAGE_KEYS.COUPON_CODE, "");
+      saveToLocalStorage(STORAGE_KEYS.VALID_COUPON, false);
+    }
+  });
+  useEffect(() => {
     setTimeout(() => {
       toastRef.current = false;
     }, 10000);
@@ -245,7 +251,8 @@ const PlanInfoCheckoutPage = () => {
       try {
         const response = await billingService.validateCoupon(
           workspaceId,
-          couponCode
+          couponCode,
+          formData.plan_name
         );
 
         if (response.status && !response.ok) {
@@ -292,7 +299,7 @@ const PlanInfoCheckoutPage = () => {
         }
 
         const newDiscount = {
-          percentage: data.type === "percentage" ? data.value : 0,
+          percentage: data.type === "percent" ? data.value : 0,
           fixed: data.type === "fixed" ? data.value : 0,
           trial: data.type === "trial" ? data.value : 0,
         };
@@ -895,7 +902,7 @@ const PlanInfoCheckoutPage = () => {
                   </div>
                 </div>
               </div>
-
+              {/*Coupon Code handle */}
               <div className="bg-gray-50 dark:bg-gray-700/20 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between py-1">
                   <h3 className="text-lg font-medium text-blue-900 dark:text-gray-100">
@@ -968,7 +975,7 @@ const PlanInfoCheckoutPage = () => {
                   <div className="mt-2 text-sm text-blue-600">
                     Validating coupon...
                   </div>
-                ) : couponState.isValid ? (
+                ) : couponState.isValid && couponState.code ? (
                   <div className="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">
                     {couponState.discount.trial > 0
                       ? `🎉 You've unlocked a ${couponState.discount.trial}-day free trial!`

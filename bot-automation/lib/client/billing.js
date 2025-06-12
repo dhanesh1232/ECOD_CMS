@@ -33,9 +33,9 @@ export const billingService = {
       ...options,
     });
   },
-  validateCoupon: async (workspaceId, couponCode, options = {}) => {
+  validateCoupon: async (workspaceId, couponCode, plan, options = {}) => {
     return fetchWithRetry(
-      `/api/workspace/${workspaceId}/subscription/validate-coupon?coupon=${couponCode}`,
+      `/api/workspace/${workspaceId}/subscription/validate-coupon?coupon=${couponCode}&plan=${plan}`,
       {
         method: "GET",
         credentials: "include",

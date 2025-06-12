@@ -256,6 +256,7 @@ export const authOptions = {
     },
 
     async jwt({ token, user, account }) {
+      await dbConnect();
       if (user) {
         token.userId = user.id;
         token.name = user.name;
@@ -294,6 +295,7 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
+      await dbConnect();
       const isSuperAdmin =
         token.email === isAdmin && token.role === "super_admin";
       session.user = {
