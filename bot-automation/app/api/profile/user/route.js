@@ -70,7 +70,9 @@ export async function GET(req) {
         },
       };
     });
-
+    const currentWorkspaceDetails = enrichedWorkspaces.find(
+      (ws) => ws.isCurrent === true
+    );
     // Prepare the response
     const response = {
       success: true,
@@ -88,6 +90,7 @@ export async function GET(req) {
         },
         workspaces: enrichedWorkspaces,
         currentWorkspace: user.currentWorkspace,
+        currentWorkspaceDetails,
       },
     };
 

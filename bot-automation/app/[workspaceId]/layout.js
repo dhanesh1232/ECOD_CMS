@@ -68,7 +68,7 @@ export default function ProtectLayout({ children }) {
   return (
     <>
       <TooltipProvider delayDuration={300} skipDelayDuration={100}>
-        <div className="flex h-full bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+        <div className="flex h-full bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100">
           <PremiumSidebar
             mobileMenuOpen={mobileMenuOpen}
             setMobileMenuOpen={setMobileMenuOpen}
@@ -78,7 +78,7 @@ export default function ProtectLayout({ children }) {
               mobileMenuOpen={mobileMenuOpen}
               setMobileMenuOpen={setMobileMenuOpen}
             />
-            <main className="flex-1 flex flex-col bg-white overflow-hidden dark:bg-gray-700 transition-colors ease-in-out duration-300">
+            <main className="flex-1 flex flex-col bg-white overflow-hidden dark:bg-gray-800 transition-colors ease-in-out duration-300">
               {children}
             </main>
           </div>

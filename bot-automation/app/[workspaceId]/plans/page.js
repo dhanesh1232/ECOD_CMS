@@ -612,17 +612,29 @@ export default function Page() {
   return (
     <div className="p-4 sm:p-6 overflow-y-auto max-w-7xl scrollbar-transparent">
       <div className="space-y-8">
-        <button
-          type="button"
-          aria-label="Back to Billing Settings"
-          title="Back to Billing Settings"
-          onClick={() =>
-            router.push(`/${workspaceId}/settings/workspace/billing`)
-          }
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
-        >
-          <MoveLeft className="h-6 w-4" /> Back
-        </button>
+        <div className="flex items-center justify-between">
+          <Button
+            type="button"
+            aria-label="Back to Billing Settings"
+            title="Back to Billing Settings"
+            onClick={() => router.back()}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <MoveLeft className="h-6 w-4" /> Back
+          </Button>
+          <Button
+            type="button"
+            aria-label="Back to Billing Settings"
+            title="Current Plan"
+            onClick={() =>
+              router.push(`/${workspaceId}/settings/workspace/billing`)
+            }
+            variant="outline-primary"
+          >
+            Current Plan
+          </Button>
+        </div>
 
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div>

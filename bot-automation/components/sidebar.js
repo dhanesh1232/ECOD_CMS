@@ -10,7 +10,6 @@ import Link from "next/link";
 import SelectWorkspace from "@/components/workspace_select";
 import {
   ChevronDown,
-  Search,
   User,
   X,
   Plus,
@@ -18,6 +17,7 @@ import {
   HelpCircle,
   LogOut,
   Lock,
+  StarsIcon,
 } from "lucide-react";
 import { navLinks } from "@/data/bot-links";
 import { ChatBotAI } from "@/public/Images/svg_ecod";
@@ -30,6 +30,7 @@ import {
 } from "framer-motion";
 import { useToast } from "./ui/toast-provider";
 import { UserServices } from "@/lib/client/user";
+import { Button } from "./ui/button";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -38,7 +39,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const searchParams = useSearchParams();
   const workspaceId = params.workspaceId;
   const [expandedItems, setExpandedItems] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
+  const [workspaceDetails, setWorkspaceDetails] = useState(null);
   const [hoverProp, setHoverProp] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -65,6 +66,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
             toastRef.current = true;
           }
         }
+        setWorkspaceDetails(data.data?.currentWorkspaceDetails);
         setProfile({
           name: data.data?.user?.name,
           role: data.data?.user?.role,
@@ -164,17 +166,6 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     return pathname === `/${workspaceId}${subHref}`;
   };
 
-  const filteredItems = searchQuery
-    ? navLinks.filter(
-        (item) =>
-          item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (item.subPages &&
-            item.subPages.some((sub) =>
-              sub.label.toLowerCase().includes(searchQuery.toLowerCase())
-            ))
-      )
-    : navLinks;
-
   const renderOverLay = () => {
     const handleMouseMove = (e) => {
       setHoverProp({
@@ -265,313 +256,279 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           {/* Search and Create Section */}
           <div className="px-5 pt-5 pb-3 space-y-3 sticky top-[72px] z-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent">
             <SelectWorkspace />
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <Search
-                    size={18}
-                    className="text-indigo-500 dark:text-indigo-400"
-                  />
-                </div>
-                <motion.input
-                  type="text"
-                  placeholder="Search modules..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm"
-                  whileFocus={{
-                    scale: 1.02,
-                    boxShadow: "0 0 0 2px rgba(99, 102, 241, 0.3)",
-                  }}
-                />
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-sm font-medium shadow-lg hover:shadow-indigo-500/30 transition-all"
+            {workspaceDetails?.subscription?.plan.toLowerCase() === "free" && (
+              <Button
+                variant="premium"
+                onClick={() => router.push(`/${workspaceId}/plans`)}
+                title="Upgrade plan"
+                fullWidth={true}
+                className="relative"
+                aria-label="Upgrade plan"
               >
-                <Plus size={16} className="text-white" />
-                <span>New Project</span>
-              </motion.button>
-            </motion.div>
+                <span className="mr-2">Upgrade</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="absolute left-0 top-0">
+                  <StarsIcon className="h-5 w-5 text-yellow-500" />
+                </span>
+              </Button>
+            )}
+
+            <Button variant="primary" title="Create" fullWidth={true}>
+              <Plus size={16} className="text-white" />
+              <span>Create</span>
+            </Button>
           </div>
           {/* Navigation Items */}
-          {filteredItems.length > 0 ? (
-            <nav
-              ref={navRef}
-              className="scrollbar-transparent flex-1 overflow-y-auto px-3 py-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
-            >
-              {filteredItems.map((item) => (
-                <div key={item.id} className="space-y-1">
-                  {item.subPages ? (
-                    <>
-                      <motion.button
-                        whileHover={{ x: 4 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => toggleExpand(item.id)}
-                        className={cn(
-                          "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
-                          "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
-                          "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
-                          (isActive(item.href) ||
-                            item.subPages.some((sub) =>
-                              isSubpageActive(sub.href)
-                            )) &&
-                            "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                          "transition-colors duration-200"
-                        )}
-                      >
-                        {(isActive(item.href) ||
+          <nav
+            ref={navRef}
+            className="scrollbar-transparent flex-1 overflow-y-auto px-3 py-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+          >
+            {navLinks.map((item) => (
+              <div key={item.id} className="space-y-1">
+                {item.subPages ? (
+                  <>
+                    <motion.button
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => toggleExpand(item.id)}
+                      className={cn(
+                        "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
+                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                        "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
+                        (isActive(item.href) ||
                           item.subPages.some((sub) =>
                             isSubpageActive(sub.href)
-                          )) && (
-                          <motion.div
-                            layoutId="activeNavItem"
-                            className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                            transition={{
-                              type: "spring",
-                              stiffness: 500,
-                              damping: 30,
-                            }}
-                          />
-                        )}
-                        <div className="flex items-center space-x-3">
-                          <motion.div
-                            whileHover={{ rotate: 8, scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className={cn(
-                              "p-1.5 rounded-lg transition-colors shadow-sm",
-                              isActive(item.href) ||
-                                item.subPages.some((sub) =>
-                                  isSubpageActive(sub.href)
-                                )
-                                ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                            )}
-                          >
-                            {item.icon}
-                          </motion.div>
-                          <span className="font-medium text-sm">
-                            {item.label}
-                          </span>
-                        </div>
-                        <motion.div
-                          animate={{
-                            rotate: expandedItems[item.id] ? 180 : 0,
-                            transition: {
-                              type: "spring",
-                              stiffness: 400,
-                              damping: 15,
-                            },
-                          }}
-                          className="mr-1"
-                        >
-                          <ChevronDown
-                            size={16}
-                            className={cn(
-                              "transition-colors",
-                              isActive(item.href) ||
-                                item.subPages.some((sub) =>
-                                  isSubpageActive(sub.href)
-                                )
-                                ? "text-indigo-500 dark:text-indigo-400"
-                                : "text-gray-500 dark:text-gray-400"
-                            )}
-                          />
-                        </motion.div>
-                      </motion.button>
-
-                      <AnimatePresence>
-                        {expandedItems[item.id] && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{
-                              height: "auto",
-                              opacity: 1,
-                              transition: {
-                                height: {
-                                  duration: 0.25,
-                                  ease: [0.22, 1, 0.36, 1],
-                                },
-                                opacity: { duration: 0.15, delay: 0.1 },
-                              },
-                            }}
-                            exit={{
-                              height: 0,
-                              opacity: 0,
-                              transition: {
-                                height: { duration: 0.2 },
-                                opacity: { duration: 0.1 },
-                              },
-                            }}
-                            className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
-                          >
-                            <div className="space-y-1 py-1">
-                              {item.subPages.map((subItem, index) => (
-                                <div key={index} className="relative">
-                                  {/* Vertical connector line */}
-                                  <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700"></div>
-                                  <Link
-                                    href={`/${workspaceId}${subItem.href}`}
-                                    key={subItem.id}
-                                    onClick={() => {
-                                      mobileMenuOpen &&
-                                        setMobileMenuOpen(!mobileMenuOpen);
-                                    }}
-                                  >
-                                    <motion.span
-                                      whileHover={{
-                                        x: 4,
-                                        backgroundColor:
-                                          "rgba(224, 231, 255, 0.5)",
-                                      }}
-                                      className={cn(
-                                        "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
-                                        "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                        "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                        isSubpageActive(subItem.href) &&
-                                          "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
-                                      )}
-                                    >
-                                      {isSubpageActive(subItem.href) && (
-                                        <motion.span
-                                          layoutId="activeSubNavItem"
-                                          className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
-                                          transition={{
-                                            type: "spring",
-                                            stiffness: 500,
-                                            damping: 30,
-                                          }}
-                                        />
-                                      )}
-                                      <motion.span
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        className={cn(
-                                          "p-1 rounded-md transition-colors",
-                                          isSubpageActive(subItem.href)
-                                            ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                            : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                                        )}
-                                      >
-                                        {subItem.icon}
-                                      </motion.span>
-                                      <span className="truncate font-medium sm:text-sm text-xs">
-                                        {subItem.label}
-                                      </span>
-                                      {subItem.beta && (
-                                        <motion.span
-                                          initial={{ scale: 0.9, opacity: 0 }}
-                                          animate={{ scale: 1, opacity: 1 }}
-                                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 ml-auto"
-                                        >
-                                          Beta
-                                        </motion.span>
-                                      )}
-                                    </motion.span>
-                                  </Link>
-                                </div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </>
-                  ) : (
-                    <Link
-                      href={`/${workspaceId}${item.href}`}
-                      onClick={() => {
-                        mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
-                      }}
+                          )) &&
+                          "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
+                        "transition-colors duration-200"
+                      )}
                     >
-                      <motion.span
-                        whileHover={{ x: 4 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={cn(
-                          "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all relative group",
-                          "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
-                          isActive(item.href) &&
-                            "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                          "group"
-                        )}
-                      >
-                        {isActive(item.href) && (
-                          <motion.div
-                            layoutId="activeNavItem"
-                            className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                            transition={{
-                              type: "spring",
-                              stiffness: 500,
-                              damping: 30,
-                            }}
-                          />
-                        )}
-                        <motion.span
+                      {(isActive(item.href) ||
+                        item.subPages.some((sub) =>
+                          isSubpageActive(sub.href)
+                        )) && (
+                        <motion.div
+                          layoutId="activeNavItem"
+                          className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <div className="flex items-center space-x-3">
+                        <motion.div
                           whileHover={{ rotate: 8, scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           className={cn(
                             "p-1.5 rounded-lg transition-colors shadow-sm",
-                            isActive(item.href)
+                            isActive(item.href) ||
+                              item.subPages.some((sub) =>
+                                isSubpageActive(sub.href)
+                              )
                               ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
                               : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                           )}
                         >
                           {item.icon}
-                        </motion.span>
-                        <span className="font-medium text-sm truncate">
+                        </motion.div>
+                        <span className="font-medium text-sm">
                           {item.label}
                         </span>
-                        {item.new && (
-                          <motion.span
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
-                          >
-                            New
-                          </motion.span>
+                      </div>
+                      <motion.div
+                        animate={{
+                          rotate: expandedItems[item.id] ? 180 : 0,
+                          transition: {
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 15,
+                          },
+                        }}
+                        className="mr-1"
+                      >
+                        <ChevronDown
+                          size={16}
+                          className={cn(
+                            "transition-colors",
+                            isActive(item.href) ||
+                              item.subPages.some((sub) =>
+                                isSubpageActive(sub.href)
+                              )
+                              ? "text-indigo-500 dark:text-indigo-400"
+                              : "text-gray-500 dark:text-gray-400"
+                          )}
+                        />
+                      </motion.div>
+                    </motion.button>
+
+                    <AnimatePresence>
+                      {expandedItems[item.id] && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{
+                            height: "auto",
+                            opacity: 1,
+                            transition: {
+                              height: {
+                                duration: 0.25,
+                                ease: [0.22, 1, 0.36, 1],
+                              },
+                              opacity: { duration: 0.15, delay: 0.1 },
+                            },
+                          }}
+                          exit={{
+                            height: 0,
+                            opacity: 0,
+                            transition: {
+                              height: { duration: 0.2 },
+                              opacity: { duration: 0.1 },
+                            },
+                          }}
+                          className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
+                        >
+                          <div className="space-y-1 py-1">
+                            {item.subPages.map((subItem, index) => (
+                              <div key={index} className="relative">
+                                {/* Vertical connector line */}
+                                <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700"></div>
+                                <Link
+                                  href={`/${workspaceId}${subItem.href}`}
+                                  key={subItem.id}
+                                  onClick={() => {
+                                    mobileMenuOpen &&
+                                      setMobileMenuOpen(!mobileMenuOpen);
+                                  }}
+                                >
+                                  <motion.span
+                                    whileHover={{
+                                      x: 4,
+                                      backgroundColor:
+                                        "rgba(224, 231, 255, 0.5)",
+                                    }}
+                                    className={cn(
+                                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
+                                      "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                                      "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                                      isSubpageActive(subItem.href) &&
+                                        "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                    )}
+                                  >
+                                    {isSubpageActive(subItem.href) && (
+                                      <motion.span
+                                        layoutId="activeSubNavItem"
+                                        className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
+                                        transition={{
+                                          type: "spring",
+                                          stiffness: 500,
+                                          damping: 30,
+                                        }}
+                                      />
+                                    )}
+                                    <motion.span
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.9 }}
+                                      className={cn(
+                                        "p-1 rounded-md transition-colors",
+                                        isSubpageActive(subItem.href)
+                                          ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                      )}
+                                    >
+                                      {subItem.icon}
+                                    </motion.span>
+                                    <span className="truncate font-medium sm:text-sm text-xs">
+                                      {subItem.label}
+                                    </span>
+                                    {subItem.beta && (
+                                      <motion.span
+                                        initial={{ scale: 0.9, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 ml-auto"
+                                      >
+                                        Beta
+                                      </motion.span>
+                                    )}
+                                  </motion.span>
+                                </Link>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                ) : (
+                  <Link
+                    href={`/${workspaceId}${item.href}`}
+                    onClick={() => {
+                      mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
+                    }}
+                  >
+                    <motion.span
+                      whileHover={{ x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={cn(
+                        "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all relative group",
+                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                        isActive(item.href) &&
+                          "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
+                        "group"
+                      )}
+                    >
+                      {isActive(item.href) && (
+                        <motion.div
+                          layoutId="activeNavItem"
+                          className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <motion.span
+                        whileHover={{ rotate: 8, scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={cn(
+                          "p-1.5 rounded-lg transition-colors shadow-sm",
+                          isActive(item.href)
+                            ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                         )}
+                      >
+                        {item.icon}
                       </motion.span>
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </nav>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center p-6 text-center"
-            >
-              <Search
-                size={48}
-                className="text-gray-400 dark:text-gray-600 mb-4"
-              />
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                No results found
-              </h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Try different search terms or browse all available pages
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSearchQuery("")}
-                className="mt-4 px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              >
-                Clear search
-              </motion.button>
-            </motion.div>
-          )}
+                      <span className="font-medium text-sm truncate">
+                        {item.label}
+                      </span>
+                      {item.new && (
+                        <motion.span
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
+                        >
+                          New
+                        </motion.span>
+                      )}
+                    </motion.span>
+                  </Link>
+                )}
+              </div>
+            ))}
+          </nav>
           {/* User Profile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
