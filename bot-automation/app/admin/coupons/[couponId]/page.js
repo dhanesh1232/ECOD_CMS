@@ -8,7 +8,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 export default function CouponViewPage() {
   const params = useParams();
@@ -176,14 +175,16 @@ export default function CouponViewPage() {
                       : `$${coupon.discountValue.toFixed(2)}`}
                   </p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Currency
-                  </h3>
-                  <p className="mt-1 text-2xl font-semibold">
-                    {coupon.currency}
-                  </p>
-                </div>
+                {coupon.currency && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Currency
+                    </h3>
+                    <p className="mt-1 text-2xl font-semibold">
+                      {coupon.currency}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
