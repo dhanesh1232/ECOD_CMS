@@ -29,6 +29,10 @@ const couponSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    interActions: {
+      autoSuggest: { type: Boolean, default: false },
+      autoApply: { type: Boolean, default: false },
+    },
     endDate: {
       type: Date,
       required: true,

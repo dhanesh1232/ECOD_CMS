@@ -63,6 +63,14 @@ export const AdminServices = {
       ...options,
     });
   },
+  generateCouponCode: async (options = {}) => {
+    return fetchWithRetry("/api/admin/coupons/generate-code", {
+      method: "POST",
+      headers,
+      credentials: "include",
+      ...options,
+    });
+  },
   createCoupon: async (formData, options = {}) => {
     return fetchWithRetry(`/api/admin/coupons/create`, {
       method: "POST",
@@ -75,6 +83,14 @@ export const AdminServices = {
   getCoupon: async (couponId, options = {}) => {
     return fetchWithRetry(`/api/admin/coupons/${couponId}`, {
       method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
+  deleteCoupon: async (couponId, options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons/${couponId}`, {
+      method: "DELETE",
       credentials: "include",
       headers,
       ...options,

@@ -1,28 +1,44 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast-provider";
 import { AdminServices } from "@/lib/client/admin.service";
-import { RefreshCcw, Edit, Loader2, MoveLeft, Clipboard } from "lucide-react";
+import {
+  RefreshCcw,
+  Edit,
+  Loader2,
+  MoveLeft,
+  Clipboard,
+  Check,
+  X,
+  Trash,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { format } from "date-fns";
+import { useState, useEffect, useCallback } from "react";
+import { format, formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function CouponViewPage() {
   const params = useParams();
   const router = useRouter();
-  const showToast = useToast();
+  const toast = useToast();
   const couponId = params.couponId;
   const [coupon, setCoupon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const toastRef = useRef(false);
-  useEffect(() => {
-    setTimeout(() => {
-      toastRef.current = false;
-    }, 10000);
-  });
 
   const fetchCoupon = useCallback(async () => {
     try {
@@ -30,14 +46,14 @@ export default function CouponViewPage() {
       setError(null);
       const response = await AdminServices.getCoupon(couponId);
 
-      if (response.status && !response.ok) {
+      if (!response.ok && response.status) {
         throw new Error(response.message || "Failed to fetch coupon");
       }
-      console.log(response);
+
       setCoupon(response.coupon);
     } catch (err) {
       setError(err.message);
-      showToast({
+      toast({
         title: "Error",
         description: err.message,
         variant: "destructive",
@@ -45,11 +61,72 @@ export default function CouponViewPage() {
     } finally {
       setLoading(false);
     }
-  }, [couponId, showToast]);
+  }, [couponId, toast]);
 
   useEffect(() => {
     if (couponId) fetchCoupon();
   }, [couponId, fetchCoupon]);
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        description: "Coupon code copied to clipboard",
+      });
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        description: "Failed to copy code",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await AdminServices.deleteCoupon(couponId);
+      if (res.status && !res.ok) {
+        toast({
+          variant: "destructive",
+          description: "Failed to Delete code",
+        });
+      } else {
+        toast({
+          variant: "success",
+          description: "Successfully Deleted",
+        });
+        router.push(`/admin/coupons`);
+      }
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        description: "Failed to Delete code",
+      });
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const variants = {
+      active:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      upcoming: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      expired: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+      archived:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    };
+    return (
+      variants[status] ||
+      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+    );
+  };
+
+  const formatCurrency = (value, currency) => {
+    return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
+      style: "currency",
+      currency: currency || "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
 
   if (loading) {
     return (
@@ -71,183 +148,174 @@ export default function CouponViewPage() {
     );
   }
 
-  const getStatusBadge = (status) => {
-    const variants = {
-      active:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      upcoming: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      expired: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-      archived:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    };
-    return (
-      variants[status] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-    );
-  };
+  const usagePercentage = Math.min(
+    (coupon.usedCount / coupon.usageLimit) * 100,
+    100
+  );
 
   return (
-    <div className="container mx-auto p-2 md:p-4">
+    <div className="container mx-auto p-4 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
         <Button
-          variant="outline"
-          size="sm"
+          variant="ghost"
           onClick={() => router.push("/admin/coupons")}
-          aria-label="Go back"
-          title="Go back"
+          className="gap-2"
         >
-          <MoveLeft />
+          <MoveLeft className="h-4 w-4" />
+          <span className="sm:block hidden">Back to Coupons</span>
         </Button>
-        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+        <h1 className="text-lg md:text-xl lg:text-2xl font-bold">
           Coupon Details
         </h1>
         <Button
+          variant="info"
           onClick={() => router.push(`/admin/coupons/${couponId}/edit`)}
-          variant="outline"
           className="gap-2"
         >
           <Edit className="h-4 w-4" />
-          <span className="hidden sm:inline">Edit Coupon</span>
+          <span className="hidden sm:block">Edit</span>
         </Button>
       </div>
 
       <Card className="shadow-sm">
         <CardHeader className="border-b">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">{coupon.title}</CardTitle>
-            <Badge className={`capitalize ${getStatusBadge(coupon.status)}`}>
-              {coupon.status}
-            </Badge>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-3">
+                {coupon.title}
+                <Badge
+                  className={`capitalize ${getStatusBadge(coupon.status)}`}
+                >
+                  {coupon.status}
+                </Badge>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Created{" "}
+                {formatDistanceToNow(new Date(coupon.createdAt), {
+                  addSuffix: true,
+                })}
+              </p>
+            </div>
+            {coupon.interActions && (
+              <div className="flex gap-3">
+                {coupon.interActions.autoApply && (
+                  <Badge variant="secondary" className="gap-1">
+                    <Check className="h-3 w-3" /> Auto-apply
+                  </Badge>
+                )}
+                {coupon.interActions.autoSuggest && (
+                  <Badge variant="secondary" className="gap-1">
+                    <Check className="h-3 w-3" /> Auto-suggest
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            Created on {format(new Date(coupon.createdAt), "MMM dd, yyyy")}
-          </p>
         </CardHeader>
+
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column */}
             <div className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Coupon Code
-                  </h3>
-                  <Button
-                    variant="outline"
-                    value={coupon.code}
-                    onClick={(e) => {
-                      try {
-                        const value = e.target.value;
-                        navigator.clipboard.writeText(value);
-                        if (!toastRef.current) {
-                          showToast({
-                            variant: "success",
-                            description: `${value}Coupon copied successfully`,
-                          });
-                          toastRef.current = true;
-                        }
-                      } catch (err) {
-                        if (!toastRef.current) {
-                          showToast({
-                            variant: "destructive",
-                            description: err.message || "Unable to copy code",
-                          });
-                          toastRef.current = true;
-                        }
-                      }
-                    }}
-                    size="xs"
-                    className="mt-1 flex items-center gap-1 text-lg font-mono bg-secondary text-secondary-foreground"
-                  >
-                    <Clipboard size={16} />
-                    {coupon.code}
-                  </Button>
+                  <Label>Coupon Code</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="mt-2 flex items-center gap-2 text-lg font-mono"
+                        onClick={() => copyToClipboard(coupon.code)}
+                      >
+                        <Clipboard className="h-4 w-4" />
+                        {coupon.code}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Click to copy</TooltipContent>
+                  </Tooltip>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Discount
-                  </h3>
-                  <p className="mt-1 text-xl font-semibold">
+                  <Label>Discount Value</Label>
+                  <p className="mt-2 text-2xl font-semibold">
                     {coupon.discountType === "percent"
                       ? `${coupon.discountValue}%`
-                      : coupon.currency === "INR"
-                      ? `₹${coupon.discountValue.toFixed(2)}`
-                      : `$${coupon.discountValue.toFixed(2)}`}
+                      : formatCurrency(coupon.discountValue, coupon.currency)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {coupon.discountType === "percent"
+                      ? "Percentage discount"
+                      : coupon.discountType === "fixed"
+                      ? "Fixed amount discount"
+                      : "Free trial"}
                   </p>
                 </div>
-                {coupon.currency && (
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Currency
-                    </h3>
-                    <p className="mt-1 text-2xl font-semibold">
-                      {coupon.currency}
-                    </p>
-                  </div>
-                )}
               </div>
 
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  Rules
-                </h3>
-                {coupon.rules?.length > 0 ? (
-                  <ul className="list-disc pl-5 space-y-1 text-sm">
-                    {coupon.rules.map((rule, index) => (
-                      <li key={index} className="text-foreground">
-                        {rule}
+              {coupon.rules?.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Rules</Label>
+                  <ul className="space-y-2">
+                    {coupon.rules.map((rule) => (
+                      <li key={rule._id} className="flex items-start gap-2">
+                        <div className="mt-1">
+                          {rule.isActive ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <X className="h-4 w-4 text-red-500" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{rule.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {rule.conditionType}
+                          </p>
+                        </div>
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="text-muted-foreground">No rules defined</p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
+            {/* Right Column */}
             <div className="space-y-6">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Validity Period
-                  </h3>
-                  <p className="mt-1 text-foreground">
-                    {format(new Date(coupon.startDate), "MMM dd, yyyy")} -{" "}
-                    {format(new Date(coupon.endDate), "MMM dd, yyyy")}
+                  <Label>Validity Period</Label>
+                  <p className="mt-2">
+                    {format(new Date(coupon.startDate), "PP")} -{" "}
+                    {format(new Date(coupon.endDate), "PP")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDistanceToNow(new Date(coupon.endDate), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Usage
-                  </h3>
-                  <p className="mt-1 text-foreground">
-                    {coupon.usedCount} of {coupon.usageLimit} redemptions
-                  </p>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 dark:bg-gray-700">
-                    <div
-                      className="bg-primary h-2.5 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          (coupon.usedCount / coupon.usageLimit) * 100,
-                          100
-                        )}%`,
-                      }}
-                    ></div>
+                  <Label>Usage</Label>
+                  <div className="mt-2 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>
+                        {coupon.usedCount} of {coupon.usageLimit} redemptions
+                      </span>
+                      <span>{Math.round(usagePercentage)}%</span>
+                    </div>
+                    <Progress value={usagePercentage} className="h-2" />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  Applicable Plans
-                </h3>
+                <Label>Applicable Plans</Label>
                 {coupon.applicablePlans?.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     {coupon.applicablePlans.map((plan) => (
                       <Badge
                         key={plan}
-                        variant="secondary"
+                        variant="outline"
                         className="capitalize"
                       >
                         {plan}
@@ -255,12 +323,44 @@ export default function CouponViewPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">No plan restrictions</p>
+                  <p className="text-muted-foreground mt-2">
+                    No plan restrictions
+                  </p>
                 )}
               </div>
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="border-t p-6">
+          <div className="w-full flex justify-between items-center">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => handleDelete()}
+            >
+              <Trash size={14} />
+            </Button>
+            <div className="space-x-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="sm:text-sm text-xs"
+                onClick={() => router.push("/admin/coupons")}
+              >
+                Back to List
+              </Button>
+              <Button
+                size="sm"
+                className="sm:text-sm text-xs"
+                variant="primary"
+                onClick={() => router.push(`/admin/coupons/${couponId}/edit`)}
+              >
+                Edit Coupon
+              </Button>
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
