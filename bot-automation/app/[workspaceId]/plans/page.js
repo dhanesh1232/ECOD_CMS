@@ -6,11 +6,11 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast-provider";
-import { PLANS } from "@/config/pricing.config";
+import { AdminServices } from "@/lib/client/admin.service";
 import { billingService } from "@/lib/client/billing";
+import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { encryptData } from "@/utils/encryption";
 import {
   CheckCircle,
@@ -28,31 +28,24 @@ import {
   HardDrive,
   MessageCircle,
   GitMerge,
-  Settings,
-  BarChart2,
-  Shield,
   CreditCard,
   Globe,
   Mail,
-  Calendar,
   FileText,
   LayoutTemplate,
-  Filter,
   Target,
-  PieChart,
   Cpu,
   Code,
-  Lock,
   Server,
-  BookOpen,
   Headphones,
-  Award,
   List,
-  Slack,
-  Code2,
+  Check,
+  X,
+  ArrowRight,
+  HelpCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FaDiscord,
   FaFacebook,
@@ -61,114 +54,79 @@ import {
   FaWhatsapp,
 } from "react-icons/fa";
 
+// Feature category icons with dark mode support
+const categoryIcons = {
+  chatbotAutomation: (
+    <MessageCircle className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+  ),
+  adsAutomation: (
+    <Target className="h-5 w-5 text-rose-500 dark:text-rose-400" />
+  ),
+  seoTools: <Globe className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+  landingBuilder: (
+    <LayoutTemplate className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
+  ),
+  crmAndDripCampaigns: (
+    <Mail className="h-5 w-5 text-amber-500 dark:text-amber-400" />
+  ),
+  aiAgent: <Cpu className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
+  growthFeatures: <Rocket className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+  enterpriseFeatures: (
+    <Server className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+  ),
+};
+
+// Channel icons mapping
 const iconMap = {
-  whatsapp: (
-    <FaWhatsapp className="text-green-600 text-xl hover:text-green-700 transition-colors" />
-  ),
-  instagram: (
-    <FaInstagram className="text-pink-600 text-xl hover:text-pink-700 transition-colors" />
-  ),
-  facebook: (
-    <FaFacebook className="text-blue-600 text-xl hover:text-blue-700 transition-colors" />
-  ),
-  telegram: (
-    <FaTelegram className="text-blue-500 text-xl hover:text-blue-600 transition-colors" />
-  ),
-  web: (
-    <Earth className="text-xl text-blue-500 hover:text-blue-600 transition-colors" />
-  ),
-  sms: (
-    <MessageSquare className="text-xl hover:text-gray-600 text-blue-700 transition-colors" />
-  ),
-  slack: (
-    <Slack className="text-xl hover:text-gray-600 text-blue-700 transition-colors" />
-  ),
-  customsdk: <Code2 />,
-  voice: (
-    <Mic className="text-xl text-purple-600 hover:text-red-700 transition-colors" />
-  ),
-  discord: (
-    <FaDiscord className="text-xl hover:text-gray-600 text-blue-700 transition-colors" />
-  ),
-};
-const featureIcons = {
-  // Core Features
-  channels: <Globe className="h-5 w-5" />,
-  fileAttachments: <FileText className="h-5 w-5" />,
-  analyticsDashboard: <BarChart2 className="h-5 w-5" />,
-  customBranding: <Award className="h-5 w-5" />,
-  prioritySupport: <Headphones className="h-5 w-5" />,
-  whiteLabel: <Shield className="h-5 w-5" />,
-  apiAccess: <Code className="h-5 w-5" />,
-  webhooks: <GitMerge className="h-5 w-5" />,
-  sso: <Lock className="h-5 w-5" />,
-  aiFeatures: <Cpu className="h-5 w-5" />,
-  customFlows: <Settings className="h-5 w-5" />,
-  autoScheduling: <Calendar className="h-5 w-5" />,
-  advancedReporting: <PieChart className="h-5 w-5" />,
-
-  // Chatbot Automation
-  visualFlowBuilder: <GitMerge className="h-5 w-5" />,
-  aiResponseTuning: <Cpu className="h-5 w-5" />,
-  chatbotTemplates: <LayoutTemplate className="h-5 w-5" />,
-
-  // Ads Automation
-  adCopyGeneration: <FileText className="h-5 w-5" />,
-  smartTargeting: <Target className="h-5 w-5" />,
-  budgetSuggestions: <CreditCard className="h-5 w-5" />,
-  autoPublishing: <Zap className="h-5 w-5" />,
-  audienceSegmentation: <Filter className="h-5 w-5" />,
-
-  // Drip Campaigns
-  emailSequences: <Mail className="h-5 w-5" />,
-  behavioralTriggers: <Zap className="h-5 w-5" />,
-  aBTesting: <BarChart2 className="h-5 w-5" />,
-
-  // Landing Page Builder
-  dragDropEditor: <Settings className="h-5 w-5" />,
-  pageTemplates: <LayoutTemplate className="h-5 w-5" />,
-  formBuilders: <FileText className="h-5 w-5" />,
-  popupCreators: <MessageSquare className="h-5 w-5" />,
-  seoTools: <Globe className="h-5 w-5" />,
-
-  // Growth Features
-  teamCollaboration: <Users className="h-5 w-5" />,
-  customAiModels: <Cpu className="h-5 w-5" />,
-  advancedSegmentation: <Filter className="h-5 w-5" />,
-  dynamicContent: <Zap className="h-5 w-5" />,
-  webinarIntegration: <Users className="h-5 w-5" />,
-  membershipSites: <Users className="h-5 w-5" />,
-  paymentGateways: <CreditCard className="h-5 w-5" />,
-
-  // Enterprise Features
-  dedicatedInstance: <Server className="h-5 w-5" />,
-  sla99_9: <BadgeCheck className="h-5 w-5" />,
-  enterpriseSso: <Lock className="h-5 w-5" />,
-  customDataCenter: <Server className="h-5 w-5" />,
-  aiModelHosting: <Cpu className="h-5 w-5" />,
-  auditLogs: <BookOpen className="h-5 w-5" />,
-  dataResidency: <Globe className="h-5 w-5" />,
-  hipaaCompliance: <Shield className="h-5 w-5" />,
-  accountManager: <Users className="h-5 w-5" />,
-  developerSupport: <Code className="h-5 w-5" />,
-  trainingSessions: <BookOpen className="h-5 w-5" />,
+  whatsapp: <FaWhatsapp className="text-[#25D366] text-xl" />,
+  instagram: <FaInstagram className="text-[#E1306C] text-xl" />,
+  facebook: <FaFacebook className="text-[#1877F2] text-xl" />,
+  telegram: <FaTelegram className="text-[#0088CC] text-xl" />,
+  web: <Earth className="text-xl text-[#4285F4]" />,
+  sms: <MessageSquare className="text-xl text-[#34B7F1]" />,
+  discord: <FaDiscord className="text-xl text-[#5865F2]" />,
+  customsdk: <Code className="text-xl text-[#5865F2]" />,
+  voice: <Mic className="text-xl text-[#9C27B0]" />,
 };
 
+// Limit icons mapping with dark mode support
 const limitIcons = {
-  chatbots: <MessageCircle className="h-5 w-5" />,
-  messages: <MessageSquare className="h-5 w-5" />,
-  members: <Users className="h-5 w-5" />,
-  storage: <HardDrive className="h-5 w-5" />,
-  conversations: <MessageCircle className="h-5 w-5" />,
-  integrations: <GitMerge className="h-5 w-5" />,
-  automationRules: <Zap className="h-5 w-5" />,
-  dripCampaigns: <Mail className="h-5 w-5" />,
-  adCredits: <CreditCard className="h-5 w-5" />,
-  exports: <FileText className="h-5 w-5" />,
-  landingPages: <LayoutTemplate className="h-5 w-5" />,
-  adCampaigns: <Target className="h-5 w-5" />,
-  teamRoles: <Users className="h-5 w-5" />,
-  aiModelTraining: <Cpu className="h-5 w-5" />,
+  chatbots: (
+    <MessageCircle className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+  ),
+  messages: (
+    <MessageSquare className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+  ),
+  members: <Users className="h-5 w-5 text-amber-500 dark:text-amber-400" />,
+  storage: (
+    <HardDrive className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
+  ),
+  conversations: (
+    <MessageCircle className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+  ),
+  integrations: (
+    <GitMerge className="h-5 w-5 text-rose-500 dark:text-rose-400" />
+  ),
+  automationRules: (
+    <Zap className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
+  ),
+  dripCampaigns: <Mail className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+  adCredits: (
+    <CreditCard className="h-5 w-5 text-green-500 dark:text-green-400" />
+  ),
+  exports: <FileText className="h-5 w-5 text-gray-500 dark:text-gray-400" />,
+  landingPages: (
+    <LayoutTemplate className="h-5 w-5 text-teal-500 dark:text-teal-400" />
+  ),
+  adCampaigns: <Target className="h-5 w-5 text-red-500 dark:text-red-400" />,
+  teamRoles: <Users className="h-5 w-5 text-pink-500 dark:text-pink-400" />,
+  aiModelTraining: (
+    <Cpu className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+  ),
+  apiCalls: <Code className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
+  dedicatedConcurrency: (
+    <Server className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+  ),
 };
 
 export default function Page() {
@@ -181,25 +139,25 @@ export default function Page() {
   const [subscription, setSubscription] = useState(null);
   const [userCred, setUserCred] = useState({});
   const showToast = useToast();
+  const [loading, setLoading] = useState(false);
+  const [plans, setPlans] = useState([]);
   const toastRef = useRef(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      toastRef.current = false;
-    }, 10000);
-  });
-
-  useEffect(() => {
-    const fetchuserCredentials = async () => {
+    const fetchData = async () => {
       try {
-        const profile = await billingService.getSubscription(workspaceId);
-        if (profile.status && !profile.ok) {
-          const value = await profile.json();
-          if (!toastRef.current) {
-            showToast({ description: value.message, variant: "warning" });
-            toastRef.current = true;
-          }
+        setLoading(true);
+        const [profile, planData] = await Promise.all([
+          billingService.getSubscription(workspaceId),
+          AdminServices.getPlans(),
+        ]);
+
+        if (!profile.ok && profile.status) {
+          const error = await profile.json();
+          throw new Error(error.message || "Failed to fetch user credentials");
         }
+
+        setPlans(planData.plans);
         setUserCred({
           phone: profile?.data?.user?.phone,
           email: profile?.data?.user?.email,
@@ -210,19 +168,21 @@ export default function Page() {
         if (!toastRef.current) {
           showToast({
             title: "Error",
-            description: err.message || "Failed to fetch user credentials",
+            description: err.message || "Failed to fetch data",
             variant: "destructive",
           });
           toastRef.current = true;
         }
+      } finally {
+        setLoading(false);
       }
     };
-    fetchuserCredentials();
+
+    fetchData();
   }, [showToast, workspaceId]);
 
-  const getPlanPrice = (planId) => {
-    const plan = PLANS[planId];
-    if (!plan || !plan.prices) return null;
+  const getPlanPrice = (plan) => {
+    if (!plan?.prices) return null;
     const rawPrice = plan.prices[billingPeriod];
     return {
       raw: rawPrice,
@@ -233,23 +193,32 @@ export default function Page() {
   };
 
   const formatFeatureValue = (val) => {
-    if (Array.isArray(val)) {
-      return val
-        .map((item) => item.charAt(0).toUpperCase() + item.slice(1))
-        .join(", ");
-    }
-    if (val === Infinity) return "Unlimited";
-    if (typeof val === "boolean") return val ? "Included" : "Not included";
+    if (Array.isArray(val))
+      return val.map((v) => v.charAt(0).toUpperCase() + v.slice(1)).join(", ");
+    if (val === "Infinity")
+      return (
+        <InfinityIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
+      );
+    if (typeof val === "boolean")
+      return val ? (
+        <span className="flex items-center justify-center">
+          <Check className="h-5 w-5 text-green-500 dark:text-green-400" />
+        </span>
+      ) : (
+        <span className="flex items-center justify-center">
+          <X className="h-5 w-5 text-red-500 dark:text-red-400" />
+        </span>
+      );
     if (typeof val === "string")
       return val.replace(/\b\w/g, (c) => c.toUpperCase());
     return val;
   };
 
-  const handlePlanSelection = async (planId) => {
-    if (!PLANS[planId].prices) return;
+  const handlePlanSelection = async (plan) => {
+    if (!plan.prices) return;
 
     const obj = {
-      plan_name: encryptData(planId),
+      plan_name: encryptData(plan.id),
       em: encryptData(userCred.email),
       pn: encryptData(userCred.phone),
     };
@@ -257,437 +226,491 @@ export default function Page() {
     router.replace(`/${workspaceId}/plans/checkout?${params}`);
   };
 
-  const PlanCard = ({ planId, plan }) => {
-    const priceInfo = getPlanPrice(planId);
-    const isCurrentPlan = subscription?.plan === planId;
+  const PlanCard = ({ plan }) => {
+    const priceInfo = getPlanPrice(plan);
+    const isCurrentPlan = subscription?.plan === plan.id;
+    const isEnterprise = plan.id.toLowerCase() === "enterprise";
+    const isFree = plan.id.toLowerCase() === "free";
 
     return (
-      <Card
-        className={`hover:shadow-lg transition-shadow relative overflow-hidden ${
-          isCurrentPlan ? "ring-2 ring-primary" : ""
-        } ${plan.metadata.popular ? "border-2 border-yellow-400" : ""}`}
-      >
-        {plan.metadata.popular && (
-          <div className="absolute top-4 right-4 bg-primary/10 text-primary-foreground px-3 py-1 rounded-full text-sm flex items-center gap-2">
-            <StarsIcon className="h-4 w-4 text-yellow-500" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-yellow-500 font-bold to-pink-500">
-              Popular
-            </span>
+      <div className="relative h-full">
+        {plan.metadata?.popular && (
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg z-10">
+            MOST POPULAR
           </div>
         )}
 
-        {plan.metadata.recommended && (
-          <div className="absolute top-1 right-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm flex items-center gap-2">
-            <BadgeCheck size={16} className="text-blue-500" />
-            <span className="font-bold text-xs md:text-sm">Recommended</span>
-          </div>
-        )}
-
-        <CardHeader className="pb-0">
-          <div className="flex justify-between items-start">
-            <h3 className="text-2xl font-bold">{plan.name}</h3>
-            {isCurrentPlan && (
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                Current Plan
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            {plan.description}
-          </p>
-
-          {priceInfo ? (
-            <div className="space-y-0 mt-3">
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold">
-                  ₹
-                  {priceInfo.localized.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{" "}
+        <Card
+          className={`h-full flex flex-col transition-all duration-300 hover:shadow-xl dark:hover:shadow-lg dark:hover:shadow-gray-800/30 ${
+            isCurrentPlan ? "ring-2 ring-primary/50 dark:ring-primary/30" : ""
+          } ${
+            plan.metadata?.popular
+              ? "border-2 border-purple-500/20 dark:border-purple-500/30 bg-gradient-to-b from-purple-50/50 to-white dark:from-purple-900/10 dark:to-gray-900"
+              : "border border-gray-200 dark:border-gray-700"
+          }`}
+        >
+          <CardHeader className="pb-0">
+            <div className="flex justify-between items-start">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {plan.name}
+              </h3>
+              {isCurrentPlan && (
+                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-1 rounded-full">
+                  Current Plan
                 </span>
-                <span className="text-muted-foreground text-xs">
-                  /{billingPeriod}
-                </span>
-              </div>
-              {billingPeriod === "yearly" && (
-                <p className="text-xs text-green-600 mt-1">
-                  Save 20% compared to monthly
-                </p>
               )}
             </div>
-          ) : (
-            plan.name.toLowerCase() !== "free" && (
-              <div className="text-base m-0 p-0 font-bold text-muted-foreground">
-                Contact for Pricing
-              </div>
-            )
-          )}
-        </CardHeader>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {plan.description}
+            </p>
 
-        <CardContent className="space-y-4 pt-6">
-          <Button
-            variant={isCurrentPlan ? "secondary" : "outline"}
-            className="w-full"
-            disabled={isCurrentPlan || planId.toLowerCase() === "free"}
-            onClick={() => handlePlanSelection(planId)}
-          >
-            {isCurrentPlan ? (
-              "Manage Plan"
-            ) : (
-              <>
-                View Details <ChevronRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
-
-          <div className="space-y-4">
-            <h4 className="font-semibold text-sm text-muted-foreground">
-              Key Features:
-            </h4>
-            {Object.entries(plan.limits).map(([key, value]) => (
-              <div key={key} className="flex items-start gap-3">
-                <span className="text-primary">
-                  {limitIcons[key] || <Zap className="h-5 w-5" />}
-                </span>
-                <div>
-                  <p className="font-medium text-sm md:text-base">
-                    {key
-                      .replace(/([A-Z])/g, " $1")
-                      .replace(/^\w/, (c) => c.toUpperCase())}
-                  </p>
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    {formatFeatureValue(value)}
-                  </p>
+            {priceInfo ? (
+              <div className="space-y-0 mt-4">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                    ₹{priceInfo.localized.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">
+                    /{billingPeriod}
+                  </span>
                 </div>
+                {billingPeriod === "yearly" && (
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+                    Save 20% compared to monthly
+                  </p>
+                )}
               </div>
-            ))}
-          </div>
-        </CardContent>
-
-        <CardFooter>
-          <Button
-            className="w-full gap-2 text-lg font-semibold transition-all hover:shadow-md"
-            size="lg"
-            variant={
-              planId.toLowerCase() === "enterprise"
-                ? "premium"
-                : planId.toLowerCase() === "free"
-                ? "outline"
-                : "default"
-            }
-            onClick={() => handlePlanSelection(planId)}
-            disabled={isCurrentPlan}
-          >
-            {isCurrentPlan ? (
-              <span className="flex items-center justify-center gap-2">
-                <CheckCircle className="text-green-600" />
-                Current Plan
-              </span>
-            ) : plan.metadata.trialDays > 0 ? (
-              <span className="flex items-center justify-center gap-2 text-sm">
-                <Rocket />
-                Start {plan.metadata.trialDays}-Day Free Trial
-              </span>
             ) : (
-              <span className="flex items-center justify-center gap-2">
-                <Rocket />
-                Get {plan.name}
-              </span>
+              !isFree && (
+                <div className="text-lg font-bold text-gray-500 dark:text-gray-400 mt-4">
+                  Contact for Pricing
+                </div>
+              )
             )}
-          </Button>
-        </CardFooter>
-      </Card>
+          </CardHeader>
+
+          <CardContent className="flex-1 pt-6 space-y-4">
+            <Button
+              variant={
+                isCurrentPlan
+                  ? "secondary"
+                  : isEnterprise
+                  ? "premium"
+                  : plan.metadata?.popular
+                  ? "default"
+                  : "outline"
+              }
+              className={`w-full transition-all ${
+                plan.metadata?.popular ? "shadow-md hover:shadow-lg" : ""
+              }`}
+              disabled={isCurrentPlan || isFree}
+              onClick={() => handlePlanSelection(plan)}
+              size="lg"
+            >
+              {isCurrentPlan ? (
+                "Current Plan"
+              ) : (
+                <>
+                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Key Features
+              </h4>
+              <div className="space-y-3">
+                {Object.entries(plan.limits)
+                  .slice(0, 5)
+                  .map(([key, value]) => (
+                    <div key={key} className="flex items-start gap-3">
+                      <span className="mt-0.5">
+                        {limitIcons[key] || (
+                          <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                        )}
+                      </span>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^\w/, (c) => c.toUpperCase())}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {formatFeatureValue(value)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </CardContent>
+
+          <CardFooter className="pt-0">
+            <Button
+              className={`w-full gap-2 font-semibold transition-all hover:shadow-md ${
+                plan.metadata?.popular ? "text-white" : ""
+              }`}
+              size="lg"
+              variant={
+                isEnterprise
+                  ? "premium"
+                  : plan.metadata?.popular
+                  ? "default"
+                  : isFree
+                  ? "outline"
+                  : "default"
+              }
+              onClick={() => handlePlanSelection(plan)}
+              disabled={isCurrentPlan}
+            >
+              {isCurrentPlan ? (
+                <span className="flex items-center justify-center gap-2">
+                  <CheckCircle className="text-green-500 dark:text-green-400" />
+                  Current Plan
+                </span>
+              ) : plan.metadata?.trialDays > 0 ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Rocket />
+                  Start {plan.metadata.trialDays}-Day Free Trial
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <Rocket />
+                  Get {plan.name}
+                </span>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     );
   };
 
-  const renderComparisonTable = () => (
-    <div className="mt-12 border rounded-xl overflow-hidden shadow-sm">
-      <div className="p-6 bg-muted/50 border-b">
-        <h3 className="text-2xl font-bold">Plan Comparison</h3>
-        <p className="text-muted-foreground mt-2">
-          Feature breakdown across all plans ({currency})
-        </p>
-      </div>
-      <Tabs className="p-4 w-full">
-        <TabsList className="grid grid-cols-2 w-full">
-          {["features", "limits"].map((tab) => (
-            <TabsTrigger
-              key={tab}
-              value={tab}
-              isActive={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-              className="capitalize"
-            >
-              {tab}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+  const renderComparisonTable = () => {
+    if (!plans.length) return null;
 
-        {activeTab === "features" && (
-          <TabsContent key="features">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="border-b">
-                  <tr>
-                    <th className="text-left p-4 pl-6 min-w-[170px] sticky left-0 bg-background z-20 backdrop-blur-sm">
-                      Features
-                    </th>
-                    {Object.entries(PLANS).map(([planId, plan]) => (
-                      <th
-                        key={planId}
-                        className={`p-4 text-center md:text-base text-sm ${
-                          subscription?.plan === planId
-                            ? "bg-primary/10"
-                            : "bg-background"
-                        } sticky top-0 z-10 backdrop-blur-sm`}
-                      >
-                        <div className="flex flex-col items-center">
-                          <span className="font-bold text-sm">{plan.name}</span>
-                          {subscription?.plan !== planId && plan.prices && (
-                            <span className="text-xs text-muted-foreground mt-1">
-                              {getPlanPrice(planId).localized}/{billingPeriod}
-                            </span>
-                          )}
-                          {subscription?.plan === planId && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full mt-1">
-                              Current
-                            </span>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.keys(PLANS.pro.features).map((featureKey) => (
-                    <tr
-                      key={featureKey}
-                      className="border-b hover:bg-muted/50 transition-colors"
-                    >
-                      <td className="p-4 pl-6 font-medium text-sm md:text-base backdrop-blur-sm sticky left-0 bg-background z-10 flex gap-1 items-center">
-                        {featureIcons[featureKey] || (
-                          <Zap className="w-5 h-5" />
-                        )}
-                        <span className="truncate">
-                          {featureKey
-                            .replace(/([A-Z])/g, " $1")
-                            .replace(/\b\w/g, (c) => c.toUpperCase())
-                            .trim()}
-                        </span>
-                      </td>
-                      {Object.entries(PLANS).map(([planId, plan]) => {
-                        const value = plan.features[featureKey];
-                        return (
-                          <td key={planId} className="p-4 text-center">
-                            {typeof value === "boolean" ? (
-                              <span
-                                className={`text-xl font-bold ${
-                                  value ? "text-green-600" : "text-rose-600"
-                                }`}
-                              >
-                                {value ? "✓" : "✕"}
-                              </span>
-                            ) : value === Infinity ? (
-                              <div className="flex items-center justify-center gap-1">
-                                <InfinityIcon className="h-5 w-5 text-primary" />
-                                <span className="sr-only">Unlimited</span>
-                              </div>
-                            ) : Array.isArray(value) ? (
-                              <div className="flex flex-wrap justify-center items-center gap-2">
-                                {value.map((v, index) => (
-                                  <span
-                                    key={index}
-                                    className="text-lg flex items-center gap-2"
-                                    title={v}
-                                  >
-                                    {iconMap[v.toLowerCase()] || (
-                                      <span>{v}</span>
-                                    )}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : typeof value === "string" &&
-                              value.includes("GB") ? (
-                              <span className="font-semibold text-primary">
-                                {value}
-                              </span>
-                            ) : (
-                              <span className="font-medium">
-                                {formatFeatureValue(value)}
-                              </span>
-                            )}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </TabsContent>
-        )}
+    return (
+      <div className="mt-12 bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="p-6 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b dark:border-gray-700">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Plan Comparison
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Detailed feature breakdown across all plans
+          </p>
+        </div>
 
-        {activeTab === "limits" && (
-          <TabsContent value="limits">
-            <div className="relative">
-              {/* Scroll indicator */}
-              <div className="absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-30" />
-              <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-30" />
+        <div className="p-4">
+          <Tabs className="w-full">
+            <TabsList className="grid grid-cols-2 w-full max-w-xs mx-auto bg-gray-100 dark:bg-gray-800">
+              {["features", "limits"].map((tab) => (
+                <TabsTrigger
+                  key={tab}
+                  value={tab}
+                  isActive={activeTab === tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700"
+                >
+                  {tab}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-              <div className="overflow-x-auto pb-2 -mx-4 px-4">
-                <table className="w-full min-w-[600px]">
-                  <thead className="border-b">
-                    <tr>
-                      <th className="text-left p-3 pl-6 min-w-[200px] max-w-[200px] sticky left-0 bg-background z-20">
-                        <div className="flex items-center gap-2">
-                          <List className="h-4 w-4" />
-                          <span>Limits</span>
-                        </div>
-                      </th>
-                      {Object.entries(PLANS).map(([planId, plan]) => (
-                        <th
-                          key={planId}
-                          className={`p-3 text-center min-w-[150px] max-w-[150px] ${
-                            subscription?.plan === planId
-                              ? "bg-primary/10"
-                              : "bg-background"
-                          } sticky top-0 z-10`}
-                        >
-                          <div className="flex flex-col items-center space-y-1">
-                            <span className="font-bold text-sm">
-                              {plan.name}
-                            </span>
-                            {subscription?.plan !== planId && plan.prices && (
-                              <span className="text-xs text-muted-foreground">
-                                ₹
-                                {getPlanPrice(planId).localized.toLocaleString(
-                                  "en-IN"
-                                )}
-                                /{billingPeriod}
-                              </span>
-                            )}
-                            {subscription?.plan === planId && (
-                              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                                Current
-                              </span>
-                            )}
-                          </div>
+            {activeTab === "features" && (
+              <TabsContent value="features" className="mt-6">
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="text-left p-4 pl-6 min-w-[200px] sticky left-0 bg-gray-50 dark:bg-gray-800 z-20 text-gray-500 dark:text-gray-400 font-medium">
+                          Features
                         </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.keys(PLANS.pro.limits).map((limitKey) => (
-                      <tr
-                        key={limitKey}
-                        className="border-b hover:bg-muted/50 transition-colors"
-                      >
-                        <td className="p-4 pl-6 font-medium text-sm md:text-base backdrop-blur-sm sticky left-0 bg-background z-10 flex gap-1 items-center">
-                          {limitIcons[limitKey] || <Zap className="h-4 w-4" />}
-                          <span className="truncate">
-                            {limitKey
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/\b\w/g, (c) => c.toUpperCase())
-                              .trim()}
-                          </span>
-                        </td>
-                        {Object.entries(PLANS).map(([planId, plan]) => {
-                          const value = plan.limits[limitKey];
-                          return (
-                            <td
-                              key={planId}
-                              className="p-3 text-center min-w-[150px] max-w-[150px]"
-                            >
-                              {value === Infinity ? (
-                                <div className="flex items-center justify-center gap-1">
-                                  <InfinityIcon className="h-4 w-4 text-primary" />
-                                </div>
-                              ) : (
-                                <span className="font-medium text-sm">
-                                  {typeof value === "number"
-                                    ? value.toLocaleString("en-IN")
-                                    : formatFeatureValue(value)}
+                        {plans.map((plan) => (
+                          <th
+                            key={plan.id}
+                            className={`p-4 text-center ${
+                              subscription?.plan === plan.id
+                                ? "bg-primary/10 dark:bg-primary/20"
+                                : "bg-gray-50 dark:bg-gray-800"
+                            } sticky top-0 z-10`}
+                          >
+                            <div className="flex flex-col items-center">
+                              <span className="font-bold text-gray-900 dark:text-white">
+                                {plan.name}
+                              </span>
+                              {subscription?.plan !== plan.id &&
+                                plan.prices && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    ₹{getPlanPrice(plan)?.localized}/
+                                    {billingPeriod}
+                                  </span>
+                                )}
+                              {subscription?.plan === plan.id && (
+                                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-0.5 rounded-full mt-1">
+                                  Current
                                 </span>
                               )}
-                            </td>
-                          );
-                        })}
+                            </div>
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </TabsContent>
-        )}
-      </Tabs>
-    </div>
-  );
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {Object.entries(plans[0].features).map(
+                        ([category, features]) => (
+                          <React.Fragment key={`category-${category}`}>
+                            <tr className="bg-gray-50 dark:bg-gray-800">
+                              <td
+                                colSpan={plans.length + 1}
+                                className="p-3 pl-6 font-semibold text-gray-700 dark:text-gray-300"
+                              >
+                                <div className="flex items-center gap-2">
+                                  {categoryIcons[category] || (
+                                    <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                  )}
+                                  {category
+                                    .replace(/([A-Z])/g, " $1")
+                                    .replace(/^\w/, (c) => c.toUpperCase())}
+                                </div>
+                              </td>
+                            </tr>
+                            {Object.entries(features).map(([featureKey, _]) => (
+                              <tr
+                                key={featureKey}
+                                className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                              >
+                                <td className="p-4 pl-8 font-medium text-gray-700 dark:text-gray-300 flex gap-2 items-center sticky left-0 bg-white dark:bg-gray-900">
+                                  {featureKey
+                                    .replace(/([A-Z])/g, " $1")
+                                    .replace(/^\w/, (c) => c.toUpperCase())}
+                                </td>
+                                {plans.map((plan) => {
+                                  const value =
+                                    plan.features[category][featureKey];
+                                  return (
+                                    <td
+                                      key={`${plan.id}-${featureKey}`}
+                                      className={`p-4 text-center ${
+                                        subscription?.plan === plan.id
+                                          ? "bg-primary/5 dark:bg-primary/10"
+                                          : "bg-white dark:bg-gray-900"
+                                      }`}
+                                    >
+                                      {featureKey === "channels" &&
+                                      Array.isArray(value) ? (
+                                        <div className="w-full flex flex-wrap justify-center items-center gap-2">
+                                          {value.map((each, ind) => {
+                                            return (
+                                              <span
+                                                key={ind}
+                                                className="hover:scale-110 transition-transform"
+                                                title={each}
+                                              >
+                                                {iconMap[
+                                                  each.toLowerCase()
+                                                ] || (
+                                                  <Zap className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                )}
+                                              </span>
+                                            );
+                                          })}
+                                        </div>
+                                      ) : (
+                                        <span className="inline-flex items-center justify-center">
+                                          {formatFeatureValue(value)}
+                                        </span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        )
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+            )}
+
+            {activeTab === "limits" && (
+              <TabsContent value="limits" className="mt-6">
+                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="text-left p-4 pl-6 min-w-[200px] sticky left-0 bg-gray-50 dark:bg-gray-800 z-20">
+                          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                            <List className="h-5 w-5" />
+                            <span>Limits</span>
+                          </div>
+                        </th>
+                        {plans.map((plan) => (
+                          <th
+                            key={plan.id}
+                            className={`p-4 text-center ${
+                              subscription?.plan === plan.id
+                                ? "bg-primary/10 dark:bg-primary/20"
+                                : "bg-gray-50 dark:bg-gray-800"
+                            } sticky top-0 z-10`}
+                          >
+                            <div className="flex flex-col items-center">
+                              <span className="font-bold text-gray-900 dark:text-white">
+                                {plan.name}
+                              </span>
+                              {subscription?.plan !== plan.id &&
+                                plan.prices && (
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    ₹{getPlanPrice(plan)?.localized}/
+                                    {billingPeriod}
+                                  </span>
+                                )}
+                              {subscription?.plan === plan.id && (
+                                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-0.5 rounded-full">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {Object.keys(plans[0].limits).map((limitKey) => (
+                        <tr
+                          key={limitKey}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                        >
+                          <td className="p-4 pl-6 font-medium text-gray-700 dark:text-gray-300 flex gap-2 items-center sticky left-0 bg-white dark:bg-gray-900">
+                            {limitIcons[limitKey] || (
+                              <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                            )}
+                            {limitKey
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^\w/, (c) => c.toUpperCase())}
+                          </td>
+                          {plans.map((plan) => (
+                            <td
+                              key={`${plan.id}-${limitKey}`}
+                              className={`p-4 text-center ${
+                                subscription?.plan === plan.id
+                                  ? "bg-primary/5 dark:bg-primary/10"
+                                  : "bg-white dark:bg-gray-900"
+                              }`}
+                            >
+                              {formatFeatureValue(plan.limits[limitKey])}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading || !plans.length) {
+    return (
+      <div className="flex w-full items-center justify-center h-[500px]">
+        <SpinnerIcon />
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 sm:p-6 overflow-y-auto max-w-7xl scrollbar-transparent">
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+    <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 h-full overflow-y-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-10">
+        <div className="flex flex-col gap-6">
           <Button
-            type="button"
-            aria-label="Back to Billing Settings"
-            title="Back to Billing Settings"
+            variant="ghost"
             onClick={() => router.back()}
-            variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-fit text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           >
-            <MoveLeft className="h-6 w-4" /> Back
+            <MoveLeft className="h-5 w-5" /> Back
           </Button>
-          <Button
-            type="button"
-            aria-label="Back to Billing Settings"
-            title="Current Plan"
-            onClick={() =>
-              router.push(`/${workspaceId}/settings/workspace/billing`)
-            }
-            variant="outline-primary"
-          >
-            Current Plan
-          </Button>
-        </div>
-        <Separator thickness="px" className="my-2" />
 
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
-              Choose Your Plan
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Select the perfect plan for your business needs
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+            <div className="space-y-2">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+                Find Your Perfect Plan
+              </h1>
+              <p className="text-base text-gray-500 dark:text-gray-400">
+                Choose the right solution to grow your business
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 gap-1">
+                {["monthly", "yearly"].map((tab) => (
+                  <TabsTrigger
+                    key={tab}
+                    value={tab}
+                    className={`capitalize px-4 text-sm font-medium rounded-md`}
+                    isActive={billingPeriod === tab}
+                    onClick={() => setBillingPeriod(tab)}
+                  >
+                    {tab}{" "}
+                    {tab === "yearly" && (
+                      <span className="ml-0.5 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs px-1 py-0.5 rounded-full">
+                        20% OFF
+                      </span>
+                    )}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  router.push(`/${workspaceId}/settings/workspace/billing`)
+                }
+                className="hidden sm:flex items-center gap-2"
+              >
+                <CreditCard className="h-4 w-4" />
+                Billing
+              </Button>
+            </div>
           </div>
-          <TabsList className="grid w-full grid-cols-2 max-w-xs">
-            {["monthly", "yearly"].map((tab) => {
-              return (
-                <TabsTrigger
-                  value={tab}
-                  key={tab}
-                  className="capitalize"
-                  isActive={billingPeriod === tab}
-                  onClick={() => setBillingPeriod(tab)}
-                >
-                  {tab} {tab === "yearly" && "20% OFF"}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Object.entries(PLANS).map(([planId, plan]) => (
-            <PlanCard key={planId} planId={planId} plan={plan} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {plans.map((plan) => (
+            <PlanCard key={plan.id} plan={plan} />
           ))}
         </div>
 
-        <div className="mt-12">
-          <h3 className="text-2xl font-bold mb-6">Detailed Comparison</h3>
-          {renderComparisonTable()}
+        {renderComparisonTable()}
+
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-4 py-1 rounded-full text-sm font-medium mb-4">
+              <HelpCircle className="h-4 w-4" />
+              Need help choosing?
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Not sure which plan is right for you?
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Our experts can help you select the perfect plan based on your
+              business needs.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-3">
+              <Button variant="outline" className="gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Chat with sales
+              </Button>
+              <Button variant="default" className="gap-2">
+                <Mail className="h-4 w-4" />
+                Contact us
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

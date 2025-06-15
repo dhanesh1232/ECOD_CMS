@@ -55,7 +55,8 @@ export const PricingUtils = {
     const plan = PLANS[planId] || PLANS.free;
     const limit = plan.limits[resource];
 
-    if (limit === Infinity) return { withinLimit: true, remaining: Infinity };
+    if (limit === "Infinity")
+      return { withinLimit: true, remaining: "Infinity" };
 
     return {
       withinLimit: currentUsage < limit,
