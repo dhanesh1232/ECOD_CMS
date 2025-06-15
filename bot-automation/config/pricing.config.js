@@ -22,13 +22,8 @@ export const PricingUtils = {
     const pre_total = basePrice + taxAmount;
 
     let discountAmount = 0;
-
-    if (typeof discount === "object" && discount !== null) {
-      const percentageDiscount = discount.percentage
-        ? (pre_total * discount.percentage) / 100
-        : 0;
-      const fixedDiscount = discount.fixed || 0;
-      discountAmount = percentageDiscount + fixedDiscount;
+    if (discount === null || !discount) {
+      discountAmount = 0;
     } else if (typeof discount === "number") {
       discountAmount = discount;
     } else if (typeof discount === "string" && discount.endsWith("%")) {
@@ -46,6 +41,7 @@ export const PricingUtils = {
       discount: Math.round(discountAmount),
       tax: taxAmount,
       total,
+      sub_total: pre_total,
       currency,
       billingCycle,
     };

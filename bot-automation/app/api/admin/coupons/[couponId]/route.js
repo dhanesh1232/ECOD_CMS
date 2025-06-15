@@ -2,37 +2,30 @@ import dbConnect from "@/config/dbconnect";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
 import { Coupon } from "@/models/payment/coupon";
-import "@/models/payment/couponRule";
-import mongoose from "mongoose";
+import { validateCouponData } from "@/lib/server/validator";
+import { getCouponStatus } from "@/lib/server/utils";
+
 export async function GET(request, { params }) {
   try {
     await dbConnect();
-    console.log("Registred :", mongoose.modelNames());
     const { couponId } = await params;
 
     if (!couponId) {
       return ErrorHandles.BadRequest("Coupon ID is required");
     }
 
-    const coupon = await Coupon.findById(couponId).populate("rules").lean();
+    const coupon = await Coupon.findById(couponId).lean();
 
     if (!coupon) {
       return ErrorHandles.UserNotFound("Coupon not found");
     }
 
-    // Calculate status based on current date
-    const now = new Date();
-    const startDate = new Date(coupon.startDate);
-    const endDate = new Date(coupon.endDate);
-
-    let status = coupon.status;
-    if (now < startDate) {
-      status = "upcoming";
-    } else if (now > endDate) {
-      status = "expired";
-    } else {
-      status = "active";
-    }
+    // Calculate current status
+    const status = getCouponStatus(
+      coupon.validity.start,
+      coupon.validity.end,
+      coupon.status
+    );
 
     // Update status if changed
     if (status !== coupon.status) {
@@ -40,127 +33,106 @@ export async function GET(request, { params }) {
       coupon.status = status;
     }
 
-    return SuccessHandle.CouponSuccessHandle({ coupon });
+    // Format response data
+    const responseData = {
+      ...coupon,
+      startDate: coupon.validity.start.date,
+      endDate: coupon.validity.end.date,
+      startTime: coupon.validity.start.time,
+      endTime: coupon.validity.end.time,
+    };
+
+    return SuccessHandle.CouponSuccessHandle({ coupon: responseData });
   } catch (err) {
     console.error(`GET /api/admin/coupons/${params.couponId} error:`, err);
     return ErrorHandles.InternalServer(err.message);
   }
 }
 
-export async function PUT(req, { params }) {
+export async function PUT(request, { params }) {
   await dbConnect();
   try {
     const { couponId } = await params;
-    const data = await req.json();
+    const data = await request.json();
 
     if (!couponId) {
       return ErrorHandles.BadRequest("Coupon ID is required");
     }
 
-    // Validate required fields
-    const requiredFields = [
-      "title",
-      "code",
-      "discountType",
-      "discountValue",
-      "startDate",
-      "endDate",
-      "usageLimit",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !data[field]);
-    if (missingFields.length > 0) {
-      return ErrorHandles.BadRequest(
-        `Missing required fields: ${missingFields.join(", ")}`
-      );
+    // Validate coupon data
+    const validation = validateCouponData(data, couponId);
+    if (!validation.valid) {
+      return ErrorHandles.BadRequest(validation.message);
     }
 
-    // Validate dates
-    const startDate = new Date(data.startDate);
-    const endDate = new Date(data.endDate);
-
-    if (isNaN(startDate.getTime())) {
-      return ErrorHandles.BadRequest("Invalid start date format");
-    }
-
-    if (isNaN(endDate.getTime())) {
-      return ErrorHandles.BadRequest("Invalid end date format");
-    }
-
-    if (startDate >= endDate) {
-      return ErrorHandles.BadRequest("End date must be after start date");
-    }
-
-    // Validate discount value
-    if (
-      data.discountType === "percent" &&
-      (data.discountValue < 0 || data.discountValue > 100)
-    ) {
-      return ErrorHandles.BadRequest("Percentage must be between 0 and 100");
-    }
-
-    if (data.discountType === "fixed" && data.discountValue < 0) {
-      return ErrorHandles.BadRequest("Fixed amount cannot be negative");
-    }
-
-    // Validate usage limit
-    if (data.usageLimit < 1) {
-      return ErrorHandles.BadRequest("Usage limit must be at least 1");
-    }
-
-    // Check for duplicate code (excluding current coupon)
-    const existingCoupon = await Coupon.findOne({
-      code: data.code.toUpperCase(),
-      _id: { $ne: couponId },
-    });
-
-    if (existingCoupon) {
-      return ErrorHandles.BadRequest("Coupon code already exists");
-    }
-
-    // Calculate status based on current date
-    const now = new Date();
-    let status = "active";
-    if (now < startDate) {
-      status = "upcoming";
-    } else if (now > endDate) {
-      status = "expired";
-    }
-
+    // Prepare update data
     const updateData = {
       ...data,
-      code: data.code.toUpperCase(),
-      status,
+      validity: {
+        start: {
+          date: new Date(data.startDate),
+          time: data.startTime || "00:00",
+        },
+        end: {
+          date: new Date(data.endDate),
+          time: data.endTime || "23:59",
+        },
+        timezone: data.timezone || "UTC",
+      },
+      status: getCouponStatus(
+        {
+          date: new Date(data.startDate),
+          time: data.startTime || "00:00",
+        },
+        {
+          date: new Date(data.endDate),
+          time: data.endTime || "23:59",
+        },
+        data.status
+      ),
       updatedAt: new Date(),
     };
 
+    // Update coupon
     const updatedCoupon = await Coupon.findByIdAndUpdate(couponId, updateData, {
       new: true,
       runValidators: true,
-    }).populate("rules");
+    });
 
     if (!updatedCoupon) {
       return ErrorHandles.UserNotFound("Coupon not found");
     }
 
-    return SuccessHandle.CouponSuccessHandle({
-      coupon: updatedCoupon,
-      message: "Coupon updated successfully",
-    });
+    // Format response data
+    const responseData = {
+      ...updatedCoupon.toObject(),
+      startDate: updatedCoupon.validity.start.date,
+      endDate: updatedCoupon.validity.end.date,
+      startTime: updatedCoupon.validity.start.time,
+      endTime: updatedCoupon.validity.end.time,
+    };
+
+    return SuccessHandle.CouponSuccessHandle(
+      {
+        coupon: responseData,
+      },
+      "Coupon updated successfully"
+    );
   } catch (err) {
     console.error(`PUT /api/admin/coupons/${params.couponId} error:`, err);
     return ErrorHandles.InternalServer(err.message);
   }
 }
-export async function DELETE(req, { params }) {
+
+export async function DELETE(request, { params }) {
   await dbConnect();
   try {
-    const { couponId } = await params;
+    const { couponId } = params;
     if (!couponId) {
       return ErrorHandles.BadRequest("Coupon ID is required");
     }
 
-    const coupon = await Coupon.findByIdAndDelete(couponId).exec();
+    const coupon = await Coupon.findByIdAndDelete(couponId);
 
     if (!coupon) {
       return ErrorHandles.NotFound("Coupon not found");
@@ -169,8 +141,9 @@ export async function DELETE(req, { params }) {
     return SuccessHandle.CouponSuccessHandle({
       message: "Coupon successfully deleted",
       coupon: null,
-    }); // More consistent response format
+    });
   } catch (err) {
+    console.error(`DELETE /api/admin/coupons/${params.couponId} error:`, err);
     return ErrorHandles.InternalServer(err.message);
   }
 }

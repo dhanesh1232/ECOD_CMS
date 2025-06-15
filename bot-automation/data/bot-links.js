@@ -42,7 +42,6 @@ import {
   Terminal,
   Home,
   Ticket, // for "All Coupons"
-  CirclePlus, // cleaner than PlusCircle
   LineChart, // cleaner alt to BarChart3
   BadgeCheck, // better than ShieldCheck
   ArchiveX, // better conveys "archived/disabled"
@@ -52,59 +51,64 @@ import {
   ArrowPathIcon,
   ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
-import {
-  AnalyticsIcon,
-  ChatBotAI,
-  SettingsIcon,
-  ContactsIcon,
-  ConversationsIcon,
-  DashboardIcon,
-  HelpIcon,
-  TemplatesIcon,
-  CreativeIcon,
-  AdsAnalyticsIcon,
-  BotIcon,
-} from "@/public/Images/svg_ecod";
 
 // Main navigation items
 export const navLinks = [
   {
     id: "dashboard",
-    icon: <DashboardIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    icon: "dashboard",
     label: "Dashboard",
     href: `/dashboard`,
     exact: true,
   },
   {
     id: "chatbot",
-    icon: <ChatBotAI primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    icon: "chatbot",
     label: "Chatbot",
     href: `/chatbot`,
     isParent: true,
     subPages: [
       {
         id: "bots",
-        icon: <BotIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        icon: "bot",
         label: "Bots",
         href: "/chatbot/bots",
+        nestedPages: [
+          {
+            id: "bot-0",
+            icon: "bot",
+            label: "Bot 0",
+            href: "/chatbot/bots/bot-0",
+          },
+          {
+            id: "bot-1",
+            icon: "bot",
+            label: "Bot 1",
+            href: "/chatbot/bots/bot-1",
+          },
+          {
+            id: "bot-2",
+            icon: "bot",
+            label: "Bot 2",
+            href: "/chatbot/bots/bot-2",
+          },
+        ],
       },
       {
         id: "bot-analytics",
-        icon: <AnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        icon: "analytics",
         label: "Analytics",
         href: `/chatbot/analytics`,
       },
       {
         id: "conversations",
-        icon: (
-          <ConversationsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
-        ),
+        icon: "conversation",
         label: "Conversations",
         href: `/chatbot/conversations`,
       },
       {
         id: "contacts",
-        icon: <ContactsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        icon: "contacts",
         label: "Contacts",
         href: `/chatbot/contacts`,
       },
@@ -113,27 +117,25 @@ export const navLinks = [
   {
     id: "ads",
     label: "Ads Automation",
-    icon: <Megaphone size={20} />,
+    icon: "megaphone",
     href: "/ads",
     isParent: true,
     subPages: [
       {
         id: "campaigns",
         label: "Campaigns",
-        icon: <Target size={20} />,
+        icon: "target",
         href: `/ads/campaigns`,
       },
       {
         id: "ad-creative",
         label: "Creative",
         href: "/ads/creative",
-        icon: <CreativeIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+        icon: "ads_creative",
       },
       {
         id: "analytics",
-        icon: (
-          <AdsAnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
-        ),
+        icon: "analytics",
         label: "Analytics",
         href: `/ads/analytics`,
       },
@@ -141,20 +143,20 @@ export const navLinks = [
   },
   {
     id: "template",
-    icon: <TemplatesIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    icon: "templates",
     label: "Templates",
     href: `/template`,
   },
 
   {
     id: "settings",
-    icon: <SettingsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    icon: "settings",
     label: "Settings",
     href: `/settings`,
   },
   {
     id: "help",
-    icon: <HelpIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
+    icon: "help",
     label: "Help Center",
     href: `/help`,
   },
@@ -295,8 +297,8 @@ export const settingsNavItems = [
         external: true,
       },
       {
-        id: "contact-support",
-        name: "Contact Support",
+        id: "support",
+        name: "support",
         href: "/settings/support",
         icon: <FiLifeBuoy className="w-4 h-4" />,
         external: true,
@@ -448,12 +450,6 @@ export const SUPER_ADMIN_COUPON_NAVS = [
     title: "All Coupons",
     icon: <Ticket className="w-4 h-4" />,
     href: "/admin/coupons",
-  },
-  {
-    id: "create",
-    title: "Create Coupon",
-    icon: <CirclePlus className="w-4 h-4" />,
-    href: "/admin/coupons/create",
   },
   {
     id: "analytics",

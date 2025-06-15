@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   useParams,
   usePathname,
@@ -18,9 +18,8 @@ import {
   LogOut,
   Lock,
   StarsIcon,
+  RefreshCcw,
 } from "lucide-react";
-import { navLinks } from "@/data/bot-links";
-import { ChatBotAI } from "@/public/Images/svg_ecod";
 import { cn } from "@/lib/utils";
 import {
   useMotionValueEvent,
@@ -31,6 +30,9 @@ import {
 import { useToast } from "./ui/toast-provider";
 import { UserServices } from "@/lib/client/user";
 import { Button } from "./ui/button";
+import Logo from "./logo";
+import { Icons } from "./icons";
+import { SpinnerIcon } from "@/public/Images/svg_ecod";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -39,10 +41,17 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const searchParams = useSearchParams();
   const workspaceId = params.workspaceId;
   const [expandedItems, setExpandedItems] = useState({});
+  const [expandedSubItems, setExpandedSubItems] = useState({});
   const [workspaceDetails, setWorkspaceDetails] = useState(null);
   const [hoverProp, setHoverProp] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [navLinks, setNavLinks] = useState([]);
+  const [apiState, setApiState] = useState({
+    loading: false,
+    success: false,
+    failed: false,
+  });
   const [profile, setProfile] = useState({
     name: "",
     role: "",
@@ -54,35 +63,46 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const { scrollY } = useScroll({ container: navRef });
 
   useEffect(() => {
-    const renderProfile = async () => {
-      try {
-        const data = await UserServices.fetchUserProfile();
-        if (data.status && !data.ok) {
-          if (!toastRef.current) {
-            showToast({
-              description: "Failed to fetch Profile",
-              variant: "warning",
-            });
-            toastRef.current = true;
-          }
-        }
-        setWorkspaceDetails(data.data?.currentWorkspaceDetails);
-        setProfile({
-          name: data.data?.user?.name,
-          role: data.data?.user?.role,
-        });
-      } catch (err) {
-        if (!toastRef.current) {
-          showToast({
-            description: err || "failed ti fetch profile",
-            variant: "warning",
-          });
-          toastRef.current = true;
-        }
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
+  const renderProfile = useCallback(async () => {
+    try {
+      setApiState((prev) => ({ ...prev, loading: true }));
+      const [data, nav_links] = await Promise.all([
+        UserServices.fetchUserProfile(),
+        UserServices.fetchDashboard(),
+      ]);
+      if (data.status && !data.ok) {
+        throw new Error("Failed to fetch");
       }
-    };
-    renderProfile();
+      const validLinks = Array.isArray(nav_links.links.data)
+        ? nav_links.links.data
+        : [];
+      setNavLinks(validLinks);
+      setWorkspaceDetails(data.data?.currentWorkspaceDetails);
+      setProfile({
+        name: data.data?.user?.name,
+        role: data.data?.user?.role,
+      });
+      setApiState((prev) => ({ ...prev, success: true, loading: false }));
+    } catch (err) {
+      if (!toastRef.current) {
+        showToast({
+          description: err || "failed ti fetch profile",
+          variant: "destructive",
+        });
+        toastRef.current = true;
+      }
+      setApiState((prev) => ({ ...prev, failed: true, loading: false }));
+    } finally {
+      setApiState((prev) => ({ ...prev, loading: false }));
+    }
   }, [showToast]);
+  useEffect(() => {
+    renderProfile();
+  }, [renderProfile]);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 10);
@@ -131,7 +151,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     });
 
     setExpandedItems(initialExpanded);
-  }, [pathname, workspaceId]);
+  }, [pathname, workspaceId, navLinks]);
 
   useEffect(() => {
     if (navRef.current) {
@@ -152,7 +172,21 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   };
 
   const toggleExpand = (id) => {
-    setExpandedItems((prev) => ({
+    setExpandedItems((prev) => {
+      // Close all other expanded items
+      const newState = Object.keys(prev).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {});
+
+      // Toggle the clicked item
+      newState[id] = !prev[id];
+      return newState;
+    });
+  };
+
+  const toggleSubExpand = (id) => {
+    setExpandedSubItems((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
@@ -213,12 +247,450 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     );
   };
 
+  const renderNav = () => {
+    return (
+      <nav
+        ref={navRef}
+        className="scrollbar-transparent flex-1 overflow-y-auto px-3 py-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+      >
+        {navLinks.map((item) => (
+          <div key={item.id} className="space-y-1">
+            {item.subPages ? (
+              <>
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => toggleExpand(item.id)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
+                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                    "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
+                    (isActive(item.href) ||
+                      item.subPages.some((sub) => isSubpageActive(sub.href))) &&
+                      "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
+                    "transition-colors duration-200"
+                  )}
+                >
+                  {(isActive(item.href) ||
+                    item.subPages.some((sub) => isSubpageActive(sub.href))) && (
+                    <motion.div
+                      layoutId="activeNavItem"
+                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <div className="flex items-center space-x-3">
+                    <motion.div
+                      whileHover={{ rotate: 8, scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-colors shadow-sm",
+                        isActive(item.href) ||
+                          item.subPages.some((sub) => isSubpageActive(sub.href))
+                          ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                      )}
+                    >
+                      {Icons[item.icon]}
+                    </motion.div>
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </div>
+                  <motion.div
+                    animate={{
+                      rotate: expandedItems[item.id] ? 180 : 0,
+                      transition: {
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 15,
+                      },
+                    }}
+                    className="mr-1"
+                  >
+                    <ChevronDown
+                      size={16}
+                      className={cn(
+                        "transition-colors",
+                        isActive(item.href) ||
+                          item.subPages.some((sub) => isSubpageActive(sub.href))
+                          ? "text-indigo-500 dark:text-indigo-400"
+                          : "text-gray-500 dark:text-gray-400"
+                      )}
+                    />
+                  </motion.div>
+                </motion.button>
+
+                <AnimatePresence>
+                  {expandedItems[item.id] && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{
+                        height: "auto",
+                        opacity: 1,
+                        transition: {
+                          height: {
+                            duration: 0.25,
+                            ease: [0.22, 1, 0.36, 1],
+                          },
+                          opacity: { duration: 0.15, delay: 0.1 },
+                        },
+                      }}
+                      exit={{
+                        height: 0,
+                        opacity: 0,
+                        transition: {
+                          height: { duration: 0.2 },
+                          opacity: { duration: 0.1 },
+                        },
+                      }}
+                      className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
+                    >
+                      <div className="space-y-1 py-1">
+                        {item.subPages.map((subItem, index) => (
+                          <div key={index} className="relative">
+                            {/* Vertical connector line */}
+                            {!expandedSubItems[subItem.id] && (
+                              <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
+                            )}
+                            {subItem.nestedPages &&
+                            subItem.nestedPages.length > 0 ? (
+                              <>
+                                <motion.button
+                                  whileHover={{ x: 4 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  onClick={() => toggleSubExpand(subItem.id)}
+                                  className={cn(
+                                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
+                                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                                    "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
+                                    (isActive(subItem.href) ||
+                                      subItem.nestedPages.some((sub) =>
+                                        isSubpageActive(sub.href)
+                                      )) &&
+                                      "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
+                                    "transition-colors duration-200"
+                                  )}
+                                >
+                                  {(isActive(subItem.href) ||
+                                    subItem.nestedPages.some((sub) =>
+                                      isSubpageActive(sub.href)
+                                    )) && (
+                                    <motion.div
+                                      layoutId="activeNavItem"
+                                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 30,
+                                      }}
+                                    />
+                                  )}
+                                  <div className="flex items-center space-x-3">
+                                    <motion.div
+                                      whileHover={{
+                                        rotate: 8,
+                                        scale: 1.05,
+                                      }}
+                                      whileTap={{ scale: 0.95 }}
+                                      className={cn(
+                                        "p-1.5 rounded-lg transition-colors shadow-sm",
+                                        isActive(subItem.href) ||
+                                          subItem.nestedPages.some((sub) =>
+                                            isSubpageActive(sub.href)
+                                          )
+                                          ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                          : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                                      )}
+                                    >
+                                      {Icons[subItem.icon]}
+                                    </motion.div>
+                                    <span className="font-medium text-sm">
+                                      {subItem.label}
+                                    </span>
+                                  </div>
+                                  <motion.div
+                                    animate={{
+                                      rotate: expandedSubItems[subItem.id]
+                                        ? 180
+                                        : 0,
+                                      transition: {
+                                        type: "spring",
+                                        stiffness: 400,
+                                        damping: 15,
+                                      },
+                                    }}
+                                    className="mr-1"
+                                  >
+                                    <ChevronDown
+                                      size={16}
+                                      className={cn(
+                                        "transition-colors",
+                                        isActive(subItem.href) ||
+                                          subItem.nestedPages.some((sub) =>
+                                            isSubpageActive(sub.href)
+                                          )
+                                          ? "text-indigo-500 dark:text-indigo-400"
+                                          : "text-gray-500 dark:text-gray-400"
+                                      )}
+                                    />
+                                  </motion.div>
+                                </motion.button>
+                                <AnimatePresence>
+                                  {expandedSubItems[subItem.id] && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{
+                                        height: "auto",
+                                        opacity: 1,
+                                        transition: {
+                                          height: {
+                                            duration: 0.25,
+                                            ease: [0.22, 1, 0.36, 1],
+                                          },
+                                          opacity: {
+                                            duration: 0.15,
+                                            delay: 0.1,
+                                          },
+                                        },
+                                      }}
+                                      exit={{
+                                        height: 0,
+                                        opacity: 0,
+                                        transition: {
+                                          height: { duration: 0.2 },
+                                          opacity: { duration: 0.1 },
+                                        },
+                                      }}
+                                      className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
+                                    >
+                                      {subItem.nestedPages.map((each) => {
+                                        return (
+                                          <div
+                                            className="relative"
+                                            key={each.id}
+                                          >
+                                            <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
+                                            <Link
+                                              key={each.id}
+                                              onClick={() => {
+                                                mobileMenuOpen &&
+                                                  setMobileMenuOpen(
+                                                    !mobileMenuOpen
+                                                  );
+                                              }}
+                                              href={`/${workspaceId}${each.href}`}
+                                            >
+                                              <motion.span
+                                                whileHover={{
+                                                  x: 4,
+                                                  backgroundColor:
+                                                    "rgba(224, 231, 255, 0.5)",
+                                                }}
+                                                className={cn(
+                                                  "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
+                                                  "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                                                  "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                                                  isSubpageActive(each.href) &&
+                                                    "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                                )}
+                                              >
+                                                {isSubpageActive(each.href) && (
+                                                  <motion.span
+                                                    layoutId="activeSubNavItem"
+                                                    className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
+                                                    transition={{
+                                                      type: "spring",
+                                                      stiffness: 500,
+                                                      damping: 30,
+                                                    }}
+                                                  />
+                                                )}
+                                                <motion.span
+                                                  whileHover={{
+                                                    scale: 1.1,
+                                                  }}
+                                                  whileTap={{ scale: 0.9 }}
+                                                  className={cn(
+                                                    "p-1 rounded-md transition-colors",
+                                                    isSubpageActive(each.href)
+                                                      ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                                      : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                                  )}
+                                                >
+                                                  {Icons[each.icon]}
+                                                </motion.span>
+                                                <span className="truncate font-medium sm:text-sm text-xs">
+                                                  {each.label}
+                                                </span>
+                                              </motion.span>
+                                            </Link>
+                                          </div>
+                                        );
+                                      })}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </>
+                            ) : (
+                              <Link
+                                href={`/${workspaceId}${subItem.href}`}
+                                key={subItem.id}
+                                onClick={() => {
+                                  mobileMenuOpen &&
+                                    setMobileMenuOpen(!mobileMenuOpen);
+                                }}
+                              >
+                                <motion.span
+                                  whileHover={{
+                                    x: 4,
+                                    backgroundColor: "rgba(224, 231, 255, 0.5)",
+                                  }}
+                                  className={cn(
+                                    "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
+                                    "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                                    "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                                    isSubpageActive(subItem.href) &&
+                                      "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                  )}
+                                >
+                                  {isSubpageActive(subItem.href) && (
+                                    <motion.span
+                                      layoutId="activeSubNavItem"
+                                      className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 30,
+                                      }}
+                                    />
+                                  )}
+                                  <motion.span
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    className={cn(
+                                      "p-1 rounded-md transition-colors",
+                                      isSubpageActive(subItem.href)
+                                        ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                    )}
+                                  >
+                                    {Icons[subItem.icon]}
+                                  </motion.span>
+                                  <span className="truncate font-medium sm:text-sm text-xs">
+                                    {subItem.label}
+                                  </span>
+                                  {subItem.beta && (
+                                    <motion.span
+                                      initial={{ scale: 0.9, opacity: 0 }}
+                                      animate={{ scale: 1, opacity: 1 }}
+                                      className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 ml-auto"
+                                    >
+                                      Beta
+                                    </motion.span>
+                                  )}
+                                </motion.span>
+                              </Link>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <Link
+                href={`/${workspaceId}${item.href}`}
+                onClick={() => {
+                  mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
+                }}
+              >
+                <motion.span
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all relative group",
+                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                    isActive(item.href) &&
+                      "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
+                    "group"
+                  )}
+                >
+                  {isActive(item.href) && (
+                    <motion.div
+                      layoutId="activeNavItem"
+                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <motion.span
+                    whileHover={{ rotate: 8, scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "p-1.5 rounded-lg transition-colors shadow-sm",
+                      isActive(item.href)
+                        ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                    )}
+                  >
+                    {Icons[item.icon]}
+                  </motion.span>
+                  <span className="font-medium text-sm truncate">
+                    {item.label}
+                  </span>
+                  {item.new && (
+                    <motion.span
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
+                    >
+                      New
+                    </motion.span>
+                  )}
+                </motion.span>
+              </Link>
+            )}
+          </div>
+        ))}
+      </nav>
+    );
+  };
+
+  const renderAPIStatus = () => {
+    if (apiState.failed) {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <h3>Failed to load API data</h3>
+          <Button type="button" onClick={() => renderProfile()}>
+            <RefreshCcw />
+          </Button>
+        </div>
+      );
+    }
+    if (apiState.loading) {
+      return (
+        <div className="w-full flex h-full items-center justify-center">
+          <SpinnerIcon />
+        </div>
+      );
+    }
+    if (apiState.success) {
+      return renderNav();
+    }
+  };
   return (
     <>
       {/* Sidebar */}
       <motion.div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-56 sm:w-72 bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800 shadow-xl transition-all duration-300 transform",
+          "fixed inset-y-0 left-0 z-40 w-56 sm:w-64 bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800 shadow-xl transition-all duration-300 transform",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0 lg:relative lg:flex"
         )}
@@ -235,20 +707,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           >
             <Link href={`/${workspaceId}`}>
               <div className="flex items-center space-x-3 cursor-pointer group">
-                <motion.div
-                  whileHover={{ rotate: 10, scale: 1.1 }}
-                  className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/30 transition-shadow"
-                >
-                  <ChatBotAI size={20} className="text-white" />
-                </motion.div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-800 dark:text-white">
-                    ECODrIx
-                  </h1>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                    Premium Dashboard
-                  </p>
-                </div>
+                <Logo isShown={true} size="md" />
               </div>
             </Link>
           </div>
@@ -290,245 +749,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
             </Button>
           </div>
           {/* Navigation Items */}
-          <nav
-            ref={navRef}
-            className="scrollbar-transparent flex-1 overflow-y-auto px-3 py-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
-          >
-            {navLinks.map((item) => (
-              <div key={item.id} className="space-y-1">
-                {item.subPages ? (
-                  <>
-                    <motion.button
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => toggleExpand(item.id)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
-                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
-                        "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
-                        (isActive(item.href) ||
-                          item.subPages.some((sub) =>
-                            isSubpageActive(sub.href)
-                          )) &&
-                          "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                        "transition-colors duration-200"
-                      )}
-                    >
-                      {(isActive(item.href) ||
-                        item.subPages.some((sub) =>
-                          isSubpageActive(sub.href)
-                        )) && (
-                        <motion.div
-                          layoutId="activeNavItem"
-                          className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                      <div className="flex items-center space-x-3">
-                        <motion.div
-                          whileHover={{ rotate: 8, scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={cn(
-                            "p-1.5 rounded-lg transition-colors shadow-sm",
-                            isActive(item.href) ||
-                              item.subPages.some((sub) =>
-                                isSubpageActive(sub.href)
-                              )
-                              ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                          )}
-                        >
-                          {item.icon}
-                        </motion.div>
-                        <span className="font-medium text-sm">
-                          {item.label}
-                        </span>
-                      </div>
-                      <motion.div
-                        animate={{
-                          rotate: expandedItems[item.id] ? 180 : 0,
-                          transition: {
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 15,
-                          },
-                        }}
-                        className="mr-1"
-                      >
-                        <ChevronDown
-                          size={16}
-                          className={cn(
-                            "transition-colors",
-                            isActive(item.href) ||
-                              item.subPages.some((sub) =>
-                                isSubpageActive(sub.href)
-                              )
-                              ? "text-indigo-500 dark:text-indigo-400"
-                              : "text-gray-500 dark:text-gray-400"
-                          )}
-                        />
-                      </motion.div>
-                    </motion.button>
-
-                    <AnimatePresence>
-                      {expandedItems[item.id] && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{
-                            height: "auto",
-                            opacity: 1,
-                            transition: {
-                              height: {
-                                duration: 0.25,
-                                ease: [0.22, 1, 0.36, 1],
-                              },
-                              opacity: { duration: 0.15, delay: 0.1 },
-                            },
-                          }}
-                          exit={{
-                            height: 0,
-                            opacity: 0,
-                            transition: {
-                              height: { duration: 0.2 },
-                              opacity: { duration: 0.1 },
-                            },
-                          }}
-                          className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
-                        >
-                          <div className="space-y-1 py-1">
-                            {item.subPages.map((subItem, index) => (
-                              <div key={index} className="relative">
-                                {/* Vertical connector line */}
-                                <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700"></div>
-                                <Link
-                                  href={`/${workspaceId}${subItem.href}`}
-                                  key={subItem.id}
-                                  onClick={() => {
-                                    mobileMenuOpen &&
-                                      setMobileMenuOpen(!mobileMenuOpen);
-                                  }}
-                                >
-                                  <motion.span
-                                    whileHover={{
-                                      x: 4,
-                                      backgroundColor:
-                                        "rgba(224, 231, 255, 0.5)",
-                                    }}
-                                    className={cn(
-                                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
-                                      "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                      "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                      isSubpageActive(subItem.href) &&
-                                        "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
-                                    )}
-                                  >
-                                    {isSubpageActive(subItem.href) && (
-                                      <motion.span
-                                        layoutId="activeSubNavItem"
-                                        className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
-                                        transition={{
-                                          type: "spring",
-                                          stiffness: 500,
-                                          damping: 30,
-                                        }}
-                                      />
-                                    )}
-                                    <motion.span
-                                      whileHover={{ scale: 1.1 }}
-                                      whileTap={{ scale: 0.9 }}
-                                      className={cn(
-                                        "p-1 rounded-md transition-colors",
-                                        isSubpageActive(subItem.href)
-                                          ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                                      )}
-                                    >
-                                      {subItem.icon}
-                                    </motion.span>
-                                    <span className="truncate font-medium sm:text-sm text-xs">
-                                      {subItem.label}
-                                    </span>
-                                    {subItem.beta && (
-                                      <motion.span
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 ml-auto"
-                                      >
-                                        Beta
-                                      </motion.span>
-                                    )}
-                                  </motion.span>
-                                </Link>
-                              </div>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </>
-                ) : (
-                  <Link
-                    href={`/${workspaceId}${item.href}`}
-                    onClick={() => {
-                      mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
-                    }}
-                  >
-                    <motion.span
-                      whileHover={{ x: 4 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={cn(
-                        "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all relative group",
-                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
-                        isActive(item.href) &&
-                          "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                        "group"
-                      )}
-                    >
-                      {isActive(item.href) && (
-                        <motion.div
-                          layoutId="activeNavItem"
-                          className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                          }}
-                        />
-                      )}
-                      <motion.span
-                        whileHover={{ rotate: 8, scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={cn(
-                          "p-1.5 rounded-lg transition-colors shadow-sm",
-                          isActive(item.href)
-                            ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                        )}
-                      >
-                        {item.icon}
-                      </motion.span>
-                      <span className="font-medium text-sm truncate">
-                        {item.label}
-                      </span>
-                      {item.new && (
-                        <motion.span
-                          initial={{ scale: 0.9, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
-                        >
-                          New
-                        </motion.span>
-                      )}
-                    </motion.span>
-                  </Link>
-                )}
-              </div>
-            ))}
-          </nav>
+          {renderAPIStatus()}
           {/* User Profile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

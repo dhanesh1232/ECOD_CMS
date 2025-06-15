@@ -242,11 +242,24 @@ const workspaceSchema = new mongoose.Schema(
         enum: ["monthly", "yearly", "lifetime"],
         default: "lifetime",
       },
-      discount: {
+      coupon: {
+        appliedMethod: {
+          type: String,
+          enum: ["manual", "auto"],
+          default: "manual",
+        },
         code: String,
-        type: String,
-        value: Number,
-        appliesFor: { type: Number },
+        discount: {
+          type: {
+            type: String,
+            enum: ["trial", "percent", "fixed"],
+          },
+          amount: Number,
+          value: {
+            type: Number,
+            min: 0,
+          },
+        },
       },
       currentPeriodStart: Date,
       currentPeriodEnd: Date,
@@ -533,26 +546,6 @@ workspaceSchema.methods = {
       currentUsage + amount
     );
     return withinLimit;
-  },
-
-  getPricingInfo: function () {
-    const plan = PLANS[this.subscription.plan];
-    return {
-      planName: plan.name,
-      currentPrice: PricingUtils.calculatePrice(
-        this.subscription.plan,
-        this.subscription.billingCycle,
-        this.subscription.discount.value
-      ),
-      features: plan.features,
-      limits: plan.limits,
-      isTrial: this.subscription.status === "trialing",
-      trialEnd: this.subscription.trialEnd,
-      daysUntilRenewal: Math.ceil(
-        (this.subscription.currentPeriodEnd - new Date()) /
-          (1000 * 60 * 60 * 24)
-      ),
-    };
   },
 
   hasChannelAccess: function (channel) {

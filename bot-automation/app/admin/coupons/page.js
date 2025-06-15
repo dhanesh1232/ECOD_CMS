@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format, isAfter, isBefore } from "date-fns";
+import { format } from "date-fns";
 import {
   Clipboard,
   MoreHorizontal,
@@ -11,6 +11,7 @@ import {
   Filter,
   RefreshCw,
   Download,
+  Trash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,10 +61,11 @@ export default function AllCouponsPage() {
   const [loading, setLoading] = useState(true);
   const [totalCoupons, setTotalCoupons] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(9);
+  const [limit, setLimit] = useState(10);
   const [selectedCoupons, setSelectedCoupons] = useState([]);
   const [bulkAction, setBulkAction] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [statusFilter, setStatusFilter] = useState(
@@ -72,9 +74,31 @@ export default function AllCouponsPage() {
   const [dateFilter, setDateFilter] = useState(
     searchParams.get("date") || "all"
   );
+  const [discountTypeFilter, setDiscountTypeFilter] = useState(
+    searchParams.get("discountType") || "all"
+  );
+  const [planFilter, setPlanFilter] = useState(
+    searchParams.get("plan") || "all"
+  );
   const router = useRouter();
   const showToast = useToast();
   const toastRef = useRef(false);
+
+  const planOptions = [
+    { value: "all", label: "All Plans" },
+    { value: "starter", label: "Starter" },
+    { value: "pro", label: "Pro" },
+    { value: "growth", label: "Growth" },
+    { value: "enterprise", label: "Enterprise" },
+  ];
+
+  const discountTypeOptions = [
+    { value: "all", label: "All Types" },
+    { value: "percent", label: "Percentage" },
+    { value: "fixed", label: "Fixed Amount" },
+    { value: "free_shipping", label: "Free Shipping" },
+    { value: "trial", label: "Free Trial" },
+  ];
 
   useEffect(() => {
     setTimeout(() => {
@@ -84,26 +108,50 @@ export default function AllCouponsPage() {
 
   useEffect(() => {
     fetchCoupons();
-  }, [search, statusFilter, dateFilter, page, limit]);
+  }, [
+    search,
+    statusFilter,
+    dateFilter,
+    discountTypeFilter,
+    planFilter,
+    page,
+    limit,
+  ]);
 
   useEffect(() => {
     const query = new URLSearchParams();
     if (search) query.set("search", search);
     if (statusFilter !== "all") query.set("status", statusFilter);
     if (dateFilter !== "all") query.set("date", dateFilter);
+    if (discountTypeFilter !== "all")
+      query.set("discountType", discountTypeFilter);
+    if (planFilter !== "all") query.set("plan", planFilter);
     query.set("page", page);
     query.set("limit", limit);
 
     const queryString = query.toString();
     router.replace(`/admin/coupons${queryString ? "?" + queryString : ""}`);
-  }, [search, statusFilter, dateFilter, page, limit, router]);
+  }, [
+    search,
+    statusFilter,
+    dateFilter,
+    discountTypeFilter,
+    planFilter,
+    page,
+    limit,
+    router,
+  ]);
 
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      let url = `/api/admin/coupons?status=${statusFilter}&page=${page}&limit=${limit}`;
+      let url = `/api/admin/coupons?page=${page}&limit=${limit}`;
       if (search) url += `&search=${search}`;
+      if (statusFilter !== "all") url += `&status=${statusFilter}`;
       if (dateFilter !== "all") url += `&date=${dateFilter}`;
+      if (discountTypeFilter !== "all")
+        url += `&discountType=${discountTypeFilter}`;
+      if (planFilter !== "all") url += `&plan=${planFilter}`;
 
       const response = await fetch(url);
       const data = await response.json();
@@ -151,26 +199,57 @@ export default function AllCouponsPage() {
     }
   };
 
-  const handleArchive = async (id) => {
+  const handleDeleteAll = async () => {
     try {
-      const res = await fetch(`/api/admin/coupons/archived`, {
+      setDeleteLoading(true);
+      const res = await AdminServices.deleteAllCoupons();
+      if (res.status && !res.ok) {
+        const data = await res.json();
+        throw Error(data.message || "Failed to delete coupons");
+      }
+      if (!toastRef.current) {
+        showToast({
+          title: "Success",
+          variant: "success",
+          description: "Successfully deleted coupons",
+        });
+        toastRef.current = true;
+      }
+      await fetchCoupons();
+    } catch (err) {
+      if (!toastRef.current) {
+        showToast({
+          variant: "destructive",
+          description: "Failed to delete coupon",
+        });
+        toastRef.current = true;
+      }
+      setDeleteLoading(false);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const res = await fetch(`/api/admin/coupons/${id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, action: "archive" }),
+        body: JSON.stringify({ status: newStatus }),
       });
       const data = await res.json();
       if (data.success) {
         showToast({
           variant: "success",
-          description: "Coupon archived successfully",
+          description: `Coupon ${newStatus} successfully`,
         });
         fetchCoupons();
       }
     } catch (error) {
-      console.error("Error archiving coupon:", error);
+      console.error("Error changing coupon status:", error);
       showToast({
         variant: "destructive",
-        description: "Failed to archive coupon",
+        description: `Failed to ${newStatus} coupon`,
       });
     }
   };
@@ -179,10 +258,11 @@ export default function AllCouponsPage() {
     if (!bulkAction || selectedCoupons.length === 0) return;
 
     try {
-      let success = false;
       const actions = {
         delete: handleDelete,
-        archive: handleArchive,
+        archive: (id) => handleStatusChange(id, "archived"),
+        activate: (id) => handleStatusChange(id, "active"),
+        deactivate: (id) => handleStatusChange(id, "paused"),
       };
 
       for (const id of selectedCoupons) {
@@ -204,11 +284,18 @@ export default function AllCouponsPage() {
   const handleExport = async () => {
     try {
       setExportLoading(true);
-      const response = await fetch(`/api/admin/coupons/export`);
+      let url = `/api/admin/coupons/export?status=${statusFilter}`;
+      if (search) url += `&search=${search}`;
+      if (dateFilter !== "all") url += `&date=${dateFilter}`;
+      if (discountTypeFilter !== "all")
+        url += `&discountType=${discountTypeFilter}`;
+      if (planFilter !== "all") url += `&plan=${planFilter}`;
+
+      const response = await fetch(url);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const urlObject = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = urlObject;
       a.download = `coupons-${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
@@ -217,9 +304,7 @@ export default function AllCouponsPage() {
         variant: "success",
         description: "Coupons exported successfully",
       });
-      setExportLoading(false);
     } catch (error) {
-      setExportLoading(false);
       console.error("Export error:", error);
       showToast({
         variant: "destructive",
@@ -236,8 +321,33 @@ export default function AllCouponsPage() {
       upcoming: "info",
       expired: "secondary",
       archived: "warning",
+      paused: "destructive",
     };
     return <Badge variant={variants[status] || "default"}>{status}</Badge>;
+  };
+
+  const getCouponStatus = (coupon) => {
+    const now = new Date();
+    const startDate = new Date(
+      `${coupon.validity.start.date}T${coupon.validity.start.time}`
+    );
+    const endDate = new Date(
+      `${coupon.validity.end.date}T${coupon.validity.end.time}`
+    );
+
+    if (coupon.status === "archived" || coupon.status === "paused") {
+      return coupon.status;
+    }
+    if (now < startDate) return "upcoming";
+    if (now > endDate) return "expired";
+    return "active";
+  };
+
+  const getUsagePercentage = (coupon) => {
+    return Math.min(
+      100,
+      (coupon.usageLimits.usedCount / coupon.usageLimits.total) * 100
+    );
   };
 
   return (
@@ -251,15 +361,17 @@ export default function AllCouponsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleExport} variant="outline" className="gap-2">
-            {exportLoading ? (
-              <SpinnerIcon />
-            ) : (
-              <div className="flex items-center gap-1">
-                <Download className="h-4 w-4" />
-                Export
-              </div>
-            )}
+          <Button
+            onClick={handleExport}
+            disabled={coupons.length === 0 || exportLoading}
+            variant="outline"
+            className="gap-2"
+          >
+            {exportLoading && <SpinnerIcon />}
+            <span className="flex items-center gap-1">
+              <Download className="h-4 w-4" />
+              Export
+            </span>
           </Button>
           <Button
             onClick={handleCreate}
@@ -268,6 +380,16 @@ export default function AllCouponsPage() {
           >
             <Plus className="h-4 w-4" />
             Create
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteAll}
+            aria-label="Delete Coupons"
+            disabled={deleteLoading || coupons.length === 0}
+            title="Delete coupons"
+          >
+            {deleteLoading && <SpinnerIcon />}
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -284,6 +406,8 @@ export default function AllCouponsPage() {
               <SelectValue placeholder="Bulk actions" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="activate">Activate</SelectItem>
+              <SelectItem value="deactivate">Deactivate</SelectItem>
               <SelectItem value="archive">Archive</SelectItem>
               <SelectItem value="delete">Delete</SelectItem>
             </SelectContent>
@@ -302,19 +426,30 @@ export default function AllCouponsPage() {
       )}
 
       {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by title, code, or description..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex items-center justify-between gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute z-10 left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by title, code, or description..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button
+            onClick={fetchCoupons}
+            variant="outline"
+            size="icon"
+            disabled={loading}
+            className="col-span-2 sm:col-span-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </Button>
         </div>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 <SelectValue placeholder="Status" />
@@ -326,10 +461,44 @@ export default function AllCouponsPage() {
               <SelectItem value="upcoming">Upcoming</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
               <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="paused">Paused</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={discountTypeFilter}
+            onValueChange={setDiscountTypeFilter}
+          >
+            <SelectTrigger className="w-full">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                <SelectValue placeholder="Discount Type" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {discountTypeOptions.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={planFilter} onValueChange={setPlanFilter}>
+            <SelectTrigger className="w-full">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                <SelectValue placeholder="Plan" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {planOptions.map((plan) => (
+                <SelectItem key={plan.value} value={plan.value}>
+                  {plan.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 <SelectValue placeholder="Date Range" />
@@ -341,22 +510,17 @@ export default function AllCouponsPage() {
               <SelectItem value="week">This Week</SelectItem>
               <SelectItem value="month">This Month</SelectItem>
               <SelectItem value="year">This Year</SelectItem>
+              <SelectItem value="active">Currently Active</SelectItem>
+              <SelectItem value="upcoming">Upcoming</SelectItem>
+              <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            onClick={fetchCoupons}
-            variant="outline"
-            size="icon"
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          </Button>
         </div>
       </div>
 
       {/* Loading State */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}>
               <CardHeader>
@@ -389,177 +553,292 @@ export default function AllCouponsPage() {
       ) : coupons.length ? (
         <>
           {/* Coupons Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {coupons.map((coupon) => (
-              <Card
-                key={coupon._id}
-                className={`relative transition-all hover:shadow-md ${
-                  selectedCoupons.includes(coupon._id)
-                    ? "ring-2 ring-primary"
-                    : ""
-                }`}
-                onClick={() => {
-                  if (selectedCoupons.length > 0) {
-                    setSelectedCoupons((prev) =>
-                      prev.includes(coupon._id)
-                        ? prev.filter((id) => id !== coupon._id)
-                        : [...prev, coupon._id]
-                    );
-                  }
-                }}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        {coupon.title}
-                        {selectedCoupons.includes(coupon._id) && (
-                          <Badge variant="outline">Selected</Badge>
-                        )}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="flex items-center gap-1 text-xs"
-                              value={coupon.code}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                try {
-                                  const value = e.currentTarget.value;
-                                  navigator.clipboard.writeText(value);
-                                  if (!toastRef.current) {
-                                    showToast({
-                                      variant: "success",
-                                      description: `Copied "${value}" to clipboard`,
-                                    });
-                                    toastRef.current = true;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {coupons.map((coupon) => {
+              const status = getCouponStatus(coupon);
+              const usagePercentage = getUsagePercentage(coupon);
+              const isSelected = selectedCoupons.includes(coupon._id);
+
+              return (
+                <Card
+                  key={coupon._id}
+                  className={`relative transition-all hover:shadow-md ${
+                    isSelected ? "ring-2 ring-primary" : ""
+                  }`}
+                  onClick={() => {
+                    if (selectedCoupons.length > 0) {
+                      setSelectedCoupons((prev) =>
+                        isSelected
+                          ? prev.filter((id) => id !== coupon._id)
+                          : [...prev, coupon._id]
+                      );
+                    }
+                  }}
+                >
+                  {coupon.interActions.showInBanner && (
+                    <div className="absolute top-2 right-2">
+                      <Badge variant="outline" className="text-xs">
+                        Promoted
+                      </Badge>
+                    </div>
+                  )}
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          {coupon.title}
+                          {isSelected && (
+                            <Badge variant="outline">Selected</Badge>
+                          )}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="flex items-center gap-1 text-xs"
+                                value={coupon.code}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  try {
+                                    const value = e.currentTarget.value;
+                                    navigator.clipboard.writeText(value);
+                                    if (!toastRef.current) {
+                                      showToast({
+                                        variant: "success",
+                                        description: `Copied "${value}" to clipboard`,
+                                      });
+                                      toastRef.current = true;
+                                    }
+                                  } catch (err) {
+                                    if (!toastRef.current) {
+                                      showToast({
+                                        variant: "destructive",
+                                        description: "Unable to copy code",
+                                      });
+                                      toastRef.current = true;
+                                    }
                                   }
-                                } catch (err) {
-                                  if (!toastRef.current) {
-                                    showToast({
-                                      variant: "destructive",
-                                      description: "Unable to copy code",
-                                    });
-                                    toastRef.current = true;
-                                  }
-                                }
-                              }}
-                              size="xs"
+                                }}
+                                size="xs"
+                              >
+                                <Clipboard size={14} />
+                                {coupon.code}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Click to copy code</TooltipContent>
+                          </Tooltip>
+                          {getStatusBadge(status)}
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          asChild
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => handleView(coupon._id)}
+                          >
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleEdit(coupon._id)}
+                          >
+                            Edit Coupon
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {status === "archived" ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleStatusChange(coupon._id, "active")
+                              }
+                              className="text-green-600"
                             >
-                              <Clipboard size={14} />
-                              {coupon.code}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Click to copy code</TooltipContent>
-                        </Tooltip>
-                        {getStatusBadge(coupon.status)}
+                              Unarchive
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleStatusChange(coupon._id, "archived")
+                              }
+                              className="text-amber-600"
+                            >
+                              Archive
+                            </DropdownMenuItem>
+                          )}
+                          {status === "paused" ? (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleStatusChange(coupon._id, "active")
+                              }
+                              className="text-green-600"
+                            >
+                              Activate
+                            </DropdownMenuItem>
+                          ) : (
+                            status !== "expired" && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(coupon._id, "paused")
+                                }
+                                className="text-blue-600"
+                              >
+                                Pause
+                              </DropdownMenuItem>
+                            )
+                          )}
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(coupon._id)}
+                            className="text-red-600"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Discount Value
+                      </p>
+                      <p className="font-medium">
+                        {coupon.discountType === "percent"
+                          ? `${coupon.discountValue}% off`
+                          : coupon.discountType === "fixed"
+                          ? `${
+                              coupon.currency === "INR" ? "₹" : "$"
+                            }${coupon.discountValue.toFixed(2)} off`
+                          : coupon.discountType === "free_shipping"
+                          ? "Free Shipping"
+                          : "Free Trial"}
+                        {coupon.minCartValue > 0 && (
+                          <span className="text-sm text-muted-foreground ml-2">
+                            (min. {coupon.minCartValue})
+                          </span>
+                        )}
+                        {coupon.discountType === "percent" &&
+                          coupon.maxDiscountAmount && (
+                            <span className="text-sm text-muted-foreground ml-2">
+                              (max. {coupon.maxDiscountAmount})
+                            </span>
+                          )}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                        <span>Usage</span>
+                        <span>
+                          {coupon.usageLimits.usedCount} /{" "}
+                          {coupon.usageLimits.total}
+                        </span>
+                      </div>
+                      <Progress
+                        value={usagePercentage}
+                        className="h-2"
+                        indicatorClass={
+                          usagePercentage > 90
+                            ? "bg-red-500"
+                            : usagePercentage > 70
+                            ? "bg-amber-500"
+                            : "bg-green-500"
+                        }
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Starts</p>
+                        <p className="text-sm font-medium">
+                          {format(
+                            new Date(coupon.validity.start.date),
+                            "MMM dd, yyyy"
+                          )}
+                          <span className="block text-xs text-muted-foreground">
+                            {coupon.validity.start.time}
+                          </span>
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Expires</p>
+                        <p className="text-sm font-medium">
+                          {format(
+                            new Date(coupon.validity.end.date),
+                            "MMM dd, yyyy"
+                          )}
+                          <span className="block text-xs text-muted-foreground">
+                            {coupon.validity.end.time}
+                          </span>
+                        </p>
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        asChild
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                          onClick={() => handleView(coupon._id)}
-                        >
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleEdit(coupon._id)}
-                        >
-                          Edit Coupon
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleArchive(coupon._id)}
-                          className="text-amber-600"
-                        >
-                          {coupon.status === "archived"
-                            ? "Unarchive"
-                            : "Archive"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(coupon._id)}
-                          className="text-red-600"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardHeader>
 
-                <CardContent className="space-y-3">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Discount Value
-                    </p>
-                    <p className="font-medium">
-                      {coupon.discountType === "percent"
-                        ? `${coupon.discountValue}% off`
-                        : coupon.currency === "INR"
-                        ? `₹${coupon.discountValue.toFixed(2)} off`
-                        : `$${coupon.discountValue.toFixed(2)} off`}
-                      {coupon.minPurchaseAmount > 0 && (
-                        <span className="text-sm text-muted-foreground ml-2">
-                          (min. {coupon.minPurchaseAmount})
-                        </span>
+                    {coupon.applicablePlans &&
+                      coupon.applicablePlans.length > 0 && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Applicable Plans
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {coupon.applicablePlans.map((plan) => (
+                              <Badge
+                                key={plan}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {planOptions.find((p) => p.value === plan)
+                                  ?.label || plan}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
                       )}
-                    </p>
-                  </div>
 
-                  <div>
-                    <div className="flex justify-between text-sm text-muted-foreground mb-1">
-                      <span>Usage</span>
-                      <span>
-                        {coupon.usedCount} / {coupon.usageLimit}
-                      </span>
-                    </div>
-                    <Progress
-                      value={(coupon.usedCount / coupon.usageLimit) * 100}
-                      className="h-2"
-                    />
-                  </div>
+                    {coupon.metadata?.tags?.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Tags</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {coupon.metadata.tags.map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Starts</p>
-                      <p className="text-sm font-medium">
-                        {format(new Date(coupon.startDate), "MMM dd, yyyy")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Expires</p>
-                      <p className="text-sm font-medium">
-                        {format(new Date(coupon.endDate), "MMM dd, yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="pt-0 text-xs text-muted-foreground flex justify-between">
-                  <span>
-                    Created:{" "}
-                    {format(new Date(coupon.createdAt), "MMM dd, yyyy")}
-                  </span>
-                  {coupon.updatedAt && (
+                  <CardFooter className="pt-0 text-xs text-muted-foreground flex justify-between">
                     <span>
-                      Updated:{" "}
-                      {format(new Date(coupon.updatedAt), "MMM dd, yyyy")}
+                      Created:{" "}
+                      {format(new Date(coupon.createdAt), "MMM dd, yyyy")}
                     </span>
-                  )}
-                </CardFooter>
-              </Card>
-            ))}
+                    {coupon.updatedAt && (
+                      <span>
+                        Updated:{" "}
+                        {format(new Date(coupon.updatedAt), "MMM dd, yyyy")}
+                      </span>
+                    )}
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
 
           {/* Pagination */}
@@ -594,13 +873,21 @@ export default function AllCouponsPage() {
         <div className="text-center border-2 border-dashed rounded-lg p-12">
           <h3 className="text-lg font-semibold">No Coupons Found</h3>
           <p className="text-sm text-muted-foreground mt-2">
-            {search || statusFilter !== "all" || dateFilter !== "all"
+            {search ||
+            statusFilter !== "all" ||
+            dateFilter !== "all" ||
+            discountTypeFilter !== "all" ||
+            planFilter !== "all"
               ? "Try adjusting your search or filter criteria."
               : "Get started by creating your first coupon."}
           </p>
-          <Button onClick={handleCreate} className="mt-4">
+          <Button
+            onClick={handleCreate}
+            variant="outline-success"
+            className="mt-4"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Create New Coupon
+            Create New
           </Button>
         </div>
       )}

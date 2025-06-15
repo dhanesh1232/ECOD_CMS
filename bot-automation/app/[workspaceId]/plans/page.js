@@ -6,6 +6,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast-provider";
 import { PLANS } from "@/config/pricing.config";
@@ -47,10 +48,13 @@ import {
   Headphones,
   Award,
   List,
+  Slack,
+  Code2,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+  FaDiscord,
   FaFacebook,
   FaInstagram,
   FaTelegram,
@@ -76,8 +80,15 @@ const iconMap = {
   sms: (
     <MessageSquare className="text-xl hover:text-gray-600 text-blue-700 transition-colors" />
   ),
+  slack: (
+    <Slack className="text-xl hover:text-gray-600 text-blue-700 transition-colors" />
+  ),
+  customsdk: <Code2 />,
   voice: (
     <Mic className="text-xl text-purple-600 hover:text-red-700 transition-colors" />
+  ),
+  discord: (
+    <FaDiscord className="text-xl hover:text-gray-600 text-blue-700 transition-colors" />
   ),
 };
 const featureIcons = {
@@ -454,11 +465,16 @@ export default function Page() {
                       key={featureKey}
                       className="border-b hover:bg-muted/50 transition-colors"
                     >
-                      <td className="p-4 pl-6 font-medium text-sm md:text-base backdrop-blur-sm sticky left-0 bg-background z-10">
-                        {featureKey
-                          .replace(/([A-Z])/g, " $1")
-                          .replace(/\b\w/g, (c) => c.toUpperCase())
-                          .trim()}
+                      <td className="p-4 pl-6 font-medium text-sm md:text-base backdrop-blur-sm sticky left-0 bg-background z-10 flex gap-1 items-center">
+                        {featureIcons[featureKey] || (
+                          <Zap className="w-5 h-5" />
+                        )}
+                        <span className="truncate">
+                          {featureKey
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/\b\w/g, (c) => c.toUpperCase())
+                            .trim()}
+                        </span>
                       </td>
                       {Object.entries(PLANS).map(([planId, plan]) => {
                         const value = plan.features[featureKey];
@@ -635,6 +651,7 @@ export default function Page() {
             Current Plan
           </Button>
         </div>
+        <Separator thickness="px" className="my-2" />
 
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div>

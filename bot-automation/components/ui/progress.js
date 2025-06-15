@@ -6,14 +6,14 @@ const Progress = React.forwardRef(
     <div
       ref={ref}
       className={cn(
-        "relative h-2 w-full overflow-hidden rounded-full bg-secondary",
+        "relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-500 ",
         className
       )}
       {...props}
     >
       <div
         className={cn(
-          "h-full w-full flex-1 bg-primary transition-all",
+          "h-full w-full flex-1 bg-primary transition-all ",
           indicatorClass
         )}
         style={{ transform: `translateX(-${100 - value}%)` }}

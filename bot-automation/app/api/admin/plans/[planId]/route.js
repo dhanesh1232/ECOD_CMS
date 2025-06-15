@@ -1,7 +1,7 @@
 import dbConnect from "@/config/dbconnect";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
-import { Plan } from "@/models/user/plan.schema";
+import { Plan } from "@/models/user/schema";
 
 export async function GET(req, { params }) {
   await dbConnect();

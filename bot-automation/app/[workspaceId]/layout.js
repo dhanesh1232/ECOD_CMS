@@ -86,9 +86,9 @@ export default function ProtectLayout({ children }) {
         <OverLayComponent />
         <NotificationButton
           size="default"
-          iconSize={20}
+          iconSize={18}
           position="bottom-10 right-2"
-          className="md:hidden fixed bottom-4 right-8 z-40 bg-indigo-600 text-white shadow-lg rounded-full hover:bg-indigo-700"
+          className="lg:hidden fixed bottom-4 right-8 z-40 bg-indigo-600 text-white shadow-lg rounded-full hover:bg-indigo-700"
         />
       </TooltipProvider>
     </>

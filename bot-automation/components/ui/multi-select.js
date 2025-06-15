@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 
 export function MultiSelect({
-  options,
-  selected,
+  options = [],
+  selected = [],
   onChange,
   placeholder = "Select...",
 }) {

@@ -1,4 +1,8 @@
 // utils/config.plans.js
+const BASE_CHANNELS = ["web", "instagram", "facebook", "whatsapp"];
+const getChannels = (channels) => {
+  return [...BASE_CHANNELS, ...channels];
+};
 export const PLANS = {
   free: {
     id: "free",
@@ -29,7 +33,7 @@ export const PLANS = {
       aiModelTraining: 0,
     },
     features: {
-      channels: ["web"],
+      channels: getChannels([]),
       fileAttachments: false,
       analyticsDashboard: false,
       customBranding: false,
@@ -62,6 +66,10 @@ export const PLANS = {
       formBuilders: false,
       popupCreators: false,
       seoTools: false,
+      // SEO automation
+      keywordResearch: false,
+      longTailKeywords: false,
+      dailyUpdateSEO: false,
       // Growth Features
       teamCollaboration: false,
       customAiModels: false,
@@ -118,7 +126,7 @@ export const PLANS = {
       aiModelTraining: 0,
     },
     features: {
-      channels: ["web", "whatsapp"],
+      channels: getChannels(["telegram"]),
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,
@@ -207,7 +215,7 @@ export const PLANS = {
       aiModelTraining: 0,
     },
     features: {
-      channels: ["web", "whatsapp", "facebook", "instagram"],
+      channels: getChannels(["telegram", "sms", "discord"]),
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,
@@ -298,7 +306,7 @@ export const PLANS = {
       apiCalls: 100000,
     },
     features: {
-      channels: ["web", "whatsapp", "facebook", "instagram", "telegram"],
+      channels: getChannels(["slack", "voice", "telegram", "sms", "discord"]),
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,
@@ -390,15 +398,14 @@ export const PLANS = {
       dedicatedConcurrency: 20,
     },
     features: {
-      channels: [
-        "web",
-        "whatsapp",
-        "facebook",
-        "instagram",
+      channels: getChannels([
+        "slack",
+        "voice",
         "telegram",
         "sms",
-        "voice",
-      ],
+        "discord",
+        "customSDK",
+      ]),
       fileAttachments: true,
       analyticsDashboard: true,
       customBranding: true,

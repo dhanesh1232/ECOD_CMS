@@ -18,6 +18,15 @@ const fetchWithRetry = async (url, options, retries = 3) => {
 };
 const headers = { "Content-Type": "application/json" };
 export const UserServices = {
+  // Initial
+  fetchDashboard: async (options) => {
+    return fetchWithRetry(`/api/initial/nav_links`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
   //Get User info
   fetchUserData: async (options = {}) => {
     return fetchWithRetry(`/api/profile`, {

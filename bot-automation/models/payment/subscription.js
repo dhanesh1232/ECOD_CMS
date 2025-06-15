@@ -67,10 +67,23 @@ const subscriptionSchema = new mongoose.Schema(
     gatewayCustomerId: String,
     gatewayPlanId: String,
     coupon: {
+      appliedMethod: {
+        type: String,
+        enum: ["manual", "auto"],
+        default: "manual",
+      },
       code: String,
-      type: String,
-      value: Number,
-      appliesFor: { type: Number },
+      discount: {
+        type: {
+          type: String,
+          enum: ["trial", "percent", "fixed"],
+        },
+        amount: Number,
+        value: {
+          type: Number,
+          min: 0,
+        },
+      },
     },
     billingDetails: {
       contact: {
@@ -336,32 +349,6 @@ subscriptionSchema.methods = {
     this.usageOverage = overages;
     this.usageOverage.lastCalculated = new Date();
     return overages;
-  },
-  generateInvoice: async function () {
-    const plan = PLANS[this.plan];
-    const priceInfo = PricingUtils.calculatePrice(
-      this.plan,
-      this.billingCycle,
-      this.discount.value
-    );
-
-    return {
-      invoiceNumber: `INV-${this._id.toString().substring(0, 8).toUpperCase()}`,
-      date: new Date().toISOString().split("T")[0],
-      plan: plan.name,
-      billingCycle: this.billingCycle,
-      periodStart: this.currentPeriodStart.toISOString().split("T")[0],
-      periodEnd: this.currentPeriodEnd.toISOString().split("T")[0],
-      basePrice: PricingUtils.formatPrice(priceInfo.base),
-      taxRate: `${TAX_RATES.INR * 100}%`,
-      taxAmount: PricingUtils.formatPrice(priceInfo.tax),
-      total: PricingUtils.formatPrice(priceInfo.total),
-      currency: priceInfo.currency,
-      features: Object.entries(plan.features)
-        .filter(([_, value]) => value === true)
-        .map(([key]) => key),
-      limits: plan.limits,
-    };
   },
 
   hasFeature: function (feature) {

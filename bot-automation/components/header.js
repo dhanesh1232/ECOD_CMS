@@ -16,6 +16,10 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import NotificationButton from "./notification";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import CommandStyleSearch from "./search";
+import { Button } from "./ui/button";
+import { Switch } from "./ui/switch";
+import ThemeSwitcher from "./themeSwicther";
 
 export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   const { data: session } = useSession();
@@ -63,41 +67,42 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 py-4 flex items-center justify-between shadow-sm transition-colors duration-300">
-      <button
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 py-1.5 flex items-center justify-between shadow-sm transition-colors duration-300">
+      <Button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="lg:hidden p-2 rounded-lg"
+        variant="ghost"
+        size="sm"
       >
         {mobileMenuOpen ? (
           <X className="w-6 h-6 text-gray-700 dark:text-gray-300 opacity-0" />
         ) : (
           <FiMenu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
         )}
-      </button>
-      <Logo hide={true} />
+      </Button>
+      <span className="lg:hidden">
+        <Logo hide={true} />
+      </span>
+      <span className="hidden lg:block">
+        <CommandStyleSearch />
+      </span>
 
       <div className="flex items-center space-x-4">
+        <span className="lg:hidden">
+          <CommandStyleSearch />
+        </span>
         {/*Notification */}
         <NotificationButton
           size="sm"
           iconSize={18}
           position="top-14 right-0"
-          className="hidden md:flex"
+          className="hidden lg:flex"
         />
+
         {/* Toggle Theme */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none transition-all"
-              title="Toggle Theme"
-            >
-              {darkMode ? (
-                <Sun className="w-5 h-5 text-yellow-400" />
-              ) : (
-                <Moon className="w-5 h-5 text-gray-700" />
-              )}
-            </button>
+            <ThemeSwitcher />
           </TooltipTrigger>
           <TooltipContent side="bottom" arrow>
             {"Toggle Theme"}

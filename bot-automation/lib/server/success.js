@@ -4,6 +4,9 @@ const createSuccessResponse = (status = 200, message = "", data = {}) => {
   return NextResponse.json({ ...data, message }, { status, headers });
 };
 export const SuccessHandle = {
+  fetchNav: (data, message = "") => {
+    return createSuccessResponse(200, message, data);
+  },
   UserProfile: (data, message = "") => {
     return createSuccessResponse(200, message, data);
   },

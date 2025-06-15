@@ -88,12 +88,37 @@ export const AdminServices = {
       ...options,
     });
   },
+  getCouponUsage: async (couponId, options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons/${couponId}/usage`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
+  deleteAllCoupons: async (options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons`, {
+      method: "DELETE",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
   deleteCoupon: async (couponId, options = {}) => {
     return fetchWithRetry(`/api/admin/coupons/${couponId}`, {
       method: "DELETE",
       credentials: "include",
       headers,
       ...options,
+    });
+  },
+  updateCouponStatus: async (couponId, newStatus, options = {}) => {
+    return fetchWithRetry(`/api/admin/coupons/${couponId}/status`, {
+      method: "PUT",
+      credentials: "include",
+      headers,
+      ...options,
+      body: JSON.stringify({ status: newStatus }),
     });
   },
   updateCoupon: async (couponId, formData, options = {}) => {
