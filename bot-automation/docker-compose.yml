@@ -6,10 +6,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-      - MONGODB_URI=mongodb+srv://ecodservice:Reddy143@blog.bp2ex.mongodb.net/auto-bot?retryWrites=true&w=majority
+    env_file:
+      - .env.local
     command: sh -c "rm -rf .next && npm run dev"
     depends_on:
       - mongo
