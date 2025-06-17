@@ -1,258 +1,220 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, XCircle, Gift, Plus, Minus } from "lucide-react";
 
-export default function CouponBox({
+import { Minus, Check, X } from "lucide-react";
+import { Button } from "./ui/button";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { useEffect, useRef, useState } from "react";
+import { useToast } from "./ui/toast-provider";
+import { billingService } from "@/lib/client/billing";
+import { SpinnerIcon } from "@/public/Images/svg_ecod";
+
+export default function CouponInput({
   workspaceId,
   plan,
-  planPrice = 0,
-  isFirstTimeUser,
-  activeSubscriptionsCount,
-  onCouponApplied,
-  onHandleShown,
-  appliedCoupon,
-  isShown,
+  applied,
+  shown,
+  onShown,
+  discount,
+  onApplied,
 }) {
-  const [couponCode, setCouponCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [validationResult, setValidationResult] = useState(null);
-  const [error, setError] = useState("");
-  const [hasAutoApplied, setHasAutoApplied] = useState(false);
+  const [value, setValue] = useState("");
+  const [state, setState] = useState({
+    applying: false,
+    error: "",
+    success: false,
+  });
+  const [data, setData] = useState(null);
+  const showToast = useToast();
+  const toastRef = useRef(false);
+  const inputRef = useRef(null);
 
-  const validateCoupon = async (code) => {
-    setIsLoading(true);
-    setError("");
-    setValidationResult(null);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      toastRef.current = false;
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
+  useEffect(() => {
+    if (shown && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [shown]);
+
+  const handleApply = async () => {
     try {
-      const response = await fetch(
-        `/api/workspace/${workspaceId}/subscription/validate-coupon`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code,
-            workspaceId,
-            plan,
-            planPrice,
-            isFirstTimeUser,
-            activeSubscriptionsCount,
-          }),
-        }
+      if (!value.trim()) {
+        setState((prev) => ({ ...prev, error: "Please enter a coupon code." }));
+        return;
+      }
+      setState((prev) => ({ ...prev, applying: true, error: "" }));
+
+      const res = await billingService.validateCoupon(
+        workspaceId,
+        value,
+        plan._id
       );
 
-      const data = await response.json();
-      console.log(data);
-
-      if (!response.ok) {
-        throw new Error(data.message || "Validation failed");
+      if (!res.ok && res.status) {
+        if (!toastRef.current) {
+          showToast({
+            title: "Invalid Coupon",
+            description: "The coupon code you entered is not valid",
+            variant: "destructive",
+          });
+          toastRef.current = true;
+        }
+        setState((prev) => ({
+          ...prev,
+          error: "Invalid coupon code",
+          applying: false,
+          success: false,
+        }));
+        return;
       }
 
-      setValidationResult(data);
+      setData(res.data);
+      onApplied(res.data);
+      setState((prev) => ({
+        ...prev,
+        success: true,
+        error: "",
+      }));
 
-      if (data.valid) {
-        onCouponApplied(data.coupon);
-      } else {
-        onCouponApplied(null);
-      }
+      showToast({
+        title: "Coupon Applied",
+        description: "Your discount has been applied successfully",
+        variant: "success",
+      });
     } catch (err) {
-      setError(err.message);
+      if (!toastRef.current) {
+        showToast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+        toastRef.current = true;
+      }
+      setState((prev) => ({
+        ...prev,
+        error: "Failed to apply coupon",
+        success: false,
+      }));
     } finally {
-      setIsLoading(false);
-    }
-  };
-  // Auto-validate on mount for auto-apply coupons
-  useEffect(() => {
-    if (!hasAutoApplied) {
-      validateCoupon("");
-      setHasAutoApplied(true);
-    }
-  }, [hasAutoApplied]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    validateCoupon(couponCode);
-  };
-
-  const handleApplySuggestion = (suggestion) => {
-    setCouponCode(suggestion.code);
-    validateCoupon(suggestion.code);
-  };
-
-  const formatDiscountText = (coupon) => {
-    if (!coupon) return "";
-
-    switch (coupon.discountType) {
-      case "percent":
-        return `${coupon.discountValue}% OFF`;
-      case "fixed":
-        return `₹${coupon.discountValue} OFF`;
-      case "trial":
-        return `${coupon.discountValue} DAYS FREE TRIAL`;
-      default:
-        return "";
+      setState((prev) => ({ ...prev, applying: false }));
     }
   };
 
-  const calculateDiscountAmount = (coupon) => {
-    if (!coupon) return 0;
-
-    switch (coupon.discountType) {
-      case "fixed":
-        return coupon.discountValue;
-      case "percent":
-        return Math.round((planPrice * coupon.discountValue) / 100);
-      case "trial":
-        return planPrice;
-      default:
-        return 0;
-    }
-  };
-
-  const handleClearCoupon = () => {
-    setCouponCode("");
-    setValidationResult(null);
-    setError("");
-    onCouponApplied(null);
+  const handleRemoveCoupon = () => {
+    setValue("");
+    setData(null);
+    onApplied(null);
+    setState({ applying: false, error: "", success: false });
   };
 
   return (
-    <Card className="border border-gray-200 rounded-xl shadow-sm">
-      <CardHeader className="pb-3 flex items-center flex-row justify-between">
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Gift className="w-5 h-5 text-purple-600" />
-          Apply Coupon
-        </CardTitle>
-        <Button
-          size="sm"
-          onClick={() => onHandleShown(!isShown)}
-          variant={isShown ? "destructive" : "outline-success"}
-        >
-          {isShown ? <Minus size={14} /> : <Plus size={14} />}
-        </Button>
-      </CardHeader>
+    <div className="w-full">
+      {!applied ? (
+        shown ? (
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="coupon" className="text-sm font-medium">
+                Discount Code
+              </Label>
+              <Button
+                onClick={() => {
+                  setState((prev) => ({ ...prev, error: "", success: false }));
+                  onShown(false);
+                }}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                aria-label="Close coupon input"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+            </div>
 
-      {isShown && (
-        <CardContent>
-          <form onSubmit={handleSubmit} className="mb-4">
-            <div className="flex sm:flex-row flex-col gap-2">
+            <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
+                  ref={inputRef}
+                  id="coupon"
+                  value={value}
+                  onChange={(e) => {
+                    setValue(e.target.value);
+                    setState((prev) => ({
+                      ...prev,
+                      error: "",
+                      success: false,
+                    }));
+                  }}
                   type="text"
-                  value={couponCode || appliedCoupon?.code || ""}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   placeholder="Enter coupon code"
-                  disabled={isLoading}
                   className="pr-10"
+                  disabled={state.applying}
+                  aria-invalid={!!state.error}
                 />
-                {couponCode && (
-                  <button
-                    type="button"
-                    onClick={handleClearCoupon}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    <XCircle className="w-5 h-5" />
-                  </button>
+                {state.success && (
+                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                )}
+                {state.error && (
+                  <X className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
                 )}
               </div>
-
               <Button
-                type="submit"
-                variant="premium"
-                disabled={isLoading || !couponCode.trim()}
-                className="min-w-[100px]"
+                variant={state.success ? "outline" : "default"}
+                onClick={state.success ? handleRemoveCoupon : handleApply}
+                disabled={state.applying}
+                className="min-w-[80px]"
               >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                {state.applying ? (
+                  <SpinnerIcon className="h-4 w-4 animate-spin" />
+                ) : state.success ? (
+                  "Remove"
                 ) : (
                   "Apply"
                 )}
               </Button>
             </div>
-          </form>
 
-          {error && (
-            <div className="flex items-center gap-2 p-3 mb-4 text-red-600 bg-red-50 rounded-lg">
-              <XCircle className="w-5 h-5" />
-              <span>{error}</span>
+            {state.error && (
+              <p className="text-sm text-destructive mt-1">{state.error}</p>
+            )}
+          </div>
+        ) : (
+          <Button
+            variant="link"
+            size="sm"
+            onClick={() => onShown(true)}
+            className="text-primary hover:text-primary/80 p-0 h-auto"
+          >
+            Have a coupon code?
+          </Button>
+        )
+      ) : (
+        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-100 dark:border-green-800/50">
+          <div className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <div>
+              <p className="text-sm font-medium">Coupon Applied</p>
+              <p className="text-xs text-muted-foreground">{applied.code}</p>
             </div>
-          )}
-
-          {validationResult?.valid && (
-            <div className="p-4 mb-4 bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center gap-2 mb-2 text-green-700">
-                <CheckCircle className="w-5 h-5" />
-                <span className="font-medium">{validationResult.message}</span>
-                {validationResult.type === "autoApply" && (
-                  <Badge className="ml-2 bg-green-100 text-green-800">
-                    Auto Applied
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center mt-3">
-                <div>
-                  <p className="font-medium">{validationResult.coupon.title}</p>
-                  <p className="text-sm text-gray-600">
-                    {validationResult.coupon.code}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p className="font-semibold text-green-700">
-                    {formatDiscountText(validationResult.coupon)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    -₹{calculateDiscountAmount(validationResult.coupon)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {validationResult?.upgradeSuggestions?.length > 0 && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="text-blue-800 font-semibold mb-2">
-                Want more savings?
-              </h4>
-              <p className="text-sm text-blue-700 mb-4">
-                These plans have better discounts. Consider upgrading:
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {validationResult.upgradeSuggestions.map((sug, index) => (
-                  <div
-                    key={index}
-                    className="border border-blue-100 rounded p-3 bg-white hover:bg-blue-50 transition"
-                  >
-                    <div className="flex justify-between items-start">
-                      <span className="font-semibold text-blue-700">
-                        {sug.title}
-                      </span>
-                      <Badge className="bg-blue-100 text-blue-800">
-                        {sug.code}
-                      </Badge>
-                    </div>
-                    <p className="text-sm mt-1 text-gray-600">
-                      {sug.discountType === "percent"
-                        ? `${sug.discountValue}% OFF`
-                        : sug.discountType === "fixed"
-                        ? `₹${sug.discountValue} OFF`
-                        : `${sug.discountValue} Days Trial`}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Apply on <strong>{sug.plan}</strong> plan
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
+          </div>
+          <div className="text-green-600 dark:text-green-400 font-medium">
+            -₹
+            {discount.toLocaleString("en-IN", {
+              maximumFractionDigits: 2,
+            })}{" "}
+            {applied.value && applied.type === "percent" && (
+              <span className="text-sm text-muted-foreground">
+                ({applied.value})
+              </span>
+            )}
+          </div>
+        </div>
       )}
-    </Card>
+    </div>
   );
 }

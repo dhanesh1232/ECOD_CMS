@@ -24,7 +24,7 @@ const LoaderThreeDots = ({
   const duration = speedConfig[speed] || speedConfig.normal;
 
   return (
-    <div className="w-full h-screen flex items-center justify-center">
+    <div className="w-full h-screen flex items-center bg-gray-100 dark:bg-gray-800 justify-center">
       <div
         className="flex items-center justify-center h-20"
         style={{ gap: `${spacing}px` }}

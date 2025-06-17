@@ -33,6 +33,44 @@ export const billingService = {
       ...options,
     });
   },
+  getPlanDetails: async (workspaceId, planId, options = {}) => {
+    console.log(planId);
+    return fetchWithRetry(
+      `/api/workspace/${workspaceId}/subscription/plans/${planId}`,
+      {
+        method: "GET",
+        credentials: "include",
+        headers,
+        ...options,
+      }
+    );
+  },
+  createBillingProfile: async (workspaceId, data, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/billing`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: JSON.stringify(data),
+      ...options,
+    });
+  },
+  getBillingProfile: async (workspaceId, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/billing`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
+  updateBillingProfile: async (workspaceId, data, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/billing`, {
+      method: "PUT",
+      credentials: "include",
+      headers,
+      body: JSON.stringify(data),
+      ...options,
+    });
+  },
   validateCoupon: async (workspaceId, couponCode, plan, options = {}) => {
     return fetchWithRetry(
       `/api/workspace/${workspaceId}/subscription/validate-coupon?coupon=${couponCode}&plan=${plan}`,

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { UserServices } from "@/lib/client/user";
 import { useToast } from "@/components/ui/toast-provider";
+import { Switch } from "@/components/ui/switch"; // Import the new Switch component
 
 const NotificationPage = () => {
   const [preferences, setPreferences] = useState({
@@ -99,7 +100,6 @@ const NotificationPage = () => {
         ),
       };
 
-      // Update all preferences at once
       const response = await UserServices.updateUserNotifications({
         channel,
         type: "all",
@@ -142,16 +142,16 @@ const NotificationPage = () => {
     );
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+    <div className="max-w-4xl mx-auto p-4">
+      <h1 className="text-xl md:text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
         Notification Settings
       </h1>
 
       <div className="space-y-6">
         {/* Email Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center text-gray-800 dark:text-gray-200">
+            <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
               <span className="mr-2">📧</span> Email Notifications
             </h2>
             <MainToggleSwitch
@@ -175,9 +175,9 @@ const NotificationPage = () => {
         </div>
 
         {/* Push Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center text-gray-800 dark:text-gray-200">
+            <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
               <span className="mr-2">📱</span> Push Notifications
             </h2>
             <MainToggleSwitch
@@ -201,9 +201,9 @@ const NotificationPage = () => {
         </div>
 
         {/* In-App Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center text-gray-800 dark:text-gray-200">
+            <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
               <span className="mr-2">🔔</span> In-App Notifications
             </h2>
             <MainToggleSwitch
@@ -259,33 +259,12 @@ const NotificationItem = ({ type, value, channel, handleToggle, disabled }) => {
           {getNotificationDescription(type)}
         </p>
       </div>
-      <ToggleSwitch
+      <Switch
         checked={value}
-        onChange={(checked) => handleToggle(channel, type, checked)}
+        onCheckedChange={(checked) => handleToggle(channel, type, checked)}
         disabled={disabled}
       />
     </div>
-  );
-};
-
-const ToggleSwitch = ({ checked, onChange, disabled = false }) => {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
-        checked
-          ? "bg-indigo-600 dark:bg-indigo-500"
-          : "bg-gray-200 dark:bg-gray-600"
-      } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-      onClick={() => onChange(!checked)}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          checked ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
   );
 };
 
@@ -294,34 +273,22 @@ const MainToggleSwitch = ({ channel, preferences, onToggle }) => {
   const someEnabled = Object.values(preferences[channel]).some(Boolean);
 
   return (
-    <button
-      onClick={() => onToggle(channel)}
-      className="flex items-center space-x-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-    >
-      <span>
+    <div className="flex items-center space-x-2">
+      <span className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400">
         {allEnabled
           ? "Disable all"
           : someEnabled
           ? "Disable all"
           : "Enable all"}
       </span>
-      <div
-        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-          allEnabled
-            ? "bg-indigo-600 dark:bg-indigo-500"
-            : "bg-gray-200 dark:bg-gray-600"
-        }`}
-      >
-        <span
-          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-            allEnabled ? "translate-x-5" : "translate-x-1"
-          }`}
-        />
-      </div>
-    </button>
+      <Switch
+        checked={allEnabled}
+        onCheckedChange={() => onToggle(channel)}
+        className="ml-2"
+      />
+    </div>
   );
 };
-
 const getNotificationDescription = (type) => {
   const descriptions = {
     workspace_invitation: "When you receive a workspace invitation",

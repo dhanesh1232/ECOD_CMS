@@ -14,16 +14,13 @@ import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { encryptData } from "@/utils/encryption";
 import {
   CheckCircle,
-  ChevronRight,
   Earth,
   InfinityIcon,
   MessageSquare,
   Mic,
   MoveLeft,
   Rocket,
-  StarsIcon,
   Zap,
-  BadgeCheck,
   Users,
   HardDrive,
   MessageCircle,
@@ -37,12 +34,17 @@ import {
   Cpu,
   Code,
   Server,
-  Headphones,
   List,
   Check,
   X,
   ArrowRight,
   HelpCircle,
+  Shield,
+  BrainCircuit,
+  Search,
+  Megaphone,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -50,6 +52,7 @@ import {
   FaDiscord,
   FaFacebook,
   FaInstagram,
+  FaSlack,
   FaTelegram,
   FaWhatsapp,
 } from "react-icons/fa";
@@ -78,15 +81,41 @@ const categoryIcons = {
 
 // Channel icons mapping
 const iconMap = {
-  whatsapp: <FaWhatsapp className="text-[#25D366] text-xl" />,
-  instagram: <FaInstagram className="text-[#E1306C] text-xl" />,
-  facebook: <FaFacebook className="text-[#1877F2] text-xl" />,
-  telegram: <FaTelegram className="text-[#0088CC] text-xl" />,
-  web: <Earth className="text-xl text-[#4285F4]" />,
-  sms: <MessageSquare className="text-xl text-[#34B7F1]" />,
-  discord: <FaDiscord className="text-xl text-[#5865F2]" />,
-  customsdk: <Code className="text-xl text-[#5865F2]" />,
-  voice: <Mic className="text-xl text-[#9C27B0]" />,
+  whatsapp: (
+    <FaWhatsapp className="text-[#25D366] text-base md:text-lg lg:text-xl" />
+  ),
+  instagram: (
+    <FaInstagram className="text-[#E1306C] text-base md:text-lg lg:text-xl" />
+  ),
+  facebook: (
+    <FaFacebook className="text-[#1877F2] text-base md:text-lg lg:text-xl" />
+  ),
+  telegram: (
+    <FaTelegram className="text-[#0088CC] text-base md:text-lg lg:text-xl" />
+  ),
+  web: (
+    <Earth
+      size={16}
+      className="text-base md:text-lg lg:text-xl text-[#4285F4]"
+    />
+  ),
+  sms: (
+    <MessageSquare
+      size={16}
+      className="text-base md:text-lg lg:text-xl text-[#34B7F1]"
+    />
+  ),
+  discord: (
+    <FaDiscord className="text-base md:text-lg lg:text-xl text-[#5865F2]" />
+  ),
+  customsdk: (
+    <Code
+      size={16}
+      className="text-base md:text-lg lg:text-xl text-[#5865F2]"
+    />
+  ),
+  voice: <Mic className="text-base md:text-lg lg:text-xl text-[#9C27B0]" />,
+  slack: <FaSlack className="text-blue-600 text-base md:text-lg lg:text-xl" />,
 };
 
 // Limit icons mapping with dark mode support
@@ -221,6 +250,7 @@ export default function Page() {
       plan_name: encryptData(plan.id),
       em: encryptData(userCred.email),
       pn: encryptData(userCred.phone),
+      id: encryptData(plan._id),
     };
     const params = new URLSearchParams(obj).toString();
     router.replace(`/${workspaceId}/plans/checkout?${params}`);
@@ -231,6 +261,131 @@ export default function Page() {
     const isCurrentPlan = subscription?.plan === plan.id;
     const isEnterprise = plan.id.toLowerCase() === "enterprise";
     const isFree = plan.id.toLowerCase() === "free";
+    const [expandedCategories, setExpandedCategories] = useState([]);
+
+    const toggleCategory = (categoryTitle) => {
+      setExpandedCategories((prev) =>
+        prev.includes(categoryTitle)
+          ? prev.filter((title) => title !== categoryTitle)
+          : [...prev, categoryTitle]
+      );
+    };
+
+    // Helper function to render feature value
+    const renderFeatureValue = (value) => {
+      if (value === true) return <Check className="h-4 w-4 text-green-500" />;
+      if (value === false) return <X className="h-4 w-4 text-gray-400" />;
+      if (value === "Infinity") return "Unlimited";
+      if (Array.isArray(value)) return value.join(", ");
+      return value;
+    };
+
+    // Feature categories to display
+    const featureCategories = [
+      {
+        title: "Chatbot Automation",
+        icon: <MessageSquare className="h-5 w-5" />,
+        features: plan.features.chatbotAutomation,
+        keys: [
+          "channels",
+          "visualFlowBuilder",
+          "multilingualSupport",
+          "templates",
+          "fileAttachments",
+          "customFlows",
+        ],
+      },
+      {
+        title: "Ads Automation",
+        icon: <Megaphone className="h-5 w-5" />,
+        features: plan.features.adsAutomation,
+        keys: [
+          "enabled",
+          "adCopyGeneration",
+          "targeting",
+          "budgetManagement",
+          "autoPublishing",
+          "audienceSegmentation",
+          "credits",
+        ],
+      },
+      {
+        title: "SEO Tools",
+        icon: <Search className="h-5 w-5" />,
+        features: plan.features.seoTools,
+        keys: [
+          "enabled",
+          "keywordResearch",
+          "longTailKeywords",
+          "dailyUpdates",
+        ],
+      },
+      {
+        title: "Landing Builder",
+        icon: <LayoutTemplate className="h-5 w-5" />,
+        features: plan.features.landingBuilder,
+        keys: [
+          "enabled",
+          "dragDropEditor",
+          "templates",
+          "formBuilders",
+          "popups",
+        ],
+      },
+      {
+        title: "CRM & Drip Campaigns",
+        icon: <Users className="h-5 w-5" />,
+        features: plan.features.crmAndDripCampaigns,
+        keys: [
+          "enabled",
+          "leadScoring",
+          "visitorTracking",
+          "crmSync",
+          "emailSequences",
+          "behavioralTriggers",
+          "abTesting",
+        ],
+      },
+      {
+        title: "AI Agent",
+        icon: <BrainCircuit className="h-5 w-5" />,
+        features: plan.features.aiAgent,
+        keys: ["responseTuning", "modelTraining", "customModels"],
+      },
+      {
+        title: "Growth Features",
+        icon: <Rocket className="h-5 w-5" />,
+        features: plan.features.growthFeatures,
+        keys: [
+          "analyticsDashboard",
+          "customBranding",
+          "teamCollaboration",
+          "dynamicContent",
+          "webinarIntegration",
+          "membershipSites",
+          "paymentGateways",
+        ],
+      },
+      {
+        title: "Enterprise Features",
+        icon: <Shield className="h-5 w-5" />,
+        features: plan.features.enterpriseFeatures,
+        keys: [
+          "prioritySupport",
+          "whiteLabel",
+          "apiAccess",
+          "webhooks",
+          "sso",
+          "dedicatedInstance",
+          "sla99_9",
+          "customDataCenter",
+          "auditLogs",
+          "dataResidency",
+          "hipaaCompliance",
+          "accountManager",
+        ],
+      },
+    ];
 
     return (
       <div className="relative h-full">
@@ -240,12 +395,20 @@ export default function Page() {
           </div>
         )}
 
+        {plan.metadata?.recommended && (
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg z-10">
+            RECOMMENDED
+          </div>
+        )}
+
         <Card
           className={`h-full flex flex-col transition-all duration-300 hover:shadow-xl dark:hover:shadow-lg dark:hover:shadow-gray-800/30 ${
             isCurrentPlan ? "ring-2 ring-primary/50 dark:ring-primary/30" : ""
           } ${
             plan.metadata?.popular
               ? "border-2 border-purple-500/20 dark:border-purple-500/30 bg-gradient-to-b from-purple-50/50 to-white dark:from-purple-900/10 dark:to-gray-900"
+              : plan.metadata?.recommended
+              ? "border-2 border-blue-500/20 dark:border-blue-500/30 bg-gradient-to-b from-blue-50/50 to-white dark:from-blue-900/10 dark:to-gray-900"
               : "border border-gray-200 dark:border-gray-700"
           }`}
         >
@@ -289,74 +452,113 @@ export default function Page() {
             )}
           </CardHeader>
 
-          <CardContent className="flex-1 pt-6 space-y-4">
-            <Button
-              variant={
-                isCurrentPlan
-                  ? "secondary"
-                  : isEnterprise
-                  ? "premium"
-                  : plan.metadata?.popular
-                  ? "default"
-                  : "outline"
-              }
-              className={`w-full transition-all ${
-                plan.metadata?.popular ? "shadow-md hover:shadow-lg" : ""
-              }`}
-              disabled={isCurrentPlan || isFree}
-              onClick={() => handlePlanSelection(plan)}
-              size="lg"
-            >
-              {isCurrentPlan ? (
-                "Current Plan"
-              ) : (
-                <>
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-
-            <div className="space-y-4">
-              <h4 className="font-semibold text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Key Features
+          <CardContent className="flex-1 pt-6">
+            {/* Limits Section */}
+            <div className="mb-8">
+              <h4 className="font-semibold text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                Key Limits
               </h4>
-              <div className="space-y-3">
-                {Object.entries(plan.limits)
-                  .slice(0, 5)
-                  .map(([key, value]) => (
-                    <div key={key} className="flex items-start gap-3">
-                      <span className="mt-0.5">
-                        {limitIcons[key] || (
-                          <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                        )}
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(plan.limits).map(([key, value]) => (
+                  <div key={key} className="flex items-start gap-2">
+                    <span className="mt-0.5">
+                      {limitIcons[key] || (
+                        <Zap className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                      )}
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^\w/, (c) => c.toUpperCase())}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {typeof value === "number" && value > 1000
+                          ? `${(value / 1000).toFixed(0)}K+`
+                          : value === "Infinity"
+                          ? "Unlimited"
+                          : value}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Features Sections */}
+            <div className="space-y-4">
+              {featureCategories.map((category) => (
+                <div
+                  key={category.title}
+                  className="border rounded-lg overflow-hidden"
+                >
+                  <button
+                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    onClick={() => toggleCategory(category.title)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-primary">{category.icon}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {category.title}
                       </span>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {key
-                            .replace(/([A-Z])/g, " $1")
-                            .replace(/^\w/, (c) => c.toUpperCase())}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {formatFeatureValue(value)}
-                        </p>
+                    </div>
+                    {expandedCategories.includes(category.title) ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
+                  </button>
+
+                  {expandedCategories.includes(category.title) && (
+                    <div className="p-4 pt-0 border-t dark:border-gray-700">
+                      <div className="space-y-3 pl-2">
+                        {category.keys.map((key) => (
+                          <div
+                            key={key}
+                            className="flex items-center justify-between"
+                          >
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              {key
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^\w/, (c) => c.toUpperCase())}
+                            </span>
+                            <span className="text-sm font-medium flex items-center justify-center flex-wrap gap-3">
+                              {Array.isArray(category.features[key])
+                                ? category.features[key].map((each) => (
+                                    <span key={each} className="h-3 w-3">
+                                      {React.cloneElement(
+                                        iconMap[each.toLowerCase()],
+                                        {
+                                          className:
+                                            "h-3 w-3 text-gray-500 dark:text-gray-300",
+                                        }
+                                      )}
+                                    </span>
+                                  ))
+                                : renderFeatureValue(category.features[key])}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-              </div>
+                  )}
+                </div>
+              ))}
             </div>
           </CardContent>
 
           <CardFooter className="pt-0">
             <Button
-              className={`w-full gap-2 font-semibold transition-all hover:shadow-md ${
+              className={`w-full text-sm gap-2 font-semibold transition-all hover:shadow-md ${
                 plan.metadata?.popular ? "text-white" : ""
               }`}
+              glass={true}
               size="lg"
               variant={
                 isEnterprise
                   ? "premium"
                   : plan.metadata?.popular
-                  ? "default"
+                  ? "ocean"
                   : isFree
                   ? "outline"
                   : "default"
@@ -370,7 +572,7 @@ export default function Page() {
                   Current Plan
                 </span>
               ) : plan.metadata?.trialDays > 0 ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex text-sm items-center justify-center gap-2">
                   <Rocket />
                   Start {plan.metadata.trialDays}-Day Free Trial
                 </span>
@@ -401,217 +603,214 @@ export default function Page() {
           </p>
         </div>
 
-        <div className="p-4">
-          <Tabs className="w-full">
-            <TabsList className="grid grid-cols-2 w-full max-w-xs mx-auto bg-gray-100 dark:bg-gray-800">
+        <Tabs className="w-full">
+          <div className="flex items-center w-full justify-center mt-2">
+            <TabsList className="grid grid-cols-2 w-full max-w-xs mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg m-1">
               {["features", "limits"].map((tab) => (
                 <TabsTrigger
                   key={tab}
                   value={tab}
                   isActive={activeTab === tab}
                   onClick={() => setActiveTab(tab)}
-                  className="capitalize data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-gray-700"
+                  className={`
+        capitalize rounded-full m-1 text-sm font-medium transition-all
+
+      `}
                 >
                   {tab}
                 </TabsTrigger>
               ))}
             </TabsList>
+          </div>
 
-            {activeTab === "features" && (
-              <TabsContent value="features" className="mt-6">
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th className="text-left p-4 pl-6 min-w-[200px] sticky left-0 bg-gray-50 dark:bg-gray-800 z-20 text-gray-500 dark:text-gray-400 font-medium">
-                          Features
-                        </th>
-                        {plans.map((plan) => (
-                          <th
-                            key={plan.id}
-                            className={`p-4 text-center ${
-                              subscription?.plan === plan.id
-                                ? "bg-primary/10 dark:bg-primary/20"
-                                : "bg-gray-50 dark:bg-gray-800"
-                            } sticky top-0 z-10`}
-                          >
-                            <div className="flex flex-col items-center">
-                              <span className="font-bold text-gray-900 dark:text-white">
-                                {plan.name}
+          {activeTab === "features" && (
+            <TabsContent value="features">
+              <div className="overflow-x-auto border border-gray-200 dark:border-gray-700">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th className="text-left p-4 pl-6 min-w-[200px] sticky left-0 bg-gray-50 dark:bg-gray-800 z-20 text-gray-500 dark:text-gray-400 font-medium">
+                        Features
+                      </th>
+                      {plans.map((plan) => (
+                        <th
+                          key={plan.id}
+                          className={`p-4 text-center ${
+                            subscription?.plan === plan.id
+                              ? "bg-primary/10 dark:bg-primary/20"
+                              : "bg-gray-50 dark:bg-gray-800"
+                          } sticky top-0 z-10`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {plan.name}
+                            </span>
+                            {subscription?.plan !== plan.id && plan.prices && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                ₹{getPlanPrice(plan)?.localized}/{billingPeriod}
                               </span>
-                              {subscription?.plan !== plan.id &&
-                                plan.prices && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    ₹{getPlanPrice(plan)?.localized}/
-                                    {billingPeriod}
-                                  </span>
-                                )}
-                              {subscription?.plan === plan.id && (
-                                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-0.5 rounded-full mt-1">
-                                  Current
-                                </span>
-                              )}
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {Object.entries(plans[0].features).map(
-                        ([category, features]) => (
-                          <React.Fragment key={`category-${category}`}>
-                            <tr className="bg-gray-50 dark:bg-gray-800">
-                              <td
-                                colSpan={plans.length + 1}
-                                className="p-3 pl-6 font-semibold text-gray-700 dark:text-gray-300"
-                              >
-                                <div className="flex items-center gap-2">
-                                  {categoryIcons[category] || (
-                                    <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                                  )}
-                                  {category
-                                    .replace(/([A-Z])/g, " $1")
-                                    .replace(/^\w/, (c) => c.toUpperCase())}
-                                </div>
-                              </td>
-                            </tr>
-                            {Object.entries(features).map(([featureKey, _]) => (
-                              <tr
-                                key={featureKey}
-                                className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                              >
-                                <td className="p-4 pl-8 font-medium text-gray-700 dark:text-gray-300 flex gap-2 items-center sticky left-0 bg-white dark:bg-gray-900">
-                                  {featureKey
-                                    .replace(/([A-Z])/g, " $1")
-                                    .replace(/^\w/, (c) => c.toUpperCase())}
-                                </td>
-                                {plans.map((plan) => {
-                                  const value =
-                                    plan.features[category][featureKey];
-                                  return (
-                                    <td
-                                      key={`${plan.id}-${featureKey}`}
-                                      className={`p-4 text-center ${
-                                        subscription?.plan === plan.id
-                                          ? "bg-primary/5 dark:bg-primary/10"
-                                          : "bg-white dark:bg-gray-900"
-                                      }`}
-                                    >
-                                      {featureKey === "channels" &&
-                                      Array.isArray(value) ? (
-                                        <div className="w-full flex flex-wrap justify-center items-center gap-2">
-                                          {value.map((each, ind) => {
-                                            return (
-                                              <span
-                                                key={ind}
-                                                className="hover:scale-110 transition-transform"
-                                                title={each}
-                                              >
-                                                {iconMap[
-                                                  each.toLowerCase()
-                                                ] || (
-                                                  <Zap className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                                                )}
-                                              </span>
-                                            );
-                                          })}
-                                        </div>
-                                      ) : (
-                                        <span className="inline-flex items-center justify-center">
-                                          {formatFeatureValue(value)}
-                                        </span>
-                                      )}
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            ))}
-                          </React.Fragment>
-                        )
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </TabsContent>
-            )}
-
-            {activeTab === "limits" && (
-              <TabsContent value="limits" className="mt-6">
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th className="text-left p-4 pl-6 min-w-[200px] sticky left-0 bg-gray-50 dark:bg-gray-800 z-20">
-                          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
-                            <List className="h-5 w-5" />
-                            <span>Limits</span>
+                            )}
+                            {subscription?.plan === plan.id && (
+                              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-0.5 rounded-full mt-1">
+                                Current
+                              </span>
+                            )}
                           </div>
                         </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {Object.entries(plans[0].features).map(
+                      ([category, features]) => (
+                        <React.Fragment key={`category-${category}`}>
+                          <tr className="bg-gray-50 dark:bg-gray-800">
+                            <td
+                              colSpan={plans.length + 1}
+                              className="p-3 pl-6 font-semibold dark:bg-gray-900 bg-gray-200 text-gray-700 dark:text-gray-300"
+                            >
+                              <div className="flex items-center gap-2">
+                                {categoryIcons[category] || (
+                                  <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                )}
+                                {category
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/^\w/, (c) => c.toUpperCase())}
+                              </div>
+                            </td>
+                          </tr>
+                          {Object.entries(features).map(([featureKey, _]) => (
+                            <tr
+                              key={featureKey}
+                              className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                            >
+                              <td className="p-4 pl-8 font-medium text-gray-700 align-middle dark:text-gray-300  gap-2 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-900">
+                                {featureKey
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/^\w/, (c) => c.toUpperCase())}
+                              </td>
+                              {plans.map((plan) => {
+                                const value =
+                                  plan.features[category][featureKey];
+                                return (
+                                  <td
+                                    key={`${plan.id}-${featureKey}`}
+                                    className={`p-4 text-center ${
+                                      subscription?.plan === plan.id
+                                        ? "bg-primary/5 dark:bg-primary/10"
+                                        : "bg-white dark:bg-gray-900"
+                                    }`}
+                                  >
+                                    {featureKey === "channels" &&
+                                    Array.isArray(value) ? (
+                                      <div className="w-full flex flex-wrap justify-center items-center gap-2">
+                                        {value.map((each, ind) => {
+                                          return (
+                                            <span
+                                              key={ind}
+                                              className="hover:scale-110 transition-transform"
+                                              title={each}
+                                            >
+                                              {iconMap[each.toLowerCase()] || (
+                                                <Zap className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                              )}
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    ) : (
+                                      <span className="inline-flex items-center justify-center">
+                                        {formatFeatureValue(value)}
+                                      </span>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+          )}
+
+          {activeTab === "limits" && (
+            <TabsContent value="limits">
+              <div className="overflow-x-auto border border-gray-200 dark:border-gray-700">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th className="text-left p-4 pl-6 min-w-[200px] sticky left-0 bg-gray-50 dark:bg-gray-800 z-20">
+                        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                          <List className="h-5 w-5" />
+                          <span>Limits</span>
+                        </div>
+                      </th>
+                      {plans.map((plan) => (
+                        <th
+                          key={plan.id}
+                          className={`p-4 text-center ${
+                            subscription?.plan === plan.id
+                              ? "bg-primary/10 dark:bg-primary/20"
+                              : "bg-gray-50 dark:bg-gray-800"
+                          } sticky top-0 z-10`}
+                        >
+                          <div className="flex flex-col items-center">
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {plan.name}
+                            </span>
+                            {subscription?.plan !== plan.id && plan.prices && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                ₹{getPlanPrice(plan)?.localized}/{billingPeriod}
+                              </span>
+                            )}
+                            {subscription?.plan === plan.id && (
+                              <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-0.5 rounded-full">
+                                Current
+                              </span>
+                            )}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {Object.keys(plans[0].limits).map((limitKey) => (
+                      <tr
+                        key={limitKey}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <td className="p-4 pl-6 font-medium text-gray-700 dark:text-gray-300 flex gap-2 items-center sticky left-0 bg-white dark:bg-gray-900">
+                          {limitIcons[limitKey] || (
+                            <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                          )}
+                          {limitKey
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^\w/, (c) => c.toUpperCase())}
+                        </td>
                         {plans.map((plan) => (
-                          <th
-                            key={plan.id}
+                          <td
+                            key={`${plan.id}-${limitKey}`}
                             className={`p-4 text-center ${
                               subscription?.plan === plan.id
-                                ? "bg-primary/10 dark:bg-primary/20"
-                                : "bg-gray-50 dark:bg-gray-800"
-                            } sticky top-0 z-10`}
+                                ? "bg-primary/5 dark:bg-primary/10"
+                                : "bg-white dark:bg-gray-900"
+                            }`}
                           >
-                            <div className="flex flex-col items-center">
-                              <span className="font-bold text-gray-900 dark:text-white">
-                                {plan.name}
-                              </span>
-                              {subscription?.plan !== plan.id &&
-                                plan.prices && (
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    ₹{getPlanPrice(plan)?.localized}/
-                                    {billingPeriod}
-                                  </span>
-                                )}
-                              {subscription?.plan === plan.id && (
-                                <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-2 py-0.5 rounded-full">
-                                  Current
-                                </span>
-                              )}
-                            </div>
-                          </th>
+                            {formatFeatureValue(plan.limits[limitKey])}
+                          </td>
                         ))}
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {Object.keys(plans[0].limits).map((limitKey) => (
-                        <tr
-                          key={limitKey}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                        >
-                          <td className="p-4 pl-6 font-medium text-gray-700 dark:text-gray-300 flex gap-2 items-center sticky left-0 bg-white dark:bg-gray-900">
-                            {limitIcons[limitKey] || (
-                              <Zap className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                            )}
-                            {limitKey
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^\w/, (c) => c.toUpperCase())}
-                          </td>
-                          {plans.map((plan) => (
-                            <td
-                              key={`${plan.id}-${limitKey}`}
-                              className={`p-4 text-center ${
-                                subscription?.plan === plan.id
-                                  ? "bg-primary/5 dark:bg-primary/10"
-                                  : "bg-white dark:bg-gray-900"
-                              }`}
-                            >
-                              {formatFeatureValue(plan.limits[limitKey])}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </TabsContent>
-            )}
-          </Tabs>
-        </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </TabsContent>
+          )}
+        </Tabs>
       </div>
     );
   };
@@ -625,29 +824,41 @@ export default function Page() {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 h-full overflow-y-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 h-full overflow-y-auto scrollbar-transparent py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-10">
         <div className="flex flex-col gap-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 w-fit text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-          >
-            <MoveLeft className="h-5 w-5" /> Back
-          </Button>
+          <div className="flex items-center justify-between border-b pb-1 border-gray-200 dark:border-gray-700">
+            <Button
+              variant="ghost"
+              onClick={() => router.back()}
+              className="flex items-center gap-2 w-fit text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            >
+              <MoveLeft className="h-5 w-5" /> Back
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                router.push(`/${workspaceId}/settings/workspace/billing`)
+              }
+              className="flex items-center gap-2 text-sm md:text-base"
+            >
+              <CreditCard className="sm:h-4 sm:w-4 w-3 h-3" />
+              Billing
+            </Button>
+          </div>
 
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div className="space-y-2">
               <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                 Find Your Perfect Plan
               </h1>
-              <p className="text-base text-gray-500 dark:text-gray-400">
+              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
                 Choose the right solution to grow your business
               </p>
             </div>
 
-            <div className="flex items-center gap-4">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 gap-1">
+            <div className="flex items-center relative p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <TabsList className="grid w-full grid-cols-2 bg-transparent">
                 {["monthly", "yearly"].map((tab) => (
                   <TabsTrigger
                     key={tab}
@@ -657,7 +868,7 @@ export default function Page() {
                     onClick={() => setBillingPeriod(tab)}
                   >
                     {tab}{" "}
-                    {tab === "yearly" && (
+                    {tab.toLowerCase() === "yearly" && (
                       <span className="ml-0.5 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs px-1 py-0.5 rounded-full">
                         20% OFF
                       </span>
@@ -665,21 +876,11 @@ export default function Page() {
                   </TabsTrigger>
                 ))}
               </TabsList>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  router.push(`/${workspaceId}/settings/workspace/billing`)
-                }
-                className="hidden sm:flex items-center gap-2"
-              >
-                <CreditCard className="h-4 w-4" />
-                Billing
-              </Button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} />
           ))}

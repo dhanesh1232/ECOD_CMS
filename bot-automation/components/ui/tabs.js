@@ -15,32 +15,28 @@ const TabsList = React.forwardRef(({ className, children, ...props }, ref) => {
     <div
       ref={ref}
       className={cn(
-        "relative inline-flex items-center justify-center gap-2 rounded-xl bg-muted p-1 text-muted-foreground shadow-inner",
+        "relative grid grid-cols-2 w-full max-w-xs bg-muted p-1 rounded-lg",
         className
       )}
       {...props}
     >
-      {children}
       <motion.div
         layout
-        className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
-        style={{
-          zIndex: 0,
-          width: `calc(100% / ${tabs.length} - 0.5rem)`,
-        }}
+        className="absolute h-full rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
+        style={{ width: "50%" }} // or `100% / tabs.length`
         initial={false}
-        animate={{
-          x: `${activeTabIndex * 100}%`,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-        }}
+        animate={{ x: `${activeTabIndex * 100}%` }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
       />
+      {tabs.map((child, index) =>
+        React.cloneElement(child, {
+          key: index,
+        })
+      )}
     </div>
   );
 });
+
 TabsList.displayName = "TabsList";
 
 const TabsTrigger = React.forwardRef(

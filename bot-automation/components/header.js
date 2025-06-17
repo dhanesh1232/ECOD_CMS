@@ -122,7 +122,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
               >
                 <div className="relative">
                   {/* Glass effect container with border gradient */}
-                  <div className="sm:w-10 w-8 h-8 sm:h-10 rounded-full p-[2px] backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-white/30 dark:border-gray-700/50 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 dark:from-indigo-600/30 dark:to-purple-600/30">
+                  <div className="w-8 h-8 rounded-full p-[2px] backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-white/30 dark:border-gray-700/50 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 dark:from-indigo-600/30 dark:to-purple-600/30">
                     {/* Animated inner circle */}
                     <motion.div
                       initial={false}
@@ -142,14 +142,10 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
                     >
                       {/* User initials with subtle animation */}
                       <motion.span
-                        className="font-medium text-xs sm:text-sm text-indigo-100 dark:text-indigo-200"
+                        className="font-medium text-sm text-indigo-100 dark:text-indigo-200"
                         whileHover={{ scale: 1.1 }}
                       >
-                        {session?.user?.name
-                          .split(" ")
-                          .map((word) => word[0])
-                          .join("")
-                          .toUpperCase()}
+                        {session?.user?.name[0].toUpperCase()}
                       </motion.span>
 
                       {/* Active indicator (pulse animation when menu is open) */}

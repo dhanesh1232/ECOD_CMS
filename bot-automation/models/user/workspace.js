@@ -272,76 +272,8 @@ const workspaceSchema = new mongoose.Schema(
       gatewaySubscriptionId: String,
       // Enhanced billing details schema
       billingDetails: {
-        contact: {
-          name: String,
-          email: {
-            type: String,
-            validate: [validator.isEmail, "Please provide a valid email"],
-          },
-          phone: String,
-        },
-        address: {
-          line1: {
-            type: String,
-            validate: {
-              validator: function (v) {
-                const rootDoc = this.ownerDocument?.();
-                return rootDoc?.plan === "free" || !!v;
-              },
-              message: "Address line1 is required for paid plans",
-            },
-          },
-          line2: String,
-          city: {
-            type: String,
-            validate: {
-              validator: function (v) {
-                const rootDoc = this.ownerDocument?.();
-                return rootDoc?.plan === "free" || !!v;
-              },
-              message: "City is required for paid plans",
-            },
-          },
-          state: {
-            type: String,
-            validate: {
-              validator: function (v) {
-                const rootDoc = this.ownerDocument?.();
-                return rootDoc?.plan === "free" || !!v;
-              },
-              message: "State is required for paid plans",
-            },
-          },
-          postalCode: {
-            type: String,
-            validate: {
-              validator: function (v) {
-                const rootDoc = this.ownerDocument?.();
-                return rootDoc?.plan === "free" || !!v;
-              },
-              message: "Postal code is required for paid plans",
-            },
-          },
-          country: {
-            type: String,
-            validate: {
-              validator: function (v) {
-                const rootDoc = this.ownerDocument?.();
-                return rootDoc?.plan === "free" || !!v;
-              },
-              message: "Country is required for paid plans",
-            },
-          },
-        },
-        taxInfo: {
-          taxId: String,
-          vatId: String,
-          companyName: String,
-        },
-        billingEmail: {
-          type: String,
-          validate: [validator.isEmail, "Please provide a valid email"],
-        },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "BillingDetails",
       },
     },
     usage: {

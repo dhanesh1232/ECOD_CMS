@@ -758,40 +758,46 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
             className="p-4 mt-auto border-t border-gray-200/50 dark:border-gray-800 sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
           >
             <div className="relative" ref={userRef}>
-              <div className="flex items-center space-x-3">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative cursor-pointer"
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                >
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-                    <User size={16} className="text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"></div>
-                </motion.div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                    {profile.name}
-                  </p>
-                  <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 truncate capitalize font-semibold">
-                    {profile.role}
-                  </p>
+              {apiState.loging ? (
+                <div className="flex items-center justify-center w-full">
+                  <SpinnerIcon />
                 </div>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800"
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                >
-                  <ChevronDown
-                    size={16}
-                    className={cn(
-                      "transition-transform",
-                      userMenuOpen ? "rotate-180" : "rotate-0"
-                    )}
-                  />
-                </motion.button>
-              </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative cursor-pointer"
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
+                      <User size={16} className="text-white" />
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"></div>
+                  </motion.div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                      {profile.name}
+                    </p>
+                    <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 truncate capitalize font-semibold">
+                      {profile.role}
+                    </p>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800"
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  >
+                    <ChevronDown
+                      size={16}
+                      className={cn(
+                        "transition-transform",
+                        userMenuOpen ? "rotate-180" : "rotate-0"
+                      )}
+                    />
+                  </motion.button>
+                </div>
+              )}
 
               {/* User Dropdown Menu */}
               <AnimatePresence>

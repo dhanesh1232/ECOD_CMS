@@ -12,6 +12,7 @@ import PaymentHistoryTable from "@/components/settings/PaymentHistoryTable";
 import CancellationModal from "@/components/settings/CancellationModal";
 import { encryptData } from "@/utils/encryption";
 import { billingService } from "@/lib/client/billing";
+import { BillingProfile } from "@/components/settings/billingProfile";
 
 const BillingPage = () => {
   const router = useRouter();
@@ -118,7 +119,7 @@ const BillingPage = () => {
 
   if (loading) {
     return (
-      <div className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl space-y-8">
+      <div className="flex-1 p-2 bg-white dark:bg-gray-900 rounded-2xl shadow-xl space-y-8">
         <div className="space-y-4">
           <Skeleton className="h-8 w-64 rounded-lg" />
           <Skeleton className="h-6 w-48 rounded-lg" />
@@ -134,7 +135,7 @@ const BillingPage = () => {
 
   if (error) {
     return (
-      <div className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl flex flex-col items-center justify-center gap-4 text-center">
+      <div className="flex-1 p-2 bg-white dark:bg-gray-900 rounded-2xl shadow-xl flex flex-col items-center justify-center gap-4 text-center">
         <div className="p-4 bg-rose-100 dark:bg-rose-900/30 rounded-full">
           <AlertCircle className="h-12 w-12 text-rose-600 dark:text-rose-400" />
         </div>
@@ -161,7 +162,7 @@ const BillingPage = () => {
 
   return (
     <>
-      <div className="flex-1 p-2 py-4 sm:p-6 bg-background rounded-2xl space-y-8">
+      <div className="flex-1 p-0 bg-background rounded-2xl space-y-4">
         <PlanSummaryCard
           subscription={subscription}
           isProcessing={isProcessing}
@@ -238,6 +239,7 @@ const BillingPage = () => {
             }
           }}
         />
+        <BillingProfile />
       </div>
     </>
   );

@@ -271,7 +271,7 @@ const PlanSummaryCard = ({
         label: "Reactivate Plan",
         icon: <Zap className="h-4 w-4" />,
         onClick: onReactivate,
-        variant: "default",
+        variant: "secondary",
       };
     }
 
@@ -280,7 +280,7 @@ const PlanSummaryCard = ({
         label: "Upgrade Plan",
         icon: <ArrowUp className="h-4 w-4" />,
         onClick: onUpgrade,
-        variant: "default",
+        variant: "info",
       };
     }
 
@@ -288,16 +288,16 @@ const PlanSummaryCard = ({
       label: "Change Plan",
       icon: <CreditCard className="h-4 w-4" />,
       onClick: onUpgrade,
-      variant: "outline",
+      variant: "primary",
     };
   };
 
   const mainAction = getMainAction();
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="rounded-lg overflow-hidden">
       {/* Plan header with status */}
-      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 border-b">
+      <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 border-b dark:border-gray-700 border-gray-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="space-y-2 ">
             <h2 className="text-2xl font-bold">{plan?.name || "Loading..."}</h2>
@@ -328,7 +328,7 @@ const PlanSummaryCard = ({
 
       {/* Trial notice */}
       {subscription?.status === "trialing" && getTrialDaysRemaining() > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-900/10 px-6 py-3 border-b flex items-center gap-3">
+        <div className="bg-blue-50 dark:bg-blue-800/10 px-6 py-3 border-b flex items-center gap-3">
           <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           <span className="text-sm text-blue-600 dark:text-blue-400">
             {getTrialDaysRemaining()} days remaining in your free trial
@@ -338,14 +338,13 @@ const PlanSummaryCard = ({
 
       {/* Renewal notice */}
       {subscription?.renewalDate && subscription.status === "active" && (
-        <div className="bg-green-50 dark:bg-green-900/10 px-6 py-3 border-b flex items-center gap-3">
+        <div className="bg-green-50 dark:bg-green-800/10 px-6 py-3 border-b flex items-center gap-3">
           <Calendar className="h-4 w-4 text-green-600 dark:text-green-400" />
           <span className="text-sm text-green-600 dark:text-green-400">
             Renews on {getRenewalDate()}
           </span>
         </div>
       )}
-
       <div className="p-6 space-y-8">
         {/* Key features summary */}
         <div className="grid grid-cols-2 gap-4">
@@ -361,7 +360,6 @@ const PlanSummaryCard = ({
             </div>
           ))}
         </div>
-
         {/* Usage statistics */}
         <div className="space-y-6">
           <h3 className="font-medium flex items-center gap-2">
@@ -386,7 +384,6 @@ const PlanSummaryCard = ({
             )}
           </div>
         </div>
-
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
           {mainAction && (

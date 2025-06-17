@@ -52,7 +52,6 @@ const CancellationModal = ({
     }
   };
 
-  console.log(subscription);
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>

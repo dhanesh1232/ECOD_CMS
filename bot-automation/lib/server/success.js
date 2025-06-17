@@ -19,8 +19,8 @@ export const SuccessHandle = {
   ) => {
     return createSuccessResponse(200, message, data);
   },
-  DefaultSuccess: (message = "API Success") => {
-    return createSuccessResponse(200, message);
+  DefaultSuccess: (data, message = "API Success") => {
+    return createSuccessResponse(200, message, data);
   },
 
   //subscription create

@@ -1,19 +1,20 @@
-# Dockerfile
-
-FROM node:18-alpine
+# Use a base image
+FROM node:18
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy rest of the app
+# Copy app files
 COPY . .
 
-# Expose port
-EXPOSE 3000
+# Set environment
+ENV NODE_ENV=development
 
-# Start in development mode
+# Start dev server with hot reload
 CMD ["npm", "run", "dev"]

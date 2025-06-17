@@ -15,7 +15,7 @@ export const PricingUtils = {
   calculatePrice: (planId, billingCycle, discount, currency = "INR") => {
     const plan = PLANS[planId];
     if (!plan) return { base: 0, tax: 0, total: 0 };
-
+    console.log(plan);
     const basePrice = plan.prices[billingCycle] || 0;
     const taxRate = TAX_RATES[currency] || 0;
     const taxAmount = Math.round(basePrice * taxRate);
