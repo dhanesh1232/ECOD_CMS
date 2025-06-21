@@ -7,13 +7,12 @@
     "dev:profile": "set NODE_OPTIONS=--max-old-space-size=8192&& next dev --profile",
     "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096&& next dev",
     "build": "next build",
-    "start": "next server.js",
+    "start": "next start",
     "start:worker": "node worker/testWorker.js",
     "start:cron": "node scripts/cronRunner.js",
-    "railway:build": "npm run build",
-    "railway:start": "node server.js",
     "lint": "next lint",
-    "clear": "if exist .next rd /s /q .next && if exist .cache rd /s /q .cache"
+    "clear": "if exist .next rd /s /q .next && if exist .cache rd /s /q .cache",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
