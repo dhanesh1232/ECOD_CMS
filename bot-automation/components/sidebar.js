@@ -19,6 +19,9 @@ import {
   Lock,
   StarsIcon,
   RefreshCcw,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -33,6 +36,7 @@ import { Button } from "./ui/button";
 import Logo from "./logo";
 import { Icons } from "./icons";
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
+import { useMediaQuery } from "@/hooks/mediaQuery";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -56,6 +60,13 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     name: "",
     role: "",
   });
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("nav-collapsed");
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
   const navRef = useRef(null);
   const userRef = useRef(null);
   const showToast = useToast();
@@ -67,6 +78,22 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       toastRef.current = false;
     }, 10000);
   });
+  useEffect(() => {
+    localStorage.setItem("nav-collapsed", JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  // Handle window resize to disable collapse on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsCollapsed(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const renderProfile = useCallback(async () => {
     try {
       setApiState((prev) => ({ ...prev, loading: true }));
@@ -100,6 +127,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       setApiState((prev) => ({ ...prev, loading: false }));
     }
   }, [showToast]);
+
   useEffect(() => {
     renderProfile();
   }, [renderProfile]);
@@ -251,10 +279,10 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     return (
       <nav
         ref={navRef}
-        className="scrollbar-transparent flex-1 overflow-y-auto px-3 py-3 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+        className="scrollbar-transparent flex-1 overflow-y-auto px-2.5 py-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
       >
         {navLinks.map((item) => (
-          <div key={item.id} className="space-y-1">
+          <div key={item.id} className="space-y-1.5">
             {item.subPages ? (
               <>
                 <motion.button
@@ -262,13 +290,13 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => toggleExpand(item.id)}
                   className={cn(
-                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
-                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                    "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
+                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
                     "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
                     (isActive(item.href) ||
                       item.subPages.some((sub) => isSubpageActive(sub.href))) &&
                       "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                    "transition-colors duration-200"
+                    "transition-all duration-150"
                   )}
                 >
                   {(isActive(item.href) ||
@@ -278,17 +306,17 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                       className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
                       transition={{
                         type: "spring",
-                        stiffness: 500,
-                        damping: 30,
+                        stiffness: 300,
+                        damping: 20,
                       }}
                     />
                   )}
+
                   <div className="flex items-center space-x-3">
                     <motion.div
-                      whileHover={{ rotate: 8, scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                       className={cn(
-                        "p-1.5 rounded-lg transition-colors shadow-sm",
+                        "p-1.5 rounded-lg transition-all shadow-sm",
+                        "hover:rotate-6 hover:scale-105 active:scale-95",
                         isActive(item.href) ||
                           item.subPages.some((sub) => isSubpageActive(sub.href))
                           ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
@@ -297,61 +325,66 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                     >
                       {Icons[item.icon]}
                     </motion.div>
-                    <span className="font-medium text-sm">{item.label}</span>
+                    {!isCollapsed && (
+                      <span className="font-medium text-sm truncate">
+                        {item.label}
+                      </span>
+                    )}
                   </div>
-                  <motion.div
-                    animate={{
-                      rotate: expandedItems[item.id] ? 180 : 0,
-                      transition: {
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 15,
-                      },
-                    }}
-                    className="mr-1"
-                  >
-                    <ChevronDown
-                      size={16}
-                      className={cn(
-                        "transition-colors",
-                        isActive(item.href) ||
-                          item.subPages.some((sub) => isSubpageActive(sub.href))
-                          ? "text-indigo-500 dark:text-indigo-400"
-                          : "text-gray-500 dark:text-gray-400"
-                      )}
-                    />
-                  </motion.div>
+
+                  {!isCollapsed && (
+                    <motion.div
+                      animate={{
+                        rotate: expandedItems[item.id] ? 180 : 0,
+                        transition: {
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 20,
+                        },
+                      }}
+                      className="mr-1"
+                    >
+                      <ChevronDown
+                        size={16}
+                        className={cn(
+                          "transition-colors",
+                          isActive(item.href) ||
+                            item.subPages.some((sub) =>
+                              isSubpageActive(sub.href)
+                            )
+                            ? "text-indigo-500 dark:text-indigo-400"
+                            : "text-gray-500 dark:text-gray-400"
+                        )}
+                      />
+                    </motion.div>
+                  )}
                 </motion.button>
 
                 <AnimatePresence>
-                  {expandedItems[item.id] && (
+                  {expandedItems[item.id] && !isCollapsed && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{
                         height: "auto",
                         opacity: 1,
                         transition: {
-                          height: {
-                            duration: 0.25,
-                            ease: [0.22, 1, 0.36, 1],
-                          },
-                          opacity: { duration: 0.15, delay: 0.1 },
+                          height: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+                          opacity: { duration: 0.15, delay: 0.05 },
                         },
                       }}
                       exit={{
                         height: 0,
                         opacity: 0,
                         transition: {
-                          height: { duration: 0.2 },
+                          height: { duration: 0.15 },
                           opacity: { duration: 0.1 },
                         },
                       }}
-                      className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
+                      className="overflow-hidden ml-5 pl-2.5 pr-1.5 border-l-2 border-gray-200 dark:border-gray-700"
                     >
                       <div className="space-y-1 py-1">
                         {item.subPages.map((subItem, index) => (
                           <div key={index} className="relative">
-                            {/* Vertical connector line */}
                             {!expandedSubItems[subItem.id] && (
                               <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
                             )}
@@ -363,15 +396,15 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                   whileTap={{ scale: 0.98 }}
                                   onClick={() => toggleSubExpand(subItem.id)}
                                   className={cn(
-                                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all relative group",
-                                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                                    "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
+                                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
                                     "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
                                     (isActive(subItem.href) ||
                                       subItem.nestedPages.some((sub) =>
                                         isSubpageActive(sub.href)
                                       )) &&
                                       "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                                    "transition-colors duration-200"
+                                    "transition-all duration-150"
                                   )}
                                 >
                                   {(isActive(subItem.href) ||
@@ -383,20 +416,16 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                       className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
                                       transition={{
                                         type: "spring",
-                                        stiffness: 500,
-                                        damping: 30,
+                                        stiffness: 300,
+                                        damping: 20,
                                       }}
                                     />
                                   )}
                                   <div className="flex items-center space-x-3">
                                     <motion.div
-                                      whileHover={{
-                                        rotate: 8,
-                                        scale: 1.05,
-                                      }}
-                                      whileTap={{ scale: 0.95 }}
                                       className={cn(
-                                        "p-1.5 rounded-lg transition-colors shadow-sm",
+                                        "p-1.5 rounded-lg transition-all shadow-sm",
+                                        "hover:rotate-6 hover:scale-105 active:scale-95",
                                         isActive(subItem.href) ||
                                           subItem.nestedPages.some((sub) =>
                                             isSubpageActive(sub.href)
@@ -418,8 +447,8 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                         : 0,
                                       transition: {
                                         type: "spring",
-                                        stiffness: 400,
-                                        damping: 15,
+                                        stiffness: 300,
+                                        damping: 20,
                                       },
                                     }}
                                     className="mr-1"
@@ -447,12 +476,12 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                         opacity: 1,
                                         transition: {
                                           height: {
-                                            duration: 0.25,
+                                            duration: 0.2,
                                             ease: [0.22, 1, 0.36, 1],
                                           },
                                           opacity: {
                                             duration: 0.15,
-                                            delay: 0.1,
+                                            delay: 0.05,
                                           },
                                         },
                                       }}
@@ -460,76 +489,68 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                         height: 0,
                                         opacity: 0,
                                         transition: {
-                                          height: { duration: 0.2 },
+                                          height: { duration: 0.15 },
                                           opacity: { duration: 0.1 },
                                         },
                                       }}
-                                      className="overflow-hidden ml-4 pl-2 pr-2 border-l-2 border-gray-300 dark:border-gray-800"
+                                      className="overflow-hidden ml-5 pl-2.5 pr-1.5 border-l-2 border-gray-200 dark:border-gray-700"
                                     >
-                                      {subItem.nestedPages.map((each) => {
-                                        return (
-                                          <div
-                                            className="relative"
-                                            key={each.id}
+                                      {subItem.nestedPages.map((each) => (
+                                        <div className="relative" key={each.id}>
+                                          <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
+                                          <Link
+                                            onClick={() => {
+                                              mobileMenuOpen &&
+                                                setMobileMenuOpen(
+                                                  !mobileMenuOpen
+                                                );
+                                            }}
+                                            href={`/${workspaceId}${each.href}`}
                                           >
-                                            <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
-                                            <Link
-                                              key={each.id}
-                                              onClick={() => {
-                                                mobileMenuOpen &&
-                                                  setMobileMenuOpen(
-                                                    !mobileMenuOpen
-                                                  );
+                                            <motion.span
+                                              whileHover={{
+                                                x: 4,
+                                                backgroundColor:
+                                                  "rgba(224, 231, 255, 0.5)",
                                               }}
-                                              href={`/${workspaceId}${each.href}`}
+                                              className={cn(
+                                                "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
+                                                "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                                                "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                                                isSubpageActive(each.href) &&
+                                                  "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                              )}
                                             >
+                                              {isSubpageActive(each.href) && (
+                                                <motion.span
+                                                  layoutId="activeSubNavItem"
+                                                  className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
+                                                  transition={{
+                                                    type: "spring",
+                                                    stiffness: 300,
+                                                    damping: 20,
+                                                  }}
+                                                />
+                                              )}
                                               <motion.span
-                                                whileHover={{
-                                                  x: 4,
-                                                  backgroundColor:
-                                                    "rgba(224, 231, 255, 0.5)",
-                                                }}
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
                                                 className={cn(
-                                                  "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
-                                                  "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                                  "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                                  isSubpageActive(each.href) &&
-                                                    "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                                  "p-1 rounded-md transition-colors",
+                                                  isSubpageActive(each.href)
+                                                    ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                                    : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
                                                 )}
                                               >
-                                                {isSubpageActive(each.href) && (
-                                                  <motion.span
-                                                    layoutId="activeSubNavItem"
-                                                    className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
-                                                    transition={{
-                                                      type: "spring",
-                                                      stiffness: 500,
-                                                      damping: 30,
-                                                    }}
-                                                  />
-                                                )}
-                                                <motion.span
-                                                  whileHover={{
-                                                    scale: 1.1,
-                                                  }}
-                                                  whileTap={{ scale: 0.9 }}
-                                                  className={cn(
-                                                    "p-1 rounded-md transition-colors",
-                                                    isSubpageActive(each.href)
-                                                      ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                                      : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                                                  )}
-                                                >
-                                                  {Icons[each.icon]}
-                                                </motion.span>
-                                                <span className="truncate font-medium sm:text-sm text-xs">
-                                                  {each.label}
-                                                </span>
+                                                {Icons[each.icon]}
                                               </motion.span>
-                                            </Link>
-                                          </div>
-                                        );
-                                      })}
+                                              <span className="truncate font-medium text-sm">
+                                                {each.label}
+                                              </span>
+                                            </motion.span>
+                                          </Link>
+                                        </div>
+                                      ))}
                                     </motion.div>
                                   )}
                                 </AnimatePresence>
@@ -562,8 +583,8 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                       className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
                                       transition={{
                                         type: "spring",
-                                        stiffness: 500,
-                                        damping: 30,
+                                        stiffness: 300,
+                                        damping: 20,
                                       }}
                                     />
                                   )}
@@ -579,7 +600,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                   >
                                     {Icons[subItem.icon]}
                                   </motion.span>
-                                  <span className="truncate font-medium sm:text-sm text-xs">
+                                  <span className="truncate font-medium text-sm">
                                     {subItem.label}
                                   </span>
                                   {subItem.beta && (
@@ -612,11 +633,11 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all relative group",
-                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800",
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg relative group",
+                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
                     isActive(item.href) &&
                       "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                    "group"
+                    "transition-all duration-150"
                   )}
                 >
                   {isActive(item.href) && (
@@ -625,16 +646,15 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                       className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
                       transition={{
                         type: "spring",
-                        stiffness: 500,
-                        damping: 30,
+                        stiffness: 300,
+                        damping: 20,
                       }}
                     />
                   )}
                   <motion.span
-                    whileHover={{ rotate: 8, scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "p-1.5 rounded-lg transition-colors shadow-sm",
+                      "p-1.5 rounded-lg transition-all shadow-sm",
+                      "hover:rotate-6 hover:scale-105 active:scale-95",
                       isActive(item.href)
                         ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
                         : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
@@ -642,17 +662,21 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                   >
                     {Icons[item.icon]}
                   </motion.span>
-                  <span className="font-medium text-sm truncate">
-                    {item.label}
-                  </span>
-                  {item.new && (
-                    <motion.span
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
-                    >
-                      New
-                    </motion.span>
+                  {!isCollapsed && (
+                    <>
+                      <span className="font-medium text-sm truncate">
+                        {item.label}
+                      </span>
+                      {item.new && (
+                        <motion.span
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
+                        >
+                          New
+                        </motion.span>
+                      )}
+                    </>
                   )}
                 </motion.span>
               </Link>
@@ -685,14 +709,16 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
       return renderNav();
     }
   };
+
   return (
     <>
       {/* Sidebar */}
       <motion.div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-56 sm:w-64 bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800 shadow-xl transition-all duration-300 transform",
+          "fixed inset-y-0 left-0 z-40 bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800 shadow-xl transition-all duration-300 transform",
+          "lg:translate-x-0 lg:relative lg:flex",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
-          "lg:translate-x-0 lg:relative lg:flex"
+          isCollapsed ? "w-20" : "w-56 sm:w-64"
         )}
       >
         <div className="flex flex-col w-full h-full">
@@ -702,68 +728,103 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
               "p-4 py-3.5 border-gray-200/50 dark:border-gray-800 transition-all duration-300 sticky top-0 z-10",
               isScrolled
                 ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
-                : "bg-transparent"
+                : "bg-transparent",
+              "flex items-center justify-between relative"
             )}
           >
             <Link href={`/${workspaceId}`}>
               <div className="flex items-center space-x-3 cursor-pointer group">
-                <Logo isShown={true} size="md" />
+                <Logo isShown={true} textShow={!isCollapsed} size="md" />
               </div>
             </Link>
+
+            {/* Collapse Toggle Button - Only visible on desktop */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={cn(
+                "hidden absolute -right-2 lg:flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300",
+                "hover:bg-gray-200 dark:hover:bg-gray-700",
+                "transition-colors duration-200"
+              )}
+            >
+              {isCollapsed ? (
+                <ChevronRight size={16} />
+              ) : (
+                <ChevronLeft size={16} />
+              )}
+            </motion.button>
           </div>
 
           {/* Search and Create Section */}
-          <div className="px-5 pt-5 pb-3 space-y-3 sticky top-[72px] z-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent">
-            <SelectWorkspace />
+          <div
+            className={cn(
+              "px-5 pt-5 pb-3 space-y-3 sticky top-[72px] z-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent"
+            )}
+          >
+            <SelectWorkspace collapsed={isCollapsed} />
             {workspaceDetails?.subscription?.plan.toLowerCase() === "free" && (
               <Button
                 variant="premium"
                 onClick={() => router.push(`/${workspaceId}/plans`)}
                 title="Upgrade plan"
-                fullWidth={true}
-                className="relative"
+                fullWidth
+                className={`relative flex items-center justify-center ${
+                  isCollapsed ? "p-2" : ""
+                }`}
                 aria-label="Upgrade plan"
               >
-                <span className="mr-2">Upgrade</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                {!isCollapsed && <span className="mr-2">Upgrade</span>}
+                <ArrowUp size={isCollapsed ? 18 : 20} className="text-white" />
                 <span className="absolute left-0 top-0">
-                  <StarsIcon className="h-5 w-5 text-yellow-500" />
+                  <StarsIcon
+                    className={`${
+                      isCollapsed ? "h-3 w-3" : "h-5 w-5"
+                    } text-yellow-500`}
+                  />
                 </span>
               </Button>
             )}
 
-            <Button variant="primary" title="Create" fullWidth={true}>
-              <Plus size={16} className="text-white" />
-              <span>Create</span>
+            <Button
+              variant="primary"
+              title="Create"
+              fullWidth
+              className={`flex items-center justify-center ${
+                isCollapsed ? "p-2" : ""
+              }`}
+            >
+              <Plus size={isCollapsed ? 18 : 20} className="text-white" />
+              {!isCollapsed && <span className="ml-2">Create</span>}
             </Button>
           </div>
+
           {/* Navigation Items */}
           {renderAPIStatus()}
+
           {/* User Profile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="p-4 mt-auto border-t border-gray-200/50 dark:border-gray-800 sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
+            className={cn(
+              "p-4 mt-auto border-t border-gray-200/50 dark:border-gray-800 sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+              isCollapsed ? "flex justify-center" : ""
+            )}
           >
             <div className="relative" ref={userRef}>
-              {apiState.loging ? (
+              {apiState.loading ? (
                 <div className="flex items-center justify-center w-full">
                   <SpinnerIcon />
                 </div>
               ) : (
-                <div className="flex items-center space-x-3">
+                <div
+                  className={cn(
+                    "flex items-center",
+                    isCollapsed ? "justify-center" : "space-x-3"
+                  )}
+                >
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -775,27 +836,32 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"></div>
                   </motion.div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                      {profile.name}
-                    </p>
-                    <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 truncate capitalize font-semibold">
-                      {profile.role}
-                    </p>
-                  </div>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800"
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  >
-                    <ChevronDown
-                      size={16}
-                      className={cn(
-                        "transition-transform",
-                        userMenuOpen ? "rotate-180" : "rotate-0"
-                      )}
-                    />
-                  </motion.button>
+
+                  {!isCollapsed && (
+                    <>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                          {profile.name}
+                        </p>
+                        <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 truncate capitalize font-semibold">
+                          {profile.role}
+                        </p>
+                      </div>
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800"
+                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      >
+                        <ChevronDown
+                          size={16}
+                          className={cn(
+                            "transition-transform",
+                            userMenuOpen ? "rotate-180" : "rotate-0"
+                          )}
+                        />
+                      </motion.button>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -807,7 +873,10 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                     animate={{ opacity: 1, y: 0, height: "auto" }}
                     exit={{ opacity: 0, y: -10, height: 0 }}
                     transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                    className="absolute bottom-full left-0 right-0 mb-2 p-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+                    className={cn(
+                      "absolute bottom-full left-0 right-0 mb-2 p-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700",
+                      isCollapsed ? "w-56" : "w-full"
+                    )}
                   >
                     <div className="py-1">
                       <Link

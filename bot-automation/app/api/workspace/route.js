@@ -20,6 +20,10 @@ export async function GET(req) {
     const user = await User.findById(session.user.id).populate({
       path: "workspaces.workspace",
       select: "name slug subscription members",
+      populate: {
+        path: "subscription",
+        model: "Subscription",
+      },
     });
     if (!user) {
       return NextResponse.json(

@@ -11,7 +11,11 @@ import {
 import { useParams } from "next/navigation";
 import { useToast } from "./ui/toast-provider";
 import { WorkspaceService } from "@/lib/client/team";
-export default React.memo(function SelectWorkspace({ className = "" }) {
+export default React.memo(function SelectWorkspace({
+  collapsed,
+  className = "",
+  isMob,
+}) {
   const showToast = useToast();
   const [open, setOpen] = useState(false);
   const params = useParams();
@@ -64,6 +68,7 @@ export default React.memo(function SelectWorkspace({ className = "" }) {
   };
 
   const workspaceItems = React.useMemo(() => {
+    console.log(workspaces);
     return workspaces.map((workspace) => (
       <SelectItem
         key={workspace.id}
@@ -71,7 +76,7 @@ export default React.memo(function SelectWorkspace({ className = "" }) {
         className="flex items-center gap-2"
       >
         <span className="truncate">{workspace.name}</span>
-        {workspace.subscription?.plan !== "free" && (
+        {workspace.subscription?.plan && (
           <span className="text-xs text-muted-foreground ml-2">
             ({workspace.subscription.plan})
           </span>
@@ -79,6 +84,10 @@ export default React.memo(function SelectWorkspace({ className = "" }) {
       </SelectItem>
     ));
   }, [workspaces]);
+
+  const selectedValue = workspaces.find(
+    (each) => each.id === selectedWorkspace
+  )?.name;
 
   return (
     <div className={className}>
@@ -117,13 +126,13 @@ export default React.memo(function SelectWorkspace({ className = "" }) {
               className="mr-1 text-sm"
               placeholder={"Select Workspace"}
             >
-              {workspaces.find((each) => each.id === selectedWorkspace)?.name}
+              {collapsed ? selectedValue[0] : selectedValue}
             </SelectValue>
           )}
         </SelectTrigger>
         <SelectContent
           position="popper"
-          side={"bottom"}
+          side={collapsed ? "right" : "bottom"}
           align={"center"}
           sideOffset={10}
           className="radix-select-content"

@@ -9,6 +9,7 @@ const Logo = ({
   className = "",
   iconClassName = "",
   textClassName = "",
+  textShow = true,
 }) => {
   const classSize = {
     sm: "text-lg",
@@ -32,23 +33,25 @@ const Logo = ({
           ${iconSize[size]} ${iconClassName}`}
         >
           <ChatBotAI
-            className={`${size === "sm" ? "w-3 h-3" : "w-4 h-4"}`}
+            className={`${size === "sm" ? "w-3 h-3" : "w-5 h-5"}`}
             size={size}
           />
         </div>
       )}
-      <div className={`ml-3 ${textClassName}`}>
-        <span
-          className={`font-bold ${classSize[size]} text-gray-800 dark:text-white relative flex flex-col items-start`}
-        >
-          ECODrIx
-          {isShown && (
-            <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mt-0.5">
-              Premium Dashboard
-            </span>
-          )}
-        </span>
-      </div>
+      {textShow && (
+        <div className={`ml-3 ${textClassName}`}>
+          <span
+            className={`font-bold ${classSize[size]} text-gray-800 dark:text-white relative flex flex-col items-start`}
+          >
+            ECODrIx
+            {isShown && (
+              <span className="text-gray-500 dark:text-gray-400 text-xs font-semibold mt-0.5">
+                Premium Dashboard
+              </span>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 };
