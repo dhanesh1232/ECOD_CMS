@@ -39,7 +39,6 @@ const nextConfig = {
   crossOrigin: "anonymous",
 
   // Performance optimizations
-  optimizeFonts: false, // Disabled as it's deprecated in newer Next.js versions
   excludeDefaultMomentLocales: true,
 
   // Build-time error handling

@@ -1,3 +1,4 @@
+// Scripts/cronRunner.js
 import { emailQueue, SubscriptionQueue } from "../lib/server/queue/queues.js";
 
 (async () => {
