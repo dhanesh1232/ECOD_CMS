@@ -27,4 +27,4 @@ COPY . .
 
 RUN npm install
 
-CMD ["node", "server/worker.js"]
+CMD ["node", "scripts/worker.js"]
