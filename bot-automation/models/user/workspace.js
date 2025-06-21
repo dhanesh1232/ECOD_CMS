@@ -217,76 +217,14 @@ const workspaceSchema = new mongoose.Schema(
         ],
       },
     ],
+    gatewayCustomerId: String,
     subscription: {
-      plan: {
-        type: String,
-        enum: Object.keys(PLANS),
-        default: "free",
-        required: true,
-      },
-      status: {
-        type: String,
-        enum: [
-          "pending",
-          "active",
-          "trialing",
-          "past_due",
-          "paused",
-          "canceled",
-          "unpaid",
-        ],
-        default: "active",
-      },
-      billingCycle: {
-        type: String,
-        enum: ["monthly", "yearly", "lifetime"],
-        default: "lifetime",
-      },
-      coupon: {
-        appliedMethod: {
-          type: String,
-          enum: ["manual", "auto"],
-          default: "manual",
-        },
-        code: String,
-        discount: {
-          type: {
-            type: String,
-            enum: ["trial", "percent", "fixed"],
-          },
-          amount: Number,
-          value: {
-            type: Number,
-            min: 0,
-          },
-        },
-      },
-      currentPeriodStart: Date,
-      currentPeriodEnd: Date,
-      trialEnd: Date,
-      paymentGateway: {
-        type: String,
-        enum: ["razorpay", "stripe", "paypal"],
-        default: null,
-      },
-      gatewaySubscriptionId: String,
-      // Enhanced billing details schema
-      billingDetails: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "BillingDetails",
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subscription",
     },
-    usage: {
-      chatbots: { type: Number, default: 0 },
-      messages: { type: Number, default: 0 },
-      members: { type: Number, default: 1 },
-      storage: { type: Number, default: 0 },
-    },
-    limits: {
-      chatbots: { type: Number, default: PLANS.free.limits.chatbots },
-      messages: { type: Number, default: PLANS.free.limits.messages },
-      members: { type: Number, default: PLANS.free.limits.members },
-      storage: { type: Number, default: PLANS.free.limits.storage },
+    billingDetails: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BillingDetails",
     },
     settings: {
       chat: {
@@ -399,14 +337,24 @@ const workspaceSchema = new mongoose.Schema(
 );
 
 // Indexes
-workspaceSchema.index({ "subscription.plan": 1 });
-workspaceSchema.index({ "subscription.status": 1 });
 workspaceSchema.index(
   { "members.user": 1 },
   { unique: true, partialFilterExpression: { "members.status": "active" } }
 );
+workspaceSchema.index({ "metadata.deletedAt": 1 });
+workspaceSchema.index({ "contactInfo.supportEmail": 1 });
+workspaceSchema.index({ subscription: 1 });
+workspaceSchema.index({ gatewayCustomerId: 1 });
 
 // Hooks
+workspaceSchema.pre("save", function (next) {
+  if (this.isModified("subscription")) {
+    if (!mongoose.Types.ObjectId.isValid(this.subscription)) {
+      throw new Error("Invalid subscription reference");
+    }
+  }
+  next();
+});
 workspaceSchema.pre("save", function (next) {
   if (this.isModified("name") && !this.slug) {
     this.slug = slugify(this.name, { lower: true, strict: true });
@@ -417,11 +365,6 @@ workspaceSchema.pre("save", function (next) {
     if (owners.length === 0) {
       throw new Error("Workspace must have at least one owner");
     }
-  }
-
-  if (this.isModified("subscription.plan")) {
-    const plan = PLANS[this.subscription.plan];
-    this.limits = plan.limits;
   }
 
   this.metadata.updatedAt = new Date();
@@ -435,21 +378,37 @@ workspaceSchema.virtual("activeMembers", {
   foreignField: "_id",
   match: { "members.status": "active" },
 });
-
-workspaceSchema.virtual("isTrialActive").get(function () {
-  return this.subscription.trialEnd && this.subscription.trialEnd > new Date();
+workspaceSchema.virtual("planStatus").get(function () {
+  if (!this.subscription) return "inactive";
+  return this.subscription.status;
 });
-
-workspaceSchema.virtual("isSubscriptionActive").get(function () {
-  return (
-    ["active", "trialing"].includes(this.subscription.status) &&
-    (!this.subscription.currentPeriodEnd ||
-      this.subscription.currentPeriodEnd > new Date())
-  );
-});
-
 // Methods
 workspaceSchema.methods = {
+  hasFeature(featurePath) {
+    if (!this.subscription) return false;
+    // featurePath could be something like 'chatbotAutomation.visualFlowBuilder'
+    const parts = featurePath.split(".");
+    let value = this.subscription.features;
+
+    for (const part of parts) {
+      value = value[part];
+      if (value === undefined) return false;
+    }
+
+    return !!value;
+  },
+  async checkLimit(resource) {
+    await this.populate("subscription");
+    return {
+      used: this.subscription.usage[resource] || 0,
+      limit: this.subscription.limits[resource] || 0,
+      remaining: Math.max(
+        (this.subscription.limits[resource] || 0) -
+          (this.subscription.usage[resource] || 0),
+        0
+      ),
+    };
+  },
   async addMember(userId, role = "member", invitedBy = null) {
     // Check if user is already a member
     const existingMember = this.members.find((m) => m.user.equals(userId));
@@ -469,19 +428,6 @@ workspaceSchema.methods = {
 
     await this.save();
     return this;
-  },
-  canAddResource: function (resource, amount = 1) {
-    const currentUsage = this.usage[resource] || 0;
-    const { withinLimit } = PricingUtils.checkLimit(
-      this.subscription.plan,
-      resource,
-      currentUsage + amount
-    );
-    return withinLimit;
-  },
-
-  hasChannelAccess: function (channel) {
-    return PLANS[this.subscription.plan].features.channels.includes(channel);
   },
 
   async removeMember(userId) {
@@ -514,23 +460,18 @@ workspaceSchema.methods = {
     await this.save();
     return this;
   },
-  updateUsage: async function (resource, amount = 1) {
-    this.usage[resource] = (this.usage[resource] || 0) + amount;
-    await this.save();
-    return this;
-  },
 
-  checkPermission: function (userId, resource, action) {
+  checkPermission: async function (userId, resource, action) {
     const member = this.members.find((m) => m.user.equals(userId));
     if (!member) return false;
+
     if (member.role === "owner") return true;
 
-    const permission = member.permissions?.find((p) => p.resource === resource);
-    if (permission?.actions?.includes(action)) return true;
-
-    const rolePermissions = this.defaultRoles[member.role]?.permissions;
-    return rolePermissions?.some(
-      (p) => p.resource === resource && p.actions.includes(action)
+    // Check granular permissions
+    return member.permissions?.some(
+      (perm) =>
+        (perm.resource === resource || perm.resource === "all") &&
+        perm.actions.includes(action)
     );
   },
 };
@@ -551,13 +492,6 @@ workspaceSchema.statics = {
           joinedAt: new Date(),
         },
       ],
-      subscription: {
-        plan: "free",
-        status: "active",
-        billingCycle: "lifetime",
-        currentPeriodStart: new Date(),
-        ...workspaceData.subscription,
-      },
       metadata: {
         createdBy: ownerId,
       },
@@ -565,12 +499,14 @@ workspaceSchema.statics = {
 
     await workspace.save(options);
 
-    await Subscription.createWithPricing(
+    const subscription = await Subscription.createWithPricing(
       workspace._id,
-      workspace.subscription.plan,
-      workspace.subscription.billingCycle,
+      "free",
+      "lifetime",
       session
     );
+    workspace.subscription = subscription._id;
+    await workspace.save(options);
 
     return workspace;
   },
@@ -614,12 +550,14 @@ workspaceSchema.statics = {
   },
 
   checkResourceUsage: async function (workspaceId, resource) {
-    const workspace = await this.findById(workspaceId);
+    const workspace = await this.findById(workspaceId).populate("Subscription");
+    if (!workspace.subscription) throw new Error("No subscription found");
     return {
-      used: workspace.usage[resource] || 0,
-      limit: workspace.limits[resource] || 0,
+      used: workspace.subscription.usage[resource] || 0,
+      limit: workspace.subscription.limits[resource] || 0,
       remaining: Math.max(
-        (workspace.limits[resource] || 0) - (workspace.usage[resource] || 0),
+        (workspace.subscription.limits[resource] || 0) -
+          (workspace.subscription.usage[resource] || 0),
         0
       ),
     };
@@ -659,13 +597,23 @@ workspaceSchema.statics = {
 
     await subscription.save();
 
-    workspace.subscription.plan = newPlanId;
-    workspace.subscription.billingCycle = billingCycle;
-    workspace.limits = plan.limits;
-
-    await workspace.save();
-
-    return { workspace, subscription };
+    return { subscription };
+  },
+  // Soft delete workspace
+  async softDelete(workspaceId) {
+    return this.findByIdAndUpdate(
+      workspaceId,
+      { "metadata.deletedAt": new Date() },
+      { new: true }
+    );
+  },
+  // Restore workspace
+  async restore(workspaceId) {
+    return this.findByIdAndUpdate(
+      workspaceId,
+      { $unset: { "metadata.deletedAt": 1 } },
+      { new: true }
+    );
   },
 };
 

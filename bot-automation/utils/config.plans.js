@@ -22,6 +22,7 @@ export const PLANS = {
       teamRoles: 0,
       aiModelTraining: 0,
       apiCalls: 1000,
+      adCredits: 0,
     },
     features: {
       chatbotAutomation: {
@@ -117,6 +118,7 @@ export const PLANS = {
       teamRoles: 0,
       aiModelTraining: 0,
       apiCalls: 10000,
+      adCredits: 0,
     },
     features: {
       chatbotAutomation: {

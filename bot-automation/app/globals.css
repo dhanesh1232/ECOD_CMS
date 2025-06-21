@@ -51,6 +51,8 @@
 
 html,
 body {
+  margin-top: 0px;
+  margin: 0 !important;
   height: 100%;
   box-sizing: border-box;
 }
@@ -280,4 +282,58 @@ input:checked+.slider:before {
   mask-position: center;
   mask-repeat: no-repeat;
   mask-size: contain;
+}
+
+
+/**Premium look upgrade button**/
+@keyframes sparkle-1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translate(3px, -3px);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkle-2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translate(-3px, 3px);
+    opacity: 1;
+  }
+}
+
+.animate-sparkle-1 {
+  animation: sparkle-1 2s infinite;
+}
+
+.animate-sparkle-2 {
+  animation: sparkle-2 2s infinite 0.5s;
+}
+
+/* Button base styles */
+.button-premium {
+  position: relative;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.button-premium:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }

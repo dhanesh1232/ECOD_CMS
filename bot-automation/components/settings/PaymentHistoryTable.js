@@ -67,10 +67,10 @@ const PaymentHistoryTable = ({ paymentHistory, onReload, onRefresh }) => {
   };
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+    <div className="bg-white dark:bg-gray-900 rounded border border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3 px-2 py-0.5">
+          <div className="p-2 bg-blue-100/50 dark:bg-blue-900/20 rounded-lg">
             <Download className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <h3 className="text-lg font-semibold">Payment History</h3>
@@ -93,7 +93,7 @@ const PaymentHistoryTable = ({ paymentHistory, onReload, onRefresh }) => {
       ) : paymentHistory ? (
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="text-left text-sm text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+            <thead className="text-left px-2 text-sm text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
               <tr>
                 <th className="pb-4 px-2">Date</th>
                 <th className="pb-4 px-2">Amount</th>

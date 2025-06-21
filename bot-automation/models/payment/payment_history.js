@@ -13,7 +13,6 @@ const paymentHistorySchema = new mongoose.Schema(
       enum: ["monthly", "yearly"],
       required: true,
     },
-
     amount: {
       subtotal: { type: Number, required: true }, // Before tax and discount
       tax: { type: Number, required: true },

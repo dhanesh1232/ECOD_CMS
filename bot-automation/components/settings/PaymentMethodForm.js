@@ -270,14 +270,14 @@ const PaymentMethodForm = ({
 
         <div className="flex gap-2">
           <Button
-            variant={activeTab === "current" ? "subtle" : "ghost"}
+            variant={activeTab === "current" ? "outline" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("current")}
           >
             Current
           </Button>
           <Button
-            variant={activeTab === "saved" ? "subtle" : "ghost"}
+            variant={activeTab === "saved" ? "outline" : "ghost"}
             size="sm"
             onClick={() => setActiveTab("saved")}
           >

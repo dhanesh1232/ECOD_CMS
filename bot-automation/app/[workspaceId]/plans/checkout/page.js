@@ -12,7 +12,6 @@ import { billingService } from "@/lib/client/billing";
 import { decryptData, encryptData } from "@/utils/encryption";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Script from "next/script";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +23,11 @@ import {
 } from "@/public/Images/svg_ecod";
 import {
   AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -41,6 +44,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AdminServices } from "@/lib/client/admin.service";
 import CouponInput from "@/components/couponBox";
+import { PayButton } from "@/components/settings/purchaseButton";
+import { Label } from "@/components/ui/label";
 
 // Constants
 const STORAGE_KEYS = {
@@ -109,6 +114,7 @@ const PlanInfoCheckoutPage = () => {
   const [currency, setCurrency] = useState("INR");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [billingDetails, setBillingDetails] = useState(null);
+  const [updateBillingDetails, setUpdateBillingDetails] = useState(false);
   const [formData, setFormData] = useState({});
   const [selectedDuration, setSelectedDuration] = useState("monthly");
   const [isAgreed, setIsAgreed] = useState(false);
@@ -279,6 +285,9 @@ const PlanInfoCheckoutPage = () => {
   }, [loadFromLocalStorage]);
 
   useEffect(() => {
+    console.log(paymentStatus);
+  });
+  useEffect(() => {
     const parseQueryParams = async () => {
       try {
         const decrypted = {
@@ -353,133 +362,6 @@ const PlanInfoCheckoutPage = () => {
     setSelectedDuration(duration);
     saveToLocalStorage(STORAGE_KEYS.DURATION, duration);
   };
-
-  const handleCheckout = async () => {
-    if (!isAgreed) {
-      showToast({
-        title: "Agreement Required",
-        description: "Please accept the terms and conditions to proceed",
-        variant: "warning",
-      });
-      return;
-    }
-
-    if (!hasCompleteBillingDetails()) {
-      showToast({
-        title: "Billing Details Required",
-        description:
-          "Please complete your billing information before proceeding",
-        variant: "warning",
-      });
-      return;
-    }
-
-    if (!plan || !plan_name || !plan.prices[selectedDuration]) {
-      showToast({
-        title: "Invalid Selection",
-        description: "Please select a valid plan and duration",
-        variant: "warning",
-      });
-      return;
-    }
-
-    const publicKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY;
-    if (!publicKey) {
-      showToast({
-        title: "Configuration Error",
-        description: "Payment gateway is not properly configured",
-        variant: "warning",
-      });
-      return;
-    }
-
-    setPaymentStatus(PAYMENT_STATUS.LOADING);
-
-    try {
-      const totalAmount = Math.round(prices.total * 100);
-      const orderResponse = await billingService.createPaymentOrder(
-        workspaceId,
-        {
-          planName: plan_name,
-          amount: totalAmount,
-          currency: "INR",
-          interval: selectedDuration,
-          period: selectedDuration === "monthly" ? 1 : 12,
-          email: billingDetails?.email || email,
-          phone: billingDetails?.phone || phone,
-          totalCount: selectedDuration === "monthly" ? 12 : 1,
-        }
-      );
-
-      if (!orderResponse.ok) {
-        const errorData = await orderResponse.json();
-        throw new Error(errorData.message || "Failed to create payment order");
-      }
-
-      const order = await orderResponse.json();
-      const options = {
-        key: publicKey,
-        amount: order.amount,
-        currency: order.currency,
-        name: "ECODrIx",
-        description: `${plan.name} ${selectedDuration} Subscription`,
-        subscription_id: order.id,
-        theme: { color: "#4F46E5" },
-        prefill: {
-          name: billingDetails?.companyName || "Customer",
-          email: billingDetails?.email || email,
-          contact: billingDetails?.phone || phone,
-        },
-        notes: {
-          plan: plan_name,
-          duration: selectedDuration,
-          customerId: order.notes.customer_id,
-        },
-        handler: (response) => {
-          if (!response?.razorpay_subscription_id) {
-            throw new Error("Payment failed - no subscription ID");
-          }
-          setShowVerificationModal(true);
-          setPaymentStatus(PAYMENT_STATUS.VERIFYING);
-
-          setTimeout(() => {
-            setPaymentStatus(PAYMENT_STATUS.SUCCESS);
-            setTimeout(() => {
-              router.push(
-                `/${workspaceId}/settings/workspace/billing?payment_id=${response.razorpay_payment_id}`
-              );
-            }, 2000);
-          }, 3000);
-        },
-        modal: {
-          ondismiss: () => {
-            setPaymentStatus(PAYMENT_STATUS.IDLE);
-            showToast({
-              title: "Payment Cancelled",
-              description: "You can complete your purchase later",
-              variant: "warning",
-            });
-          },
-        },
-      };
-
-      if (window.Razorpay) {
-        const razorpay = new window.Razorpay(options);
-        razorpay.open();
-      } else {
-        throw new Error("Payment gateway failed to load");
-      }
-    } catch (error) {
-      console.error("Payment error:", error);
-      setPaymentStatus(PAYMENT_STATUS.ERROR);
-      setPaymentError(error.message || "Payment processing failed");
-      showToast({
-        title: "Payment Error",
-        description: error.message || "Failed to process payment",
-        variant: "destructive",
-      });
-    }
-  };
   const handleBillingDetails = () => {
     const currentPath = window.location.pathname + window.location.search;
     router.push(
@@ -493,11 +375,6 @@ const PlanInfoCheckoutPage = () => {
   const trialDays = plan?.metadata?.trialDays || 0;
   const trialEndDate = new Date();
   trialEndDate.setDate(trialEndDate.getDate() + trialDays);
-  const formattedTrialEndDate = trialEndDate.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 
   if (isLoading || !plan) {
     return <LoadingSkeleton />;
@@ -505,11 +382,6 @@ const PlanInfoCheckoutPage = () => {
 
   return (
     <>
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-      />
-
       {/* Payment Verification Modal */}
       <AlertDialog
         open={showVerificationModal}
@@ -518,7 +390,10 @@ const PlanInfoCheckoutPage = () => {
           setShowVerificationModal(open);
         }}
       >
-        <AlertDialogContent className="rounded-xl">
+        <AlertDialogContent
+          className="rounded-xl"
+          aria-describedby="dialog-description"
+        >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center text-2xl font-bold">
               {paymentStatus === PAYMENT_STATUS.SUCCESS
@@ -528,59 +403,90 @@ const PlanInfoCheckoutPage = () => {
                 : "Payment Verification"}
             </AlertDialogTitle>
           </AlertDialogHeader>
-          <div className="flex flex-col items-center justify-center py-6 space-y-4">
-            {paymentStatus === PAYMENT_STATUS.VERIFYING && (
-              <>
-                <div className="relative">
-                  <SpinnerIcon className="w-12 h-12 text-blue-500 animate-spin" />
-                  <div className="absolute inset-0 rounded-full border-4 border-blue-100 animate-ping opacity-75"></div>
-                </div>
-                <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
-                  Please wait while we verify your payment. This usually takes
-                  just a few seconds.
-                </p>
-              </>
-            )}
-            {paymentStatus === PAYMENT_STATUS.SUCCESS && (
-              <>
-                <div className="relative">
-                  <CheckCircleIcon className="w-12 h-12 text-green-500" />
-                  <div className="absolute -inset-2 rounded-full bg-green-100 dark:bg-green-900/30 opacity-60 animate-pulse"></div>
-                </div>
-                <p className="text-center text-gray-600 dark:text-gray-400 text-lg">
-                  Your payment was successfully processed!
-                </p>
-                <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                  <div className="bg-green-500 h-2.5 rounded-full animate-progress"></div>
-                </div>
-              </>
-            )}
-            {paymentStatus === PAYMENT_STATUS.ERROR && (
-              <>
-                <div className="relative">
-                  <XCircleIcon className="w-12 h-12 text-red-500" />
-                  <div className="absolute -inset-2 rounded-full bg-red-100 dark:bg-red-900/30 opacity-60 animate-pulse"></div>
-                </div>
-                <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
-                  {paymentError ||
-                    "Payment verification failed. Please try again."}
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => {
-                    setShowVerificationModal(false);
-                    setPaymentStatus(PAYMENT_STATUS.IDLE);
-                    setPaymentError(null);
-                  }}
-                >
-                  Close
-                </Button>
-              </>
-            )}
-          </div>
+          <AlertDialogDescription asChild>
+            <div
+              id="dialog-description"
+              className="flex flex-col items-center justify-center py-6 space-y-4"
+            >
+              {paymentStatus === PAYMENT_STATUS.VERIFYING && (
+                <>
+                  <div className="relative">
+                    <SpinnerIcon className="w-12 h-12 text-blue-500 animate-spin" />
+                    <div className="absolute inset-0 rounded-full border-4 border-blue-100 animate-ping opacity-75"></div>
+                  </div>
+                  <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
+                    Please wait while we verify your payment. This usually takes
+                    just a few seconds.
+                  </p>
+                </>
+              )}
+              {paymentStatus === PAYMENT_STATUS.SUCCESS && (
+                <>
+                  <div className="relative">
+                    <CheckCircleIcon className="w-12 h-12 text-green-500" />
+                    <div className="absolute -inset-2 rounded-full bg-green-100 dark:bg-green-900/30 opacity-60 animate-pulse"></div>
+                  </div>
+                  <p className="text-center text-gray-600 dark:text-gray-400 text-lg">
+                    Your payment was successfully processed!
+                  </p>
+                  <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div className="bg-green-500 h-2.5 rounded-full animate-progress"></div>
+                  </div>
+                </>
+              )}
+              {paymentStatus === PAYMENT_STATUS.ERROR && (
+                <>
+                  <div className="relative">
+                    <XCircleIcon className="w-12 h-12 text-red-500" />
+                    <div className="absolute -inset-2 rounded-full bg-red-100 dark:bg-red-900/30 opacity-60 animate-pulse"></div>
+                  </div>
+                  <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
+                    {paymentError ||
+                      "Payment verification failed. Please try again."}
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => {
+                      setShowVerificationModal(false);
+                      setPaymentStatus(PAYMENT_STATUS.IDLE);
+                      setPaymentError(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                </>
+              )}
+            </div>
+          </AlertDialogDescription>
         </AlertDialogContent>
       </AlertDialog>
+
+      {updateBillingDetails && (
+        <AlertDialog open={updateBillingDetails}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Complete your billing profile</AlertDialogTitle>
+              <AlertDialogDescription>
+                To continue using ECODrIx, please update your billing details.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setUpdateBillingDetails(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  setUpdateBillingDetails(false);
+                  handleBillingDetails();
+                }}
+              >
+                Go to Billing
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       {/* Main Content */}
       <div className="w-full h-full overflow-y-auto scrollbar-transparent bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -953,36 +859,36 @@ const PlanInfoCheckoutPage = () => {
                     <div className="p-2 space-y-4">
                       <div className="grid p-2 lg:py-2 lg:px-4 grid-cols-1 gap-4 lg:gap-2">
                         <div>
-                          <label className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
                             Company Name
-                          </label>
+                          </Label>
                           <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
                             {billingDetails.companyName || "N/A"}
                           </p>
                         </div>
 
                         <div>
-                          <label className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
                             Email
-                          </label>
+                          </Label>
                           <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
                             {billingDetails.email || email || "N/A"}
                           </p>
                         </div>
 
                         <div>
-                          <label className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
                             Phone
-                          </label>
+                          </Label>
                           <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
                             {billingDetails.phone || phone || "N/A"}
                           </p>
                         </div>
 
                         <div>
-                          <label className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
                             Address
-                          </label>
+                          </Label>
                           <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
                             {billingDetails.addressLine1 || "N/A"}
                             {billingDetails.addressLine2 && (
@@ -1000,9 +906,9 @@ const PlanInfoCheckoutPage = () => {
                         </div>
 
                         <div>
-                          <label className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
                             Tax ID
-                          </label>
+                          </Label>
                           <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
                             {billingDetails.gstin || "N/A"}
                           </p>
@@ -1142,7 +1048,7 @@ const PlanInfoCheckoutPage = () => {
                       <div className="pt-3 mt-2 border-t border-gray-200 dark:border-gray-600">
                         <div className="flex justify-between items-center">
                           <span className="text-base font-bold text-gray-900 dark:text-gray-200">
-                            Total Due:
+                            Total:
                           </span>
                           <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                             ₹
@@ -1189,13 +1095,23 @@ const PlanInfoCheckoutPage = () => {
 
                       <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                         <input
+                          id="terms"
                           type="checkbox"
                           checked={isAgreed}
-                          onChange={(e) => setIsAgreed(e.target.checked)}
+                          onChange={(e) => {
+                            if (!billingDetails) {
+                              setUpdateBillingDetails(true);
+                              return;
+                            }
+                            setIsAgreed(e.target.checked);
+                          }}
                           className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                         />
                         <div className="text-sm">
-                          <p className="text-gray-600 dark:text-gray-400">
+                          <Label
+                            htmlFor="terms"
+                            className="text-gray-600 cursor-pointer dark:text-gray-400"
+                          >
                             I agree to the{" "}
                             <Link
                               href="/terms"
@@ -1211,7 +1127,7 @@ const PlanInfoCheckoutPage = () => {
                               Privacy Policy
                             </Link>
                             , and authorize recurring payments.
-                          </p>
+                          </Label>
                           {!isAgreed && (
                             <p className="text-red-500 text-xs mt-1">
                               You must agree to the terms to proceed
@@ -1220,34 +1136,23 @@ const PlanInfoCheckoutPage = () => {
                         </div>
                       </div>
 
-                      <Button
-                        variant="premium"
-                        size="lg"
-                        fullWidth={true}
-                        onClick={handleCheckout}
-                        disabled={
-                          !isAgreed ||
-                          !hasCompleteBillingDetails() ||
-                          paymentStatus === PAYMENT_STATUS.LOADING
-                        }
-                        className="h-12 text-lg font-medium shadow-lg hover:shadow-xl transition-all relative overflow-hidden"
-                      >
-                        {paymentStatus === PAYMENT_STATUS.LOADING ? (
-                          <>
-                            <SpinnerIcon className="w-5 h-5 animate-spin mr-2" />
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            <span className="relative z-10">
-                              {trialDays > 0
-                                ? "Start Free Trial"
-                                : "Complete Payment"}
-                            </span>
-                            <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 opacity-0 hover:opacity-100 transition-opacity"></span>
-                          </>
-                        )}
-                      </Button>
+                      <PayButton
+                        onSetModal={setShowVerificationModal}
+                        onSetError={setPaymentError}
+                        workspaceId={workspaceId}
+                        agree={isAgreed}
+                        onCompleteBilling={hasCompleteBillingDetails}
+                        status={paymentStatus}
+                        paymentStatus={PAYMENT_STATUS}
+                        trial={trialDays}
+                        price={prices.total}
+                        currency={currency}
+                        plan={plan}
+                        plan_name={plan.name}
+                        onPaymentStatus={setPaymentStatus}
+                        cycle={selectedDuration}
+                        profile={billingDetails || formData}
+                      />
 
                       <div className="flex flex-col items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-2">

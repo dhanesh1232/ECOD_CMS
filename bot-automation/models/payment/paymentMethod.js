@@ -123,7 +123,7 @@ const methodSchema = new Schema(
     },
     fingerprint: {
       type: String,
-      select: false, // Not returned by default in queries
+      select: false,
     },
   },
   {
@@ -162,7 +162,7 @@ const paymentMethodSchema = new Schema(
     },
     metadata: {
       type: Schema.Types.Mixed,
-      select: false, // Not returned by default in queries
+      select: false,
     },
   },
   {
@@ -193,8 +193,6 @@ paymentMethodSchema.statics.findByWorkspace = async function (workspaceId) {
 };
 
 // Create or retrieve model
-const PaymentMethod =
+export const PaymentMethod =
   mongoose.models.PaymentMethod ||
   mongoose.model("PaymentMethod", paymentMethodSchema);
-
-module.exports = PaymentMethod;

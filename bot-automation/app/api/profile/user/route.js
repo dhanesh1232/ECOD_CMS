@@ -25,8 +25,8 @@ export async function GET(req) {
       "members.status": "active",
     })
       .select("name slug description logo subscription settings members")
+      .populate("subscription")
       .lean();
-
     // Map the workspaces with additional information
     const enrichedWorkspaces = workspaces.map((workspace) => {
       // Find the user's role in this workspace

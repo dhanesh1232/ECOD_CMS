@@ -192,7 +192,7 @@ const SettingsLayout = ({ children }) => {
       </div>
       {/*Settings Right Side Content */}
       <div
-        className={`flex-1 overflow-y-auto scrollbar-transparent w-full p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 ${
+        className={`flex-1 overflow-y-auto scrollbar-transparent w-full p-2 sm:p-4 bg-gray-50 dark:bg-gray-900 ${
           isMobile && mobileNavOpen ? "opacity-50 pointer-events-none" : ""
         }`}
       >

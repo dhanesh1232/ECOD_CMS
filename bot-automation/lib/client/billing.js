@@ -25,7 +25,6 @@ const fetchWithRetry = async (url, options, retries = 3) => {
 // All API calls
 export const billingService = {
   getSubscription: async (workspaceId, options = {}) => {
-    console.log("Fetching subscription for workspace:", workspaceId);
     return fetchWithRetry(`/api/workspace/${workspaceId}/subscription`, {
       method: "GET",
       credentials: "include",
@@ -34,7 +33,6 @@ export const billingService = {
     });
   },
   getPlanDetails: async (workspaceId, planId, options = {}) => {
-    console.log(planId);
     return fetchWithRetry(
       `/api/workspace/${workspaceId}/subscription/plans/${planId}`,
       {
@@ -93,6 +91,15 @@ export const billingService = {
         ...options,
       }
     );
+  },
+  updateFailedPayment: async (workspaceId, id, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/subscription/failed`, {
+      method: "PUT",
+      credentials: "include",
+      headers,
+      body: JSON.stringify({ id }),
+      ...options,
+    });
   },
   verifyPayment: async (workspaceId, paymentData, options = {}) => {
     return fetchWithRetry(

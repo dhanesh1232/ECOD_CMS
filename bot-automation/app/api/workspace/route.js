@@ -17,12 +17,10 @@ export async function GET(req) {
         { status: 401, headers }
       );
     }
-
     const user = await User.findById(session.user.id).populate({
       path: "workspaces.workspace",
       select: "name slug subscription members",
     });
-
     if (!user) {
       return NextResponse.json(
         { message: "User not found" },

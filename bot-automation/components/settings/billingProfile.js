@@ -24,7 +24,7 @@ import {
   CardTitle,
   CardFooter,
 } from "../ui/card";
-import { Badge } from "../ui/badge";
+import { StyledPhoneInput } from "../ui/phone_input";
 
 export const BillingProfile = () => {
   const { workspaceId } = useParams();
@@ -91,6 +91,9 @@ export const BillingProfile = () => {
     }
   };
 
+  const handlePhoneInput = (value) => {
+    setFormData((prev) => ({ phone: value || "" }));
+  };
   const validateForm = () => {
     const newErrors = {};
 
@@ -287,12 +290,10 @@ export const BillingProfile = () => {
                           Phone Number
                         </Label>
                       </div>
-                      <Input
+                      <StyledPhoneInput
                         id="phone"
-                        name="phone"
-                        type="tel"
                         value={formData?.phone || ""}
-                        onChange={handleChange}
+                        onChange={handlePhoneInput}
                         placeholder="+1 (555) 123-4567"
                       />
                     </div>
@@ -498,7 +499,7 @@ export const BillingProfile = () => {
                       className="gap-2"
                     >
                       <ArrowLeft className="h-4 w-4" />
-                      Return to Checkout
+                      Checkout
                     </Button>
                   )}
                   <div className="flex items-center justify-end gap-3">
@@ -526,9 +527,9 @@ export const BillingProfile = () => {
                               Saving...
                             </>
                           ) : originalData ? (
-                            "Save Changes"
+                            "Save"
                           ) : (
-                            "Create Profile"
+                            "Update"
                           )}
                         </Button>
                       </>

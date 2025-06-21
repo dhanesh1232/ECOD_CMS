@@ -35,6 +35,7 @@ import { deepEqual } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import dynamic from "next/dynamic";
 import LocationSearch from "@/components/workspaceLocation";
+import { StyledPhoneInput } from "@/components/ui/phone_input";
 const TimezoneSelect = dynamic(() => import("@/components/selectTimezone"), {
   ssr: false,
 });
@@ -468,14 +469,10 @@ const GeneralPage = () => {
 
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <PhoneInput
-                international
+              <StyledPhoneInput
                 id="phone"
-                name="phone"
-                defaultCountry="IN"
                 onChange={handlePhoneChange}
                 value={state.formData.contactInfo.phone || ""}
-                className={`custom-phone-input w-full text-sm rounded-lg border dark:border-gray-700 bg-gray-50 dark:bg-gray-800`}
               />
             </div>
 

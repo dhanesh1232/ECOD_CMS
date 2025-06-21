@@ -170,23 +170,21 @@ const BillingPage = () => {
           onCancel={() => setShowCancelModal(true)}
         />
 
-        {subscription.plan.toLowerCase() !== "free" && (
-          <div className="grid grid-cols-1 gap-6">
-            <PaymentMethodForm
-              subscription={subscription}
-              onUpdatePaymentMethod={async () => {
-                const res = await fetch("/api/billing/portal");
-                const { url } = await res.json();
-                window.location.href = url;
-              }}
-            />
-            <PaymentHistoryTable
-              onReload={handleRefresh}
-              onRefresh={isLoadinghistory}
-              paymentHistory={paymentHistory}
-            />
-          </div>
-        )}
+        <div className="grid grid-cols-1 gap-6 p-4 lg:p-6">
+          <PaymentMethodForm
+            subscription={subscription}
+            onUpdatePaymentMethod={async () => {
+              const res = await fetch("/api/billing/portal");
+              const { url } = await res.json();
+              window.location.href = url;
+            }}
+          />
+          <PaymentHistoryTable
+            onReload={handleRefresh}
+            onRefresh={isLoadinghistory}
+            paymentHistory={paymentHistory}
+          />
+        </div>
 
         <CancellationModal
           open={showCancelModal}
