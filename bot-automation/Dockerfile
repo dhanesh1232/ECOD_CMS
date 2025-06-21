@@ -20,11 +20,3 @@ ENV NODE_ENV=development
 CMD ["npm", "run", "dev"]
 
 
-FROM node:18-alpine
-
-WORKDIR /app
-COPY . .
-
-RUN npm install
-
-CMD ["node", "scripts/worker.mjs"]

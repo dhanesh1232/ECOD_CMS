@@ -1,13 +1,11 @@
-import dbConnect from "@/config/dbconnect";
-import { ErrorHandles } from "@/lib/server/errors";
-import { SuccessHandle } from "@/lib/server/success";
+// app/api/corn/test/route.js
 
-export async function GET(req, { params }) {
-  await dbConnect();
+export async function GET() {
   try {
-    console.log("Hello Corn");
-    return SuccessHandle.DefaultSuccess();
+    console.log("📤 Job added to queue");
+    return new Response("Job added", { status: 200 });
   } catch (err) {
-    return ErrorHandles.InternalServer();
+    console.error("❌ Failed to add job:", err);
+    return new Response("Error", { status: 500 });
   }
 }
