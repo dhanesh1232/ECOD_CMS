@@ -1,7 +1,7 @@
-const { Worker } = required("bullmq");
-const { redis } = required("../lib/server/redis.js");
-const { handleEmailJob } = required("./tasks/tasks.js");
-const { handleSubscriptionJob } = required("./tasks/tasks.js");
+const { Worker } = require("bullmq");
+const { redis } = require("../lib/server/redis.js");
+const { handleEmailJob } = require("./tasks/tasks.js");
+const { handleSubscriptionJob } = require("./tasks/tasks.js");
 
 const emailWorker = new Worker("emailQueue", handleEmailJob, {
   connection: redis,
