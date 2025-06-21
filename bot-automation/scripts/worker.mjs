@@ -1,7 +1,7 @@
-const { Worker } = require("bullmq");
-const { redis } = require("../lib/server/redis.js");
-const { handleEmailJob } = require("./tasks/tasks.js");
-const { handleSubscriptionJob } = require("./tasks/tasks.js");
+import { Worker } from "bullmq";
+import { redis } from "../lib/server/redis.js";
+import { handleEmailJob } from "./tasks/tasks.mjs";
+import { handleSubscriptionJob } from "./tasks/tasks.mjs";
 
 const emailWorker = new Worker("emailQueue", handleEmailJob, {
   connection: redis,

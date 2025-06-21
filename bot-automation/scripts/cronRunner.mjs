@@ -1,8 +1,5 @@
 // Scripts/cronRunner.js
-const {
-  emailQueue,
-  SubscriptionQueue,
-} = require("../lib/server/queue/queues.js");
+import { emailQueue, SubscriptionQueue } from "../lib/server/queue/queues.js";
 
 (async () => {
   // Schedule an email to be sent now
