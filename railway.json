@@ -5,6 +5,7 @@
     "buildCommand": "cd bot-automation && npm install && npm run build"
   },
   "deploy": {
+    "startCommand": "cd bot-automation && npm start",
     "runtime": "V2",
     "numReplicas": 1,
     "sleepApplication": false,
