@@ -19,3 +19,12 @@ ENV NODE_ENV=development
 # Start dev server with hot reload
 CMD ["npm", "run", "dev"]
 
+
+FROM node:18-alpine
+
+WORKDIR /app
+COPY . .
+
+RUN npm install
+
+CMD ["node", "server/worker.js"]
