@@ -1,4 +1,4 @@
-import { testQueue } from "../queue/testQueue.js";
+import { testQueue } from "../queue/queues.js";
 
 export async function scheduleHeyECODJob() {
   await testQueue.add(
