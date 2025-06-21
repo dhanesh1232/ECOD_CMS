@@ -8,6 +8,8 @@
     "dev:light": "set NODE_OPTIONS=--max-old-space-size=4096&& next dev",
     "build": "next build",
     "start": "next start",
+    "start:worker": "node worker/testWorker.js",
+    "start:cron": "node scripts/cronRunner.js",
     "lint": "next lint",
     "clear": "if exist .next rd /s /q .next && if exist .cache rd /s /q .cache",
     "analyze": "ANALYZE=true next build"
