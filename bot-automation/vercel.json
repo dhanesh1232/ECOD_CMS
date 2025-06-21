@@ -17,11 +17,5 @@
         }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/corn/test",
-      "schedule": "* * * * *"
-    }
   ]
 }

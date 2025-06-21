@@ -26,7 +26,7 @@ export const Input = React.forwardRef(
 
     const variantClasses = {
       default:
-        "bg-background border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-900 dark:border-gray-700 dark:focus-visible:ring-gray-500",
+        "bg-background border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-gray-800 dark:border-gray-700 dark:focus-visible:ring-gray-500",
       ghost:
         "bg-transparent border-transparent focus-visible:bg-background focus-visible:border-input dark:focus-visible:bg-gray-900 dark:focus-visible:border-gray-700",
       filled:
