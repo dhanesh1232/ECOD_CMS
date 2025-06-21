@@ -5,53 +5,57 @@ import dbConnect from "@/config/dbconnect";
 
 export async function POST(req) {
   try {
-    // Connect to database
     await dbConnect();
 
-    // Validate request content type
+    // Verify content type
     const contentType = req.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
+    if (contentType !== "application/json") {
       return NextResponse.json(
         { message: "Invalid content type" },
         { status: 400 }
       );
     }
 
-    // Parse and validate request body
+    // Parse and validate body
     const body = await req.json();
-    if (!body?.email) {
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { message: "Invalid request body" },
+        { status: 400 }
+      );
+    }
+
+    const { email } = body;
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
         { message: "Email is required" },
         { status: 400 }
       );
     }
 
-    const { email } = body;
-
     // Find user
-    const user = await User.findOne({ email }).select(
-      "+passwordResetToken +passwordResetExpires"
-    );
+    const user = await User.findOne({ email });
     if (!user) {
-      // Don't reveal whether email exists in system
+      // Generic response for security
       return NextResponse.json(
-        { message: "If this email exists, a reset link has been sent" },
+        { message: "If this email exists, a reset link will be sent" },
         { status: 200 }
       );
     }
 
-    // Generate reset token
+    // Generate token
     const verificationCode = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    // Send email
-    await PasswordResetLinkGenerator(verificationCode, user.name, email);
+    // Ensure PasswordResetLinkGenerator returns a Promise
+    await PasswordResetLinkGenerator(
+      verificationCode.toString(), // Explicit string conversion
+      user.name,
+      email
+    );
 
-    // Return success response
     return NextResponse.json(
-      {
-        message: "If this email exists, a reset link has been sent",
-      },
+      { message: "If this email exists, a reset link will be sent" },
       { status: 200 }
     );
   } catch (err) {
