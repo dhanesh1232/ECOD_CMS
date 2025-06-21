@@ -288,7 +288,10 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 <motion.button
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => toggleExpand(item.id)}
+                  onClick={() => {
+                    toggleExpand(item.id);
+                    isCollapsed && setIsCollapsed(false);
+                  }}
                   className={cn(
                     "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
                     "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
