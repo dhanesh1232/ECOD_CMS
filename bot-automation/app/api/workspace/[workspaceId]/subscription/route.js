@@ -17,6 +17,7 @@ export async function GET(req, { params }) {
     // Find workspace by slug with basic subscription info
     const workspace = await Workspace.findOne({ slug })
       .select("name slug subscription members")
+      .populate("subscription")
       .lean();
 
     if (!workspace) {

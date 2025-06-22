@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUp,
+  Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -783,14 +784,14 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-              "p-4 mt-auto border-t border-gray-200/50 dark:border-gray-800 sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
+              "px-4 py-2 mt-auto border-t border-gray-200/50 dark:border-gray-800 sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm",
               isCollapsed ? "flex justify-center" : ""
             )}
           >
             <div className="relative" ref={userRef}>
               {apiState.loading ? (
                 <div className="flex items-center justify-center w-full">
-                  <SpinnerIcon />
+                  <Loader className="animate-spin text-xl" />
                 </div>
               ) : (
                 <div

@@ -21,6 +21,22 @@ export async function middleware(req) {
         : "next-auth.session-token",
   });
 
+  // ✅ Allow /workspaces if authenticated (even without workspaceSlug)
+  if (pathname.startsWith("/workspaces")) {
+    if (!token) {
+      return safeRedirectToLogin(pathname, origin);
+    }
+    return NextResponse.next();
+  }
+
+  if (pathname.startsWith("/auth") && token) {
+    const redirectPath =
+      token.role === "super_admin"
+        ? "/admin"
+        : `/${token.workspaceSlug}/dashboard`;
+    return NextResponse.redirect(new URL(redirectPath, origin));
+  }
+
   if (shouldSkipMiddleware(pathname)) {
     return NextResponse.next();
   }
@@ -49,12 +65,12 @@ export async function middleware(req) {
   }
 
   // Handle user role
+  // Handle user role
   if (role === "user") {
-    if (!userWorkspaceSlug || !isValidWorkspaceSlug(userWorkspaceSlug)) {
-      return NextResponse.redirect(new URL("/404", origin));
+    if (!userWorkspaceSlug) {
+      return NextResponse.redirect(new URL("/workspaces", origin));
     }
 
-    // Redirect root path to default workspace dashboard
     if (pathname === "/") {
       return NextResponse.redirect(
         new URL(`/${userWorkspaceSlug}/dashboard`, origin)
@@ -64,49 +80,41 @@ export async function middleware(req) {
     const pathSegments = pathname.split("/").filter(Boolean);
     const pathWorkspaceSlug = pathSegments[0];
 
-    // Correct invalid workspace slug and preserve path
     if (!isValidWorkspaceSlug(pathWorkspaceSlug)) {
-      const remainingPath = pathSegments.slice(1).join("/");
-      const newPath = remainingPath
-        ? `/${userWorkspaceSlug}/${remainingPath}`
-        : `/${userWorkspaceSlug}/dashboard`;
-      return NextResponse.redirect(new URL(newPath, origin));
+      // Invalid slug in URL — show 404
+      return NextResponse.redirect(new URL("/404", origin));
     }
 
-    // Handle workspace access and path correction
     if (pathWorkspaceSlug !== userWorkspaceSlug) {
-      try {
-        const verificationResult = await verifyWorkspaceAccess(
-          userId,
-          pathWorkspaceSlug
-        );
+      const verificationResult = await verifyWorkspaceAccess(
+        userId,
+        pathWorkspaceSlug
+      );
 
-        if (verificationResult.error) {
-          return handleVerificationError(verificationResult, origin);
-        }
-
-        const response = handleWorkspaceSwitch(verificationResult, req, origin);
-
-        // Redirect to dashboard if path is only the workspace slug
-        if (pathSegments.length === 1) {
-          return NextResponse.redirect(
-            new URL(`/${pathWorkspaceSlug}/dashboard`, origin)
-          );
-        }
-
-        return response;
-      } catch (error) {
-        console.error("Workspace access verification failed:", error);
-        return NextResponse.redirect(new URL("/500", origin));
+      if (verificationResult.error) {
+        return handleVerificationError(verificationResult, origin);
       }
+
+      const response = handleWorkspaceSwitch(verificationResult, req, origin);
+
+      if (pathSegments.length === 1) {
+        return NextResponse.redirect(
+          new URL(`/${pathWorkspaceSlug}/dashboard`, origin)
+        );
+      }
+
+      return response;
     }
 
-    // Redirect to dashboard if path is only the workspace slug
+    // ✅ If path is just /slug → redirect to dashboard
     if (pathSegments.length === 1) {
       return NextResponse.redirect(
         new URL(`/${pathWorkspaceSlug}/dashboard`, origin)
       );
     }
+
+    // ✅ If user accesses /slug/anything, let Next.js handle it (shows 404 if invalid)
+    return NextResponse.next();
   }
 
   return NextResponse.next();
@@ -114,7 +122,7 @@ export async function middleware(req) {
 
 // Helper functions (remain the same as in your original code)
 function shouldSkipMiddleware(pathname) {
-  return ["/api/", "/auth/", "/_next/", "/static/", "/favicon.ico"].some(
+  return ["/api/", "/_next/", "/static/", "/favicon.ico"].some(
     (path) => pathname.startsWith(path) || pathname === path
   );
 }
@@ -219,6 +227,6 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|auth|static|404|500|forbidden).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|static|404|500|forbidden).*)",
   ],
 };

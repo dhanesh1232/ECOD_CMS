@@ -824,8 +824,8 @@ export default function Page() {
   }
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 h-full overflow-y-auto scrollbar-transparent py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 h-full overflow-y-auto scrollbar-transparent p-0 m-0">
+      <div className="max-w-7xl mx-auto space-y-10 py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between border-b pb-1 border-gray-200 dark:border-gray-700">
             <Button

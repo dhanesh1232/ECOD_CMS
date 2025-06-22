@@ -86,23 +86,23 @@ const PaymentHistoryTable = ({ paymentHistory, onReload, onRefresh }) => {
           </TooltipContent>
         </Tooltip>
       </div>
-      {onRefresh ? (
-        <span className="flex items-center justify-center">
-          <SpinnerIcon />
-        </span>
-      ) : paymentHistory ? (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="text-left px-2 text-sm text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
-              <tr>
-                <th className="pb-4 px-2">Date</th>
-                <th className="pb-4 px-2">Amount</th>
-                <th className="pb-4 px-2">Status</th>
-                <th className="pb-4 px-2 text-right">Receipt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paymentHistory.map((payment, index) => {
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="text-left px-2 text-sm text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
+            <tr>
+              <th className="pb-4 px-2">Date</th>
+              <th className="pb-4 px-2">Amount</th>
+              <th className="pb-4 px-2">Status</th>
+              <th className="pb-4 px-2 text-right">Receipt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {onRefresh ? (
+              <span className="flex items-center justify-center">
+                <SpinnerIcon />
+              </span>
+            ) : paymentHistory.length > 0 ? (
+              paymentHistory.map((payment, index) => {
                 return (
                   <tr
                     key={index}
@@ -146,28 +146,15 @@ const PaymentHistoryTable = ({ paymentHistory, onReload, onRefresh }) => {
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-
-          {paymentHistory.length === 0 && (
-            <div className="py-8 text-center text-gray-600 dark:text-gray-400">
-              No payment history available
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex justify-between items-center p-4">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-8 w-28" />
-              <Skeleton className="h-10 w-32" />
-            </div>
-          ))}
-        </div>
-      )}
+              })
+            ) : (
+              <div className="py-8 text-center text-gray-600 dark:text-gray-400">
+                No payment history available
+              </div>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

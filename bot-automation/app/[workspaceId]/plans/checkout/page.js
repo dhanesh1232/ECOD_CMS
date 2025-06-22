@@ -498,12 +498,12 @@ const PlanInfoCheckoutPage = () => {
                 <Button
                   variant="outline"
                   onClick={() => router.push(`/${workspaceId}/plans`)}
-                  size="xs"
-                  aria-label="Go back to plans"
-                  title="Go back to plans"
+                  size="sm"
+                  aria-label="Go back"
+                  title="Go back"
                 >
                   <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                  <span className="hidden sm:inline ml-2">Back to Plans</span>
+                  <span className="hidden sm:inline ml-2">Back</span>
                 </Button>
                 <h1 className="text-lg sm:text-xl self-center font-bold text-gray-900 dark:text-gray-100">
                   Complete Your Purchase
@@ -946,28 +946,10 @@ const PlanInfoCheckoutPage = () => {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Plan Period:
+                          Duration :
                         </span>
                         <div className="text-right">
-                          <div className="flex items-center gap-2 justify-end">
-                            <span className="text-sm font-medium">
-                              {selectedDuration === "yearly"
-                                ? "Annual"
-                                : "Monthly"}{" "}
-                              Plan
-                            </span>
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${
-                                selectedDuration === "yearly"
-                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
-                                  : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
-                              }`}
-                            >
-                              {selectedDuration}
-                            </span>
-                          </div>
                           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            <CalendarIcon className="h-3 w-3" />
                             {(() => {
                               const startDate = new Date();
                               const endDate = new Date();
@@ -987,30 +969,32 @@ const PlanInfoCheckoutPage = () => {
                               };
 
                               return (
-                                <>
-                                  {startDate.toLocaleDateString(
-                                    "en-IN",
-                                    formatOptions
-                                  )}{" "}
-                                  –{" "}
-                                  {endDate.toLocaleDateString(
-                                    "en-IN",
-                                    formatOptions
-                                  )}
-                                  <span className="text-xs text-gray-400 ml-1">
+                                <span className="flex flex-col items-end gap-1">
+                                  <span className="flex items-center gap-1">
+                                    <CalendarIcon className="h-3 w-3" />
+                                    {startDate.toLocaleDateString(
+                                      "en-IN",
+                                      formatOptions
+                                    )}{" "}
+                                    –{" "}
+                                    {endDate.toLocaleDateString(
+                                      "en-IN",
+                                      formatOptions
+                                    )}
+                                  </span>
+                                  <span className="text-xs text-gray-400">
                                     (
                                     {selectedDuration === "yearly"
                                       ? "12 months"
                                       : "1 month"}
                                     )
                                   </span>
-                                </>
+                                </span>
                               );
                             })()}
                           </div>
                         </div>
                       </div>
-
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           Subtotal:

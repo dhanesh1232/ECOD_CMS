@@ -138,6 +138,7 @@ export default function CommandStyleSearch() {
         >
           <Input
             ref={inputRef}
+            size="sm"
             placeholder={
               mode
                 ? `Search in ${mode}...`
@@ -169,7 +170,7 @@ export default function CommandStyleSearch() {
           )}
           {isLg && (
             <kbd className="absolute right-2 pointer-events-none hidden lg:flex items-center gap-1 px-1.5 py-0.5 text-xs rounded border bg-muted opacity-70">
-              <span className="text-xs">⌘</span>K
+              <span className="text-[10px]">⌘</span>K
             </kbd>
           )}
         </div>

@@ -162,7 +162,7 @@ const BillingPage = () => {
 
   return (
     <>
-      <div className="flex-1 p-0 bg-background rounded-2xl space-y-4">
+      <div className="flex-1 p-0 bg-transparent rounded-2xl space-y-4">
         <PlanSummaryCard
           subscription={subscription}
           isProcessing={isProcessing}
