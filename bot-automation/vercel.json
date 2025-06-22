@@ -17,13 +17,5 @@
         }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [{ "type": "host", "value": "www.ecodrix.com" }],
-      "destination": "https://ecodrix.com/:1",
-      "permanent": true
-    }
   ]
 }
