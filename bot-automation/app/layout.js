@@ -4,7 +4,7 @@ import Layout from "@/Layout/layout";
 import { DarkModeProvider } from "@/context/context";
 import { Analytics } from "@vercel/analytics/react";
 import { ToastProvider } from "@/components/ui/toast-provider";
-
+import { SpeedInsights } from "@vercel/speed-insights/next";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -82,6 +82,7 @@ export default function RootLayout({ children }) {
             <Layout>
               {children}
               <Analytics />
+              <SpeedInsights />
             </Layout>
           </ToastProvider>
         </DarkModeProvider>

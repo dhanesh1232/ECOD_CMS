@@ -196,7 +196,7 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
       path: "/",
       sameSite: "lax",
       secure: isProduction,
-      domain: isProduction ? process.env.NEXTAUTH_URL : undefined,
+      domain: isProduction ? ".ecodrix.com" : undefined,
     });
   }
 
