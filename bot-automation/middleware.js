@@ -191,12 +191,26 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
     ? "__Secure-next-auth.session-token.workspace"
     : "next-auth.session-token.workspace";
 
+  const cookieOptions = {
+    path: "/",
+    sameSite: "lax",
+    secure: isProduction,
+  };
   if (verificationResult.workspace) {
-    response.cookies.set(cookieName, verificationResult.workspace.slug, {
-      path: "/",
-      sameSite: "lax",
-      secure: isProduction,
-      domain: isProduction ? "ecodrix.com" : undefined,
+    try {
+      if (isProduction && origin) {
+        const domain = new URL(origin).hostname;
+        if (domain.endsWith("ecodrix.com")) {
+          cookieOptions.domain = "ecodrix.com"; // Root domain only
+        }
+      }
+    } catch (err) {
+      console.error("Error parsing origin for cookie domain:", e);
+    }
+    response.cookies.set({
+      name: cookieName,
+      value: verificationResult.workspace.slug,
+      ...cookieOptions,
     });
   }
 

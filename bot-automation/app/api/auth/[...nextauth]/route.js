@@ -10,6 +10,40 @@ import mongoose from "mongoose";
 import { generateRandomSlug } from "@/lib/slugGenerator";
 
 const isAdmin = process.env.SUPER_ADMIN_EMAIL;
+const getCookiesSettings = () => {
+  const isProd = process.env.NODE_ENV === "production";
+  const ecodDomain = process.env.NEXTAUTH_URL?.includes("ecodrix.com");
+  return {
+    sessionToken: {
+      name: isProd
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProd,
+        domain:
+          isProd && ecodDomain
+            ? "ecodrix.com" // Root domain for production
+            : undefined,
+      },
+    },
+    workspaceToken: {
+      name: isProd
+        ? "__Secure-next-auth.workspace-token"
+        : "next-auth.workspace-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: isProd,
+        domain: isProd && ecodDomain ? "ecodrix.com" : undefined,
+      },
+    },
+  };
+};
+
 // Enhanced credentials authentication
 const authorizeCredentials = async (credentials) => {
   await dbConnect();
@@ -200,36 +234,12 @@ export const authOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
-  cookies:
-    process.env.NODE_ENV === "production"
-      ? {
-          sessionToken: {
-            name: `__Secure-next-auth.session-token`,
-            options: {
-              httpOnly: true,
-              sameSite: "lax",
-              path: "/",
-              secure: true,
-              domain: "ecodrix.com'",
-            },
-          },
-        }
-      : {
-          sessionToken: {
-            name: `next-auth.session-token`,
-            options: {
-              httpOnly: true,
-              sameSite: "lax",
-              path: "/",
-              secure: false,
-            },
-          },
-        },
-
+  cookies: getCookiesSettings(),
   useSecureCookies: process.env.NODE_ENV === "production",
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60,
   },
   pages: {
     signIn: "/auth/login",
