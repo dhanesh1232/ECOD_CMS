@@ -210,7 +210,7 @@ export const authOptions = {
               sameSite: "lax",
               path: "/",
               secure: true,
-              domain: ".ecodrix.com'",
+              domain: "ecodrix.com'",
             },
           },
         }
