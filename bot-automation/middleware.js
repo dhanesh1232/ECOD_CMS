@@ -192,11 +192,15 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
     : "next-auth.session-token.workspace";
 
   if (verificationResult.workspace) {
-    response.cookies.set(cookieName, verificationResult.workspace.slug, {
+    response.cookies.set({
+      name: isProduction
+        ? "__Secure-next-auth.session-token.workspace"
+        : "next-auth.session-token.workspace",
+      value: verificationResult.workspace.slug,
       path: "/",
       sameSite: "lax",
       secure: isProduction,
-      domain: isProduction ? process.env.NEXTAUTH_URL : undefined,
+      domain: isProduction ? ".ecodrix.com" : undefined,
     });
   }
 

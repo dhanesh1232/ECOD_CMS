@@ -210,7 +210,7 @@ export const authOptions = {
               sameSite: "lax",
               path: "/",
               secure: true,
-              domain: "bot-automation.vercel.app", // no protocol
+              domain: ".ecodrix.com'",
             },
           },
         }

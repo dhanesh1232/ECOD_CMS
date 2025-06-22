@@ -4,8 +4,12 @@
       "source": "/api/auth/(.*)",
       "headers": [
         {
+          "key": "x-middleware-request-redirect",
+          "value": ""
+        },
+        {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://bot-automation.vercel.app"
+          "value": ""
         },
         {
           "key": "Access-Control-Allow-Methods",
