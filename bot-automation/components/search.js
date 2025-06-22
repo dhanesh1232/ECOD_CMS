@@ -152,7 +152,7 @@ export default function CommandStyleSearch() {
             onBlur={() => setTimeout(() => setIsCommandOpen(false), 200)}
             className={`${
               isLg ? "w-96" : "w-full pr-10"
-            } bg-white dark:bg-gray-800 py-0.5 border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400`}
+            } bg-white dark:bg-gray-800 py-0 border-gray-300 dark:border-gray-600 focus:border-gray-400 dark:focus:border-gray-500 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400`}
             aria-haspopup="listbox"
             aria-expanded={showTypeSuggestions}
             aria-controls="search-commands"

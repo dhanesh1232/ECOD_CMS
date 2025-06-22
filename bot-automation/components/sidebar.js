@@ -36,6 +36,7 @@ import { Button } from "./ui/button";
 import Logo from "./logo";
 import { Icons } from "./icons";
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -283,405 +284,357 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
         {navLinks.map((item) => (
           <div key={item.id} className="space-y-1.5">
             {item.subPages ? (
-              <>
-                <motion.button
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    toggleExpand(item.id);
-                    isCollapsed && setIsCollapsed(false);
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
-                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
-                    "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
-                    (isActive(item.href) ||
-                      item.subPages.some((sub) => isSubpageActive(sub.href))) &&
-                      "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                    "transition-all duration-150"
-                  )}
-                >
-                  {(isActive(item.href) ||
-                    item.subPages.some((sub) => isSubpageActive(sub.href))) && (
-                    <motion.div
-                      layoutId="activeNavItem"
-                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <motion.button
+                      onClick={() => {
+                        toggleExpand(item.id);
+                        isCollapsed && setIsCollapsed(false);
                       }}
-                    />
-                  )}
-
-                  <div className="flex items-center space-x-3">
-                    <motion.div
                       className={cn(
-                        "p-1.5 rounded-lg transition-all shadow-sm",
-                        "hover:rotate-6 hover:scale-105 active:scale-95",
-                        isActive(item.href) ||
-                          item.subPages.some((sub) => isSubpageActive(sub.href))
-                          ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                        "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
+                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                        "focus:outline-none focus:ring-0",
+                        (isActive(item.href) ||
+                          item.subPages.some((sub) =>
+                            isSubpageActive(sub.href)
+                          )) &&
+                          "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200 border-l-4 border-indigo-500 dark:border-indigo-400",
+                        "transition-colors duration-150"
                       )}
                     >
-                      {Icons[item.icon]}
-                    </motion.div>
-                    {!isCollapsed && (
-                      <span className="font-medium text-sm truncate">
-                        {item.label}
-                      </span>
-                    )}
-                  </div>
-
-                  {!isCollapsed && (
-                    <motion.div
-                      animate={{
-                        rotate: expandedItems[item.id] ? 180 : 0,
-                        transition: {
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        },
-                      }}
-                      className="mr-1"
-                    >
-                      <ChevronDown
-                        size={16}
-                        className={cn(
-                          "transition-colors",
-                          isActive(item.href) ||
-                            item.subPages.some((sub) =>
-                              isSubpageActive(sub.href)
-                            )
-                            ? "text-indigo-500 dark:text-indigo-400"
-                            : "text-gray-500 dark:text-gray-400"
-                        )}
-                      />
-                    </motion.div>
-                  )}
-                </motion.button>
-
-                <AnimatePresence>
-                  {expandedItems[item.id] && !isCollapsed && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{
-                        height: "auto",
-                        opacity: 1,
-                        transition: {
-                          height: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
-                          opacity: { duration: 0.15, delay: 0.05 },
-                        },
-                      }}
-                      exit={{
-                        height: 0,
-                        opacity: 0,
-                        transition: {
-                          height: { duration: 0.15 },
-                          opacity: { duration: 0.1 },
-                        },
-                      }}
-                      className="overflow-hidden ml-5 pl-2.5 pr-1.5 border-l-2 border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="space-y-1 py-1">
-                        {item.subPages.map((subItem, index) => (
-                          <div key={index} className="relative">
-                            {!expandedSubItems[subItem.id] && (
-                              <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
-                            )}
-                            {subItem.nestedPages &&
-                            subItem.nestedPages.length > 0 ? (
-                              <>
-                                <motion.button
-                                  whileHover={{ x: 4 }}
-                                  whileTap={{ scale: 0.98 }}
-                                  onClick={() => toggleSubExpand(subItem.id)}
-                                  className={cn(
-                                    "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
-                                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
-                                    "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
-                                    (isActive(subItem.href) ||
-                                      subItem.nestedPages.some((sub) =>
-                                        isSubpageActive(sub.href)
-                                      )) &&
-                                      "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                                    "transition-all duration-150"
-                                  )}
-                                >
-                                  {(isActive(subItem.href) ||
-                                    subItem.nestedPages.some((sub) =>
-                                      isSubpageActive(sub.href)
-                                    )) && (
-                                    <motion.div
-                                      layoutId="activeNavItem"
-                                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                        damping: 20,
-                                      }}
-                                    />
-                                  )}
-                                  <div className="flex items-center space-x-3">
-                                    <motion.div
-                                      className={cn(
-                                        "p-1.5 rounded-lg transition-all shadow-sm",
-                                        "hover:rotate-6 hover:scale-105 active:scale-95",
-                                        isActive(subItem.href) ||
-                                          subItem.nestedPages.some((sub) =>
-                                            isSubpageActive(sub.href)
-                                          )
-                                          ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                          : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                                      )}
-                                    >
-                                      {Icons[subItem.icon]}
-                                    </motion.div>
-                                    <span className="font-medium text-sm">
-                                      {subItem.label}
-                                    </span>
-                                  </div>
-                                  <motion.div
-                                    animate={{
-                                      rotate: expandedSubItems[subItem.id]
-                                        ? 180
-                                        : 0,
-                                      transition: {
-                                        type: "spring",
-                                        stiffness: 300,
-                                        damping: 20,
-                                      },
-                                    }}
-                                    className="mr-1"
-                                  >
-                                    <ChevronDown
-                                      size={16}
-                                      className={cn(
-                                        "transition-colors",
-                                        isActive(subItem.href) ||
-                                          subItem.nestedPages.some((sub) =>
-                                            isSubpageActive(sub.href)
-                                          )
-                                          ? "text-indigo-500 dark:text-indigo-400"
-                                          : "text-gray-500 dark:text-gray-400"
-                                      )}
-                                    />
-                                  </motion.div>
-                                </motion.button>
-                                <AnimatePresence>
-                                  {expandedSubItems[subItem.id] && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{
-                                        height: "auto",
-                                        opacity: 1,
-                                        transition: {
-                                          height: {
-                                            duration: 0.2,
-                                            ease: [0.22, 1, 0.36, 1],
-                                          },
-                                          opacity: {
-                                            duration: 0.15,
-                                            delay: 0.05,
-                                          },
-                                        },
-                                      }}
-                                      exit={{
-                                        height: 0,
-                                        opacity: 0,
-                                        transition: {
-                                          height: { duration: 0.15 },
-                                          opacity: { duration: 0.1 },
-                                        },
-                                      }}
-                                      className="overflow-hidden ml-5 pl-2.5 pr-1.5 border-l-2 border-gray-200 dark:border-gray-700"
-                                    >
-                                      {subItem.nestedPages.map((each) => (
-                                        <div className="relative" key={each.id}>
-                                          <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
-                                          <Link
-                                            onClick={() => {
-                                              mobileMenuOpen &&
-                                                setMobileMenuOpen(
-                                                  !mobileMenuOpen
-                                                );
-                                            }}
-                                            href={`/${workspaceId}${each.href}`}
-                                          >
-                                            <motion.span
-                                              whileHover={{
-                                                x: 4,
-                                                backgroundColor:
-                                                  "rgba(224, 231, 255, 0.5)",
-                                              }}
-                                              className={cn(
-                                                "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
-                                                "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                                "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                                isSubpageActive(each.href) &&
-                                                  "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
-                                              )}
-                                            >
-                                              {isSubpageActive(each.href) && (
-                                                <motion.span
-                                                  layoutId="activeSubNavItem"
-                                                  className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
-                                                  transition={{
-                                                    type: "spring",
-                                                    stiffness: 300,
-                                                    damping: 20,
-                                                  }}
-                                                />
-                                              )}
-                                              <motion.span
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.9 }}
-                                                className={cn(
-                                                  "p-1 rounded-md transition-colors",
-                                                  isSubpageActive(each.href)
-                                                    ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                                    : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                                                )}
-                                              >
-                                                {Icons[each.icon]}
-                                              </motion.span>
-                                              <span className="truncate font-medium text-sm">
-                                                {each.label}
-                                              </span>
-                                            </motion.span>
-                                          </Link>
-                                        </div>
-                                      ))}
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </>
-                            ) : (
-                              <Link
-                                href={`/${workspaceId}${subItem.href}`}
-                                key={subItem.id}
-                                onClick={() => {
-                                  mobileMenuOpen &&
-                                    setMobileMenuOpen(!mobileMenuOpen);
-                                }}
-                              >
-                                <motion.span
-                                  whileHover={{
-                                    x: 4,
-                                    backgroundColor: "rgba(224, 231, 255, 0.5)",
-                                  }}
-                                  className={cn(
-                                    "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all relative",
-                                    "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                    "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                    isSubpageActive(subItem.href) &&
-                                      "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
-                                  )}
-                                >
-                                  {isSubpageActive(subItem.href) && (
-                                    <motion.span
-                                      layoutId="activeSubNavItem"
-                                      className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full"
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                        damping: 20,
-                                      }}
-                                    />
-                                  )}
-                                  <motion.span
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    className={cn(
-                                      "p-1 rounded-md transition-colors",
-                                      isSubpageActive(subItem.href)
-                                        ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                                    )}
-                                  >
-                                    {Icons[subItem.icon]}
-                                  </motion.span>
-                                  <span className="truncate font-medium text-sm">
-                                    {subItem.label}
-                                  </span>
-                                  {subItem.beta && (
-                                    <motion.span
-                                      initial={{ scale: 0.9, opacity: 0 }}
-                                      animate={{ scale: 1, opacity: 1 }}
-                                      className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 ml-auto"
-                                    >
-                                      Beta
-                                    </motion.span>
-                                  )}
-                                </motion.span>
-                              </Link>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
-            ) : (
-              <Link
-                href={`/${workspaceId}${item.href}`}
-                onClick={() => {
-                  mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
-                }}
-              >
-                <motion.span
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg relative group",
-                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
-                    isActive(item.href) &&
-                      "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200",
-                    "transition-all duration-150"
-                  )}
-                >
-                  {isActive(item.href) && (
-                    <motion.div
-                      layoutId="activeNavItem"
-                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-full"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
-                    />
-                  )}
-                  <motion.span
-                    className={cn(
-                      "p-1.5 rounded-lg transition-all shadow-sm",
-                      "hover:rotate-6 hover:scale-105 active:scale-95",
-                      isActive(item.href)
-                        ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                    )}
-                  >
-                    {Icons[item.icon]}
-                  </motion.span>
-                  {!isCollapsed && (
-                    <>
-                      <span className="font-medium text-sm truncate">
-                        {item.label}
-                      </span>
-                      {item.new && (
-                        <motion.span
-                          initial={{ scale: 0.9, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto"
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={cn(
+                            "p-1.5 rounded-lg shadow-sm",
+                            isActive(item.href) ||
+                              item.subPages.some((sub) =>
+                                isSubpageActive(sub.href)
+                              )
+                              ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                          )}
                         >
-                          New
-                        </motion.span>
+                          {Icons[item.icon]}
+                        </div>
+                        {!isCollapsed && (
+                          <span className="font-medium text-sm truncate">
+                            {item.label}
+                          </span>
+                        )}
+                      </div>
+
+                      {!isCollapsed && (
+                        <motion.div
+                          animate={{
+                            rotate: expandedItems[item.id] ? 180 : 0,
+                            transition: {
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 20,
+                            },
+                          }}
+                          className="mr-1"
+                        >
+                          <ChevronDown
+                            size={16}
+                            className={cn(
+                              "transition-colors",
+                              isActive(item.href) ||
+                                item.subPages.some((sub) =>
+                                  isSubpageActive(sub.href)
+                                )
+                                ? "text-indigo-500 dark:text-indigo-400"
+                                : "text-gray-500 dark:text-gray-400"
+                            )}
+                          />
+                        </motion.div>
                       )}
-                    </>
-                  )}
-                </motion.span>
-              </Link>
+                    </motion.button>
+                    <AnimatePresence>
+                      {expandedItems[item.id] && !isCollapsed && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{
+                            height: "auto",
+                            opacity: 1,
+                            transition: {
+                              height: {
+                                duration: 0.2,
+                                ease: [0.22, 1, 0.36, 1],
+                              },
+                              opacity: { duration: 0.15, delay: 0.05 },
+                            },
+                          }}
+                          exit={{
+                            height: 0,
+                            opacity: 0,
+                            transition: {
+                              height: { duration: 0.15 },
+                              opacity: { duration: 0.1 },
+                            },
+                          }}
+                          className="overflow-hidden ml-5 pl-2.5 pr-1.5 border-l-2 border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="space-y-1 py-1">
+                            {item.subPages.map((subItem, index) => (
+                              <div key={index} className="relative">
+                                {!expandedSubItems[subItem.id] && (
+                                  <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
+                                )}
+                                {subItem.nestedPages &&
+                                subItem.nestedPages.length > 0 ? (
+                                  <>
+                                    <motion.button
+                                      onClick={() =>
+                                        toggleSubExpand(subItem.id)
+                                      }
+                                      className={cn(
+                                        "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
+                                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
+                                        (isActive(subItem.href) ||
+                                          (subItem.nestedPages.some((sub) =>
+                                            isSubpageActive(sub.href)
+                                          ) &&
+                                            "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200 border-l-4 rounded-l-lg border-indigo-500 dark:border-indigo-400"),
+                                        "transition-colors duration-150")
+                                      )}
+                                    >
+                                      <div className="flex items-center space-x-3">
+                                        <div
+                                          className={cn(
+                                            "p-1.5 rounded-lg shadow-sm",
+                                            isActive(subItem.href) ||
+                                              subItem.nestedPages.some((sub) =>
+                                                isSubpageActive(sub.href)
+                                              )
+                                              ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                                          )}
+                                        >
+                                          {Icons[subItem.icon]}
+                                        </div>
+                                        <span className="font-medium text-sm">
+                                          {subItem.label}
+                                        </span>
+                                      </div>
+                                      <motion.div
+                                        animate={{
+                                          rotate: expandedSubItems[subItem.id]
+                                            ? 180
+                                            : 0,
+                                          transition: {
+                                            type: "spring",
+                                            stiffness: 300,
+                                            damping: 20,
+                                          },
+                                        }}
+                                        className="mr-1"
+                                      >
+                                        <ChevronDown
+                                          size={16}
+                                          className={cn(
+                                            "transition-colors",
+                                            isActive(subItem.href) ||
+                                              subItem.nestedPages.some((sub) =>
+                                                isSubpageActive(sub.href)
+                                              )
+                                              ? "text-indigo-500 dark:text-indigo-400"
+                                              : "text-gray-500 dark:text-gray-400"
+                                          )}
+                                        />
+                                      </motion.div>
+                                    </motion.button>
+                                    <AnimatePresence>
+                                      {expandedSubItems[subItem.id] && (
+                                        <motion.div
+                                          initial={{ height: 0, opacity: 0 }}
+                                          animate={{
+                                            height: "auto",
+                                            opacity: 1,
+                                            transition: {
+                                              height: {
+                                                duration: 0.2,
+                                                ease: [0.22, 1, 0.36, 1],
+                                              },
+                                              opacity: {
+                                                duration: 0.15,
+                                                delay: 0.05,
+                                              },
+                                            },
+                                          }}
+                                          exit={{
+                                            height: 0,
+                                            opacity: 0,
+                                            transition: {
+                                              height: { duration: 0.15 },
+                                              opacity: { duration: 0.1 },
+                                            },
+                                          }}
+                                          className="overflow-hidden ml-5 pl-2.5 pr-1.5 border-l-2 border-gray-200 dark:border-gray-700"
+                                        >
+                                          {subItem.nestedPages.map((each) => (
+                                            <div
+                                              className="relative"
+                                              key={each.id}
+                                            >
+                                              <div className="absolute left-[-22px] top-0 bottom-0 w-px rotate-90 bg-gray-300 dark:bg-gray-700" />
+                                              <Link
+                                                onClick={() => {
+                                                  mobileMenuOpen &&
+                                                    setMobileMenuOpen(
+                                                      !mobileMenuOpen
+                                                    );
+                                                }}
+                                                href={`/${workspaceId}${each.href}`}
+                                              >
+                                                <span
+                                                  className={cn(
+                                                    "flex items-center space-x-3 px-3 py-2 rounded-lg relative",
+                                                    "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                                                    "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                                                    isSubpageActive(
+                                                      each.href
+                                                    ) &&
+                                                      "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                                  )}
+                                                >
+                                                  {isSubpageActive(
+                                                    each.href
+                                                  ) && (
+                                                    <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full" />
+                                                  )}
+                                                  <span
+                                                    className={cn(
+                                                      "p-1 rounded-md",
+                                                      isSubpageActive(each.href)
+                                                        ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                                    )}
+                                                  >
+                                                    {Icons[each.icon]}
+                                                  </span>
+                                                  <span className="truncate font-medium text-sm">
+                                                    {each.label}
+                                                  </span>
+                                                </span>
+                                              </Link>
+                                            </div>
+                                          ))}
+                                        </motion.div>
+                                      )}
+                                    </AnimatePresence>
+                                  </>
+                                ) : (
+                                  <Link
+                                    href={`/${workspaceId}${subItem.href}`}
+                                    key={subItem.id}
+                                    onClick={() => {
+                                      mobileMenuOpen &&
+                                        setMobileMenuOpen(!mobileMenuOpen);
+                                    }}
+                                  >
+                                    <span
+                                      className={cn(
+                                        "flex items-center space-x-3 px-3 py-2 rounded-lg relative",
+                                        "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+                                        "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
+                                        isSubpageActive(subItem.href) &&
+                                          "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                      )}
+                                    >
+                                      {isSubpageActive(subItem.href) && (
+                                        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full" />
+                                      )}
+                                      <span
+                                        className={cn(
+                                          "p-1 rounded-md",
+                                          isSubpageActive(subItem.href)
+                                            ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                                            : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                        )}
+                                      >
+                                        {Icons[subItem.icon]}
+                                      </span>
+                                      <span className="truncate font-medium text-sm">
+                                        {subItem.label}
+                                      </span>
+                                      {subItem.beta && (
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 ml-auto">
+                                          Beta
+                                        </span>
+                                      )}
+                                    </span>
+                                  </Link>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right" arrow>
+                    {item.label}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={`/${workspaceId}${item.href}`}
+                    onClick={() => {
+                      mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
+                    }}
+                  >
+                    <span
+                      className={cn(
+                        "flex items-center space-x-3 px-3 py-2 rounded-lg relative group",
+                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                        isActive(item.href) && [
+                          "bg-indigo-50/80 dark:bg-indigo-900/10",
+                          "text-indigo-700 dark:text-indigo-200",
+                          "border-l-4 border-indigo-500 dark:border-indigo-400",
+                        ],
+                        "transition-colors duration-150"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "p-1.5 rounded-lg shadow-sm relative",
+                          isActive(item.href)
+                            ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                        )}
+                      >
+                        {Icons[item.icon]}
+                      </span>
+                      {!isCollapsed && (
+                        <>
+                          <span className="font-medium text-sm truncate">
+                            {item.label}
+                          </span>
+                          {item.new && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white ml-auto">
+                              New
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </span>
+                  </Link>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right" arrow>
+                    {item.label}
+                  </TooltipContent>
+                )}
+              </Tooltip>
             )}
           </div>
         ))}
@@ -727,7 +680,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           {/* Sidebar Header */}
           <div
             className={cn(
-              "p-4 py-3.5 border-gray-200/50 dark:border-gray-800 transition-all duration-300 sticky top-0 z-10",
+              "pl-5 py-2.5 h-12 w-full border-gray-200/50 dark:border-gray-800 transition-all duration-300 sticky top-0 z-10",
               isScrolled
                 ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm"
                 : "bg-transparent",
@@ -735,8 +688,8 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
             )}
           >
             <Link href={`/${workspaceId}`}>
-              <div className="flex items-center space-x-3 cursor-pointer group">
-                <Logo isShown={true} textShow={!isCollapsed} size="md" />
+              <div className="flex w-full justify-center items-center cursor-pointer group">
+                <Logo textShow={!isCollapsed} size="md" />
               </div>
             </Link>
 
@@ -762,44 +715,63 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           {/* Search and Create Section */}
           <div
             className={cn(
-              "px-5 pt-5 pb-3 space-y-3 sticky top-[72px] z-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent"
+              "px-5 pt-5 pb-3 space-y-3 sticky z-10 bg-gradient-to-b from-white dark:from-gray-900 to-transparent"
             )}
           >
             <SelectWorkspace collapsed={isCollapsed} />
             {workspaceDetails?.subscription?.plan.toLowerCase() === "free" && (
-              <Button
-                variant="premium"
-                onClick={() => router.push(`/${workspaceId}/plans`)}
-                title="Upgrade plan"
-                fullWidth
-                className={`relative flex items-center justify-center ${
-                  isCollapsed ? "p-2" : ""
-                }`}
-                aria-label="Upgrade plan"
-              >
-                {!isCollapsed && <span className="mr-2">Upgrade</span>}
-                <ArrowUp size={isCollapsed ? 18 : 20} className="text-white" />
-                <span className="absolute left-0 top-0">
-                  <StarsIcon
-                    className={`${
-                      isCollapsed ? "h-3 w-3" : "h-5 w-5"
-                    } text-yellow-500`}
-                  />
-                </span>
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="premium"
+                    onClick={() => router.push(`/${workspaceId}/plans`)}
+                    fullWidth
+                    className={`relative flex items-center justify-center ${
+                      isCollapsed ? "p-2" : ""
+                    }`}
+                    aria-label="Upgrade plan"
+                  >
+                    {!isCollapsed && <span className="mr-2">Upgrade</span>}
+                    <ArrowUp
+                      size={isCollapsed ? 18 : 20}
+                      className="text-white"
+                    />
+                    <span className="absolute left-0 top-0">
+                      <StarsIcon
+                        className={`${
+                          isCollapsed ? "h-3 w-3" : "h-5 w-5"
+                        } text-yellow-500`}
+                      />
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right" arrow>
+                    Upgrade
+                  </TooltipContent>
+                )}
+              </Tooltip>
             )}
-
-            <Button
-              variant="primary"
-              title="Create"
-              fullWidth
-              className={`flex items-center justify-center ${
-                isCollapsed ? "p-2" : ""
-              }`}
-            >
-              <Plus size={isCollapsed ? 18 : 20} className="text-white" />
-              {!isCollapsed && <span className="ml-2">Create</span>}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="primary"
+                  title="Create"
+                  fullWidth
+                  className={`flex items-center justify-center ${
+                    isCollapsed ? "p-2" : ""
+                  }`}
+                >
+                  <Plus size={isCollapsed ? 18 : 20} className="text-white" />
+                  {!isCollapsed && <span className="ml-2">Create</span>}
+                </Button>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent side="right" arrow>
+                  Create
+                </TooltipContent>
+              )}
+            </Tooltip>
           </div>
 
           {/* Navigation Items */}
@@ -827,17 +799,26 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                     isCollapsed ? "justify-center" : "space-x-3"
                   )}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative cursor-pointer"
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
-                      <User size={16} className="text-white" />
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"></div>
-                  </motion.div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="relative cursor-pointer"
+                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg">
+                          <User size={16} className="text-white" />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"></div>
+                      </motion.div>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                      <TooltipContent side="right" arrow>
+                        Profile
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
 
                   {!isCollapsed && (
                     <>

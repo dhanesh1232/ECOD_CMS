@@ -64,7 +64,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-2 flex items-center justify-between">
+    <header className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-2 flex items-center justify-between">
       <Button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         className="lg:hidden p-2 rounded-lg"

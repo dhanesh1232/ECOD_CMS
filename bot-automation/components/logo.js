@@ -5,7 +5,6 @@ import { ChatBotAI } from "@/public/Images/svg_ecod";
 const Logo = ({
   hide = false,
   size = "md",
-  isShown = false,
   className = "",
   iconClassName = "",
   textClassName = "",
@@ -33,7 +32,7 @@ const Logo = ({
           ${iconSize[size]} ${iconClassName}`}
         >
           <ChatBotAI
-            className={`${size === "sm" ? "w-3 h-3" : "w-5 h-5"}`}
+            className={`${size === "sm" ? "w-3 h-3" : "w-6 h-6"}`}
             size={size}
           />
         </div>
@@ -41,14 +40,9 @@ const Logo = ({
       {textShow && (
         <div className={`ml-3 ${textClassName}`}>
           <span
-            className={`font-bold ${classSize[size]} text-gray-800 dark:text-white space-y-0 gap-0 relative flex flex-col items-start`}
+            className={`font-bold ${classSize[size]} text-gray-800 dark:text-white space-y-0 gap-0 p-0 m-0 relative flex flex-col items-start`}
           >
             ECODrIx
-            {isShown && (
-              <span className="text-gray-500 dark:text-gray-400 text-[10px] font-semibold -mt-2">
-                Premium Dashboard
-              </span>
-            )}
           </span>
         </div>
       )}
