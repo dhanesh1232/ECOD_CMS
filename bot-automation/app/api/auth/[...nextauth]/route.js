@@ -172,7 +172,7 @@ const handleGoogleSignIn = async (profile) => {
         const workspace = await Workspace.createWithOwner(
           userData._id,
           {
-            name: `${profile.name}'s Workspace`,
+            name: `${profile.name.split(" ")[0]}'s Workspace`,
             slug: generateRandomSlug(),
           },
           session

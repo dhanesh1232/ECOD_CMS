@@ -36,7 +36,6 @@ import { Button } from "./ui/button";
 import Logo from "./logo";
 import { Icons } from "./icons";
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
-import { useMediaQuery } from "@/hooks/mediaQuery";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -221,7 +220,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   };
 
   const isActive = (href) => {
-    return pathname === `/${workspaceId}${href}`;
+    return pathname === `/${workspaceId}${href}` || pathname.includes(href);
   };
 
   const isSubpageActive = (subHref) => {

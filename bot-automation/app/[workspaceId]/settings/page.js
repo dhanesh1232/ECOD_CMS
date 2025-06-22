@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import {
   Card,
@@ -34,7 +33,6 @@ import { FaSpinner } from "react-icons/fa";
 import { deepEqual } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import dynamic from "next/dynamic";
-import LocationSearch from "@/components/workspaceLocation";
 import { StyledPhoneInput } from "@/components/ui/phone_input";
 const TimezoneSelect = dynamic(() => import("@/components/selectTimezone"), {
   ssr: false,
@@ -92,6 +90,7 @@ const GeneralPage = () => {
       toastRef.current = false;
     }, 10000);
   });
+
   const fetchWorkspaceSettings = useCallback(async () => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
@@ -208,17 +207,6 @@ const GeneralPage = () => {
     }));
   };
 
-  const handlePlaceSelected = (place) => {
-    const address = {
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "",
-    };
-    console.log(place);
-  };
-
   const handleAddDomain = (domain) => {
     setState((prev) => ({
       ...prev,
@@ -317,10 +305,10 @@ const GeneralPage = () => {
 
   if (state.loading && !state.workspace) {
     return (
-      <div className="space-y-4 p-4 sm:p-6">
+      <div className="space-y-4 p-4 sm:p-6 h-full">
         <Skeleton className="h-10 w-1/3" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(10)].map((_, i) => (
             <Skeleton key={i} className="h-20" />
           ))}
         </div>
@@ -366,7 +354,6 @@ const GeneralPage = () => {
                 value={state.formData.name}
                 onChange={handleChange}
                 placeholder="Your Organization"
-                className="bg-white dark:bg-gray-900"
               />
             </div>
 
@@ -415,7 +402,6 @@ const GeneralPage = () => {
                 value={state.formData.description}
                 onChange={handleChange}
                 placeholder="A brief description of your workspace"
-                className="bg-white dark:bg-gray-900"
               />
             </div>
           </CardContent>
@@ -450,7 +436,6 @@ const GeneralPage = () => {
                 value={state.formData.contactInfo.supportEmail}
                 onChange={(e) => handleNestedChange("contactInfo", e)}
                 placeholder="support@example.com"
-                className="bg-white dark:bg-gray-900"
               />
             </div>
 
@@ -463,7 +448,6 @@ const GeneralPage = () => {
                 value={state.formData.contactInfo.websiteURL}
                 onChange={(e) => handleNestedChange("contactInfo", e)}
                 placeholder="https://example.com"
-                className="bg-white dark:bg-gray-900"
               />
             </div>
 
@@ -475,12 +459,6 @@ const GeneralPage = () => {
                 value={state.formData.contactInfo.phone || ""}
               />
             </div>
-
-            {/*process.env.NODE_ENV === "development" && (
-              <div className="space-y-2 md:col-span-2">
-                <LocationSearch onPlaceSelected={handlePlaceSelected} />
-              </div>
-            )*/}
 
             <div className="space-y-2 md:col-span-2">
               <div className="flex items-center gap-3 mb-3">
@@ -496,7 +474,6 @@ const GeneralPage = () => {
                     value={state.formData.contactInfo?.address?.street || ""}
                     onChange={handleAddressChange}
                     placeholder="123 Main St"
-                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
@@ -507,7 +484,6 @@ const GeneralPage = () => {
                     value={state.formData.contactInfo?.address?.city || ""}
                     onChange={handleAddressChange}
                     placeholder="New York"
-                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
@@ -518,7 +494,6 @@ const GeneralPage = () => {
                     value={state.formData.contactInfo?.address?.state || ""}
                     onChange={handleAddressChange}
                     placeholder="NY"
-                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
@@ -531,7 +506,6 @@ const GeneralPage = () => {
                     }
                     onChange={handleAddressChange}
                     placeholder="10001"
-                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
@@ -542,7 +516,6 @@ const GeneralPage = () => {
                     value={state.formData.contactInfo?.address?.country || ""}
                     onChange={handleAddressChange}
                     placeholder="United States"
-                    className="bg-white dark:bg-gray-900"
                   />
                 </div>
               </div>
@@ -626,7 +599,6 @@ const GeneralPage = () => {
                 value={state.formData.branding.customDomain || ""}
                 onChange={(e) => handleNestedChange("branding", e)}
                 placeholder="example.com"
-                className="bg-white dark:bg-gray-900"
               />
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Enter your custom domain without https:// or www.

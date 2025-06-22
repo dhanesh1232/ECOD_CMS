@@ -6,8 +6,7 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { useDarkMode } from "@/context/context";
-import { Sun, Moon, User, Lock, X, Bell } from "lucide-react";
+import { User, Lock, X, Bell } from "lucide-react";
 import { FiLogOut, FiMenu } from "react-icons/fi";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +17,6 @@ import NotificationButton from "./notification";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import CommandStyleSearch from "./search";
 import { Button } from "./ui/button";
-import { Switch } from "./ui/switch";
 import ThemeSwitcher from "./themeSwicther";
 
 export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
@@ -28,7 +26,6 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   const params = useParams();
   const workspaceId = params.workspaceId;
   const router = useRouter();
-  const { darkMode, toggleDarkMode } = useDarkMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const profileRef = useRef();
 
@@ -67,7 +64,7 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-6 py-1.5 flex items-center justify-between shadow-sm transition-colors duration-300">
+    <header className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 py-2 flex items-center justify-between">
       <Button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         className="lg:hidden p-2 rounded-lg"
@@ -113,66 +110,45 @@ export default function Header({ mobileMenuOpen, setMobileMenuOpen }) {
         <div className="relative" ref={profileRef}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <motion.button
+              <Button
                 onClick={toggleProfileMenu}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative flex items-center focus:outline-none group"
+                variant="ghost"
+                size="icon"
+                className="relative rounded-full h-9 w-9"
                 aria-label="User profile menu"
               >
-                <div className="relative">
-                  {/* Glass effect container with border gradient */}
-                  <div className="w-8 h-8 rounded-full p-[2px] backdrop-blur-lg bg-white/20 dark:bg-black/20 border border-white/30 dark:border-gray-700/50 bg-gradient-to-br from-indigo-500/30 to-purple-500/30 dark:from-indigo-600/30 dark:to-purple-600/30">
-                    {/* Animated inner circle */}
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        boxShadow: [
-                          "inset 0 0 0 0 rgba(99, 102, 241, 0)",
-                          "inset 0 0 10px 2px rgba(99, 102, 241, 0.3)",
-                          "inset 0 0 0 0 rgba(99, 102, 241, 0)",
-                        ],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                      }}
-                      className="w-full h-full rounded-full bg-indigo-600 dark:bg-indigo-700 flex items-center justify-center overflow-hidden"
-                    >
-                      {/* User initials with subtle animation */}
+                <div className="relative h-8 w-8">
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      boxShadow: menuOpen
+                        ? "0 0 0 3px rgba(99, 102, 241, 0.5)"
+                        : "0 0 0 0px rgba(99, 102, 241, 0)",
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute inset-0 rounded-full"
+                  />
+
+                  <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center overflow-hidden">
+                    <span className="font-medium text-sm text-white">
+                      {session?.user?.name[0].toUpperCase()}
+                    </span>
+
+                    {menuOpen && (
                       <motion.span
-                        className="font-medium text-sm text-indigo-100 dark:text-indigo-200"
-                        whileHover={{ scale: 1.1 }}
-                      >
-                        {session?.user?.name[0].toUpperCase()}
-                      </motion.span>
-
-                      {/* Active indicator (pulse animation when menu is open) */}
-                      {menuOpen && (
-                        <motion.span
-                          className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full border border-white dark:border-gray-900"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 500 }}
-                        />
-                      )}
-                    </motion.div>
-                  </div>
-
-                  {/* Subtle hover effect */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="absolute inset-0 bg-white/10 dark:bg-black/10 rounded-full" />
-                    <div className="absolute inset-0 border-2 border-white/20 dark:border-gray-600/20 rounded-full" />
+                        className="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full border-2 border-white dark:border-gray-900"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500 }}
+                      />
+                    )}
                   </div>
                 </div>
-              </motion.button>
+              </Button>
             </TooltipTrigger>
-            {!menuOpen && (
-              <TooltipContent side="bottom" animation="slide" arrow>
-                My Profile
-              </TooltipContent>
-            )}
+            <TooltipContent side="bottom" arrow>
+              My Profile
+            </TooltipContent>
           </Tooltip>
           {/* Dropdown Menu */}
           <AnimatePresence>

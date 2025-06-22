@@ -16,7 +16,7 @@ import { Input } from "./ui/input";
 
 const ITEMS_PER_PAGE = 50;
 
-const TimezoneSelect = ({ value, onValueChange, className }) => {
+const TimezoneSelect = ({ value = "UTC", onValueChange, className }) => {
   const [timezones, setTimezones] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -32,6 +32,7 @@ const TimezoneSelect = ({ value, onValueChange, className }) => {
     try {
       setIsLoading(true);
       const response = await UserServices.getTimezone();
+
       if (response.status && response.status !== 200) {
         if (!toastRef.current) {
           showToast({
@@ -40,8 +41,25 @@ const TimezoneSelect = ({ value, onValueChange, className }) => {
           });
           toastRef.current = true;
         }
+        return;
       }
-      if (Array.isArray(response)) setTimezones(response);
+
+      if (Array.isArray(response)) {
+        // Ensure UTC is always in the list (Etc/UTC is the IANA timezone for UTC)
+        const hasUTC = response.some(
+          (tz) => tz.value === "Etc/UTC" || tz.value === "UTC"
+        );
+        if (!hasUTC) {
+          response.unshift({
+            value: "UTC",
+            label: "UTC (Coordinated Universal Time)",
+            offsetFormatted: "UTC+00:00",
+            currentTime: "",
+            isDST: false,
+          });
+        }
+        setTimezones(response);
+      }
     } catch (error) {
       if (!toastRef.current) {
         showToast({
@@ -104,15 +122,35 @@ const TimezoneSelect = ({ value, onValueChange, className }) => {
   };
 
   useEffect(() => {
-    if (isOpen && !timezones.length) {
+    if (!timezones.length) {
       fetchTimezones();
     }
-  }, [isOpen, timezones.length, fetchTimezones]);
+  }, [timezones.length, fetchTimezones]);
 
-  const selectedTimezone = useMemo(
-    () => timezones.find((tz) => tz.value === value),
-    [timezones, value]
-  );
+  const selectedTimezone = useMemo(() => {
+    const exactMatch = timezones.find((tz) => tz.value === value);
+    if (exactMatch) return exactMatch;
+    if (value === "UTC") {
+      return (
+        timezones.find((tz) => tz.value === "Etc/UTC") || {
+          value: "UTC",
+          label: "UTC (Coordinated Universal Time)",
+          offsetFormatted: "UTC+00:00",
+          currentTime: "",
+          isDST: false,
+        }
+      );
+    }
+
+    // Default fallback
+    return {
+      value: "UTC",
+      label: "UTC (Coordinated Universal Time)",
+      offsetFormatted: "UTC+00:00",
+      currentTime: "",
+      isDST: false,
+    };
+  }, [timezones, value]);
 
   return (
     <Select
@@ -125,7 +163,7 @@ const TimezoneSelect = ({ value, onValueChange, className }) => {
           <div className="flex items-center gap-2 truncate">
             <Globe className="h-4 w-4 shrink-0" />
             <span className="truncate">
-              {selectedTimezone?.label || "Select timezone"}
+              {selectedTimezone?.label || "UTC (Coordinated Universal Time)"}
             </span>
           </div>
         </SelectValue>
@@ -173,12 +211,13 @@ const TimezoneSelect = ({ value, onValueChange, className }) => {
                   value={tz.value}
                   textValue={tz.label}
                 >
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center justify-between gap-4 overflow-hidden">
                     <div className="flex-1 truncate">
                       <div className="font-medium truncate">{tz.label}</div>
                       <div className="text-xs text-muted-foreground truncate">
                         <span className="mr-1">{tz.value}</span>
                         {tz.offsetFormatted}
+                        {tz.isDST && <span className="ml-1">(DST)</span>}
                       </div>
                     </div>
                   </div>

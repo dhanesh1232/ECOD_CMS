@@ -12,10 +12,10 @@ const Logo = ({
   textShow = true,
 }) => {
   const classSize = {
-    sm: "text-lg",
-    md: "text-2xl",
-    lg: "text-4xl",
-    xl: "text-6xl",
+    sm: "text-base",
+    md: "text-lg",
+    lg: "text-xl",
+    xl: "text-2xl",
   };
 
   const iconSize = {
@@ -41,11 +41,11 @@ const Logo = ({
       {textShow && (
         <div className={`ml-3 ${textClassName}`}>
           <span
-            className={`font-bold ${classSize[size]} text-gray-800 dark:text-white relative flex flex-col items-start`}
+            className={`font-bold ${classSize[size]} text-gray-800 dark:text-white space-y-0 gap-0 relative flex flex-col items-start`}
           >
             ECODrIx
             {isShown && (
-              <span className="text-gray-500 dark:text-gray-400 text-xs font-semibold mt-0.5">
+              <span className="text-gray-500 dark:text-gray-400 text-[10px] font-semibold -mt-2">
                 Premium Dashboard
               </span>
             )}

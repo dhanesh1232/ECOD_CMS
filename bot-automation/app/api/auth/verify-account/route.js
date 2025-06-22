@@ -155,7 +155,7 @@ export async function POST(req) {
         const workspace = await Workspace.createWithOwner(
           newUser._id,
           {
-            name: `${newUser.name}'s Workspace`,
+            name: `${newUser.name.split(" ")[0]}'s Workspace`,
             slug: generateRandomSlug(),
           },
           session
