@@ -476,11 +476,11 @@ const GeneralPage = () => {
               />
             </div>
 
-            {process.env.NODE_ENV === "development" && (
+            {/*process.env.NODE_ENV === "development" && (
               <div className="space-y-2 md:col-span-2">
                 <LocationSearch onPlaceSelected={handlePlaceSelected} />
               </div>
-            )}
+            )*/}
 
             <div className="space-y-2 md:col-span-2">
               <div className="flex items-center gap-3 mb-3">

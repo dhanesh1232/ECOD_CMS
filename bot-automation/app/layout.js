@@ -23,7 +23,7 @@ export const metadata = {
   description:
     "Automate your WhatsApp business communications with our powerful bot solution",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com"
+    process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com"
   ),
   alternates: {
     canonical: "/",

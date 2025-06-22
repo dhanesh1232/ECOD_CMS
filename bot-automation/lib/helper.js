@@ -5,8 +5,8 @@ import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.NEXT_PUBLIC_EMAIL_USER,
-    pass: process.env.NEXT_PUBLIC_EMAIL_PASSWORD,
+    user: process.env.EMAIL_ID,
+    pass: process.env.EMAIL_PASSWORD,
   },
   // Additional settings to improve deliverability
   pool: true, // use pooled connection
@@ -23,7 +23,7 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Common email headers and settings
 const commonMailOptions = {
-  from: `"${senderName}" <${process.env.NEXT_PUBLIC_EMAIL_USER}>`,
+  from: `"${senderName}" <${process.env.EMAIL_ID}>`,
   headers: {
     "X-Priority": "1", // High priority
     "X-Mailer": "ECOD Mailer",
