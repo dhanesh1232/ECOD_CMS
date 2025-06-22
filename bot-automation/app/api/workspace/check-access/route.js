@@ -12,11 +12,12 @@ export async function GET(req) {
   try {
     // Validate user session
     const session = await validateSession(req);
-
+    console.log(session);
     // Get workspace slug from query params
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
-    console.log(slug);
+    const id = searchParams.get("userId");
+    console.log(slug, id);
     if (!slug) {
       return NextResponse.json(
         {
@@ -29,7 +30,8 @@ export async function GET(req) {
 
     // Find the workspace by slug
     const workspace = await Workspace.findOne({ slug })
-      .select("name slug members subscription.status settings metadata")
+      .select("name slug members subscription settings metadata")
+      .populate("subscription")
       .lean();
 
     if (!workspace) {
@@ -54,7 +56,7 @@ export async function GET(req) {
     }
 
     // Get user with workspace access information
-    const user = await User.findById(session.user.id)
+    const user = await User.findById(id)
       .select("workspaces currentWorkspace")
       .lean();
 

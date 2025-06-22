@@ -3,9 +3,11 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiArrowLeft, FiAlertTriangle } from "react-icons/fi";
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   // Animation variants
   const container = {
@@ -23,7 +25,17 @@ export default function NotFound() {
     hidden: { y: 20, opacity: 0 },
     show: { y: 0, opacity: 1 },
   };
+  useEffect(() => {
+    console.log(session, status);
+  });
 
+  const handleRedirect = () => {
+    if (status === "authenticated") {
+      return (window.location.href =
+        session?.user?.workspaceSlug || "/workspaces");
+    }
+    return (window.location.href = "/auth/login");
+  };
   return (
     <motion.div
       initial="hidden"
@@ -53,13 +65,10 @@ export default function NotFound() {
       </motion.p>
 
       <motion.div variants={item}>
-        <Link
-          href={`/${session?.user?.workspaceSlug || "/"}`}
-          className="inline-flex items-center px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
+        <Button onClick={handleRedirect} variants="forest" size="lg">
           <FiArrowLeft className="mr-2" />
-          Return to Your Workspaces
-        </Link>
+          {status === "authenticated" ? "Return to Your Workspaces" : "Login"}
+        </Button>
       </motion.div>
 
       <motion.div
