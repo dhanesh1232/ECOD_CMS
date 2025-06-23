@@ -36,16 +36,22 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   InfinityIcon,
-  AlertTriangleIcon,
-  Minus,
   CalendarIcon,
   InfoIcon,
+  ReceiptIcon,
+  EditIcon,
+  PlusIcon,
+  AlertCircleIcon,
+  CreditCardIcon,
+  TagIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminServices } from "@/lib/client/admin.service";
 import CouponInput from "@/components/couponBox";
 import { PayButton } from "@/components/settings/purchaseButton";
 import { Label } from "@/components/ui/label";
+import { OverlayLoader } from "@/components/animate/overlay_loader";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Constants
 const STORAGE_KEYS = {
@@ -113,6 +119,7 @@ const PlanInfoCheckoutPage = () => {
   const showToast = useToast();
   const [currency, setCurrency] = useState("INR");
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [showCoupon, setShowCoupon] = useState(false);
   const [billingDetails, setBillingDetails] = useState(null);
   const [updateBillingDetails, setUpdateBillingDetails] = useState(false);
   const [formData, setFormData] = useState({});
@@ -158,36 +165,6 @@ const PlanInfoCheckoutPage = () => {
       total,
     });
   }, [currency, plan, selectedDuration, appliedCoupon]);
-
-  useEffect(() => {
-    const fetchPlan = async () => {
-      try {
-        setIsLoading(true);
-        const [response, plans, profile] = await Promise.all([
-          billingService.getPlanDetails(workspaceId, id),
-          AdminServices.getPlans(),
-          billingService.getBillingProfile(workspaceId),
-        ]);
-        setPlans([...plans.plans]);
-        setPlan(response.plan);
-        setBillingDetails(profile.profile || null);
-        setIsLoading(false);
-      } catch (err) {
-        if (!toastRef.current) {
-          showToast({
-            title: "Something went wrong",
-            description: "Please try again later",
-            variant: "destructive",
-          });
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (id) {
-      fetchPlan();
-    }
-  }, [workspaceId, id, showToast, formData]);
 
   // Helper functions
   const saveToLocalStorage = useCallback(
@@ -324,6 +301,37 @@ const PlanInfoCheckoutPage = () => {
 
     parseQueryParams();
   }, [searchParams, workspaceId, router, saveToLocalStorage, showToast]);
+  useEffect(() => {
+    const fetchPlan = async () => {
+      try {
+        setIsLoading(true);
+        const [response, plans, profile] = await Promise.all([
+          billingService.getPlanDetails(workspaceId, id),
+          AdminServices.getPlans(),
+          billingService.getBillingProfile(workspaceId),
+        ]);
+        setPlans([...plans.plans]);
+        setPlan(response.plan);
+        console.log(response.plan);
+        setBillingDetails(profile.profile || null);
+        setIsLoading(false);
+      } catch (err) {
+        if (!toastRef.current) {
+          showToast({
+            title: "Something went wrong",
+            description: "Please try again later",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (id) {
+      console.log(id);
+      fetchPlan();
+    }
+  }, [workspaceId, id, showToast, formData]);
 
   // Event handlers
   const handlePlanChange = (newPlanId) => {
@@ -375,10 +383,6 @@ const PlanInfoCheckoutPage = () => {
   const trialDays = plan?.metadata?.trialDays || 0;
   const trialEndDate = new Date();
   trialEndDate.setDate(trialEndDate.getDate() + trialDays);
-
-  if (isLoading || !plan) {
-    return <LoadingSkeleton />;
-  }
 
   return (
     <>
@@ -461,7 +465,7 @@ const PlanInfoCheckoutPage = () => {
           </AlertDialogDescription>
         </AlertDialogContent>
       </AlertDialog>
-
+      <OverlayLoader open={isLoading && !plan} />
       {updateBillingDetails && (
         <AlertDialog open={updateBillingDetails}>
           <AlertDialogContent>
@@ -489,575 +493,598 @@ const PlanInfoCheckoutPage = () => {
       )}
 
       {/* Main Content */}
-      <div className="w-full h-full overflow-y-auto scrollbar-transparent bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-4 md:py-8">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column - Plan Details */}
-            <div className="lg:w-3/5 xl:w-2/3">
-              <div className="flex items-start justify-between sm:mb-6 mb-4">
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(`/${workspaceId}/plans`)}
-                  size="sm"
-                  aria-label="Go back"
-                  title="Go back"
-                >
-                  <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                  <span className="hidden sm:inline ml-2">Back</span>
-                </Button>
-                <h1 className="text-lg sm:text-xl self-center font-bold text-gray-900 dark:text-gray-100">
-                  Complete Your Purchase
-                </h1>
-                <div className="w-5 h-5" /> {/* Spacer */}
-              </div>
-
-              {/* Plan Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                {/* Plan Header */}
-                <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex flex-col sm:flex-row xl:flex-row lg:flex-col sm:justify-between sm:items-center gap-4">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-4 rounded-lg ${
-                          isEnterprise
-                            ? "bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800"
-                            : "bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"
-                        } shadow-sm`}
-                      >
-                        <span
-                          className={`text-lg sm:text-2xl font-bold ${
-                            isEnterprise
-                              ? "text-purple-600 dark:text-purple-300"
-                              : "text-blue-600 dark:text-blue-300"
-                          }`}
-                        >
-                          {plan.name}
-                        </span>
-                      </div>
-                      <div>
-                        <h2 className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
-                          {plan.name} Plan
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-                          {plan.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end lg:w-full xl:w-auto gap-2">
-                      {plan.metadata.recommended && (
-                        <Badge variant="premium" className="whitespace-nowrap">
-                          Recommended
-                        </Badge>
-                      )}
-                      {plan.metadata.popular && (
-                        <Badge
-                          variant="secondary"
-                          className="whitespace-nowrap"
-                        >
-                          Most Popular
-                        </Badge>
-                      )}
-                      <Select
-                        value={
-                          plans.find(
-                            (p) =>
-                              p.name.toLowerCase() === plan_name?.toLowerCase()
-                          )?._id || ""
-                        }
-                        onValueChange={handlePlanChange}
-                        disabled={paymentStatus === PAYMENT_STATUS.LOADING}
-                      >
-                        <SelectTrigger className="w-full sm:w-48 lg:w-full xl:w-48 bg-white dark:bg-gray-700">
-                          <SelectValue placeholder="Select Plan" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
-                          {plans
-                            .filter((p) => p.name.toLowerCase() !== "free")
-                            .map((p, key) => (
-                              <SelectItem
-                                key={key}
-                                value={p._id}
-                                className="hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-gray-900"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span>{p.name}</span>
-                                  {p.metadata.recommended && (
-                                    <Badge
-                                      variant="premium"
-                                      className="text-xs py-0 px-1.5"
-                                    >
-                                      Rec
-                                    </Badge>
-                                  )}
-                                  {p.metadata.popular && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-xs py-0 px-1.5"
-                                    >
-                                      Popular
-                                    </Badge>
-                                  )}
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+      {plan && (
+        <div className="w-full h-full overflow-y-auto scrollbar-transparent bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+          <div className="w-full mx-auto px-2 sm:px-4 lg:px-6 py-4 md:py-8">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Left Column - Plan Details */}
+              <div className="lg:w-3/5 xl:w-2/3">
+                <div className="flex items-start justify-between sm:mb-6 mb-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push(`/${workspaceId}/plans`)}
+                    size="sm"
+                    aria-label="Go back"
+                    title="Go back"
+                  >
+                    <ArrowLeftIcon className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                    <span className="hidden sm:inline ml-2">Back</span>
+                  </Button>
+                  <h1 className="text-lg sm:text-xl self-center font-bold text-gray-900 dark:text-gray-100">
+                    Complete Purchase
+                  </h1>
+                  <div className="w-5 h-5" /> {/* Spacer */}
                 </div>
 
-                {/* Billing Cycle Selection */}
-                {plan.prices && (
+                {/* Plan Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {/* Plan Header */}
                   <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                      Select your billing preference
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {Object.entries(plan.prices).map(([duration, price]) => {
-                        const isYearly = duration === "yearly";
-                        const isSelected = selectedDuration === duration;
-                        const monthlyEquivalent = isYearly
-                          ? (price / 12).toLocaleString("en-IN", {
-                              maximumFractionDigits: 2,
-                            })
-                          : null;
-                        const savingsPercentage = isYearly
-                          ? Math.round(
-                              (1 -
-                                plan.prices.yearly /
-                                  (plan.prices.monthly * 12)) *
-                                100
-                            )
-                          : 0;
-
-                        return (
-                          <button
-                            key={duration}
-                            onClick={() => handleDurationChange(duration)}
-                            className={`p-4 rounded-lg border transition-all relative overflow-hidden ${
-                              isSelected
-                                ? "border-blue-500 bg-gradient-to-br from-blue-50/80 to-blue-100/80 dark:from-blue-900/30 dark:to-blue-800/30 shadow-lg ring-2 ring-blue-200/60 dark:ring-blue-900/40"
-                                : "border-gray-200 dark:border-gray-700 hover:border-blue-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750"
+                    <div className="flex flex-col sm:flex-row xl:flex-row lg:flex-col sm:justify-between sm:items-center gap-4">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`p-4 rounded-lg ${
+                            isEnterprise
+                              ? "bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800"
+                              : "bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"
+                          } shadow-sm`}
+                        >
+                          <span
+                            className={`text-lg sm:text-2xl font-bold ${
+                              isEnterprise
+                                ? "text-purple-600 dark:text-purple-300"
+                                : "text-blue-600 dark:text-blue-300"
                             }`}
                           >
-                            {isYearly && savingsPercentage > 0 && (
-                              <div className="absolute top-0 right-0 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg shadow-md">
-                                Save {savingsPercentage}%
-                              </div>
-                            )}
-
-                            <div className="flex flex-col items-start">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                                    isSelected
-                                      ? "border-blue-500 bg-blue-500"
-                                      : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
-                                  }`}
+                            {plan.name}
+                          </span>
+                        </div>
+                        <div>
+                          <h2 className="text-sm sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
+                            {plan.name} Plan
+                          </h2>
+                          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+                            {plan.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end lg:w-full xl:w-auto gap-2">
+                        {plan.metadata.recommended && (
+                          <Badge
+                            variant="premium"
+                            className="whitespace-nowrap"
+                          >
+                            Recommended
+                          </Badge>
+                        )}
+                        {plan.metadata.popular && (
+                          <Badge
+                            variant="secondary"
+                            className="whitespace-nowrap"
+                          >
+                            Most Popular
+                          </Badge>
+                        )}
+                        <Select
+                          value={
+                            plans.find(
+                              (p) =>
+                                p.name.toLowerCase() ===
+                                plan_name?.toLowerCase()
+                            )?._id || ""
+                          }
+                          onValueChange={handlePlanChange}
+                          disabled={paymentStatus === PAYMENT_STATUS.LOADING}
+                        >
+                          <SelectTrigger className="w-full sm:w-48 lg:w-full xl:w-48 bg-white dark:bg-gray-700">
+                            <SelectValue placeholder="Select Plan" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600">
+                            {plans
+                              .filter((p) => p.name.toLowerCase() !== "free")
+                              .map((p, key) => (
+                                <SelectItem
+                                  key={key}
+                                  value={p._id}
+                                  className="hover:bg-gray-100 hover:cursor-pointer dark:hover:bg-gray-900"
                                 >
-                                  {isSelected && (
-                                    <svg
-                                      className="w-3 h-3 text-white"
-                                      fill="currentColor"
-                                      viewBox="0 0 20 20"
-                                    >
-                                      <path
-                                        fillRule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clipRule="evenodd"
-                                      />
-                                    </svg>
-                                  )}
-                                </div>
-                                <span className="font-medium text-gray-900 dark:text-gray-100">
-                                  {duration.charAt(0).toUpperCase() +
-                                    duration.slice(1)}
-                                </span>
-                              </div>
+                                  <div className="flex items-center gap-2">
+                                    <span>{p.name}</span>
+                                    {p.metadata.recommended && (
+                                      <Badge
+                                        variant="premium"
+                                        className="text-xs py-0 px-1.5"
+                                      >
+                                        Rec
+                                      </Badge>
+                                    )}
+                                    {p.metadata.popular && (
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs py-0 px-1.5"
+                                      >
+                                        Popular
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
 
-                              <div className="mt-3 flex items-end gap-1">
-                                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                  ₹
-                                  {price.toLocaleString("en-IN", {
-                                    maxFractionDigits: 2,
-                                  })}
-                                </span>
-                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-0.5">
-                                  {isYearly ? "/year" : "/month"}
-                                </span>
-                              </div>
+                  {/* Billing Cycle Selection */}
+                  {plan.prices && (
+                    <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+                        Select your billing preference
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {Object.entries(plan.prices).map(
+                          ([duration, price]) => {
+                            const isYearly = duration === "yearly";
+                            const isSelected = selectedDuration === duration;
+                            const monthlyEquivalent = isYearly
+                              ? (price / 12).toLocaleString("en-IN", {
+                                  maximumFractionDigits: 2,
+                                })
+                              : null;
+                            const savingsPercentage = isYearly
+                              ? Math.round(
+                                  (1 -
+                                    plan.prices.yearly /
+                                      (plan.prices.monthly * 12)) *
+                                    100
+                                )
+                              : 0;
 
-                              <div
-                                className={`text-sm mt-1 px-2 py-1 rounded-md ${
-                                  isYearly
-                                    ? "bg-green-100/70 text-green-800 dark:bg-green-900/30 dark:text-green-200"
-                                    : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                            return (
+                              <button
+                                key={duration}
+                                onClick={() => handleDurationChange(duration)}
+                                className={`p-4 rounded-lg border transition-all relative overflow-hidden ${
+                                  isSelected
+                                    ? "border-blue-500 bg-gradient-to-br from-blue-50/80 to-blue-100/80 dark:from-blue-900/30 dark:to-blue-800/30 shadow-lg ring-2 ring-blue-200/60 dark:ring-blue-900/40"
+                                    : "border-gray-200 dark:border-gray-700 hover:border-blue-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750"
                                 }`}
                               >
-                                {isYearly
-                                  ? `₹${monthlyEquivalent}/mo equivalent`
-                                  : "Flexible monthly billing"}
+                                {isYearly && savingsPercentage > 0 && (
+                                  <div className="absolute top-0 right-0 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg shadow-md">
+                                    Save {savingsPercentage}%
+                                  </div>
+                                )}
+
+                                <div className="flex flex-col items-start">
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                                        isSelected
+                                          ? "border-blue-500 bg-blue-500"
+                                          : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+                                      }`}
+                                    >
+                                      {isSelected && (
+                                        <svg
+                                          className="w-3 h-3 text-white"
+                                          fill="currentColor"
+                                          viewBox="0 0 20 20"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                                      {duration.charAt(0).toUpperCase() +
+                                        duration.slice(1)}
+                                    </span>
+                                  </div>
+
+                                  <div className="mt-3 flex items-end gap-1">
+                                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                      ₹
+                                      {price.toLocaleString("en-IN", {
+                                        maxFractionDigits: 2,
+                                      })}
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-0.5">
+                                      {isYearly ? "/year" : "/month"}
+                                    </span>
+                                  </div>
+
+                                  <div
+                                    className={`text-sm mt-1 px-2 py-1 rounded-md ${
+                                      isYearly
+                                        ? "bg-green-100/70 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+                                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                    }`}
+                                  >
+                                    {isYearly
+                                      ? `₹${monthlyEquivalent}/mo equivalent`
+                                      : "Flexible monthly billing"}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Plan Limits */}
+                  {plan.limits && (
+                    <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
+                        Plan Limits
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {Object.entries(plan.limits)
+                          .filter(
+                            ([key]) =>
+                              !key.includes("adCredits") &&
+                              !key.includes("dedicatedConcurrency")
+                          )
+                          .map(([limit, value]) => (
+                            <div
+                              key={limit}
+                              className="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-200 dark:border-gray-700"
+                            >
+                              <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                                {limit.replace(/([A-Z])/g, " $1").trim()}
+                              </div>
+                              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                {value === "Infinity" ? (
+                                  <InfinityIcon className="w-6 h-6 inline" />
+                                ) : (
+                                  value
+                                )}
                               </div>
                             </div>
-                          </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Plan Features */}
+                  <div className="p-4 lg:p-6">
+                    <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
+                      Plan Features
+                    </h3>
+                    <div className="space-y-4">
+                      {FEATURE_CATEGORIES.map((category) => {
+                        if (!plan.features[category.name]) return null;
+                        const isExpanded =
+                          expandedCategories[category.name] || false;
+
+                        return (
+                          <div
+                            key={category.name}
+                            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                          >
+                            <button
+                              onClick={() => toggleCategory(category.name)}
+                              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl">{category.icon}</span>
+                                <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                                  {category.title}
+                                </h4>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronUpIcon className="w-5 h-5 text-gray-500" />
+                              ) : (
+                                <ChevronDownIcon className="w-5 h-5 text-gray-500" />
+                              )}
+                            </button>
+                            {isExpanded && (
+                              <div className="p-4 bg-gray-50 dark:bg-gray-700/20 border-t border-gray-200 dark:border-gray-700">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {Object.entries(
+                                    plan.features[category.name]
+                                  ).map(([feature, value]) => (
+                                    <div
+                                      key={feature}
+                                      className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
+                                        value
+                                          ? "bg-gray-50 hover:bg-gray-100 dark:bg-gray-700/30 dark:hover:bg-gray-700/50"
+                                          : "bg-gray-100/50 hover:bg-gray-200/50 dark:bg-gray-700/50 dark:hover:bg-gray-700/70"
+                                      }`}
+                                    >
+                                      <div className="mt-1 flex-shrink-0">
+                                        {typeof value === "boolean" ? (
+                                          value ? (
+                                            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                                          ) : (
+                                            <XCircleIcon className="w-5 h-5 text-red-500" />
+                                          )
+                                        ) : (
+                                          <InformationCircleIcon className="w-5 h-5 text-blue-500" />
+                                        )}
+                                      </div>
+                                      <div>
+                                        <div className="font-medium text-gray-900 dark:text-gray-100 capitalize">
+                                          {feature
+                                            .replace(/([A-Z])/g, " $1")
+                                            .trim()}
+                                        </div>
+                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                          {formatFeatureValue(value)}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
                   </div>
-                )}
+                </div>
+              </div>
 
-                {/* Plan Limits */}
-                {plan.limits && (
-                  <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
-                      Plan Limits
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                      {Object.entries(plan.limits)
-                        .filter(
-                          ([key]) =>
-                            !key.includes("adCredits") &&
-                            !key.includes("dedicatedConcurrency")
-                        )
-                        .map(([limit, value]) => (
-                          <div
-                            key={limit}
-                            className="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg border border-gray-200 dark:border-gray-700"
-                          >
-                            <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                              {limit.replace(/([A-Z])/g, " $1").trim()}
+              {/* Right Column - Checkout Summary */}
+              <div className="lg:w-2/5 xl:w-1/3">
+                <div className="sticky top-8 space-y-4">
+                  {/* Billing Information Section */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="p-2 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                      <div className="flex items-center gap-3">
+                        <CreditCardIcon className="w-5 h-5 text-blue-500" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                          Billing Information
+                        </h3>
+                      </div>
+                    </div>
+
+                    {!billingDetails ? (
+                      <div className="p-4">
+                        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3">
+                          <AlertCircleIcon className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-medium text-amber-800 dark:text-amber-200">
+                              Billing Details Required
+                            </h4>
+                            <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                              Please add your billing information to complete
+                              your purchase.
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="primary"
+                          size="md"
+                          className="mt-4 w-full gap-2"
+                          onClick={handleBillingDetails}
+                        >
+                          <PlusIcon className="w-4 h-4" />
+                          Add Billing Details
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                        <div className="grid grid-cols-1 gap-2 p-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Company
+                            </Label>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">
+                              {billingDetails.companyName || "Not provided"}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Email
+                              </Label>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                {billingDetails.email ||
+                                  email ||
+                                  "Not provided"}
+                              </p>
                             </div>
-                            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                              {value === "Infinity" ? (
-                                <InfinityIcon className="w-6 h-6 inline" />
-                              ) : (
-                                value
+
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Phone
+                              </Label>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                {billingDetails.phone ||
+                                  phone ||
+                                  "Not provided"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              Billing Address
+                            </Label>
+                            <div className="font-medium text-gray-900 dark:text-gray-100">
+                              <p>
+                                {billingDetails.addressLine1 || "Not provided"}
+                              </p>
+                              {billingDetails.addressLine2 && (
+                                <p>{billingDetails.addressLine2}</p>
+                              )}
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {[
+                                  billingDetails.city,
+                                  billingDetails.state,
+                                  billingDetails.postalCode,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ")}
+                              </p>
+                              {billingDetails.country && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {billingDetails.country}
+                                </p>
                               )}
                             </div>
                           </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
 
-                {/* Plan Features */}
-                <div className="p-4 lg:p-6">
-                  <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
-                    Plan Features
-                  </h3>
-                  <div className="space-y-4">
-                    {FEATURE_CATEGORIES.map((category) => {
-                      if (!plan.features[category.name]) return null;
-                      const isExpanded =
-                        expandedCategories[category.name] || false;
-
-                      return (
-                        <div
-                          key={category.name}
-                          className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
-                        >
-                          <button
-                            onClick={() => toggleCategory(category.name)}
-                            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-xl">{category.icon}</span>
-                              <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                                {category.title}
-                              </h4>
-                            </div>
-                            {isExpanded ? (
-                              <ChevronUpIcon className="w-5 h-5 text-gray-500" />
-                            ) : (
-                              <ChevronDownIcon className="w-5 h-5 text-gray-500" />
-                            )}
-                          </button>
-                          {isExpanded && (
-                            <div className="p-4 bg-gray-50 dark:bg-gray-700/20 border-t border-gray-200 dark:border-gray-700">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {Object.entries(
-                                  plan.features[category.name]
-                                ).map(([feature, value]) => (
-                                  <div
-                                    key={feature}
-                                    className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
-                                      value
-                                        ? "bg-gray-50 hover:bg-gray-100 dark:bg-gray-700/30 dark:hover:bg-gray-700/50"
-                                        : "bg-gray-100/50 hover:bg-gray-200/50 dark:bg-gray-700/50 dark:hover:bg-gray-700/70"
-                                    }`}
-                                  >
-                                    <div className="mt-1 flex-shrink-0">
-                                      {typeof value === "boolean" ? (
-                                        value ? (
-                                          <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                                        ) : (
-                                          <XCircleIcon className="w-5 h-5 text-red-500" />
-                                        )
-                                      ) : (
-                                        <InformationCircleIcon className="w-5 h-5 text-blue-500" />
-                                      )}
-                                    </div>
-                                    <div>
-                                      <div className="font-medium text-gray-900 dark:text-gray-100 capitalize">
-                                        {feature
-                                          .replace(/([A-Z])/g, " $1")
-                                          .trim()}
-                                      </div>
-                                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                                        {formatFeatureValue(value)}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
+                          {billingDetails.gstin && (
+                            <div className="space-y-1">
+                              <Label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Tax ID
+                              </Label>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">
+                                {billingDetails.gstin}
+                              </p>
                             </div>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Checkout Summary */}
-            <div className="lg:w-2/5 xl:w-1/3">
-              <div className="sticky top-8 space-y-6">
-                {/* Billing Information Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                      Billing Information
-                    </h3>
-                  </div>
-
-                  {!billingDetails ? (
-                    <div className="p-4 lg:p-6">
-                      <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-4 flex items-start gap-3">
-                        <AlertTriangleIcon className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-yellow-800 dark:text-yellow-200">
-                            Billing Details Required
-                          </h4>
-                          <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                            Please add your billing information to proceed with
-                            checkout.
-                          </p>
+                        <div className="p-2">
+                          <Button
+                            variant="outline"
+                            size="md"
+                            className="w-full gap-2"
+                            onClick={handleBillingDetails}
+                          >
+                            <EditIcon className="w-4 h-4" />
+                            Edit Billing Details
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        variant="primary"
-                        size="md"
-                        fullWidth={true}
-                        className="mt-4"
-                        onClick={handleBillingDetails}
-                      >
-                        Add Billing Details
-                      </Button>
+                    )}
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                      <div className="flex items-center gap-3">
+                        <ReceiptIcon className="w-5 h-5 text-blue-500" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                          Order Summary
+                        </h3>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="p-2 space-y-4">
-                      <div className="grid p-2 lg:py-2 lg:px-4 grid-cols-1 gap-4 lg:gap-2">
-                        <div>
-                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                            Company Name
-                          </Label>
-                          <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
-                            {billingDetails.companyName || "N/A"}
-                          </p>
+
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                      <div className="p-3 space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            Plan
+                          </span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {plan?.name || "N/A"}
+                          </span>
                         </div>
 
-                        <div>
-                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                            Email
-                          </Label>
-                          <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
-                            {billingDetails.email || email || "N/A"}
-                          </p>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                            Phone
-                          </Label>
-                          <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
-                            {billingDetails.phone || phone || "N/A"}
-                          </p>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                            Address
-                          </Label>
-                          <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
-                            {billingDetails.addressLine1 || "N/A"}
-                            {billingDetails.addressLine2 && (
-                              <span>, {billingDetails.addressLine2}</span>
-                            )}
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {billingDetails.city || "N/A"},{" "}
-                            {billingDetails.state || "N/A"},{" "}
-                            {billingDetails.postalCode || "N/A"}
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {billingDetails.country || "N/A"}
-                          </p>
-                        </div>
-
-                        <div>
-                          <Label className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                            Tax ID
-                          </Label>
-                          <p className="font-medium text-gray-900 dark:text-gray-100 mt-1">
-                            {billingDetails.gstin || "N/A"}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="md"
-                        fullWidth={true}
-                        onClick={handleBillingDetails}
-                      >
-                        Edit Billing Details
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Order Summary */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                      Order Summary
-                    </h3>
-                  </div>
-
-                  <div className="p-4 lg:p-6 space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Plan:
-                        </span>
-                        <span className="text-sm font-medium">
-                          {plan?.name || "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Duration :
-                        </span>
-                        <div className="text-right">
-                          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            {(() => {
-                              const startDate = new Date();
-                              const endDate = new Date();
-
-                              if (selectedDuration === "yearly") {
+                        <div className="flex justify-between items-start">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            Billing Period
+                          </span>
+                          <div className="text-right">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {selectedDuration === "yearly"
+                                ? "Annual"
+                                : "Monthly"}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-end gap-1">
+                              <CalendarIcon className="h-3.5 w-3.5" />
+                              {(() => {
+                                const startDate = new Date();
+                                const endDate = new Date();
                                 endDate.setFullYear(
-                                  startDate.getFullYear() + 1
+                                  startDate.getFullYear() +
+                                    (selectedDuration === "yearly" ? 1 : 0)
                                 );
-                              } else {
-                                endDate.setMonth(startDate.getMonth() + 1);
-                              }
+                                endDate.setMonth(
+                                  startDate.getMonth() +
+                                    (selectedDuration === "yearly" ? 0 : 1)
+                                );
 
-                              const formatOptions = {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              };
-
-                              return (
-                                <span className="flex flex-col items-end gap-1">
-                                  <span className="flex items-center gap-1">
-                                    <CalendarIcon className="h-3 w-3" />
-                                    {startDate.toLocaleDateString(
-                                      "en-IN",
-                                      formatOptions
-                                    )}{" "}
+                                return (
+                                  <span>
+                                    {startDate.toLocaleDateString("en-IN", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}{" "}
                                     –{" "}
-                                    {endDate.toLocaleDateString(
-                                      "en-IN",
-                                      formatOptions
-                                    )}
+                                    {endDate.toLocaleDateString("en-IN", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })}
                                   </span>
-                                  <span className="text-xs text-gray-400">
-                                    (
-                                    {selectedDuration === "yearly"
-                                      ? "12 months"
-                                      : "1 month"}
-                                    )
-                                  </span>
-                                </span>
-                              );
-                            })()}
+                                );
+                              })()}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Subtotal:
-                        </span>
-                        <span className="text-sm font-medium">
-                          ₹
-                          {prices?.base?.toLocaleString("en-IN", {
-                            maximumFractionDigits: 2,
-                          }) || "0.00"}
-                        </span>
-                      </div>
 
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Tax ({prices?.taxRate || 0}%):
-                        </span>
-                        <span className="text-sm font-medium">
-                          ₹
-                          {prices?.tax?.toLocaleString("en-IN", {
-                            maximumFractionDigits: 2,
-                          }) || "0.00"}
-                        </span>
-                      </div>
-
-                      {/*<CouponInput
-                        plan={plan}
-                        workspaceId={workspaceId}
-                        applied={appliedCoupon}
-                        shown={isCouponShown}
-                        onShown={setIsCouponShown}
-                        onApplied={setAppliedCoupon}
-                        discount={prices.discount}
-                      />*/}
-
-                      <div className="pt-3 mt-2 border-t border-gray-200 dark:border-gray-600">
-                        <div className="flex justify-between items-center">
-                          <span className="text-base font-bold text-gray-900 dark:text-gray-200">
-                            Total:
+                      <div className="p-3 space-y-3 bg-gray-50/50 dark:bg-gray-700/20">
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            Subtotal
                           </span>
-                          <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                            ₹
-                            {prices?.total?.toLocaleString("en-IN", {
-                              maximumFractionDigits: 2,
-                            }) || "0.00"}
-                            {selectedDuration === "yearly" && (
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            ₹{prices?.base?.toLocaleString("en-IN") || "0.00"}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            Tax ({prices?.taxRate || 0}%)
+                          </span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            ₹{prices?.tax?.toLocaleString("en-IN") || "0.00"}
+                          </span>
+                        </div>
+                        <CouponInput
+                          workspaceId={workspaceId}
+                          plan={plan}
+                          applied={appliedCoupon}
+                          shown={showCoupon}
+                          onShown={setShowCoupon}
+                          discount={prices.discount}
+                          onApplied={setAppliedCoupon}
+                        />
+                      </div>
+
+                      <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10">
+                        <div className="flex justify-between items-center">
+                          <span className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                            Total Due
+                          </span>
+                          <div className="text-right">
+                            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                              ₹
+                              {prices?.total?.toLocaleString("en-IN") || "0.00"}
+                            </span>
+                            {selectedDuration === "yearly" && prices.base && (
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {prices.base &&
-                                  `(₹${Math.round(
-                                    prices.base / 12
-                                  ).toLocaleString("en-IN")}/mo)`}
+                                (₹
+                                {Math.round(prices.base / 12).toLocaleString(
+                                  "en-IN"
+                                )}
+                                /mo)
                               </div>
                             )}
-                          </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Terms and Conditions */}
-                    <div className="space-y-4">
+                    {/* Terms and Payment */}
+                    <div className="p-5 space-y-4">
                       {trialDays > 0 && (
                         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800/50">
                           <div className="flex items-start gap-3">
-                            <InfoIcon className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                            <InfoIcon className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                             <div>
                               <h4 className="font-medium text-blue-800 dark:text-blue-200">
                                 {trialDays}-Day Free Trial
@@ -1077,48 +1104,44 @@ const PlanInfoCheckoutPage = () => {
                         </div>
                       )}
 
-                      <div className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <input
+                      <div className="flex items-center justify-start gap-3">
+                        <Checkbox
                           id="terms"
-                          type="checkbox"
                           checked={isAgreed}
-                          onChange={(e) => {
+                          onCheckedChange={(checked) => {
                             if (!billingDetails) {
                               setUpdateBillingDetails(true);
                               return;
                             }
-                            setIsAgreed(e.target.checked);
+                            setIsAgreed(checked);
                           }}
-                          className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                         />
-                        <div className="text-sm">
-                          <Label
-                            htmlFor="terms"
-                            className="text-gray-600 cursor-pointer dark:text-gray-400"
+                        <Label
+                          htmlFor="terms"
+                          className="text-sm font-normal leading-5"
+                        >
+                          I agree to the{" "}
+                          <Link
+                            href="/terms"
+                            className="text-blue-600 hover:underline dark:text-blue-400"
                           >
-                            I agree to the{" "}
-                            <Link
-                              href="/terms"
-                              className="text-blue-600 hover:underline dark:text-blue-400"
-                            >
-                              Terms of Service
-                            </Link>{" "}
-                            and{" "}
-                            <Link
-                              href="/privacy"
-                              className="text-blue-600 hover:underline dark:text-blue-400"
-                            >
-                              Privacy Policy
-                            </Link>
-                            , and authorize recurring payments.
-                          </Label>
-                          {!isAgreed && (
-                            <p className="text-red-500 text-xs mt-1">
-                              You must agree to the terms to proceed
-                            </p>
-                          )}
-                        </div>
+                            Terms of Service
+                          </Link>{" "}
+                          and{" "}
+                          <Link
+                            href="/privacy"
+                            className="text-blue-600 hover:underline dark:text-blue-400"
+                          >
+                            Privacy Policy
+                          </Link>
+                          , and authorize recurring payments.
+                        </Label>
                       </div>
+                      {!isAgreed && (
+                        <p className="text-red-500 text-xs -mt-3">
+                          You must agree to the terms to proceed
+                        </p>
+                      )}
 
                       <PayButton
                         onSetModal={setShowVerificationModal}
@@ -1136,13 +1159,12 @@ const PlanInfoCheckoutPage = () => {
                         onPaymentStatus={setPaymentStatus}
                         cycle={selectedDuration}
                         profile={billingDetails || formData}
+                        className="w-full"
                       />
 
-                      <div className="flex flex-col items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <LockIcon className="h-3 w-3" />
-                          <span>Secure 256-bit SSL encrypted payment</span>
-                        </div>
+                      <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <LockIcon className="w-3.5 h-3.5" />
+                        <span>Secure 256-bit SSL encrypted payment</span>
                       </div>
                     </div>
                   </div>
@@ -1151,20 +1173,9 @@ const PlanInfoCheckoutPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };
-
-const LoadingSkeleton = () => (
-  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-    <div className="flex items-center space-x-4">
-      <SpinnerIcon className="h-8 w-8 animate-spin text-blue-500" />
-      <span className="text-gray-600 dark:text-gray-400">
-        Loading plan details...
-      </span>
-    </div>
-  </div>
-);
 
 export default PlanInfoCheckoutPage;

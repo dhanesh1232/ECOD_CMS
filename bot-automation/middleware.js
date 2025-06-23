@@ -33,8 +33,6 @@ export async function middleware(req) {
     secret: process.env.NEXTAUTH_SECRET,
     cookieName: cookies_name,
   });
-
-  console.log(token, "initial call of token"); /// is this run first right
   // Skip middleware for API, static files, etc.
   if (shouldSkipMiddleware(pathname)) {
     return NextResponse.next();
@@ -56,10 +54,15 @@ export async function middleware(req) {
     if (!token?.workspaceSlug && token.email !== isAdmin) {
       return NextResponse.redirect(new URL("/workspaces", origin));
     }
+    if (
+      callbackUrl &&
+      callbackUrl.startsWith("/") &&
+      !callbackUrl.startsWith("/auth")
+    ) {
+      return NextResponse.redirect(new URL(callbackUrl, origin));
+    }
 
-    return NextResponse.redirect(
-      new URL(`/${token.workspaceSlug}/dashboard`, origin)
-    );
+    return NextResponse.redirect(new URL(`/`, origin));
   }
 
   // Allow access to 404 page for authenticated users

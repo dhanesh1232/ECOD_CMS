@@ -105,11 +105,11 @@ export const PLANS = {
     description: "Ideal for solopreneurs & SaaS founders getting started",
     prices: { monthly: 999, yearly: 9999 },
     limits: {
-      chatbots: 2,
+      chatbots: 3,
       messages: 3000,
       members: 2,
       storage: 5,
-      conversations: 1000,
+      conversations: 2000,
       integrations: 2,
       automationRules: 3,
       dripCampaigns: 2,
@@ -192,7 +192,7 @@ export const PLANS = {
     metadata: {
       recommended: false,
       popular: false,
-      trialDays: 3,
+      trialDays: 0,
     },
   },
   pro: {
@@ -201,7 +201,7 @@ export const PLANS = {
     description: "Advanced features for growing businesses with AI-powered ads",
     prices: { monthly: 2499, yearly: 23999 },
     limits: {
-      chatbots: 5,
+      chatbots: 10,
       messages: 10000,
       members: 10,
       storage: 50,
@@ -288,7 +288,7 @@ export const PLANS = {
     metadata: {
       recommended: false,
       popular: true,
-      trialDays: 5,
+      trialDays: 0,
     },
   },
   growth: {
@@ -296,10 +296,10 @@ export const PLANS = {
     name: "Growth",
     description:
       "For scaling businesses with advanced automation & team collaboration",
-    prices: { monthly: 4999, yearly: 47999 },
+    prices: { monthly: 4999, yearly: 44999 },
     limits: {
-      chatbots: 15,
-      messages: 50000,
+      chatbots: "Infinity",
+      messages: 25000,
       members: 30,
       storage: 250,
       conversations: 25000,
@@ -385,7 +385,7 @@ export const PLANS = {
     metadata: {
       recommended: true,
       popular: false,
-      trialDays: 7,
+      trialDays: 0,
     },
   },
   enterprise: {
@@ -492,7 +492,7 @@ export const PLANS = {
     metadata: {
       recommended: false,
       popular: false,
-      trialDays: 14,
+      trialDays: 0,
       implementationSupport: true,
     },
   },

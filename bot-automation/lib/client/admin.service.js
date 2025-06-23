@@ -130,4 +130,14 @@ export const AdminServices = {
       body: JSON.stringify(formData),
     });
   },
+
+  //Cron jobs
+  updateCouponStatusCron: async (options = {}) => {
+    return fetchWithRetry(`/api/admin/cron/coupon`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
 };

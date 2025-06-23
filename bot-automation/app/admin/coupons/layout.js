@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { SUPER_ADMIN_COUPON_NAVS } from "@/data/bot-links";
+import { AdminServices } from "@/lib/client/admin.service";
 import { MenuCouponIcon } from "@/public/Images/svg_ecod";
 import { X, Menu, BadgePercent } from "lucide-react";
 import Link from "next/link";
@@ -27,6 +28,18 @@ export default function Layout({ children }) {
   const toggleMobileMenu = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
   }, []);
+  const handleStatusChange = async () => {
+    try {
+      const res = await AdminServices.updateCouponStatusCron();
+      if (res?.status && !res.ok) {
+        const v = await res.json();
+        console.log(v);
+      }
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // Memoize nav items to avoid unnecessary recalculations
   const navItems = useMemo(
@@ -106,6 +119,14 @@ export default function Layout({ children }) {
           <h3 className="capitalize text-lg font-semibold text-gray-700 dark:text-gray-300">
             {currentPathSegments}
           </h3>
+          <Button
+            onClick={handleStatusChange}
+            type="button"
+            variant="outline"
+            className="justify-self-end"
+          >
+            Update
+          </Button>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">

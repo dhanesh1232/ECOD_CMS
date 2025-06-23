@@ -117,7 +117,7 @@ export default function CouponInput({
     <div className="w-full">
       {!applied ? (
         shown ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-0">
             <div className="flex justify-between items-center">
               <Label htmlFor="coupon" className="text-sm font-medium">
                 Discount Code
@@ -135,7 +135,6 @@ export default function CouponInput({
                 <Minus className="h-4 w-4" />
               </Button>
             </div>
-
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
@@ -160,7 +159,7 @@ export default function CouponInput({
                   <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
                 )}
                 {state.error && (
-                  <X className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-destructive" />
+                  <X className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                 )}
               </div>
               <Button
@@ -178,9 +177,8 @@ export default function CouponInput({
                 )}
               </Button>
             </div>
-
             {state.error && (
-              <p className="text-sm text-destructive mt-1">{state.error}</p>
+              <p className="text-sm text-red-600 mt-1">{state.error}</p>
             )}
           </div>
         ) : (
@@ -188,7 +186,7 @@ export default function CouponInput({
             variant="link"
             size="sm"
             onClick={() => onShown(true)}
-            className="text-primary hover:text-primary/80 p-0 h-auto"
+            className="text-blue-600 hover:text-blue-600/80 p-0 h-auto"
           >
             Have a coupon code?
           </Button>

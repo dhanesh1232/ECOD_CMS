@@ -1,4 +1,5 @@
 "use client";
+import { OverlayLoader } from "@/components/animate/overlay_loader";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast-provider";
 import { AdminServices } from "@/lib/client/admin.service";
 import { billingService } from "@/lib/client/billing";
-import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { encryptData } from "@/utils/encryption";
 import {
   CheckCircle,
@@ -37,7 +37,6 @@ import {
   List,
   Check,
   X,
-  ArrowRight,
   HelpCircle,
   Shield,
   BrainCircuit,
@@ -45,6 +44,7 @@ import {
   Megaphone,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -252,6 +252,7 @@ export default function Page() {
       pn: encryptData(userCred.phone),
       id: encryptData(plan._id),
     };
+    console.log(plan._id);
     const params = new URLSearchParams(obj).toString();
     router.replace(`/${workspaceId}/plans/checkout?${params}`);
   };
@@ -450,9 +451,41 @@ export default function Page() {
                 </div>
               )
             )}
+            <Button
+              onClick={() => handlePlanSelection(plan)}
+              size="md"
+              variant={
+                plan.metadata.popular
+                  ? "ocean"
+                  : isEnterprise
+                  ? "premium"
+                  : isFree
+                  ? "ghost"
+                  : "outline"
+              }
+              className="flex items-center gap-1 my-1"
+              disabled={isCurrentPlan}
+            >
+              {isCurrentPlan ? (
+                <>
+                  <CheckCircle className="text-green-500 dark:text-green-400" />
+                  Current Plan
+                </>
+              ) : (
+                <>
+                  {plan.name.toLowerCase() !== "enterprise" ? (
+                    <>
+                      Get Started <ChevronRight size={16} />{" "}
+                    </>
+                  ) : (
+                    "Contact Sales"
+                  )}
+                </>
+              )}
+            </Button>
           </CardHeader>
 
-          <CardContent className="flex-1 pt-6">
+          <CardContent className="flex-1 pt-0">
             {/* Limits Section */}
             <div className="mb-8">
               <h4 className="font-semibold text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
@@ -560,8 +593,8 @@ export default function Page() {
                   : plan.metadata?.popular
                   ? "ocean"
                   : isFree
-                  ? "outline"
-                  : "default"
+                  ? "ghost"
+                  : "primary"
               }
               onClick={() => handlePlanSelection(plan)}
               disabled={isCurrentPlan}
@@ -576,10 +609,14 @@ export default function Page() {
                   <Rocket />
                   Start {plan.metadata.trialDays}-Day Free Trial
                 </span>
-              ) : (
+              ) : !isEnterprise ? (
                 <span className="flex items-center justify-center gap-2">
                   <Rocket />
                   Get {plan.name}
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  Contact Sales
                 </span>
               )}
             </Button>
@@ -815,14 +852,6 @@ export default function Page() {
     );
   };
 
-  if (loading || !plans.length) {
-    return (
-      <div className="flex w-full items-center justify-center h-[500px]">
-        <SpinnerIcon />
-      </div>
-    );
-  }
-
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 h-full overflow-y-auto scrollbar-transparent p-0 m-0">
       <div className="max-w-7xl mx-auto space-y-10 py-8 px-4 sm:px-6 lg:px-8">
@@ -847,7 +876,7 @@ export default function Page() {
             </Button>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div className="space-y-2">
               <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                 Find Your Perfect Plan
@@ -879,15 +908,19 @@ export default function Page() {
             </div>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
-          ))}
-        </div>
-
-        {renderComparisonTable()}
-
+        {loading && plans.length === 0 && <div className="w-full h-full" />}
+        {loading && plans.length === 0 ? (
+          <OverlayLoader open={loading && !plans.length} />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {plans.map((plan) => (
+                <PlanCard key={plan.id} plan={plan} />
+              ))}
+            </div>
+            {renderComparisonTable()}
+          </>
+        )}
         <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-4 py-1 rounded-full text-sm font-medium mb-4">

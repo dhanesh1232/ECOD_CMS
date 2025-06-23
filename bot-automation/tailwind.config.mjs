@@ -13,6 +13,15 @@ module.exports = {
         border: "hsl(var(--border))",
         ring: "hsl(var(--ring))",
       },
+      animation: {
+        highlight: "highlight 1.5s infinite",
+      },
+      keyframes: {
+        highlight: {
+          "0%, 100%": { opacity: "0.3", scale: "1" },
+          "50%": { opacity: "1", scale: "1.3", backgroundColor: "#3b82f6" },
+        },
+      },
     },
   },
   plugins: [],

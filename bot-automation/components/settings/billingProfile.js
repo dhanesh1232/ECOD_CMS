@@ -92,7 +92,7 @@ export const BillingProfile = () => {
   };
 
   const handlePhoneInput = (value) => {
-    setFormData((prev) => ({ phone: value || "" }));
+    setFormData((prev) => ({ ...prev, phone: value || "" }));
   };
   const validateForm = () => {
     const newErrors = {};
