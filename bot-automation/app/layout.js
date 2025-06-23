@@ -23,7 +23,7 @@ export const metadata = {
   description:
     "Automate your WhatsApp business communications with our powerful bot solution",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://yourdomain.com"
+    process.env.NEXT_PUBLIC_BASE_URL || "https://ecodrix.com"
   ),
   alternates: {
     canonical: "/",
@@ -34,7 +34,7 @@ export const metadata = {
   openGraph: {
     title: "ECODIfy - WhatsApp Automation Bot",
     description: "Automate your WhatsApp business communications",
-    url: "https://yourdomain.com",
+    url: "https://ecodrix.com",
     siteName: "WhatsAuto",
     images: [
       {

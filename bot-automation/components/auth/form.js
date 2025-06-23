@@ -4,12 +4,7 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import dynamic from "next/dynamic";
 import { signIn } from "next-auth/react";
-import {
-  useParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Logo from "../logo";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -237,8 +232,6 @@ const successVariants = {
 };
 
 export default function FormComponent() {
-  const params = useParams();
-  const workspaceId = params.workspaceId;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -479,7 +472,7 @@ export default function FormComponent() {
             password: formState.password,
             remember: formState.remember,
             redirect: false,
-            callbackUrl: `/${workspaceId}/dashboard`,
+            callbackUrl: `/`,
           };
           // Add email or phone based on active tab
           if (activeTab === "EMAIL") {
@@ -506,7 +499,7 @@ export default function FormComponent() {
               toastRef.current = true;
             }
           } else {
-            router.push(`/${workspaceId}/dashboard`);
+            router.push(`/`);
           }
         } catch (error) {
           // Log any unexpected errors and display a generic error message
@@ -1225,7 +1218,7 @@ export default function FormComponent() {
                   key={provider.id}
                   onClick={() =>
                     signIn(provider.id, {
-                      callbackUrl: `/${workspaceId}/dashboard`,
+                      callbackUrl: `/`,
                       redirect: false,
                     })
                   }

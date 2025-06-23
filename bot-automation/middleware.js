@@ -1,41 +1,40 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { PUBLIC_PATHS, SLUG_REGEX } from "./lib/validator";
 
 // Validate workspace slug format (prefix-xxxx-xxxx or xxxx-xxxx)
 const isValidWorkspaceSlug = (slug) => {
-  return /^(?:[a-z0-9]+-)?[a-z0-9]{4}-[a-z0-9]{4}$/.test(slug);
+  return SLUG_REGEX.test(slug);
 };
 
 // Cache for workspace access verification (short-lived)
 const accessCache = new Map();
 const CACHE_TTL = 5000; // 5 seconds
-
-// Allowed auth paths for unauthenticated users
-const ALLOWED_UNAUTH_PATHS = [
-  "/auth/register",
-  "/auth/login",
-  "/auth/verify-account",
-  "/auth/forgot-password",
-  "/auth/reset-password",
-  "/auth/error",
-  "/404", // Allow 404 page for everyone
-];
-
+const isProd = process.env.NODE_ENV === "production";
+const cookies_name = isProd
+  ? "__Secure-next-auth.session-token"
+  : "next-auth.session-token";
+const isAdmin = process.env.SUPER_ADMIN_EMAIL;
 // List of valid paths that don't require workspace slug
 const VALID_NON_WORKSPACE_PATHS = ["/workspaces", "/404", "/500", "/forbidden"];
-
+const SKIP_PATHS = [
+  "/api/",
+  "/_next/",
+  "/static/",
+  "/favicon.ico",
+  "/500",
+  "/forbidden",
+];
 export async function middleware(req) {
   const { pathname, origin, searchParams } = new URL(req.url);
   const callbackUrl = searchParams.get("callbackUrl");
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
+    cookieName: cookies_name,
   });
 
+  console.log(token, "initial call of token"); /// is this run first right
   // Skip middleware for API, static files, etc.
   if (shouldSkipMiddleware(pathname)) {
     return NextResponse.next();
@@ -44,7 +43,7 @@ export async function middleware(req) {
   // Handle unauthenticated users
   if (!token) {
     // Allow only specific auth paths and 404
-    if (ALLOWED_UNAUTH_PATHS.some((path) => pathname.startsWith(path))) {
+    if (PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
       return NextResponse.next();
     }
     // Redirect all other paths to login with callback URL
@@ -54,24 +53,17 @@ export async function middleware(req) {
   }
   // Block access to auth paths
   if (pathname.startsWith("/auth")) {
-    // If coming from auth callback, honor the callbackUrl if valid
-    if (
-      callbackUrl &&
-      callbackUrl.startsWith("/") &&
-      !callbackUrl.startsWith("/auth")
-    ) {
-      return NextResponse.redirect(new URL(callbackUrl, origin));
+    if (!token?.workspaceSlug && token.email !== isAdmin) {
+      return NextResponse.redirect(new URL("/workspaces", origin));
     }
-    return NextResponse.redirect(new URL("/", origin));
+
+    return NextResponse.redirect(
+      new URL(`/${token.workspaceSlug}/dashboard`, origin)
+    );
   }
 
   // Allow access to 404 page for authenticated users
   if (pathname === "/404") {
-    if (token && token.workspaceSlug) {
-      return NextResponse.redirect(
-        new URL(`/${token.workspaceSlug}/dashboard`, origin)
-      );
-    }
     return NextResponse.next();
   }
 
@@ -93,16 +85,11 @@ export async function middleware(req) {
     }
 
     // If user doesn't have a workspaceSlug, redirect to workspaces page
-    if (!userWorkspaceSlug) {
+    if (!userWorkspaceSlug || !isValidWorkspaceSlug(userWorkspaceSlug)) {
       return NextResponse.redirect(new URL("/workspaces", origin));
     }
 
-    // Validate workspace slug format
-    if (!isValidWorkspaceSlug(userWorkspaceSlug)) {
-      return NextResponse.redirect(new URL("/workspaces", origin));
-    }
-
-    // Handle root path - redirect to workspace dashboard
+    // ✅ Handle root path before slug validation
     if (pathname === "/") {
       return NextResponse.redirect(
         new URL(`/${userWorkspaceSlug}/dashboard`, origin)
@@ -140,7 +127,6 @@ export async function middleware(req) {
 
         return response;
       } catch (error) {
-        console.error("Workspace access verification failed:", error);
         return NextResponse.redirect(new URL("/500", origin));
       }
     }
@@ -158,14 +144,9 @@ export async function middleware(req) {
 
 // Helper functions
 function shouldSkipMiddleware(pathname) {
-  return [
-    "/api/",
-    "/_next/",
-    "/static/",
-    "/favicon.ico",
-    "/500",
-    "/forbidden",
-  ].some((path) => pathname.startsWith(path) || pathname === path);
+  return SKIP_PATHS.some(
+    (path) => pathname.startsWith(path) || pathname === path
+  );
 }
 
 async function verifyWorkspaceAccess(userId, workspaceSlug) {
@@ -197,7 +178,6 @@ async function verifyWorkspaceAccess(userId, workspaceSlug) {
       error: res.status !== 200,
     };
   } catch (error) {
-    console.error("Access verification failed:", error);
     return { error: "Network error", redirectTo: "/500" };
   }
 }
@@ -212,14 +192,13 @@ function handleWorkspaceSwitch(verificationResult, req, origin) {
   const response = NextResponse.next();
   if (verificationResult.workspace) {
     response.cookies.set({
-      name:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-next-auth.session-token.workspace"
-          : "next-auth.session-token.workspace",
+      name: isProd
+        ? "__Secure-next-auth.session-token.workspace"
+        : "next-auth.session-token.workspace",
       value: verificationResult.workspace.slug,
       path: "/",
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
     });
   }
   return response;

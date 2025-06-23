@@ -8,11 +8,13 @@ import validator from "validator";
 import { Workspace } from "@/models/user/workspace";
 import mongoose from "mongoose";
 import { generateRandomSlug } from "@/lib/slugGenerator";
-
+const isProd = process.env.NODE_ENV === "production";
 const isAdmin = process.env.SUPER_ADMIN_EMAIL;
 const getCookiesSettings = () => {
-  const isProd = process.env.NODE_ENV === "production";
-  const ecodDomain = process.env.NEXTAUTH_URL?.includes("ecodrix.com");
+  const ecodDomain = process.env.NEXTAUTH_URL?.includes(
+    process.env.AUTH_DOMAIN
+  );
+  const domain = process.env.AUTH_DOMAIN;
   return {
     sessionToken: {
       name: isProd
@@ -25,7 +27,7 @@ const getCookiesSettings = () => {
         secure: isProd,
         domain:
           isProd && ecodDomain
-            ? "ecodrix.com" // Root domain for production
+            ? domain // Root domain for production
             : undefined,
       },
     },
@@ -38,7 +40,7 @@ const getCookiesSettings = () => {
         sameSite: "lax",
         path: "/",
         secure: isProd,
-        domain: isProd && ecodDomain ? "ecodrix.com" : undefined,
+        domain: isProd && ecodDomain ? domain : undefined,
       },
     },
   };
@@ -207,7 +209,7 @@ const handleGoogleSignIn = async (profile) => {
       role: userData.role,
       provider: "google",
       requiresProfileCompletion: userData.requiresProfileCompletion ?? true,
-      ...(isAdmin !== userData.email && { workspaceSlug }),
+      workspaceSlug: isAdmin !== userData.email ? workspaceSlug : undefined,
     };
   } catch (error) {
     if (session.inTransaction()) {
@@ -235,7 +237,7 @@ export const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   cookies: getCookiesSettings(),
-  useSecureCookies: process.env.NODE_ENV === "production",
+  useSecureCookies: isProd,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -274,32 +276,17 @@ export const authOptions = {
         token.picture = user.image;
         token.role = user.role;
         token.provider = account?.provider || "credentials";
-
-        const isSuperAdmin =
-          user.email === isAdmin && user.role === "super_admin";
-        if (!isSuperAdmin) {
-          token.workspaceSlug = user.workspaceSlug || null;
-        }
+        token.workspaceSlug =
+          user.email === isAdmin ? undefined : user.workspaceSlug;
       }
 
-      if (
-        token.userId &&
-        !token.workspaceSlug &&
-        (token.email !== isAdmin || token.role !== "super_admin")
-      ) {
+      // Only lookup workspace if not already set and not admin
+      if (!token.workspaceSlug && token.userId && token.email !== isAdmin) {
         const dbUser = await User.findById(token.userId)
           .select("currentWorkspace")
           .populate("currentWorkspace", "slug");
 
-        token.workspaceSlug = dbUser?.currentWorkspace?.slug;
-
-        if (!token.workspaceSlug) {
-          const workspace = await Workspace.findOne({
-            "members.user": token.userId,
-          }).select("slug");
-
-          token.workspaceSlug = workspace?.slug || null;
-        }
+        token.workspaceSlug = dbUser?.currentWorkspace?.slug || null;
       }
 
       return token;
@@ -315,7 +302,8 @@ export const authOptions = {
         image: token.picture,
         role: token.role,
         provider: token.provider,
-        ...(isSuperAdmin ? {} : { workspaceSlug: token.workspaceSlug }),
+        workspaceSlug:
+          token.email === isAdmin ? undefined : token.workspaceSlug,
       };
 
       if (!isSuperAdmin && !session.user.workspaceSlug && token.userId) {

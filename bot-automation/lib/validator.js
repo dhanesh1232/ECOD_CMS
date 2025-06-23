@@ -53,3 +53,13 @@ export function generateStrongVerificationCode(digi = 6) {
   const code = buffer.readUIntBE(0, 3) % 1000000; // Modulo to keep within 6 digits
   return code.toString().padStart(digi, "0"); // Pad with leading 0s if needed
 }
+
+export const SLUG_REGEX = /^(?:[a-z0-9]+-)?[a-z0-9]{4}-[a-z0-9]{4}$/;
+export const PUBLIC_PATHS = [
+  "/auth/register",
+  "/auth/login",
+  "/auth/verify-account",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/error",
+];

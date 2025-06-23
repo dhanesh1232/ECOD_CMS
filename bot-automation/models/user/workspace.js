@@ -4,6 +4,7 @@ import validator from "validator";
 import slugify from "slugify";
 import { PLANS, PricingUtils } from "@/config/pricing.config";
 import { Subscription } from "../payment/subscription";
+import { SLUG_REGEX } from "@/lib/validator";
 
 const workspaceSchema = new mongoose.Schema(
   {
@@ -21,7 +22,7 @@ const workspaceSchema = new mongoose.Schema(
       immutable: true,
       validate: {
         validator: function (v) {
-          return /^(?:[a-z0-9]+-)?[a-z0-9]{4}-[a-z0-9]{4}$/.test(v);
+          return SLUG_REGEX.test(v);
         },
         message: (props) =>
           `${props.value} is invalid. Slug must be in format xxxx-xxxx or prefix-xxxx-xxxx, with no ambiguous characters (0/o/1/i/l).`,
