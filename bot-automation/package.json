@@ -71,6 +71,7 @@
     "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.487.0",
     "maxmind": "^4.3.24",
+    "moment-timezone": "^0.6.0",
     "mongoose": "^8.14.1",
     "next": "^15.3.2",
     "next-auth": "^4.24.11",

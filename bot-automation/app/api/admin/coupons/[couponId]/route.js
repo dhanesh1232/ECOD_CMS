@@ -15,22 +15,8 @@ export async function GET(request, { params }) {
     }
 
     const coupon = await Coupon.findById(couponId).lean();
-
     if (!coupon) {
       return ErrorHandles.UserNotFound("Coupon not found");
-    }
-
-    // Calculate current status
-    const status = getCouponStatus(
-      coupon.validity.start,
-      coupon.validity.end,
-      coupon.status
-    );
-
-    // Update status if changed
-    if (status !== coupon.status) {
-      await Coupon.findByIdAndUpdate(couponId, { status });
-      coupon.status = status;
     }
 
     // Format response data
