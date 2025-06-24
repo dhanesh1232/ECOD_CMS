@@ -72,10 +72,12 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <DarkModeProvider>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
         >
           <Header />
-          {children}
+          <main className="h-full overflow-y-auto bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100">
+            {children}
+          </main>
         </body>
       </DarkModeProvider>
     </html>

@@ -81,16 +81,13 @@ export const billingService = {
     );
   },
   createPaymentOrder: async (workspaceId, data, options = {}) => {
-    return fetchWithRetry(
-      `/api/workspace/${workspaceId}/subscription/create-payment`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers,
-        body: JSON.stringify(data),
-        ...options,
-      }
-    );
+    return fetchWithRetry(`/api/workspace/${workspaceId}/subscription/create`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: JSON.stringify(data),
+      ...options,
+    });
   },
   updateFailedPayment: async (workspaceId, id, options = {}) => {
     return fetchWithRetry(`/api/workspace/${workspaceId}/subscription/failed`, {
@@ -102,16 +99,13 @@ export const billingService = {
     });
   },
   verifyPayment: async (workspaceId, paymentData, options = {}) => {
-    return fetchWithRetry(
-      `/api/workspace/${workspaceId}/subscription/verify-payment`,
-      {
-        method: "POST",
-        credentials: "include",
-        headers,
-        body: JSON.stringify(paymentData),
-        ...options,
-      }
-    );
+    return fetchWithRetry(`/api/workspace/${workspaceId}/subscription/verify`, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: JSON.stringify(paymentData),
+      ...options,
+    });
   },
   checkWebhookConfirmation: async (workspaceId, paymentId, options = {}) => {
     return fetchWithRetry(

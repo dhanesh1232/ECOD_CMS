@@ -7,6 +7,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast-provider";
 import { AdminServices } from "@/lib/client/admin.service";
@@ -908,7 +909,15 @@ export default function Page() {
             </div>
           </div>
         </div>
-        {loading && plans.length === 0 && <div className="w-full h-full" />}
+        {loading && plans.length === 0 && (
+          <div className="w-full h-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5].map((_, each) => (
+                <Skeleton className="w-full h-[450px] rounded-lg" key={each} />
+              ))}
+            </div>
+          </div>
+        )}
         {loading && plans.length === 0 ? (
           <OverlayLoader open={loading && !plans.length} />
         ) : (

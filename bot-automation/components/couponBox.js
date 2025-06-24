@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Check, X } from "lucide-react";
+import { Minus, Check, X, Trash } from "lucide-react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -132,7 +132,7 @@ export default function CouponInput({
                 className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                 aria-label="Close coupon input"
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-4 w-4 text-red-600" />
               </Button>
             </div>
             <div className="flex gap-2">
@@ -164,14 +164,12 @@ export default function CouponInput({
               </div>
               <Button
                 variant={state.success ? "outline" : "default"}
-                onClick={state.success ? handleRemoveCoupon : handleApply}
+                onClick={handleApply}
                 disabled={state.applying}
                 className="min-w-[80px]"
               >
                 {state.applying ? (
                   <SpinnerIcon className="h-4 w-4 animate-spin" />
-                ) : state.success ? (
-                  "Remove"
                 ) : (
                   "Apply"
                 )}
@@ -197,19 +195,31 @@ export default function CouponInput({
             <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
             <div>
               <p className="text-sm font-medium">Coupon Applied</p>
-              <p className="text-xs text-muted-foreground">{applied.code}</p>
+              <p className="text-xs text-muted-foreground font-bold">
+                {applied.code}
+              </p>
             </div>
           </div>
-          <div className="text-green-600 dark:text-green-400 font-medium">
-            -₹
-            {discount.toLocaleString("en-IN", {
-              maximumFractionDigits: 2,
-            })}{" "}
-            {applied.value && applied.type === "percent" && (
-              <span className="text-sm text-muted-foreground">
-                ({applied.value})
-              </span>
-            )}
+          <div className="flex items-center gap-2">
+            <div className="text-green-600 dark:text-green-400 font-medium">
+              -₹
+              {discount.toLocaleString("en-IN", {
+                maximumFractionDigits: 2,
+              })}{" "}
+              {applied.value && applied.type === "percent" && (
+                <span className="text-sm text-muted-foreground">
+                  ({applied.value}%)
+                </span>
+              )}
+            </div>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={handleRemoveCoupon}
+              className="text-red-600 hover:text-red-600/80 p-0 h-auto"
+            >
+              <Trash size={14} />
+            </Button>
           </div>
         </div>
       )}

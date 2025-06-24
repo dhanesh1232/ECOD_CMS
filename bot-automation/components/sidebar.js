@@ -725,7 +725,10 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 <TooltipTrigger asChild>
                   <Button
                     variant="premium"
-                    onClick={() => router.push(`/${workspaceId}/plans`)}
+                    onClick={() => {
+                      router.push(`/${workspaceId}/plans`);
+                      mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen);
+                    }}
                     fullWidth
                     className={`relative flex items-center justify-center ${
                       isCollapsed ? "p-2" : ""
@@ -758,6 +761,9 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                 <Button
                   variant="primary"
                   title="Create"
+                  onClick={() =>
+                    mobileMenuOpen && setMobileMenuOpen(!mobileMenuOpen)
+                  }
                   fullWidth
                   className={`flex items-center justify-center ${
                     isCollapsed ? "p-2" : ""

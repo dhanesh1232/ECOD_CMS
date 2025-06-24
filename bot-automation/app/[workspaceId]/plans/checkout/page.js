@@ -172,7 +172,6 @@ const PlanInfoCheckoutPage = () => {
       try {
         localStorage.setItem(key, JSON.stringify(value));
       } catch (error) {
-        console.error("LocalStorage error:", error);
         if (!toastRef.current) {
           showToast({
             title: "Storage Error",
@@ -191,7 +190,6 @@ const PlanInfoCheckoutPage = () => {
       const value = localStorage.getItem(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
-      console.error("LocalStorage error:", error);
       return null;
     }
   }, []);
@@ -262,9 +260,6 @@ const PlanInfoCheckoutPage = () => {
   }, [loadFromLocalStorage]);
 
   useEffect(() => {
-    console.log(paymentStatus);
-  });
-  useEffect(() => {
     const parseQueryParams = async () => {
       try {
         const decrypted = {
@@ -287,7 +282,6 @@ const PlanInfoCheckoutPage = () => {
         saveToLocalStorage(STORAGE_KEYS.PLAN, decrypted.plan_name);
         setFormData(decrypted);
       } catch (error) {
-        console.error("Decryption error:", error);
         showToast({
           title: "Invalid Request",
           description: "Could not process your request. Please try again.",
@@ -312,7 +306,7 @@ const PlanInfoCheckoutPage = () => {
         ]);
         setPlans([...plans.plans]);
         setPlan(response.plan);
-        console.log(response.plan);
+
         setBillingDetails(profile.profile || null);
         setIsLoading(false);
       } catch (err) {
@@ -328,7 +322,6 @@ const PlanInfoCheckoutPage = () => {
       }
     };
     if (id) {
-      console.log(id);
       fetchPlan();
     }
   }, [workspaceId, id, showToast, formData]);
@@ -357,7 +350,6 @@ const PlanInfoCheckoutPage = () => {
         variant: "success",
       });
     } catch (error) {
-      console.error("Plan change error:", error);
       showToast({
         title: "Error",
         description: error.message || "Failed to change plan",
@@ -1036,6 +1028,19 @@ const PlanInfoCheckoutPage = () => {
                           </span>
                         </div>
 
+                        {prices.discount > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              Discount ({appliedCoupon?.discount_percent || 0}%)
+                            </span>
+                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                              -₹
+                              {prices?.discount?.toLocaleString("en-IN") ||
+                                "0.00"}
+                            </span>
+                          </div>
+                        )}
+
                         <div className="flex justify-between">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             Tax ({prices?.taxRate || 0}%)
@@ -1044,6 +1049,7 @@ const PlanInfoCheckoutPage = () => {
                             ₹{prices?.tax?.toLocaleString("en-IN") || "0.00"}
                           </span>
                         </div>
+
                         <CouponInput
                           workspaceId={workspaceId}
                           plan={plan}
@@ -1068,7 +1074,7 @@ const PlanInfoCheckoutPage = () => {
                             {selectedDuration === "yearly" && prices.base && (
                               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 (₹
-                                {Math.round(prices.base / 12).toLocaleString(
+                                {Math.round(prices.total / 12).toLocaleString(
                                   "en-IN"
                                 )}
                                 /mo)
@@ -1076,6 +1082,28 @@ const PlanInfoCheckoutPage = () => {
                             )}
                           </div>
                         </div>
+
+                        {prices.discount > 0 && (
+                          <div className="mt-2 pt-2 border-t border-blue-100 dark:border-blue-800/30">
+                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                              <span>Current Payment:</span>
+                              <span className="font-medium">
+                                ₹{prices.total.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <span>Next Renewal:</span>
+                              <span>
+                                ₹{prices.base.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                            {appliedCoupon?.description && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">
+                                {appliedCoupon.description}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1093,7 +1121,7 @@ const PlanInfoCheckoutPage = () => {
                                 Your card will be charged a ₹5 verification
                                 amount (refundable). After {trialDays} days,
                                 your subscription will automatically continue at
-                                ₹{prices.total?.toLocaleString("en-IN")}/
+                                ₹{prices.base?.toLocaleString("en-IN")}/
                                 {selectedDuration === "yearly"
                                   ? "year"
                                   : "month"}
@@ -1160,6 +1188,8 @@ const PlanInfoCheckoutPage = () => {
                         cycle={selectedDuration}
                         profile={billingDetails || formData}
                         className="w-full"
+                        shown={showCoupon}
+                        couponCode={appliedCoupon?.code}
                       />
 
                       <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">

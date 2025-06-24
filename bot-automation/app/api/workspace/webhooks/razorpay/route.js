@@ -52,44 +52,54 @@ export async function POST(req) {
         break;
 
       case "subscription.authenticated":
-        await _webhooksHandles.__webhooks__subscription__authenticated__(
+        console.log("subscription authenticated");
+        /*await _webhooksHandles.__webhooks__subscription__authenticated__(
           payload
-        );
+        );*/
         break;
 
       case "subscription.activated":
-        await _webhooksHandles.__webhooks__subscription__activated__(payload);
+        console.log("subscription activated");
+        //await _webhooksHandles.__webhooks__subscription__activated__(payload);
         break;
 
       case "subscription.cancelled":
-        await _webhooksHandles.__webhooks__subscription__cancelled__(payload);
+        console.log("subscription cancelled");
+        //await _webhooksHandles.__webhooks__subscription__cancelled__(payload);
         break;
       case "subscription.charged":
-        await _webhooksHandles.__webhooks__subscription__charge__(payload);
+        console.log("subscription charged");
+        //await _webhooksHandles.__webhooks__subscription__charge__(payload);
         break;
 
       case "subscription.completed":
-        await _webhooksHandles.__webhooks__subscription__completed__(payload);
+        console.log("subscription completed");
+        //await _webhooksHandles.__webhooks__subscription__completed__(payload);
         break;
 
       case "subscription.resumed":
-        await _webhooksHandles.__webhooks__subscription__resumed__(payload);
+        console.log("subscription resumed");
+        //await _webhooksHandles.__webhooks__subscription__resumed__(payload);
         break;
 
       case "invoice.paid":
-        await _webhooksHandles.__webhooks__invoice__paid__(payload);
+        console.log("invoice paid");
+        //await _webhooksHandles.__webhooks__invoice__paid__(payload);
         break;
 
       case "refund.created":
-        await _webhooksHandles.__webhooks__refunds__created__(payload);
+        console.log("refund created");
+        //await _webhooksHandles.__webhooks__refunds__created__(payload);
         break;
 
       case "refund.processed":
-        await _webhooksHandles.__webhooks__refunds__processed__(payload);
+        console.log("refund processed");
+        //await _webhooksHandles.__webhooks__refunds__processed__(payload);
         break;
 
       case "refund.failed":
-        await _webhooksHandles.__webhooks__refunds__failed__(payload);
+        console.log("refund failed");
+        //await _webhooksHandles.__webhooks__refunds__failed__(payload);
         break;
 
       default:

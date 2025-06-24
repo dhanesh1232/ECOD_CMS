@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { SUPER_ADMIN_COUPON_NAVS } from "@/data/bot-links";
 import { AdminServices } from "@/lib/client/admin.service";
 import { MenuCouponIcon } from "@/public/Images/svg_ecod";
-import { X, Menu, BadgePercent } from "lucide-react";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -104,21 +104,23 @@ export default function Layout({ children }) {
 
       {/* Main Content */}
       <main className="flex-1 p-2 sm:p-4 overflow-y-auto scrollbar-transparent">
-        <div className="flex items-center justify-start gap-4 mb-2">
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            className="lg:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Open menu"
-            title="Coupon Menu"
-          >
-            <MenuCouponIcon className="w-5 h-5" />
-          </Button>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start gap-4 mb-2">
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              className="lg:hidden p-2"
+              onClick={toggleMobileMenu}
+              aria-label="Open menu"
+              title="Coupon Menu"
+            >
+              <MenuCouponIcon className="w-5 h-5" />
+            </Button>
 
-          <h3 className="capitalize text-lg font-semibold text-gray-700 dark:text-gray-300">
-            {currentPathSegments}
-          </h3>
+            <h3 className="capitalize text-lg font-semibold text-gray-700 dark:text-gray-300">
+              {currentPathSegments}
+            </h3>
+          </div>
           <Button
             onClick={handleStatusChange}
             type="button"

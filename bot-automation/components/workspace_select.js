@@ -68,7 +68,6 @@ export default React.memo(function SelectWorkspace({
   };
 
   const workspaceItems = React.useMemo(() => {
-    console.log(workspaces);
     return workspaces.map((workspace) => (
       <SelectItem
         key={workspace.id}

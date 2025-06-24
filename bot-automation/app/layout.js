@@ -32,7 +32,7 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: "ECODIfy - WhatsApp Automation Bot",
+    title: "ECODrix - WhatsApp Automation Bot",
     description: "Automate your WhatsApp business communications",
     url: "https://ecodrix.com",
     siteName: "WhatsAuto",
@@ -41,15 +41,16 @@ export const metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "WhatsAuto Dashboard Preview",
+        alt: "ECODrix Dashboard Preview",
       },
     ],
     locale: "en_US",
     type: "website",
   },
+  icons: [{ rel: "icon", url: "/icon.svg", type: "image/svg+xml" }],
   twitter: {
     card: "summary_large_image",
-    title: "WhatsAuto - WhatsApp Automation Bot",
+    title: "ECODrIx - Chatbot Automation",
     description: "Automate your WhatsApp business communications",
     images: ["/og-image.jpg"],
     creator: "@whatsauto",
@@ -76,7 +77,11 @@ export default function RootLayout({ children }) {
       data-js-focus-visible=""
       className={`focus-visible ${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className={`antialiased`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.svg" />
+      </head>
+      <body className={`antialiased mt-0`}>
         <DarkModeProvider>
           <ToastProvider>
             <Layout>

@@ -28,6 +28,7 @@ const paymentHistorySchema = new mongoose.Schema(
       },
       paymentId: String,
       subscriptionId: String,
+      orderId: String,
       invoiceId: String,
       signature: String,
       receipt: String,

@@ -20,8 +20,8 @@ export function PayButton({
   cycle,
   profile,
   currency = "INR",
-  onSetModal,
-  onSetError,
+  shown,
+  couponCode,
 }) {
   const showToast = useToast();
   const toastRef = useRef(false);
@@ -69,24 +69,27 @@ export function PayButton({
       cycle,
       amount: price,
       currency,
+      couponCode,
     };
     try {
       onPaymentStatus(paymentStatus.LOADING);
       const res = await billingService.createPaymentOrder(workspaceId, data);
       if (res.ok === false && res.status !== 200) {
         const value = await res.json();
+        console.log(value, "value");
+        onPaymentStatus(paymentStatus.IDLE);
         throw new Error(value.message || "Payment initiation failed");
       }
       onPaymentStatus(paymentStatus.IDLE);
-      console.log(res);
-
       const options = {
         key: publicKey,
         amount: res.amount,
         currency: res.currency,
         name: "ECODrIx",
         description: `${plan.name} ${cycle} Subscription`,
-        subscription_id: res.id,
+        ...(couponCode
+          ? { order_id: res.id, save: true, recurring: true }
+          : { subscription_id: res.id }),
         prefill: {
           name: profile?.companyName,
           email: profile?.email,
@@ -98,11 +101,57 @@ export function PayButton({
           price: res.amount,
           currency: res.currency,
         },
-        handler: (response) => {
-          if (!response?.razorpay_subscription_id) {
-            throw new Error("Payment failed - no subscription ID");
+        handler: async (response) => {
+          if (couponCode && response.razorpay_order_id) {
+            try {
+              const verify = await billingService.verifyPayment(workspaceId, {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                planId: plan._id,
+                cycle,
+                plan_name: plan.name,
+                amount: res.amount,
+                currency: res.currency,
+                couponCode,
+                customer_id: res.notes.customer_id,
+              });
+              if (
+                verify.status !== 200 &&
+                typeof verify.status === "number" &&
+                !verify.ok
+              ) {
+                const value = await verify.json();
+                onPaymentStatus(paymentStatus.IDLE);
+                throw new Error(value.message || "Payment failed");
+              }
+              console.log(verify);
+              if (!toastRef.current) {
+                showToast({
+                  title: "Success",
+                  description: "Payment success",
+                  variant: "success",
+                });
+                toastRef.current = true;
+              }
+            } catch (err) {
+              if (!toastRef.current) {
+                if (!toastRef.current) {
+                  showToast({
+                    description: "Payment failed",
+                    variant: "destructive",
+                    title: "Failed",
+                  });
+                  toastRef.current = true;
+                }
+              }
+            }
+          } else {
+            if (!response?.razorpay_subscription_id) {
+              throw new Error("Payment failed - no subscription ID");
+            }
+            console.log(response);
           }
-          console.log(response);
         },
         modal: {
           ondismiss: async () => {
@@ -118,6 +167,8 @@ export function PayButton({
           },
         },
       };
+      const timer = res.expire_by * 1000;
+      console.log(timer);
       if (window.Razorpay) {
         const rzy = new window.Razorpay(options);
         try {
@@ -152,7 +203,10 @@ export function PayButton({
         onClick={handleCheckout}
         className="h-12 text-lg font-medium shadow-lg hover:shadow-xl transition-all relative overflow-hidden"
         disabled={
-          !agree || !onCompleteBilling() || status === paymentStatus.LOADING
+          !agree ||
+          !onCompleteBilling() ||
+          status === paymentStatus.LOADING ||
+          (shown && !couponCode)
         }
       >
         {status === paymentStatus.LOADING ? (
