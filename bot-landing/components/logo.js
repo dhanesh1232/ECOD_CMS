@@ -9,12 +9,20 @@ const Logo = ({
   iconClassName = "",
   textClassName = "",
   textShow = true,
+  gradientFrom = "from-green-500",
+  gradientTo = "to-blue-500",
+  iconColor = "text-white",
+  textColor = "text-gray-800 dark:text-white",
+  rounded = "rounded-lg",
+  shadow = "shadow-sm",
+  animation = "hover:scale-100 transition-transform duration-300",
 }) => {
   const classSize = {
-    sm: "text-base",
+    sm: "text-sm",
     md: "text-lg",
     lg: "text-xl",
     xl: "text-2xl",
+    "2xl": "text-3xl",
   };
 
   const iconSize = {
@@ -22,27 +30,39 @@ const Logo = ({
     md: "w-8 h-8",
     lg: "w-10 h-10",
     xl: "w-12 h-12",
+    "2xl": "w-14 h-14",
+  };
+
+  const iconInnerSize = {
+    sm: "w-3 h-3",
+    md: "w-4 h-4",
+    lg: "w-5 h-5",
+    xl: "w-6 h-6",
+    "2xl": "w-7 h-7",
   };
 
   return (
-    <div className={`flex items-center ${className}`}>
+    <div className={`flex items-center gap-3 ${className} ${animation}`}>
       {!hide && (
         <div
-          className={`flex items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-blue-500 
+          className={`flex items-center justify-center ${rounded} ${shadow} bg-gradient-to-r ${gradientFrom} ${gradientTo} 
           ${iconSize[size]} ${iconClassName}`}
         >
           <ChatBotAI
-            className={`${size === "sm" ? "w-3 h-3" : "w-6 h-6"}`}
+            className={`${iconColor} ${iconInnerSize[size]}`}
             size={size}
           />
         </div>
       )}
       {textShow && (
-        <div className={`ml-3 ${textClassName}`}>
+        <div className={`${textClassName}`}>
           <span
-            className={`font-bold ${classSize[size]} text-gray-800 dark:text-white space-y-0 gap-0 p-0 m-0 relative flex flex-col items-start`}
+            className={`font-bold ${classSize[size]} ${textColor} tracking-tight leading-none`}
           >
             ECODrIx
+            <span className="block text-xs font-normal text-gray-500 dark:text-gray-400 -mt-0.5">
+              AI Solutions
+            </span>
           </span>
         </div>
       )}

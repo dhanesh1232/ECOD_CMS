@@ -421,29 +421,23 @@ export default function Header() {
                   </div>
 
                   <div className="mt-8 px-2 space-y-3">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-lg dark:border-gray-700 dark:text-white"
-                      asChild
-                    >
+                    <Button variant="outline" fullWidth={true}>
                       <Link
                         href={`https://${domain}/auth/login`}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer truncate"
                         onClick={closeAllMenus}
                       >
                         Login
                       </Link>
                     </Button>
-                    <Button
-                      className="w-full rounded-lg bg-gradient-to-br from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 flex items-center justify-center gap-1"
-                      asChild
-                    >
+                    <Button variant="premium" fullWidth={true}>
                       <Link
                         href={`https://${domain}/auth/register`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={closeAllMenus}
+                        className="flex items-center justify-center gap-1 truncate"
                       >
                         Get Started <ArrowRight className="h-4 w-4" />
                       </Link>
