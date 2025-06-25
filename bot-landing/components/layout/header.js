@@ -11,7 +11,7 @@ import Logo from "../logo";
 import { useMediaQuery } from "@/hooks/mediaQuery";
 import ThemeSwitcher from "../themeSwicther";
 
-const domain = process.env.REDIRECT_DOMAIN;
+const domain = process.env.REDIRECT_DOMAIN || "https://app.ecodrix.com";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -288,7 +288,7 @@ export default function Header() {
               asChild
             >
               <Link
-                href={`https://${domain}/auth/login`}
+                href={`${domain}/auth/login`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="md:flex items-center md:text-sm lg:text-base hidden justify-center"
@@ -298,7 +298,7 @@ export default function Header() {
             </Button>
             <Button variant="premium" className="md:block hidden" size="sm">
               <Link
-                href={`https://${domain}/auth/register`}
+                href={`${domain}/auth/register`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center md:text-sm lg:text-base justify-center"

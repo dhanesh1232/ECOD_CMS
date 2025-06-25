@@ -40,7 +40,7 @@ export const metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "WhatsAuto Platform Screenshot",
+        alt: "ECODrIx Platform Screenshot",
       },
     ],
     locale: "en_US",
@@ -51,7 +51,7 @@ export const metadata = {
     title: "ECODrIx – WhatsApp Automation Bot",
     description:
       "Smart automation for WhatsApp: chatbots, CRM, templates, broadcasts, and more.",
-    creator: "@whatsauto",
+    creator: "@ecodrix",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -70,7 +70,6 @@ export const metadata = {
       "your-verification-code",
   },
 };
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>

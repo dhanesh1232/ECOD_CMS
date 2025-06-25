@@ -14,6 +14,10 @@ const nextConfig = {
       },
     ],
   },
+  env: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    REDIRECT_DOMAIN: process.env.REDIRECT_DOMAIN,
+  },
 };
 
 export default nextConfig;
