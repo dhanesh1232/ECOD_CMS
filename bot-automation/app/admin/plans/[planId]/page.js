@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-provider";
 import { AdminServices } from "@/lib/client/admin.service";
-import { PLANS } from "@/utils/config.plans";
-import { decryptData } from "@/utils/encryption";
+import { PLANS } from "@/lib/utils/config.plans";
+import { decryptData } from "@/lib/utils/encryption";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,

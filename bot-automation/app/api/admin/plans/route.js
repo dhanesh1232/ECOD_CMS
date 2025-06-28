@@ -1,7 +1,7 @@
 import dbConnect from "@/config/dbconnect";
 import { Plan } from "@/models/user/schema";
 import { ErrorHandles } from "@/lib/server/errors";
-import { PLANS } from "@/utils/config.plans";
+import { PLANS } from "@/lib/utils/config.plans";
 import { SuccessHandle } from "@/lib/server/success";
 
 export async function GET() {

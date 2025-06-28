@@ -9,7 +9,7 @@ import {
 import { useToast } from "@/components/ui/toast-provider";
 import { TAX_RATES } from "@/config/pricing.config";
 import { billingService } from "@/lib/client/billing";
-import { decryptData, encryptData } from "@/utils/encryption";
+import { decryptData, encryptData } from "@/lib/utils/encryption";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -140,7 +140,7 @@ const PlanInfoCheckoutPage = () => {
     total: 0,
   });
   const toastRef = useRef(false);
-  const { email, phone, plan_name, id } = formData;
+  const { email, phone, plan_name, id, cycle_ } = formData;
   const isEnterprise = plan?.name.toLowerCase() === "enterprise";
 
   // Calculate Prices
@@ -267,6 +267,7 @@ const PlanInfoCheckoutPage = () => {
           phone: decryptData(searchParams.get("pn")),
           plan_name: decryptData(searchParams.get("plan_name")),
           id: decryptData(searchParams.get("id")),
+          cycle_: decryptData(searchParams.get("cycle")),
         };
 
         if (!decrypted.plan_name || !decrypted.phone || !decrypted.email) {
@@ -280,6 +281,7 @@ const PlanInfoCheckoutPage = () => {
         }
 
         saveToLocalStorage(STORAGE_KEYS.PLAN, decrypted.plan_name);
+        saveToLocalStorage(STORAGE_KEYS.DURATION, decrypted.cycle_);
         setFormData(decrypted);
       } catch (error) {
         showToast({
@@ -359,6 +361,15 @@ const PlanInfoCheckoutPage = () => {
   };
 
   const handleDurationChange = (duration) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("cycle", encryptData(duration));
+    if (!params.has("plan_name"))
+      params.set("plan_name", searchParams.get("plan_name"));
+    if (!params.has("id")) params.set("id", searchParams.get("id"));
+    if (!params.has("em")) params.set("em", searchParams.get("em"));
+    if (!params.has("pn")) params.set("pn", searchParams.get("pn"));
+
+    router.replace(`?${params.toString()}`, { scroll: false });
     setSelectedDuration(duration);
     saveToLocalStorage(STORAGE_KEYS.DURATION, duration);
   };
@@ -716,7 +727,7 @@ const PlanInfoCheckoutPage = () => {
                         Plan Limits
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {Object.entries(plan.limits)
+                        {Object.entries(plan.limits[cycle_])
                           .filter(
                             ([key]) =>
                               !key.includes("adCredits") &&
@@ -1049,8 +1060,8 @@ const PlanInfoCheckoutPage = () => {
                             ₹{prices?.tax?.toLocaleString("en-IN") || "0.00"}
                           </span>
                         </div>
-
-                        <CouponInput
+                        {/*This is want enable in feature when resolve all problems related in subscription coupon handle */}
+                        {/*<CouponInput
                           workspaceId={workspaceId}
                           plan={plan}
                           applied={appliedCoupon}
@@ -1058,7 +1069,7 @@ const PlanInfoCheckoutPage = () => {
                           onShown={setShowCoupon}
                           discount={prices.discount}
                           onApplied={setAppliedCoupon}
-                        />
+                        />*/}
                       </div>
 
                       <div className="p-3 bg-blue-50/50 dark:bg-blue-900/10">

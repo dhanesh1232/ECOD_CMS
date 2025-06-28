@@ -53,53 +53,84 @@ export async function POST(req) {
 
       case "subscription.authenticated":
         console.log("subscription authenticated");
-        /*await _webhooksHandles.__webhooks__subscription__authenticated__(
+        await _webhooksHandles.__webhooks__subscription__authenticated__(
           payload
-        );*/
+        );
         break;
 
-      case "subscription.activated":
-        console.log("subscription activated");
-        //await _webhooksHandles.__webhooks__subscription__activated__(payload);
-        break;
-
-      case "subscription.cancelled":
-        console.log("subscription cancelled");
-        //await _webhooksHandles.__webhooks__subscription__cancelled__(payload);
-        break;
-      case "subscription.charged":
-        console.log("subscription charged");
-        //await _webhooksHandles.__webhooks__subscription__charge__(payload);
-        break;
-
-      case "subscription.completed":
-        console.log("subscription completed");
-        //await _webhooksHandles.__webhooks__subscription__completed__(payload);
+      case "subscription.paused":
+        console.log("subscription paused");
+        await _webhooksHandles.__webhooks__subscription__paused__(payload);
         break;
 
       case "subscription.resumed":
         console.log("subscription resumed");
-        //await _webhooksHandles.__webhooks__subscription__resumed__(payload);
+        await _webhooksHandles.__webhooks__subscription__resumed__(payload);
+        break;
+
+      case "subscription.activated":
+        console.log("subscription activated");
+        await _webhooksHandles.__webhooks__subscription__activated__(payload);
+        break;
+
+      case "subscription.pending":
+        console.log("subscription pending");
+        await _webhooksHandles.__webhooks__subscription__pending__(payload);
+        break;
+
+      case "subscription.halted":
+        console.log("Subscription Halted");
+        await _webhooksHandles.__webhooks__subscription__halted__(payload);
+        break;
+
+      case "subscription.charged":
+        console.log("subscription charged");
+        await _webhooksHandles.__webhooks__subscription__charged__(payload);
+        break;
+
+      case "subscription.cancelled":
+        console.log("subscription cancelled");
+        await _webhooksHandles.__webhooks__subscription__cancelled__(payload);
+        break;
+
+      case "subscription.completed":
+        console.log("subscription completed");
+        await _webhooksHandles.__webhooks__subscription__completed__(payload);
+        break;
+
+      case "subscription.updated":
+        console.log("subscription updated");
+        await _webhooksHandles.__webhooks__subscription__updated__(payload);
         break;
 
       case "invoice.paid":
         console.log("invoice paid");
-        //await _webhooksHandles.__webhooks__invoice__paid__(payload);
+        await _webhooksHandles.__webhooks__invoice__paid__(payload);
+        break;
+
+      case "invoice.partially_paid":
+        console.log("invoice partially paid");
+        await _webhooksHandles.__webhooks__invoice__partially_paid__(payload);
+        break;
+
+      case "invoice.expired":
+        console.log("invoice expired");
+        await _webhooksHandles.__webhooks__invoice__expired__(payload);
         break;
 
       case "refund.created":
         console.log("refund created");
-        //await _webhooksHandles.__webhooks__refunds__created__(payload);
+        await _webhooksHandles.__webhooks__refunds__created__(payload);
         break;
 
       case "refund.processed":
         console.log("refund processed");
-        //await _webhooksHandles.__webhooks__refunds__processed__(payload);
+        await _webhooksHandles.__webhooks__refunds__processed__(payload);
         break;
 
       case "refund.failed":
         console.log("refund failed");
-        //await _webhooksHandles.__webhooks__refunds__failed__(payload);
+        await _webhooksHandles.__webhooks__refunds__failed__(payload);
         break;
 
       default:

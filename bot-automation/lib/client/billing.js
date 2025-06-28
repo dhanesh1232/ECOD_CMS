@@ -128,7 +128,6 @@ export const billingService = {
       }
     );
   },
-
   cancelSubscription: async () => {
     return fetch("/api/subscription/cancel", {
       method: "POST",

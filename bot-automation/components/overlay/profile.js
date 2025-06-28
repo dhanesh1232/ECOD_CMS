@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import PhoneInput from "react-phone-number-input";
 import PasswordStrengthBar from "react-password-strength-bar";
 import Confetti from "react-confetti";
 import {
@@ -27,6 +26,7 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { cn } from "@/lib/utils";
+import { StyledPhoneInput } from "../ui/phone_input";
 
 const ConfettiEffect = ({ active }) => {
   const [dimensions, setDimensions] = useState({
@@ -61,50 +61,30 @@ const ConfettiEffect = ({ active }) => {
   );
 };
 
-const PasswordRequirements = ({ password }) => {
-  const requirements = useMemo(
-    () => [
-      { label: "Min 8 characters", test: password.length >= 8 },
-      { label: "Uppercase letter", test: /[A-Z]/.test(password) },
-      { label: "Number", test: /[0-9]/.test(password) },
-      { label: "Special character", test: /[^A-Za-z0-9]/.test(password) },
-    ],
-    [password]
-  );
-
-  return (
-    <div className="mt-0 text-xs text-gray-500 dark:text-gray-400">
-      <p className="mb-1">Password requirements:</p>
-      <ul className="grid grid-cols-2 gap-x-2 gap-y-1">
-        {requirements.map((req, index) => (
-          <li
-            key={index}
-            className={`flex items-center ${req.test ? "text-green-500" : ""}`}
-          >
-            <span className="mr-1">•</span>
-            {req.label}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
 const SuccessState = ({ session, redirectCounter, router }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-emerald-950/60 dark:to-emerald-900/40 border border-green-200/80 dark:border-emerald-800/70 p-6 rounded-2xl mb-6 flex flex-col items-start gap-0 backdrop-blur-sm shadow-lg overflow-hidden"
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+        mass: 0.5,
+      }}
+      className="relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-emerald-950/60 dark:to-emerald-900/40 border border-green-200/80 dark:border-emerald-800/70 p-6 rounded-2xl mb-6 flex flex-col items-start gap-0 backdrop-blur-sm shadow-lg shadow-green-100/50 dark:shadow-emerald-900/20 overflow-hidden"
     >
+      {/* Animated background elements */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#48bb7860_0%,transparent_70%)] dark:bg-[radial-gradient(circle_at_center,#05966940_0%,transparent_70%)]" />
+
       <motion.div
-        className="absolute -top-20 w-40 h-40 rounded-full bg-green-200/30 dark:bg-emerald-800/30"
+        className="absolute -top-20 -left-10 w-40 h-40 rounded-full bg-green-200/30 dark:bg-emerald-800/30 blur-[20px]"
         animate={{
           scale: [1, 1.2, 1],
           opacity: [0.3, 0.5, 0.3],
+          x: [0, 10, 0],
+          y: [0, 10, 0],
         }}
         transition={{
           duration: 8,
@@ -112,11 +92,14 @@ const SuccessState = ({ session, redirectCounter, router }) => {
           ease: "easeInOut",
         }}
       />
+
       <motion.div
-        className="absolute -bottom-10 w-32 h-32 rounded-full bg-green-300/20 dark:bg-emerald-700/30"
+        className="absolute -bottom-10 -right-10 w-32 h-32 rounded-full bg-green-300/20 dark:bg-emerald-700/30 blur-[20px]"
         animate={{
           scale: [1, 1.3, 1],
           opacity: [0.2, 0.4, 0.2],
+          x: [0, -10, 0],
+          y: [0, -10, 0],
         }}
         transition={{
           duration: 10,
@@ -126,11 +109,13 @@ const SuccessState = ({ session, redirectCounter, router }) => {
         }}
       />
 
-      <div className="relative z-10 flex items-start gap-0 w-full">
+      {/* Content container */}
+      <div className="relative z-10 flex items-start gap-4 w-full">
         <motion.div
           className="flex-shrink-0 p-3 bg-green-100 dark:bg-emerald-900/80 rounded-xl shadow-inner"
           animate={{
             scale: [1, 1.05, 1],
+            rotate: [0, 5, 0],
             boxShadow: [
               "inset 0 2px 4px rgba(0,0,0,0.05)",
               "inset 0 2px 8px rgba(0,0,0,0.1)",
@@ -142,23 +127,52 @@ const SuccessState = ({ session, redirectCounter, router }) => {
             repeat: Infinity,
             ease: "easeInOut",
           }}
+          whileHover={{ scale: 1.1 }}
         >
-          <FiCheck className="text-2xl text-green-600 dark:text-emerald-400" />
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 360, 0],
+            }}
+            transition={{
+              duration: 1.5,
+              ease: "backOut",
+            }}
+          >
+            <FiCheck className="text-2xl text-green-600 dark:text-emerald-400" />
+          </motion.div>
         </motion.div>
 
-        <div className="flex-1">
+        <div className="flex-1 overflow-hidden">
           <div className="flex flex-col sm:items-baseline justify-between gap-2">
             <div>
-              <h3 className="text-xl font-bold text-green-900 dark:text-emerald-50">
+              <motion.h3
+                className="text-2xl font-bold text-green-900 dark:text-emerald-50"
+                initial={{ x: 10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
                 Profile Updated Successfully!
-              </h3>
-              <p className="mt-1 text-sm text-green-700/90 dark:text-emerald-200/80">
+              </motion.h3>
+              <motion.p
+                className="mt-1 text-sm text-green-700/90 dark:text-emerald-200/80"
+                initial={{ x: 10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
                 {session.user.email}
-              </p>
+              </motion.p>
             </div>
+
             <motion.div
-              className="text-sm font-bold text-green-600 dark:text-emerald-300 bg-green-100/50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full"
-              whileHover={{ scale: 1.05 }}
+              className="mt-2 text-sm font-bold text-green-600 dark:text-emerald-300 bg-green-100/50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full inline-block"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{
+                scale: 1.05,
+                backgroundColor: "rgba(74, 222, 128, 0.2)",
+              }}
               whileTap={{ scale: 0.95 }}
             >
               @{session.user.name.replace(/\s+/g, "").toLowerCase()}
@@ -166,17 +180,20 @@ const SuccessState = ({ session, redirectCounter, router }) => {
           </div>
         </div>
       </div>
-      <div className="w-full">
-        <div className="mt-6 flex flex-col items-center gap-6">
+
+      {/* Countdown section */}
+      <div className="w-full mt-6">
+        <div className="flex flex-col items-center gap-6">
           <div className="relative w-full group">
-            <div className="relative flex w-full justify-center h-20">
-              <svg className="w-20 h-20 transform -rotate-90">
+            <div className="relative flex w-full justify-center h-24">
+              <svg className="w-24 h-24 transform -rotate-90">
                 <circle
                   cx="50%"
                   cy="50%"
                   r="40%"
                   className="fill-none stroke-green-100 dark:stroke-emerald-900/50"
                   strokeWidth="8%"
+                  strokeLinecap="round"
                 />
                 <motion.circle
                   cx="50%"
@@ -186,11 +203,11 @@ const SuccessState = ({ session, redirectCounter, router }) => {
                   strokeWidth="8%"
                   strokeLinecap="round"
                   initial={{
-                    strokeDasharray: 125.6,
-                    strokeDashoffset: 125.6,
+                    strokeDasharray: 150.72, // 2 * π * 24 (radius)
+                    strokeDashoffset: 150.72,
                   }}
                   animate={{
-                    strokeDashoffset: 125.6 * (1 - (5 - redirectCounter) / 5),
+                    strokeDashoffset: 150.72 * (1 - (5 - redirectCounter) / 5),
                   }}
                   transition={{ duration: 1, ease: "linear" }}
                 />
@@ -199,42 +216,77 @@ const SuccessState = ({ session, redirectCounter, router }) => {
               <motion.span
                 key={redirectCounter}
                 initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  color: redirectCounter <= 2 ? "#ef4444" : "",
+                }}
                 exit={{ scale: 0.8, opacity: 0 }}
-                className="absolute inset-0 flex items-center justify-center text-lg font-bold text-green-700 dark:text-emerald-300"
+                transition={{ type: "spring", stiffness: 500 }}
+                className="absolute inset-0 flex items-center justify-center text-xl font-bold text-green-700 dark:text-emerald-300"
               >
                 {redirectCounter}s
               </motion.span>
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col gap-2">
-            <div className="flex items-center justify-center gap-2">
+          <div className="flex-1 flex flex-col gap-2 w-full max-w-xs">
+            <motion.div
+              className="flex items-center justify-center gap-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
               <FiClock className="flex-shrink-0 text-green-600 dark:text-emerald-400" />
               <span className="text-sm font-medium text-green-700 dark:text-emerald-300">
                 Redirecting in {redirectCounter} seconds
               </span>
-            </div>
-            <p className="text-sm text-green-600/90 dark:text-emerald-300/80 text-center">
+            </motion.div>
+
+            <motion.p
+              className="text-sm text-green-600/90 dark:text-emerald-300/80 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
               {`You'll be automatically taken to your dashboard. Or you can...`}
-            </p>
+            </motion.p>
           </div>
-          <div className="mt-2 flex gap-3">
+
+          <motion.div
+            className="mt-2 flex gap-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
             <motion.button
               type="button"
-              className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-md transition-colors"
+              className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-md transition-colors relative overflow-hidden"
               onClick={() => router.push("/")}
               whileHover={{
                 y: -2,
-                boxShadow: "0 4px 12px rgba(74, 222, 128, 0.3)",
+                boxShadow: "0 4px 16px rgba(74, 222, 128, 0.4)",
               }}
               whileTap={{ scale: 0.98 }}
             >
-              Go to Dashboard
+              <span className="relative z-10">Go to Dashboard</span>
+              <motion.span
+                className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 opacity-0"
+                animate={{
+                  opacity: [0, 0.3, 0],
+                  x: ["-100%", "100%"],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
             </motion.button>
-          </div>
+          </motion.div>
         </div>
       </div>
+
       <ConfettiEffect active={redirectCounter === 5} />
     </motion.div>
   );
@@ -271,7 +323,7 @@ const ProfileForm = ({
   );
 
   return (
-    <div className="w-full max-w-md bg-white dark:bg-gray-800 px-6 py-8 rounded-xl shadow-lg dark:shadow-gray-900/50">
+    <div className="w-full max-w-xs sm:max-w-md bg-white dark:bg-gray-800 px-4 sm:px-6 py-4 sm:py-8 rounded-xl shadow-lg dark:shadow-gray-900/50">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -279,7 +331,7 @@ const ProfileForm = ({
         className="w-full"
       >
         <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
             Complete Your Profile
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
@@ -303,9 +355,8 @@ const ProfileForm = ({
                 id="name"
                 name="name"
                 type="text"
+                onChange={handleChange}
                 value={profileState.name}
-                readOnly
-                disabled={true}
                 className={`${getInputClass("name")} z-0`}
               />
             </div>
@@ -345,12 +396,10 @@ const ProfileForm = ({
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400 z-10">
                 <FiPhone />
               </div>
-              <PhoneInput
+              <StyledPhoneInput
                 id="phone"
                 name="phone"
-                international
                 required
-                defaultCountry="IN"
                 placeholder="+91 12345 67890"
                 countryCallingCodeEditable={false}
                 value={profileState.phone}
@@ -405,8 +454,6 @@ const ProfileForm = ({
               scoreWords={["Weak", "Weak", "Okay", "Good", "Strong"]}
               shortScoreWord="Too short"
             />
-
-            <PasswordRequirements password={profileState.password} />
           </div>
 
           <div>

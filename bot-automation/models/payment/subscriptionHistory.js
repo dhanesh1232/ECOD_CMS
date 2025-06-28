@@ -1,6 +1,5 @@
 // models/SubscriptionHistory.js
 import mongoose from "mongoose";
-import { PLANS } from "@/config/pricing.config";
 
 const subscriptionHistorySchema = new mongoose.Schema(
   {
@@ -36,6 +35,8 @@ const subscriptionHistorySchema = new mongoose.Schema(
         "subscription_completed",
         "subscription_cancelled",
         "subscription_resumed",
+        "subscription_renewed",
+        "subscription_paused",
         "invoice_paid",
         "refund_created",
         "refund_processed",
@@ -47,12 +48,13 @@ const subscriptionHistorySchema = new mongoose.Schema(
 
     // Plan & status snapshot
     plan: {
-      type: String,
-      enum: Object.keys(PLANS),
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Plan",
+      required: true,
     },
     billingCycle: {
       type: String,
-      enum: ["monthly", "yearly", "lifetime"],
+      enum: ["monthly", "yearly"],
     },
     status: {
       type: String,
@@ -97,7 +99,13 @@ const subscriptionHistorySchema = new mongoose.Schema(
       total: { type: Number, min: 0 },
       currency: { type: String, default: "INR" },
     },
-
+    usageSnapshot: {
+      chatbots: Number,
+      messages: Number,
+      storage: Number,
+      apiCalls: Number,
+      teamMembers: Number,
+    },
     // Gateway info
     gateway: {
       name: {
@@ -111,6 +119,10 @@ const subscriptionHistorySchema = new mongoose.Schema(
       paymentId: String,
       planId: String,
       refundId: String,
+      eventId: String,
+      eventType: String,
+      rawResponse: Object,
+      webhookTimestamp: Date,
     },
 
     // Extra metadata
@@ -119,9 +131,20 @@ const subscriptionHistorySchema = new mongoose.Schema(
       userAgent: String,
       referrer: String,
       additional: mongoose.Schema.Types.Mixed,
+      previousPlan: String,
+      upgradePath: String,
+      pauseReason: String,
+      prorationDetails: {
+        creditAmount: Number,
+        adjustedDays: Number,
+      },
+      features: {
+        added: [String],
+        removed: [String],
+      },
     },
-    razorpayEventId: { type: String, index: true, unique: true },
-    idempotencyKey: { type: String, index: true, unique: true },
+    eventId: { type: String, index: true, unique: true, sparse: true },
+    idempotencyKey: { type: String, index: true, unique: true, sparse: true },
     processedAt: Date,
     notes: String,
   },
@@ -130,7 +153,6 @@ const subscriptionHistorySchema = new mongoose.Schema(
     toJSON: {
       virtuals: true,
       transform(doc, ret) {
-        // Optionally remove sensitive fields
         delete ret.__v;
       },
     },
@@ -138,7 +160,6 @@ const subscriptionHistorySchema = new mongoose.Schema(
   }
 );
 
-// Virtual: full name from refs (optional)
 subscriptionHistorySchema.virtual("userDisplay").get(function () {
   return `${this.user?.name || "Unknown User"} | ${this.plan}`;
 });

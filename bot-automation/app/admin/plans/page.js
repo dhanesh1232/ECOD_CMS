@@ -3,7 +3,7 @@
 import { useToast } from "@/components/ui/toast-provider";
 import { AdminServices } from "@/lib/client/admin.service";
 import { useCallback, useEffect, useState } from "react";
-import { PLANS } from "@/utils/config.plans";
+import { PLANS } from "@/lib/utils/config.plans";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import {
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { encryptData } from "@/utils/encryption";
+import { encryptData } from "@/lib/utils/encryption";
 
 export default function PlanManagementPage() {
   const [plans, setPlans] = useState([]);

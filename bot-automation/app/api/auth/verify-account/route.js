@@ -2,9 +2,9 @@ import dbConnect from "@/config/dbconnect";
 import UserTemp from "@/models/user/user-temp";
 import { User } from "@/models/user/user";
 import { NextResponse } from "next/server";
-import rateLimit from "@/utils/rate-limit";
+import rateLimit from "@/lib/utils/rate-limit";
 import { AccountVerificationCompletedMail } from "@/lib/helper";
-import { decryptData } from "@/utils/encryption";
+import { decryptData } from "@/lib/utils/encryption";
 import { Workspace } from "@/models/user/workspace";
 import { generateRandomSlug } from "@/lib/slugGenerator";
 

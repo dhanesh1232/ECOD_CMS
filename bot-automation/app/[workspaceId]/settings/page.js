@@ -34,6 +34,7 @@ import { deepEqual } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import dynamic from "next/dynamic";
 import { StyledPhoneInput } from "@/components/ui/phone_input";
+import { OverlayLoader } from "@/components/animate/overlay_loader";
 const TimezoneSelect = dynamic(() => import("@/components/selectTimezone"), {
   ssr: false,
 });
@@ -305,14 +306,17 @@ const GeneralPage = () => {
 
   if (state.loading && !state.workspace) {
     return (
-      <div className="space-y-4 p-4 sm:p-6 h-full">
-        <Skeleton className="h-10 w-1/3" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[...Array(10)].map((_, i) => (
-            <Skeleton key={i} className="h-20" />
-          ))}
+      <>
+        <OverlayLoader />
+        <div className="space-y-4 p-4 sm:p-6 h-full">
+          <Skeleton className="h-10 w-1/3" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[...Array(10)].map((_, i) => (
+              <Skeleton key={i} className="h-20" />
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

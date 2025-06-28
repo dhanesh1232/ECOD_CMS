@@ -10,7 +10,7 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
-import { encryptData } from "@/utils/encryption";
+import { encryptData } from "@/lib/utils/encryption";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import {
   Calendar,

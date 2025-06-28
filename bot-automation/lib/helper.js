@@ -1,4 +1,4 @@
-import { encryptData } from "@/utils/encryption";
+import { encryptData } from "@/lib/utils/encryption";
 import nodemailer from "nodemailer";
 
 // Configure transporter with additional settings to improve deliverability

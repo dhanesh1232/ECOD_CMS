@@ -13,32 +13,6 @@ const DotByDotLoader = ({ size = "sm", dots = 12, speed = 1.2 }) => {
     <>
       {" "}
       <div className="loader" />
-      {/*<div className={`relative ${circleClasses[size]}`}>
-      {Array.from({ length: dots }).map((_, i) => (
-        <span
-          key={i}
-          className="absolute w-2 h-2 rounded-full bg-blue-300"
-          style={{
-            top: "50%",
-            left: "50%",
-            transform: `rotate(${
-              (i * 360) / dots
-            }deg) translate(36px) rotate(-${(i * 360) / dots}deg)`,
-            transformOrigin: "0 0",
-          }}
-        />
-      ))}
-    
-      <span
-        className="absolute w-2 h-2 rounded-full bg-blue-600 animate-move-highlight"
-        style={{
-          top: "50%",
-          left: "50%",
-          transformOrigin: "0 0",
-          animation: `move-highlight ${speed}s steps(${dots}) infinite`,
-        }}
-      />
-    </div>*/}
     </>
   );
 };

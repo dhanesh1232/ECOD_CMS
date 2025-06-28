@@ -3,6 +3,7 @@ import { validateSession } from "@/lib/auth";
 import { razorpay } from "@/lib/payment_gt";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";
+import { withIdempotency } from "@/lib/utils/withIdempotency";
 import { BillingDetails } from "@/models/payment/billingDetails";
 import { Subscription } from "@/models/payment/subscription";
 import { SubscriptionHistory } from "@/models/payment/subscriptionHistory";
@@ -76,9 +77,10 @@ export async function POST(req, { params }) {
         contact: billing.phone,
       });
       customerId = customer.id;
-      console.log(customer);
+      workspace.gatewayCustomerId = customerId;
+      await workspace.save();
     }
-    console.log(customerId);
+
     if (couponCode) {
       const expireTime = Math.floor(Date.now() / 1000) + 10 * 60;
       const order = await razorpay.orders.create({
@@ -138,36 +140,42 @@ export async function POST(req, { params }) {
           contact: billing.phone,
         },
         notes: {
-          customer_id: session?.user?.id,
+          customer_id: customerId,
+          user_id: session?.user?.id,
           workspace_id: workspace._id,
           plan_name: plan.name,
         },
       };
 
       const subscription = await razorpay.subscriptions.create(subParams);
-      await SubscriptionHistory.create({
-        workspace: workspace._id,
-        user: session?.user?.id,
-        subscription: sub._id,
-        plan: plan.name.toLowerCase(),
-        action: "create",
-        billingCycle: cycle,
-        status: "pending",
-        gateway: {
-          subscriptionId: subscription.id,
-          name: "razorpay",
-          planId: sub_plan.id,
-        },
-        amount: {
-          subtotal: plan.prices[cycle],
-          tax: plan.prices[cycle] * 0.18,
-          total: amount,
-          currency: currency,
-        },
-        metadata: {
-          ipAddress: req.headers.get("X-Forwarded-For"),
-          userAgent: req.headers.get("User-Agent"),
-        },
+      const idempotencyKey = `create_${subscription.id}_${session?.user?.id}_${
+        workspace._id
+      }_${Date.now()}`;
+      await withIdempotency(idempotencyKey, SubscriptionHistory, () => {
+        SubscriptionHistory.create({
+          workspace: workspace._id,
+          user: session?.user?.id,
+          subscription: sub._id,
+          plan: plan._id,
+          action: "create",
+          billingCycle: cycle,
+          status: "pending",
+          gateway: {
+            subscriptionId: subscription.id,
+            name: "razorpay",
+            planId: sub_plan.id,
+          },
+          amount: {
+            subtotal: plan.prices[cycle],
+            tax: plan.prices[cycle] * 0.18,
+            total: amount,
+            currency: currency,
+          },
+          metadata: {
+            ipAddress: req.headers.get("X-Forwarded-For"),
+            userAgent: req.headers.get("User-Agent"),
+          },
+        });
       });
       return SuccessHandle.createSub({
         ...subscription,

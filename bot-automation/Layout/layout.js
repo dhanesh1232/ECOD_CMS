@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import LoaderThreeDots from "@/components/animate/loader";
 import { SessionProvider, useSession } from "next-auth/react";
 import DotByDotLoader from "@/components/animate/circle";
+import { AdminServices } from "@/lib/client/admin.service";
 
 function AuthWrapper({ children }) {
   const { data: session, status } = useSession();
@@ -13,10 +13,20 @@ function AuthWrapper({ children }) {
     setIsMounted(true);
     return () => setIsMounted(false);
   }, [setIsMounted, session]);
+  useEffect(() => {
+    const fecthPlans = async () => {
+      try {
+        await Promise.all([AdminServices.getPlans()]);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fecthPlans();
+  });
 
   if (!isMounted || status === "loading") {
     return (
-      <div className="h-full w-full flex items-center justify-center">
+      <div className="h-full w-full flex items-center justify-center dark:bg-gray-800/80 bg-white/90">
         <DotByDotLoader />
       </div>
     );

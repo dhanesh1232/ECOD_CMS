@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import { PLANS, PricingUtils, TAX_RATES } from "@/config/pricing.config";
 import { razorpay } from "@/lib/payment_gt";
+import { Plan } from "../user/schema";
 
 const GRACE_PERIOD_DAYS = 2;
 const OVERAGE_BUFFER = 0.8;
+
 const subscriptionSchema = new mongoose.Schema(
   {
     workspace: {
@@ -13,6 +15,12 @@ const subscriptionSchema = new mongoose.Schema(
       immutable: true,
       index: true,
       unique: true,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
     plan: {
       type: String,
@@ -84,7 +92,6 @@ const subscriptionSchema = new mongoose.Schema(
       effectiveAt: Date,
       feedback: String,
     },
-    endedAt: Date,
     gateway: {
       subscriptionId: {
         type: String,
@@ -110,7 +117,6 @@ const subscriptionSchema = new mongoose.Schema(
       enum: ["razorpay", "stripe", "paypal"],
       default: "razorpay",
     },
-    // Discount information
     promotion: {
       code: String,
       name: String,
@@ -122,12 +128,13 @@ const subscriptionSchema = new mongoose.Schema(
       expireAt: Date,
       appliesTo: [String],
     },
-    // Subscription lifecycle management
+    endAt: Date,
     lifeCycle: {
       createdAt: { type: Date, default: Date.now },
       updatedAt: Date,
       lastRenewal: { date: Date, amount: Number, invoiceUrl: String },
-      nextBilling: { date: Date, esimatedAmount: Number },
+      lastCharge: Date,
+      nextBilling: { date: Date, estimatedAmount: Number },
       renewalHistory: [
         { date: Date, amount: Number, invoiceUrl: String, status: String },
       ],
@@ -139,7 +146,6 @@ const subscriptionSchema = new mongoose.Schema(
       renewalAttempts: { type: Number, default: 0 },
       billingRetry: { type: Number, default: 0 },
     },
-    // Usage tracking
     usage: {
       chatbots: { type: Number, default: 0 },
       messages: { type: Number, default: 0 },
@@ -153,7 +159,7 @@ const subscriptionSchema = new mongoose.Schema(
       chatbots: { type: Number, required: true },
       messages: { type: Number, required: true },
       members: { type: Number, required: true },
-      storage: { type: Number, required: true }, // in MB
+      storage: { type: Number, required: true },
       conversations: { type: Number, required: true },
       integrations: { type: Number, required: true },
       automationRules: { type: Number, required: true },
@@ -165,36 +171,27 @@ const subscriptionSchema = new mongoose.Schema(
       apiCalls: { type: Number, required: true },
     },
     features: {
-      // Chatbot features
       channels: [String],
       visualFlowBuilder: Boolean,
       multilingualSupport: Number,
       chatbotTemplates: Boolean,
       fileAttachments: Boolean,
       customFlows: Boolean,
-
-      // Ads features
       adsAutomation: Boolean,
       adCopyGeneration: Boolean,
       targeting: Boolean,
       budgetManagement: Boolean,
       autoPublishing: Boolean,
       audienceSegmentation: Boolean,
-
-      // SEO features
       seoTools: Boolean,
       keywordResearch: Boolean,
       longTailKeywords: Boolean,
       seoDailyUpdates: Boolean,
-
-      // Landing page features
       landingBuilder: Boolean,
       dragDropEditor: Boolean,
       landingTemplates: Boolean,
       formBuilders: Boolean,
       popups: Boolean,
-
-      // CRM features
       crmEnabled: Boolean,
       leadScoring: Boolean,
       visitorTracking: Boolean,
@@ -202,13 +199,9 @@ const subscriptionSchema = new mongoose.Schema(
       emailSequences: Boolean,
       behavioralTriggers: Boolean,
       abTesting: Boolean,
-
-      // AI features
       aiResponseTuning: Boolean,
       aiModelTraining: Boolean,
       customModels: Boolean,
-
-      // Growth features
       analyticsDashboard: Boolean,
       customBranding: Boolean,
       teamCollaboration: Boolean,
@@ -216,8 +209,6 @@ const subscriptionSchema = new mongoose.Schema(
       webinarIntegration: Boolean,
       membershipSites: Boolean,
       paymentGateways: Boolean,
-
-      // Enterprise features
       prioritySupport: Boolean,
       whiteLabel: Boolean,
       apiAccess: Boolean,
@@ -231,23 +222,50 @@ const subscriptionSchema = new mongoose.Schema(
       hipaaCompliance: Boolean,
       accountManager: Boolean,
     },
-    // Notifications
+    usageTracking: {
+      lastUpdated: Date,
+      dailyStats: [
+        {
+          date: Date,
+          apiCalls: Number,
+          storage: Number,
+          messages: Number,
+        },
+      ],
+      monthlyStats: [
+        {
+          month: Date,
+          totalApiCalls: Number,
+          avgStorage: Number,
+          totalMessages: Number,
+        },
+      ],
+    },
     notifications: {
       upcomingRenewal: {
         sent: Boolean,
         sentAt: Date,
         nextSentDate: Date,
       },
+      paymentPending: {
+        sent: Boolean,
+        sentAt: Date,
+        attempts: Number,
+      },
       paymentFailed: {
         sent: Boolean,
         sentAt: Date,
         attempts: Number,
       },
-      subscriptionEnding: {
+      subscriptionExpiring: {
         sent: Boolean,
         sentAt: Date,
       },
       usageWarning: {
+        sent: Boolean,
+        sentAt: Date,
+        threshold: Number,
+        nextSentDate: Date,
         chatbots: Date,
         messages: Date,
         storage: Date,
@@ -261,9 +279,16 @@ const subscriptionSchema = new mongoose.Schema(
       },
     },
     planChangeLog: [
-      { date: Date, fromPlan: String, toPlan: String, proratedAmount: Number },
+      {
+        date: Date,
+        fromPlan: String,
+        toPlan: String,
+        proratedAmount: Number,
+        oldLimits: Object,
+        newLimits: Object,
+        changedFeatures: Object,
+      },
     ],
-    // Usage overage tracking
     usageOverage: {
       chatbots: { type: Number, default: 0 },
       messages: { type: Number, default: 0 },
@@ -274,17 +299,15 @@ const subscriptionSchema = new mongoose.Schema(
       lastCharged: Date,
       chargeAmount: Number,
     },
-    // Custom pricing for negotiated enterprise plans
     customPricing: {
       isCustom: Boolean,
       monthlyRate: Number,
       yearlyRate: Number,
-      contractTerm: Number, // in months
+      contractTerm: Number,
       contractStart: Date,
       contractEnd: Date,
       specialTerms: String,
     },
-    // Add-ons that can be purchased separately
     addOns: [
       {
         id: String,
@@ -298,33 +321,61 @@ const subscriptionSchema = new mongoose.Schema(
       },
     ],
     metadata: {
+      createdBy: {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        workspace: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Workspace",
+        },
+      },
       createdAt: { type: Date, default: Date.now },
-      updatedAt: Date,
+      updatedAt: {
+        type: Date,
+        validate: {
+          validator: function (v) {
+            return v instanceof Date && !isNaN(v.getTime());
+          },
+          message: (props) => `${props.value} is not a valid date!`,
+        },
+      },
       canceledAt: Date,
       notes: String,
+      lastRenewal: Date,
+      pausedAt: Date,
+      pauseReason: String,
     },
   },
   {
     timestamps: true,
     toJSON: {
       virtuals: true,
-      transform: function (doc, ret) {
-        delete ret.gatewaySubscriptionId;
-        delete ret.gatewayCustomerId;
-        delete ret.gatewayPlanId;
-        delete ret.coupon;
+      transform(doc, ret) {
+        if (ret.gateway) {
+          delete ret.gateway.subscriptionId;
+          delete ret.gateway.customerId;
+          delete ret.gateway.planId;
+          delete ret.gateway.invoice;
+        }
         delete ret.paymentGateway;
+        delete ret.__v;
         return ret;
       },
     },
-    toObject: { virtuals: true },
+    toObject: {
+      virtuals: true,
+      // Add this to ensure transforms don't affect database operations
+      transform: function (doc, ret, options) {
+        // Keep all data for database operations
+        return ret;
+      },
+    },
   }
 );
 
 // Indexes
 subscriptionSchema.index({ "currentPeriod.end": 1 });
 subscriptionSchema.index({ status: 1, "currentPeriod.end": 1 });
-subscriptionSchema.index({ "lifecycle.nextBilling.date": 1 });
+subscriptionSchema.index({ "lifeCycle.nextBilling.date": 1 });
 subscriptionSchema.index({ "trial.end": 1 });
 subscriptionSchema.index({ "usage.apiCalls": 1 });
 subscriptionSchema.index({ plan: 1, status: 1 });
@@ -334,7 +385,6 @@ subscriptionSchema.index({ "features.prioritySupport": 1 });
 // Virtuals
 subscriptionSchema.virtual("isActive").get(function () {
   if (this.plan === "enterprise" && this.status === "active") return true;
-
   return (
     ["active", "trialing"].includes(this.status) &&
     (!this.currentPeriod.end || this.currentPeriod.end > new Date())
@@ -344,6 +394,7 @@ subscriptionSchema.virtual("isActive").get(function () {
 subscriptionSchema.virtual("isTrial").get(function () {
   return this.trial.end && this.trial.end > new Date();
 });
+
 subscriptionSchema.virtual("trialDaysRemaining").get(function () {
   if (!this.isTrial) return 0;
   return Math.ceil((this.trial.end - new Date()) / (1000 * 60 * 60 * 24));
@@ -355,9 +406,10 @@ subscriptionSchema.virtual("daysUntilRenewal").get(function () {
     (this.currentPeriod.end - new Date()) / (1000 * 60 * 60 * 24)
   );
 });
+
 subscriptionSchema.virtual("inGracePeriod").get(function () {
   if (
-    !this.currentPeriod.end ||
+    !this.currentPeriod?.end ||
     !["past_due", "unpaid"].includes(this.status)
   ) {
     return false;
@@ -366,20 +418,22 @@ subscriptionSchema.virtual("inGracePeriod").get(function () {
   graceEnd.setDate(graceEnd.getDate() + GRACE_PERIOD_DAYS);
   return graceEnd > new Date();
 });
+
 subscriptionSchema.virtual("usagePercentage").get(function () {
   const calc = (used, limit) => {
-    if (limit === "Infinity") return 0;
+    if (limit === "Infinity" || limit === Infinity) return 0;
     return limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0;
   };
 
   return {
-    chatbots: calc(this.usage.chatbots, this.limits.chatbots),
-    messages: calc(this.usage.messages, this.limits.messages),
-    members: calc(this.usage.members, this.limits.members),
-    storage: calc(this.usage.storage, this.limits.storage),
-    apiCalls: calc(this.usage.apiCalls, this.limits.apiCalls),
+    chatbots: calc(this.usage?.chatbots || 0, this.limits?.chatbots || 0),
+    messages: calc(this.usage?.messages || 0, this.limits?.messages || 0),
+    members: calc(this.usage?.members || 0, this.limits?.members || 0),
+    storage: calc(this.usage?.storage || 0, this.limits?.storage || 0),
+    apiCalls: calc(this.usage?.apiCalls || 0, this.limits?.apiCalls || 0),
   };
 });
+
 subscriptionSchema.virtual("isNearLimit").get(function () {
   const percentages = this.usagePercentage;
   return {
@@ -390,148 +444,140 @@ subscriptionSchema.virtual("isNearLimit").get(function () {
     apiCalls: percentages.apiCalls >= OVERAGE_BUFFER * 100,
   };
 });
-// Hooks
-subscriptionSchema.pre("save", function (next) {
-  // Prevent plan changes on inactive subscriptions
-  if (this.isModified("plan") && !this.isActive) {
-    throw new Error("Cannot change plan on inactive subscription");
-  }
-
-  // Update trial conversion status
-  if (this.isModified("status") && this.status === "active" && this.trial.end) {
-    this.trial.converted = true;
-  }
-
-  // Set cancellation dates
-  if (this.isModified("status") && this.status === "canceled") {
-    this.cancellation.requestedAt = this.cancellation.requestedAt || new Date();
-    this.cancellation.effectiveAt = this.currentPeriod.end;
-  }
-  // Update lifecycle dates
-  this.lifeCycle = this.lifeCycle || {};
-  this.lifeCycle.updatedAt = new Date();
-  next();
-});
-
-subscriptionSchema.pre("save", async function (next) {
-  if (this.isModified("plan")) {
-    try {
-      await this.validatePlanChange(this.plan);
-    } catch (err) {
-      return next(err);
-    }
-  }
-  next();
-});
-subscriptionSchema.pre("save", function (next) {
-  const plan = PLANS[this.plan];
-  if (!plan) return next(new Error(`Invalid plan: ${this.plan}`));
-
-  // When plan changes, validate limits and update features
-  if (this.isModified("plan")) {
-    // Check if new plan can accommodate current usage
-    for (const [resource, limit] of Object.entries(plan.limits)) {
-      if (limit !== "Infinity" && this.usage[resource] > limit) {
-        return next(
-          new Error(
-            `Cannot downgrade: Current ${resource} usage (${this.usage[resource]}) ` +
-              `exceeds new plan limit (${limit})`
-          )
-        );
-      }
-    }
-
-    // Copy plan limits and features
-    this.limits = plan.limits;
-    this.features = this.transformPlanFeatures(plan.features);
-
-    // Set trial period if applicable
-    if (plan.metadata.trialDays > 0 && !this.trial.end) {
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + plan.metadata.trialDays);
-      this.trial = {
-        start: new Date(),
-        end: trialEnd,
-        converted: false,
-      };
-      this.status = "trialing";
-    }
-  }
-
-  next();
-});
 
 // Methods
 subscriptionSchema.methods = {
+  // Helper method to detect feature changes
+  getFeatureChanges(oldFeatures, newFeatures) {
+    const changes = {};
+    for (const [key, oldValue] of Object.entries(oldFeatures || {})) {
+      const newValue = newFeatures?.[key];
+      if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+        changes[key] = {
+          old: oldValue,
+          new: newValue,
+        };
+      }
+    }
+    return changes;
+  },
+
+  canAccessFeature: async function (featurePath, quantity = 1) {
+    const hasAccess = await this.hasFeatureAccess(featurePath);
+    if (!hasAccess) return false;
+
+    const resource = featurePath.split(".")[0];
+    const currentUsage = this.usage[resource] || 0;
+    const limit = this.limits[resource];
+    return limit === "Infinity" || currentUsage + quantity <= limit;
+  },
+
+  trackUsage: async function (resource, quantity = 1) {
+    if (!this.limits?.[resource]) {
+      throw new Error(`Invalid resource: ${resource}`);
+    }
+
+    const update = {
+      $inc: { [`usage.${resource}`]: quantity },
+      $set: { "usageTracking.lastUpdated": new Date() },
+      $push: {
+        "usageTracking.dailyStats": {
+          date: new Date(),
+          [resource]: quantity,
+        },
+      },
+    };
+
+    await this.updateOne(update);
+    const percentUsed =
+      ((this.usage?.[resource] || 0) / this.limits[resource]) * 100;
+
+    if (percentUsed >= 80 && !this.notifications?.usageWarning?.sent) {
+      await this.sendUsageWarning(resource, percentUsed);
+    }
+  },
+
   transformPlanFeatures: function (features) {
     return {
-      // Chatbot features
-      channels: features.chatbotAutomation.channels,
-      visualFlowBuilder: features.chatbotAutomation.visualFlowBuilder,
-      multilingualSupport: features.chatbotAutomation.multilingualSupport,
-      chatbotTemplates: features.chatbotAutomation.templates,
-      fileAttachments: features.chatbotAutomation.fileAttachments,
-      customFlows: features.chatbotAutomation.customFlows,
-
-      // Ads features
-      adsAutomation: features.adsAutomation.enabled,
-      adCopyGeneration: features.adsAutomation.adCopyGeneration,
-      targeting: features.adsAutomation.targeting,
-      budgetManagement: features.adsAutomation.budgetManagement,
-      autoPublishing: features.adsAutomation.autoPublishing,
-      audienceSegmentation: features.adsAutomation.audienceSegmentation,
-
-      // SEO features
-      seoTools: features.seoTools.enabled,
-      keywordResearch: features.seoTools.keywordResearch,
-      longTailKeywords: features.seoTools.longTailKeywords,
-      seoDailyUpdates: features.seoTools.dailyUpdates,
-
-      // Landing page features
-      landingBuilder: features.landingBuilder.enabled,
-      dragDropEditor: features.landingBuilder.dragDropEditor,
-      landingTemplates: features.landingBuilder.templates,
-      formBuilders: features.landingBuilder.formBuilders,
-      popups: features.landingBuilder.popups,
-
-      // CRM features
-      crmEnabled: features.crmAndDripCampaigns.enabled,
-      leadScoring: features.crmAndDripCampaigns.leadScoring,
-      visitorTracking: features.crmAndDripCampaigns.visitorTracking,
-      crmSync: features.crmAndDripCampaigns.crmSync,
-      emailSequences: features.crmAndDripCampaigns.emailSequences,
-      behavioralTriggers: features.crmAndDripCampaigns.behavioralTriggers,
-      abTesting: features.crmAndDripCampaigns.abTesting,
-
-      // AI features
-      aiResponseTuning: features.aiAgent.responseTuning,
-      aiModelTraining: features.aiAgent.modelTraining,
-      customModels: features.aiAgent.customModels,
-
-      // Growth features
-      analyticsDashboard: features.growthFeatures.analyticsDashboard,
-      customBranding: features.growthFeatures.customBranding,
-      teamCollaboration: features.growthFeatures.teamCollaboration,
-      dynamicContent: features.growthFeatures.dynamicContent,
-      webinarIntegration: features.growthFeatures.webinarIntegration,
-      membershipSites: features.growthFeatures.membershipSites,
-      paymentGateways: features.growthFeatures.paymentGateways,
-
-      // Enterprise features
-      prioritySupport: features.enterpriseFeatures.prioritySupport,
-      whiteLabel: features.enterpriseFeatures.whiteLabel,
-      apiAccess: features.enterpriseFeatures.apiAccess,
-      webhooks: features.enterpriseFeatures.webhooks,
-      sso: features.enterpriseFeatures.sso,
-      dedicatedInstance: features.enterpriseFeatures.dedicatedInstance,
-      sla99_9: features.enterpriseFeatures.sla99_9,
-      customDataCenter: features.enterpriseFeatures.customDataCenter,
-      auditLogs: features.enterpriseFeatures.auditLogs,
-      dataResidency: features.enterpriseFeatures.dataResidency,
-      hipaaCompliance: features.enterpriseFeatures.hipaaCompliance,
-      accountManager: features.enterpriseFeatures.accountManager,
+      channels: features.chatbotAutomation?.channels || [],
+      visualFlowBuilder: features.chatbotAutomation?.visualFlowBuilder || false,
+      multilingualSupport: features.chatbotAutomation?.multilingualSupport || 0,
+      chatbotTemplates: features.chatbotAutomation?.templates || false,
+      fileAttachments: features.chatbotAutomation?.fileAttachments || false,
+      customFlows: features.chatbotAutomation?.customFlows || false,
+      adsAutomation: features.adsAutomation?.enabled || false,
+      adCopyGeneration: features.adsAutomation?.adCopyGeneration || false,
+      targeting: features.adsAutomation?.targeting || false,
+      budgetManagement: features.adsAutomation?.budgetManagement || false,
+      autoPublishing: features.adsAutomation?.autoPublishing || false,
+      audienceSegmentation:
+        features.adsAutomation?.audienceSegmentation || false,
+      seoTools: features.seoTools?.enabled || false,
+      keywordResearch: features.seoTools?.keywordResearch || false,
+      longTailKeywords: features.seoTools?.longTailKeywords || false,
+      seoDailyUpdates: features.seoTools?.dailyUpdates || false,
+      landingBuilder: features.landingBuilder?.enabled || false,
+      dragDropEditor: features.landingBuilder?.dragDropEditor || false,
+      landingTemplates: features.landingBuilder?.templates || false,
+      formBuilders: features.landingBuilder?.formBuilders || false,
+      popups: features.landingBuilder?.popups || false,
+      crmEnabled: features.crmAndDripCampaigns?.enabled || false,
+      leadScoring: features.crmAndDripCampaigns?.leadScoring || false,
+      visitorTracking: features.crmAndDripCampaigns?.visitorTracking || false,
+      crmSync: features.crmAndDripCampaigns?.crmSync || false,
+      emailSequences: features.crmAndDripCampaigns?.emailSequences || false,
+      behavioralTriggers:
+        features.crmAndDripCampaigns?.behavioralTriggers || false,
+      abTesting: features.crmAndDripCampaigns?.abTesting || false,
+      aiResponseTuning: features.aiAgent?.responseTuning || false,
+      aiModelTraining: features.aiAgent?.modelTraining || false,
+      customModels: features.aiAgent?.customModels || false,
+      analyticsDashboard: features.growthFeatures?.analyticsDashboard || false,
+      customBranding: features.growthFeatures?.customBranding || false,
+      teamCollaboration: features.growthFeatures?.teamCollaboration || false,
+      dynamicContent: features.growthFeatures?.dynamicContent || false,
+      webinarIntegration: features.growthFeatures?.webinarIntegration || false,
+      membershipSites: features.growthFeatures?.membershipSites || false,
+      paymentGateways: features.growthFeatures?.paymentGateways || false,
+      prioritySupport: features.enterpriseFeatures?.prioritySupport || false,
+      whiteLabel: features.enterpriseFeatures?.whiteLabel || false,
+      apiAccess: features.enterpriseFeatures?.apiAccess || false,
+      webhooks: features.enterpriseFeatures?.webhooks || false,
+      sso: features.enterpriseFeatures?.sso || false,
+      dedicatedInstance:
+        features.enterpriseFeatures?.dedicatedInstance || false,
+      sla99_9: features.enterpriseFeatures?.sla99_9 || false,
+      customDataCenter: features.enterpriseFeatures?.customDataCenter || false,
+      auditLogs: features.enterpriseFeatures?.auditLogs || false,
+      dataResidency: features.enterpriseFeatures?.dataResidency || false,
+      hipaaCompliance: features.enterpriseFeatures?.hipaaCompliance || false,
+      accountManager: features.enterpriseFeatures?.accountManager || false,
     };
   },
+  transformPlanLimits: function (planLimits) {
+    // Handle "Infinity" values by converting to a large number
+    const convertLimit = (limit) => {
+      if (limit === "Infinity") return Number.MAX_SAFE_INTEGER;
+      return limit;
+    };
+
+    return {
+      chatbots: convertLimit(planLimits.chatbots || 0),
+      messages: convertLimit(planLimits.messages || 0),
+      members: convertLimit(planLimits.members || 0),
+      storage: convertLimit(planLimits.storage || 0),
+      conversations: convertLimit(planLimits.conversations || 0),
+      integrations: convertLimit(planLimits.integrations || 0),
+      automationRules: convertLimit(planLimits.automationRules || 0),
+      dripCampaigns: convertLimit(planLimits.dripCampaigns || 0),
+      landingPages: convertLimit(planLimits.landingPages || 0),
+      adCampaigns: convertLimit(planLimits.adCampaigns || 0),
+      teamRoles: convertLimit(planLimits.teamRoles || 0),
+      aiModelTraining: convertLimit(planLimits.aiModelTraining || 0),
+      apiCalls: convertLimit(planLimits.apiCalls || 0),
+    };
+  },
+
   checkUsageOverage: async function () {
     const overages = {};
     const resources = [
@@ -552,8 +598,8 @@ subscriptionSchema.methods = {
       }
     });
 
-    this.overage = overages;
-    this.overage.lastCalculated = new Date();
+    this.usageOverage = overages;
+    this.usageOverage.lastCalculated = new Date();
     return overages;
   },
 
@@ -584,7 +630,7 @@ subscriptionSchema.methods = {
         nearLimit: this.isNearLimit.members,
       },
       storage: {
-        used: (this.usage.storage / 1024).toFixed(2), // Convert to GB
+        used: (this.usage.storage / 1024).toFixed(2),
         limit: formatLimit(
           this.limits.storage === "Infinity"
             ? "Unlimited"
@@ -603,6 +649,7 @@ subscriptionSchema.methods = {
   },
 
   updatePlan: async function (newPlan, billingCycle, options = {}) {
+    const session = options.session || null;
     const planConfig = PLANS[newPlan];
     if (!planConfig) throw new Error("Invalid plan");
 
@@ -611,30 +658,47 @@ subscriptionSchema.methods = {
       throw new Error("Subscription already on this plan and billing cycle");
     }
 
-    // Handle payment gateway updates
-    if (this.paymentGateway === "razorpay" && this.gatewayIds.subscription) {
-      await razorpay.subscriptions.update(this.gatewayIds.subscription, {
-        plan_id: planConfig.razorpayIds[billingCycle],
-        prorate: options.prorate !== false,
-      });
+    // Start transaction if no session provided
+    let createdSession = false;
+    if (!session) {
+      const dbSession = await mongoose.startSession();
+      dbSession.startTransaction();
+      createdSession = true;
     }
 
-    // Update subscription details
-    this.plan = newPlan;
-    this.billingCycle = billingCycle;
-    this.limits = planConfig.limits;
-    this.features = this.transformPlanFeatures(planConfig.features);
+    try {
+      // Handle payment gateway updates
+      if (this.paymentGateway === "razorpay" && this.gateway.subscriptionId) {
+        await razorpay.subscriptions.update(
+          this.gateway.subscriptionId,
+          {
+            plan_id: planConfig.razorpayIds[billingCycle],
+            prorate: options.prorate !== false,
+          },
+          { session }
+        );
+      }
 
-    // Update workspace reference
-    const Workspace = mongoose.model("Workspace");
-    await Workspace.findByIdAndUpdate(this.workspace, {
-      "subscription.plan": newPlan,
-      limits: planConfig.limits,
-      features: this.features,
-    });
+      // Update subscription details
+      this.plan = newPlan;
+      this.billingCycle = billingCycle;
 
-    await this.save();
-    return this;
+      // Limits and features will be updated by pre-save hook
+      await this.save({ session });
+
+      if (createdSession) {
+        await session.commitTransaction();
+        session.endSession();
+      }
+
+      return this;
+    } catch (error) {
+      if (createdSession && session) {
+        await session.abortTransaction();
+        session.endSession();
+      }
+      throw error;
+    }
   },
 
   updateUsage: async function (resource, amount = 1) {
@@ -645,7 +709,6 @@ subscriptionSchema.methods = {
     this.usage[resource] = (this.usage[resource] || 0) + amount;
     await this.save();
 
-    // Check if we need to send usage warnings
     if (
       this.isNearLimit[resource] &&
       (!this.notifications.usageWarning[resource] ||
@@ -657,7 +720,6 @@ subscriptionSchema.methods = {
     return this;
   },
 
-  // Check if any limits are reached
   checkLimits: function () {
     return {
       chatbots:
@@ -678,14 +740,43 @@ subscriptionSchema.methods = {
     };
   },
 
-  getPaymentStatus: function () {
-    if (this.inGracePeriod) return "grace_period";
-    if (["past_due", "unpaid"].includes(this.status) && !this.inGracePeriod) {
-      return "delinquent";
+  validatePlanChange: async function (newPlan) {
+    const currentPlanLevel = Object.keys(PLANS).indexOf(this.plan);
+    const newPlanLevel = Object.keys(PLANS).indexOf(newPlan);
+
+    if (newPlanLevel < currentPlanLevel) {
+      const newLimits = PLANS[newPlan]?.limits?.[this.billingCycle] || {};
+      const overages = {};
+
+      for (const [resource, limit] of Object.entries(newLimits)) {
+        const currentUsage = this.usage?.[resource] || 0;
+        if (limit !== "Infinity" && currentUsage > limit) {
+          overages[resource] = {
+            current: currentUsage,
+            newLimit: limit,
+          };
+        }
+      }
+
+      if (Object.keys(overages).length > 0) {
+        throw new Error({
+          message: "Cannot downgrade due to usage limits",
+          overages,
+        });
+      }
     }
-    if (this.status === "trialing") return "trialing";
-    if (this.status === "paused") return "paused";
-    return this.status;
+    return true;
+  },
+
+  hasFeatureAccess: async function (featurePath) {
+    const parts = featurePath.split(".");
+    let current = this.features;
+
+    for (const part of parts) {
+      if (!current[part]) return false;
+      current = current[part];
+    }
+    return current === true || current > 0;
   },
 
   sendUsageWarning: async function (resource) {
@@ -826,33 +917,7 @@ subscriptionSchema.methods = {
     await this.save();
     return this;
   },
-  // In subscriptionSchema.methods
-  validatePlanChange: async function (newPlan) {
-    const currentPlanLevel = Object.keys(PLANS).indexOf(this.plan);
-    const newPlanLevel = Object.keys(PLANS).indexOf(newPlan);
 
-    if (newPlanLevel < currentPlanLevel) {
-      const newLimits = PLANS[newPlan].limits;
-      const overages = {};
-
-      for (const [resource, limit] of Object.entries(newLimits)) {
-        if (limit !== "Infinity" && this.usage[resource] > limit) {
-          overages[resource] = {
-            current: this.usage[resource],
-            newLimit: limit,
-          };
-        }
-      }
-
-      if (Object.keys(overages).length > 0) {
-        throw new Error({
-          message: "Cannot downgrade due to usage limits",
-          overages,
-        });
-      }
-    }
-    return true;
-  },
   hasFeatureAccess: async function (featurePath) {
     // Example: 'chatbotAutomation.customFlows'
     const parts = featurePath.split(".");
@@ -869,63 +934,52 @@ subscriptionSchema.methods = {
 // Statics
 subscriptionSchema.statics = {
   // Create a new subscription with proper initialization
-  async createWithPricing(workspaceId, planId, billingCycle, options = {}) {
-    const { session, userId, promotionCode } = options;
-    const plan = PLANS[planId];
+  async createSubscription(
+    workspaceId,
+    planId,
+    billingCycle,
+    session,
+    ownerId
+  ) {
+    const plan = await Plan.findOne({ id: planId });
     if (!plan) throw new Error("Invalid plan");
-
+    const planLimits = plan.limits.yearly;
     // Calculate period end date
-    const periodEnd = new Date();
-    if (billingCycle === "yearly") {
-      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-    } else if (billingCycle === "monthly") {
-      periodEnd.setMonth(periodEnd.getMonth() + 1);
-    } // Lifetime has no end date
-
     const subscriptionData = {
       workspace: workspaceId,
+      user: ownerId,
       plan: planId,
       billingCycle,
-      status: planId === "free" ? "active" : "trialing",
+      status: "active",
       currentPeriod: {
         start: new Date(),
-        end: planId === "free" ? null : periodEnd,
+        end: planId === "free" && null,
       },
-      limits: plan.limits,
+      limits: this.prototype.transformPlanLimits(planLimits),
       features: this.prototype.transformPlanFeatures(plan.features),
-      lifecycle: {
+      lifeCycle: {
         createdAt: new Date(),
         nextBilling: {
-          date: planId === "free" ? null : periodEnd,
-          estimatedAmount: plan.prices[billingCycle],
+          date: planId === "free" && null,
+          estimatedAmount: planId !== "free" && plan.prices[billingCycle],
         },
       },
       metadata: {
-        createdBy: userId,
+        createdBy: {
+          workspace: workspaceId,
+          user: ownerId,
+        },
       },
     };
 
-    // Apply promotion if provided
-    if (promotionCode) {
-      const promotion = await this.validatePromotion(promotionCode, planId);
-      subscriptionData.promotion = promotion;
+    try {
+      const result = await this.create(subscriptionData);
 
-      if (promotion.type === "trial" && plan.metadata.trialDays > 0) {
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + promotion.value);
-        subscriptionData.trial = {
-          start: new Date(),
-          end: trialEnd,
-          converted: false,
-        };
-        subscriptionData.status = "trialing";
-      }
+      return result;
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      throw error;
     }
-
-    return await this.create(
-      [subscriptionData],
-      session ? { session } : {}
-    ).then((res) => res[0]);
   },
 
   // Validate a promotion code
@@ -1049,7 +1103,7 @@ subscriptionSchema.statics = {
 
     return this.find({
       status: "active",
-      "lifecycle.nextBilling.date": { $lte: date },
+      "lifeCycle.nextBilling.date": { $lte: date },
       $or: [
         { "notifications.upcomingRenewal.sent": { $ne: true } },
         { "notifications.upcomingRenewal.nextSendDate": { $lte: new Date() } },

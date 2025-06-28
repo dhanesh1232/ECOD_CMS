@@ -476,3 +476,22 @@ export const SUPER_ADMIN_COUPON_NAVS = [
     href: "/admin/coupons/settings",
   },
 ];
+
+export const BillingNav = [
+  {
+    id: "current-plan",
+    label: "Current Plan",
+  },
+  {
+    id: "add-on",
+    label: "Add ons",
+  },
+  {
+    id: "billing",
+    label: "Billing",
+  },
+  {
+    id: "history-invoice",
+    label: "Invoice",
+  },
+];

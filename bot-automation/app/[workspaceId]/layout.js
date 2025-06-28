@@ -7,7 +7,7 @@ import { useCallback, useState, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
-import { encryptData } from "@/utils/encryption";
+import { encryptData } from "@/lib/utils/encryption";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserServices } from "@/lib/client/user";
 import NotificationButton from "@/components/notification";

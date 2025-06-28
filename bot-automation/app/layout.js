@@ -81,7 +81,11 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.svg" />
       </head>
-      <body className={`antialiased mt-0`}>
+      <body
+        className="antialiased"
+        style={{ marginTop: "0px" }}
+        suppressHydrationWarning
+      >
         <DarkModeProvider>
           <ToastProvider>
             <Layout>

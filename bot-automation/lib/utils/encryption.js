@@ -1,18 +1,19 @@
-import crypto from "crypto";
+import crypto, { createHash } from "crypto";
 
 const ALGORITHM = "aes-256-cbc";
-const SECRET_KEY = crypto
-  .createHash("sha256")
-  .update(process.env.NEXT_PUBLIC_ENCRYPT_SECRET)
-  .digest(); // always 32 bytes
-const IV_LENGTH = 16; // 16 bytes for AES
+const SECRET_KEY = () => {
+  return createHash("sha256")
+    .update(process.env.NEXT_PUBLIC_ENCRYPT_SECRET)
+    .digest();
+};
+const IV_LENGTH = 16;
 
 export function encryptData(text) {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
   let encrypted = cipher.update(text, "utf8", "hex");
   encrypted += cipher.final("hex");
-  return iv.toString("hex") + ":" + encrypted; // Combine IV and encrypted data
+  return iv.toString("hex") + ":" + encrypted;
 }
 
 export function decryptData(text) {

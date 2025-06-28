@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+  "inline-flex items-center justify-center rounded-md font-medium transition-all focus:outline-none disabled:opacity-50 disabled:pointer-events-none",
   {
     variants: {
       variant: {
@@ -79,6 +79,10 @@ const buttonVariants = cva(
       glass: {
         true: "backdrop-blur-md bg-opacity-20 border border-white/20 dark:border-gray-800/20 shadow-lg hover:bg-opacity-30",
       },
+      focusRing: {
+        true: "focus:ring-2 focus:ring-offset-2",
+        false: "focus:ring-0 focus:ring-offset-0",
+      },
     },
     compoundVariants: [
       {
@@ -88,7 +92,7 @@ const buttonVariants = cva(
           "primary",
           "secondary",
           "success",
-          "danger",
+          "destructive",
           "warning",
           "info",
           "light",
@@ -113,7 +117,7 @@ const buttonVariants = cva(
         className: "bg-opacity-5 hover:bg-opacity-10",
       },
       {
-        variant: ["link", "ghost", "ghost-primary", "ghost-success"],
+        variant: ["ghost", "ghost-primary", "ghost-success"],
         className: "!focus:ring-0 !focus:ring-offset-0",
       },
     ],
@@ -122,6 +126,7 @@ const buttonVariants = cva(
       size: "md",
       rounded: "md",
       glass: false,
+      focusRing: false,
     },
   }
 );
@@ -142,6 +147,7 @@ const Button = React.forwardRef(
       fullWidth,
       rounded,
       glass = false,
+      focusRing = false,
       ...props
     },
     ref
@@ -190,7 +196,15 @@ const Button = React.forwardRef(
       const child = React.Children.only(children);
       return React.cloneElement(child, {
         className: twMerge(
-          buttonVariants({ variant, size, fullWidth, rounded, className }),
+          buttonVariants({
+            variant,
+            size,
+            fullWidth,
+            rounded,
+            glass,
+            focusRing,
+            className,
+          }),
           clsx({
             "flex-row-reverse": iconPosition === "right",
             "cursor-wait": isLoading,
@@ -206,7 +220,15 @@ const Button = React.forwardRef(
     return (
       <button
         className={twMerge(
-          buttonVariants({ variant, size, fullWidth, rounded, className }),
+          buttonVariants({
+            variant,
+            size,
+            fullWidth,
+            rounded,
+            glass,
+            focusRing,
+            className,
+          }),
           clsx({
             "flex-row-reverse": iconPosition === "right" && !isLoading,
             "cursor-wait": isLoading,

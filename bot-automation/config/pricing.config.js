@@ -1,6 +1,6 @@
 // config/pricing.config.js
 
-import { PLANS } from "@/utils/config.plans";
+import { PLANS } from "@/lib/utils/config.plans";
 
 export { PLANS };
 export const TAX_RATES = {

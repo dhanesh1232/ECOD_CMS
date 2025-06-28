@@ -5,7 +5,7 @@ import { User } from "@/models/user/user";
 import { validateSession } from "@/lib/auth";
 import dbConnect from "@/config/dbconnect";
 import { z } from "zod";
-import cloudinary from "@/utils/cloudinary";
+import cloudinary from "@/lib/utils/cloudinary";
 
 // Validation schemas
 const AddressSchema = z.object({

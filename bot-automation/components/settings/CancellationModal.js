@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Zap, XCircle, Loader, ArrowDown } from "lucide-react";
+import { AlertTriangle, Zap, XCircle, Loader, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -28,7 +27,7 @@ const CancellationModal = ({
   onOpenChange,
   subscription,
   onCancel,
-  onDowngrade,
+  onPause,
   onReactivate,
 }) => {
   const [processing, setProcessing] = useState(false);
@@ -40,8 +39,8 @@ const CancellationModal = ({
     try {
       if (action === "reactivate") {
         await onReactivate();
-      } else if (action === "downgrade") {
-        await onDowngrade();
+      } else if (action === "pause") {
+        await onPause();
       } else {
         await onCancel();
       }
@@ -90,22 +89,22 @@ const CancellationModal = ({
                   </p>
 
                   <div className="p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Downgrade Options</h4>
+                    <h4 className="font-medium mb-2">Pause Options</h4>
                     <ul className="space-y-2">
                       <li className="flex items-center justify-between">
-                        <span className="">Free Plan</span>
+                        <span className="">Pause Subscription</span>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleAction("downgrade")}
+                          onClick={() => handleAction("pasuse")}
                           disabled={processing}
                         >
-                          {processing && actionType === "downgrade" ? (
+                          {processing && actionType === "pause" ? (
                             <Loader className="h-4 w-4 animate-spin mr-2" />
                           ) : (
-                            <ArrowDown className="h-4 w-4 mr-2" />
+                            <Pause className="h-4 w-4 mr-2" />
                           )}
-                          Downgrade
+                          Pause
                         </Button>
                       </li>
                     </ul>

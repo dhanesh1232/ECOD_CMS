@@ -1,7 +1,5 @@
 "use client";
 
-import PhoneInput from "react-phone-number-input";
-import "react-phone-number-input/style.css";
 import dynamic from "next/dynamic";
 import { signIn } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -19,13 +17,15 @@ import {
   FiCheckCircle,
   FiArrowLeft,
 } from "react-icons/fi";
-import { decryptData } from "@/utils/encryption";
+import { decryptData } from "@/lib/utils/encryption";
 import { useToast } from "../ui/toast-provider";
 import { FaWhatsapp } from "react-icons/fa";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { StyledPhoneInput } from "../ui/phone_input";
+import { Checkbox } from "../ui/checkbox";
 const AIFormWrapper = dynamic(() => import("./wrapper"));
 // Enhanced data-driven configuration
 const FORM_CONFIG = {
@@ -637,29 +637,48 @@ export default function FormComponent() {
 
     const showError = pageKey === "register" ? error : touched && error;
 
+    const getAutocompleteValue = () => {
+      if (field === "email") {
+        return pageKey === "login" ? "username" : "email";
+      }
+      if (field === "password") {
+        return pageKey === "register" ? "new-password" : "current-password";
+      }
+      if (field === "confirmPassword") {
+        return "new-password";
+      }
+      if (field === "phone") {
+        return "tel";
+      }
+      if (field === "name") {
+        return "name";
+      }
+      return undefined;
+    };
     if (type === "checkbox") {
       return (
         <div key={label}>
-          <div className="flex items-start pt-1">
-            <div className="flex items-center h-3 w-3 sm:h-4 sm:w-4">
-              <input
-                id={field}
-                name={field}
-                type="checkbox"
-                checked={value}
-                required={fieldConfig.validation?.required}
-                onChange={handleChange}
-                className="h-3 w-3 sm:h-4 sm:w-4 rounded dark:border-gray-600 border-gray-300 dark:bg-gray-700 bg-gray-100 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900"
-              />
-            </div>
-            <div className="ml-2 text-xs sm:text-sm">
-              <Label
-                htmlFor={field}
-                className="dark:text-gray-300 text-gray-700"
-              >
-                {label}
-              </Label>
-            </div>
+          <div className="flex items-start space-x-2 pt-1">
+            <Checkbox
+              id={field}
+              name={field}
+              checked={value}
+              required={fieldConfig?.validation?.required}
+              onCheckedChange={(checked) => {
+                handleChange({
+                  target: {
+                    name: field,
+                    value: checked === "indeterminate" ? false : checked,
+                  },
+                });
+              }}
+            />
+            <Label
+              htmlFor={field}
+              className="text-xs sm:text-sm leading-snug text-gray-700 dark:text-gray-300 cursor-pointer select-none"
+            >
+              {label}
+            </Label>
           </div>
           {showError && (
             <p className="text-xs text-red-500 dark:text-red-400 mt-1">
@@ -692,19 +711,18 @@ export default function FormComponent() {
             {label}
           </Label>
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-2 sm:pl-3 pointer-events-none">
+            <div className="absolute z-10 inset-y-0 left-0 flex items-center pl-2 sm:pl-3 pointer-events-none">
               {React.cloneElement(icon, {
                 className:
-                  "text-gray-400 group-focus-within:text-blue-500 transition-colors",
+                  "text-gray-400 z-10 group-focus-within:text-blue-500 transition-colors",
               })}
             </div>
-            <PhoneInput
+            <StyledPhoneInput
               id={field}
               name={field}
-              international
               required
-              defaultCountry="IN"
               placeholder={placeholder}
+              autoComplete="tel"
               value={value}
               onChange={(value) => {
                 setFormState((prev) => ({ ...prev, [field]: value }));
@@ -713,7 +731,7 @@ export default function FormComponent() {
                   [field]: validateField(field, value),
                 }));
               }}
-              className="custom-phone-input flex items-center sm:pl-10 pl-5"
+              className="pl-5"
             />
           </div>
           {pageKey === "register" && (
@@ -762,6 +780,7 @@ export default function FormComponent() {
             onChange={handleChange}
             required={fieldConfig.validation?.required}
             placeholder={placeholder}
+            autoComplete={getAutocompleteValue()}
             className={`w-full ${
               icon ? "pl-10" : "pl-4"
             } pr-4 py-2.5 text-sm dark:bg-gray-900 bg-white dark:text-white text-gray-900 border ${
@@ -1090,19 +1109,6 @@ export default function FormComponent() {
   return (
     <AIFormWrapper>
       <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto px-2 sm:px-0">
-        {/* Back button for forgot password */}
-        {pageKey === "forgot-password" && (
-          <button
-            onClick={() => router.push("/auth/login")}
-            className="flex items-center my-3 self-start text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            <FiArrowLeft className="mr-1" />
-            <span className="hover:underline underline-offset-1 capitalize">
-              Back to login
-            </span>
-          </button>
-        )}
-
         {/* Logo */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}

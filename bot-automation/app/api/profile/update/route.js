@@ -1,6 +1,6 @@
 import dbConnect from "@/config/dbconnect";
 import { User } from "@/models/user/user";
-import cloudinary from "@/utils/cloudinary";
+import cloudinary from "@/lib/utils/cloudinary";
 import { validateSession } from "@/lib/auth";
 import { ErrorHandles } from "@/lib/server/errors";
 import { SuccessHandle } from "@/lib/server/success";

@@ -3,6 +3,7 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import ThemeSwitcher from "../themeSwicther";
 
 const AIAgents = () => {
   const agents = [
@@ -189,8 +190,8 @@ export default function AIFormWrapper({ children }) {
 
   if (!isMounted) {
     return (
-      <div className="relative min-h-screen flex items-center justify-center dark:bg-gray-900 bg-gray-50 p-4">
-        <div className="w-full max-w-md dark:bg-gray-800/80 bg-white/90 rounded-2xl p-4">
+      <div className="relative h-full flex items-center justify-center lg:justify-end dark:bg-gray-900 bg-gray-50 p-4">
+        <div className="w-full max-w-md h-full dark:bg-gray-800/80 bg-white/90 rounded-2xl p-4">
           {children}
         </div>
       </div>
@@ -198,17 +199,43 @@ export default function AIFormWrapper({ children }) {
   }
 
   return (
-    <div className="relative h-full flex items-center justify-center dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-black bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 overflow-hidden p-4">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 dark:bg-[url('/grid-pattern.svg')] bg-[url('/grid-pattern-light.svg')] dark:opacity-[0.03] opacity-[0.05]" />
-      <CodeParticles />
-      <AIAgents />
-      <BotFeatures />
+    <div className="relative h-full flex items-center justify-center lg:justify-end dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-black bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 overflow-hidden">
+      {/* Animated Background Elements with smoother transitions */}
+      <motion.div
+        className="absolute inset-0 dark:bg-[url('/grid-pattern.svg')] bg-[url('/grid-pattern-light.svg')] dark:opacity-[0.03] opacity-[0.05]"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+      />
 
-      {/* Data Connections */}
-      <div className="absolute inset-0 pointer-events-none">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 1 }}
+      >
+        <CodeParticles />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6, duration: 1 }}
+      >
+        <AIAgents />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.9, duration: 1 }}
+      >
+        <BotFeatures />
+      </motion.div>
+
+      {/* Enhanced Data Connections with smoother animation */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <svg width="100%" height="100%" className="absolute inset-0">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <motion.line
               key={i}
               x1={`${Math.random() * 100}%`}
@@ -218,33 +245,75 @@ export default function AIFormWrapper({ children }) {
               stroke="url(#gradient)"
               strokeWidth="0.5"
               strokeDasharray="5,5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.3, 0] }}
-              transition={{ duration: 15, repeat: Infinity, delay: i * 2 }}
+              initial={{
+                opacity: 0,
+                pathLength: 0,
+              }}
+              animate={{
+                opacity: [0, 0.4, 0],
+                pathLength: [0, 1, 0],
+              }}
+              transition={{
+                duration: 18 + Math.random() * 10,
+                repeat: Infinity,
+                delay: i * 1.5,
+                ease: "easeInOut",
+              }}
             />
           ))}
           <defs>
             <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.5" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.7" />
+              <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.7" />
             </linearGradient>
           </defs>
         </svg>
       </div>
 
-      {/* Main Form Container */}
+      {/* Main Form Container with responsive adjustments */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="relative z-10 w-full max-w-md dark:bg-gray-800/80 bg-white/90 dark:border-gray-700/50 border-gray-200/80 rounded-2xl backdrop-blur-lg dark:shadow-2xl dark:shadow-blue-500/10 shadow-xl shadow-gray-400/10 overflow-hidden"
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="relative z-10 w-full h-auto lg:h-full mx-4 lg:mx-0 flex items-center justify-center max-w-md dark:bg-gray-800/80 bg-white/90 dark:border-gray-700/50 border-gray-200/80 rounded-2xl lg:rounded-none backdrop-blur-lg dark:shadow-2xl dark:shadow-blue-500/10 shadow-xl shadow-gray-400/10 overflow-hidden"
+        whileHover={{
+          scale: 1.005,
+          transition: { duration: 0.3 },
+        }}
       >
+        <div className="absolute top-1 right-1">
+          <ThemeSwitcher />
+        </div>
         {/* Form Content */}
-        <div className="p-4 pt-2">{children}</div>
+        <div className="p-6 pt-4 w-full">{children}</div>
 
-        {/* Glow Effects */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 dark:bg-blue-500/10 bg-blue-200/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -right-20 w-40 h-40 dark:bg-purple-500/10 bg-purple-200/20 rounded-full blur-3xl pointer-events-none" />
+        {/* Enhanced Glow Effects with animation */}
+        <motion.div
+          className="absolute -top-20 -left-20 w-40 h-40 dark:bg-blue-500/10 bg-blue-200/20 rounded-full blur-3xl pointer-events-none"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.7, 0.9, 0.7],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-20 -right-20 w-40 h-40 dark:bg-purple-500/10 bg-purple-200/20 rounded-full blur-3xl pointer-events-none"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.7, 0.9, 0.7],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
       </motion.div>
     </div>
   );

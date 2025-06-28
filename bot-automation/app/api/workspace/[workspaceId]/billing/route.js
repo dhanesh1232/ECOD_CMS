@@ -53,6 +53,11 @@ export async function GET(req, { params }) {
       workspace: workspace._id,
     }).lean();
 
+    if (profile && !workspace.billingDetails) {
+      workspace.billingDetails = profile._id;
+      await workspace.save();
+    }
+
     return SuccessHandle.DefaultSuccess(
       { profile: profile || null }, // Return null instead of empty object for consistency
       profile
@@ -95,6 +100,8 @@ export async function POST(req, { params }) {
       workspace: workspace._id,
     });
 
+    workspace.billingDetails = profile._id;
+    await workspace.save();
     return SuccessHandle.DefaultSuccess(
       { profile },
       "Billing profile created successfully"

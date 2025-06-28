@@ -121,7 +121,7 @@ export const BillingProfile = () => {
 
     if (!validateForm()) {
       showToast({
-        title: "Validation Error",
+        title: "Missing or Invalid",
         description: "Please fix the errors in the form",
         variant: "destructive",
       });

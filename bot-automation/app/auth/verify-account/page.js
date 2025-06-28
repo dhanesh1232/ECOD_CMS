@@ -4,7 +4,7 @@ import AIFormWrapper from "@/components/auth/wrapper";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Logo from "@/components/logo";
-import { decryptData } from "@/utils/encryption";
+import { decryptData } from "@/lib/utils/encryption";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/components/ui/toast-provider";
 import { Label } from "@/components/ui/label";

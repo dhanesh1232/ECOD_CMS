@@ -1,12 +1,13 @@
 import { SubscriptionHistory } from "@/models/payment/subscriptionHistory";
 import { razorpay } from "../payment_gt";
 import { Subscription } from "@/models/payment/subscription";
+import { PaymentMethod } from "@/models/payment/paymentMethod";
 
 export const _webhooksHandles = {
   __webhooks__payment__authorized__: async (payload) => {
     try {
       const payment = await razorpay.payments.fetch(payload.id);
-      console.log(`[Webhook] Payment authorized: ${payment.id}`);
+      console.log(`[Webhook] Payment authorized: ${payment.id} ${payment}`);
       if (payment.status === "authorized" && !payment.captured) {
         await razorpay.payments.capture(payment.id, payment.amount);
         console.log("✅ Payment manually captured:", payment.id);
@@ -17,6 +18,7 @@ export const _webhooksHandles = {
       console.error("❌ Error during manual capture:", error.message);
     }
   },
+
   __webhooks__payment__capture__: async (payload) => {
     try {
       const payment = await razorpay.payments.fetch(payload.id);
@@ -44,18 +46,72 @@ export const _webhooksHandles = {
         return;
       }
 
-      await SubscriptionHistory.findOneAndUpdate(
+      const methodType = payment.method; // 'card', 'upi', 'wallet', etc.
+      const paymentMethod = {
+        type: methodType,
+        last4: payment.card?.last4 || payment.wallet?.wallet || undefined,
+        brand: payment.card?.network || payment.wallet?.provider,
+        expiry:
+          payment.card?.expiry_month && payment.card?.expiry_year
+            ? `${payment.card.expiry_month}/${payment.card.expiry_year}`
+            : undefined,
+      };
+      const methodPayload = {
+        method: methodType, // e.g. "card", "upi", "netbanking", "wallet"
+      };
+      switch (payment.method) {
+        case "card":
+          methodPayload.card = {
+            last4: payment.card?.last4,
+            network: payment.card?.network,
+            type: payment.card?.type,
+            issuer: payment.card?.issuer,
+            expiryMonth: payment.card?.expiry_month,
+            expiryYear: payment.card?.expiry_year,
+            isInternational: payment.card?.international || false,
+          };
+          break;
+        case "upi":
+          methodPayload.upi = {
+            vpa: payment.vpa,
+          };
+          break;
+        case "netbanking":
+          methodPayload.netbanking = {
+            bank: payment.bank,
+          };
+          break;
+        case "wallet":
+          methodPayload.wallet = {
+            provider: payment.wallet,
+          };
+          break;
+        default:
+          break;
+      }
+      const history = await SubscriptionHistory.findOneAndUpdate(
         { "gateway.subscriptionId": subId },
         {
           action: "payment_captured",
+          paymentMethod,
           status: "active",
           "gateway.paymentId": payment.id,
         }
+      );
+      await PaymentMethod.create(
+        {
+          workspace: history.workspace,
+          subscription: history.subscription,
+          provider: history.gateway.name,
+          method: methodPayload,
+        },
+        { upsert: true, new: true }
       );
     } catch (err) {
       console.error("❌ Webhook payment capture error:", err.message);
     }
   },
+
   __webhooks__pyament__failed__: async (payload) => {
     const payment = await razorpay.payments.fetch(payload.id);
     let subId = payment.subscription_id;
@@ -65,10 +121,10 @@ export const _webhooksHandles = {
     }
 
     await Subscription.findOneAndUpdate(
-      { gatewaySubscriptionId: subId },
+      { "gateway.subscriptionId": subId },
       {
         status: "past_due",
-        $inc: { "subscriptionLifecycle.billingRetryCount": 1 },
+        $inc: { "lifeCycle.billingRetryCount": 1 },
         "notifications.paymentFailed": {
           sent: true,
           sentAt: new Date(),
@@ -90,6 +146,7 @@ export const _webhooksHandles = {
       }
     );
   },
+
   __webhooks__subscription__authenticated__: async (payload) => {
     const subscription = await razorpay.subscriptions.fetch(payload.id);
     const now = new Date();
@@ -101,31 +158,38 @@ export const _webhooksHandles = {
         action: "subscription_authenticated",
         status: "active",
       }
-    );
+    ).populate("plan");
+    console.log(history);
     const hasTrial = !!payload.start_at && payload.start_at * 1000 > now;
     const periodStart = new Date(subscription.current_start * 1000);
     const periodEnd = new Date(subscription.current_end * 1000);
     const endDate = hasTrial && new Date(payload.start_at * 1000);
     const workspace_id = subscription.notes.workspace_id;
-    const plan =
-      history?.plan || payload.notes?.plan_name?.toLowerCase() || "free";
-
+    const planName =
+      history?.plan.name.toLowerCase() ||
+      payload.notes?.plan_name?.toLowerCase() ||
+      "free";
     const updateData = {
-      gatewaySubscriptionId: payload.id,
+      "gateway.subscriptionId": payload.id,
       status: hasTrial ? "trialing" : "active",
-      plan,
+      plan: planName,
       billingCycle: history?.billingCycle || "monthly",
-      trialStart: hasTrial ? now : null,
-      trialEnd: hasTrial ? endDate : null,
-      currentPeriodStart: periodStart,
-      currentPeriodEnd: periodEnd,
+      trial: { start: hasTrial ? now : null, end: hasTrial ? endDate : null },
+      "currentPeriod.start": periodStart,
+      "currentPeriod.end": periodEnd,
       paymentGateway: history?.gateway?.name || "razorpay",
-      gatewayCustomerId: history?.gateway?.customerId,
-      gatewayPlanId: history?.gateway?.planId,
-      subscriptionLifecycle: {
-        initialSignupDate: history?.createdAt || now,
-        nextBillingDate: periodEnd,
+      "gateway.customerId": history?.gateway?.customerId,
+      "gateway.planId": history?.gateway?.planId,
+      lifeCycle: {
+        createdAt: history?.createdAt || now,
+        nextBilling: periodEnd,
       },
+      limits: Subscription.prototype.transformPlanLimits(
+        history.plan.limits[history?.billingCycle || "monthly"]
+      ),
+      features: Subscription.prototype.transformPlanFeatures(
+        history.plan.features
+      ),
       metadata: {
         updatedAt: now,
       },
@@ -133,9 +197,11 @@ export const _webhooksHandles = {
 
     await Subscription.findOneAndUpdate(
       { workspace: workspace_id },
-      updateData
+      updateData,
+      { new: true }
     );
   },
+
   __webhooks__subscription__activated__: async (payload) => {
     const subscription = await razorpay.subscriptions.fetch(payload.id);
     const history = await SubscriptionHistory.findOneAndUpdate(
@@ -143,11 +209,11 @@ export const _webhooksHandles = {
         "gateway.subscriptionId": subscription.id,
       },
       { action: "subscription_activated", status: "active" }
-    );
+    ).populate("plan");
     const periodStart = new Date(subscription.current_start * 1000);
     const periodEnd = new Date(subscription.current_end * 1000);
-    const plan = payload.notes.plan_name.toLowerCase();
-    const now = new Date.now();
+    const planName = payload.notes.plan_name.toLowerCase();
+    const now = new Date();
     const workspace_id = payload.notes.workspace_id;
 
     await Subscription.findOneAndUpdate(
@@ -156,31 +222,62 @@ export const _webhooksHandles = {
       },
       {
         status: "active",
-        plan,
-        gatewaySubscriptionId: subscription.id,
+        plan: planName,
+        "gateway.subscriptionId": subscription.id,
         trialStart: null,
         trialEnd: null,
-        currentPeriodStart: periodStart,
+        "currentPeriod.start": periodStart,
         billingCycle: history?.billingCycle || "monthly",
-        currentPeriodEnd: periodEnd,
+        "currentPeriod.end": periodEnd,
         paymentGateway: history?.gateway?.name || "razorpay",
-        gatewayCustomerId: history?.gateway?.customerId,
-        gatewayPlanId: history?.gateway?.planId,
-        "subscriptionLifecycle.lastRenewalDate": now,
-        "subscriptionLifecycle.nextBillingDate": periodEnd,
+        "gateway.customerId": history?.gateway?.customerId,
+        "gateway.planId": history?.gateway?.planId,
+        "lifeCycle.lastRenewal": now,
+        "lifeCycle.nextBilling": periodEnd,
+        limits: Subscription.prototype.transformPlanLimits(
+          history.plan.limits[history?.billingCycle || "monthly"]
+        ),
+        features: Subscription.prototype.transformPlanFeatures(
+          history.plan.features
+        ),
         metadata: { updatedAt: now },
+      },
+      { new: true }
+    );
+  },
+
+  __webhooks__subscription__updated__: async (payload) => {
+    const subscription = await razorpay.subscriptions.fetch(payload.id);
+    const subDoc = await Subscription.findOne({
+      "gateway.subscriptionId": payload.id,
+    });
+    if (!subDoc) {
+      console.error("Subscription not found for update");
+      return;
+    }
+    await Subscription.findOneAndUpdate(
+      { "gateway.subscriptionId": payload.id },
+      {
+        status: subscription.status,
+        "currentPeriod.end": new Date(subscription.current_end * 1000),
+        metadata: { updatedAt: new Date() },
       }
     );
   },
-  __webhooks__subscription__charge__: async (payload) => {
+
+  __webhooks__subscription__charged__: async (payload) => {
     const subscription = await razorpay.subscriptions.fetch(payload.id);
     await Subscription.findOneAndUpdate(
       {
-        workspace: payload.notes.workspace_id,
-        gatewaySubscriptionId: subscription.id,
+        "gateway.subscriptionId": subscription.id,
       },
       {
-        $inc: { "subscriptionLifecycle.renewalAttempts": 1 },
+        status: "active",
+        "currentPeriod.start": new Date(subscription.current_start * 1000),
+        "currentPeriod.end": new Date(subscription.current_end * 1000),
+        $inc: { "lifeCycle.renewalAttempts": 1 },
+        "lifeCycle.lastCharge": new Date(),
+        "lifeCycle.billingRetry": 0,
         metadata: { updatedAt: new Date() },
       }
     );
@@ -194,38 +291,262 @@ export const _webhooksHandles = {
       }
     );
   },
-  __webhooks__invoice__paid__: async (payload) => {
-    const now = new Date(payload.paid_at * 1000);
-    const subId = payload.subscription_id;
 
+  __webhooks__subscription__pending__: async (payload) => {
     await Subscription.findOneAndUpdate(
-      { gatewaySubscriptionId: subId },
+      { "gateway.subscriptionId": payload.id },
       {
-        status: "active",
-        "subscriptionLifecycle.lastRenewalDate": now,
-        "subscriptionLifecycle.nextBillingDate": new Date(
-          payload.period_end * 1000
-        ),
-        metadata: { updatedAt: now },
-      }
-    );
-    await SubscriptionHistory.findOneAndUpdate(
-      {
-        "gateway.subscriptionId": subId,
-      },
-      {
-        status: "active",
-        amount: payload.amount_paid,
-        gateway: {
-          invoiceId: payload.id,
+        status: "past_due",
+        "notifications.paymentPending": {
+          sent: true,
+          sentAt: new Date(),
         },
       }
     );
   },
+
+  __webhooks__subscription__renewed__: async (payload) => {
+    try {
+      const subscription = await razorpay.subscriptions.fetch(payload.id);
+      const sub = await Subscription.findOne({
+        "gateway.subscriptionId": payload.id,
+      });
+      if (!sub) return;
+      await sub.updateOne({
+        "currentPeriod.start": new Date(subscription.current_start * 1000),
+        "currentPeriod.end": new Date(subscription.current_end * 1000),
+        status: "active",
+        "metadata.lastRenewal": new Date(),
+      });
+      await SubscriptionHistory.create({
+        workspace: sub.workspace,
+        subscription: sub._id,
+        user: sub.user,
+        action: "subscription_renewed",
+        plan: sub.plan,
+        billingCycle: sub.billingCycle,
+        status: "active",
+        usageSnapshot: sub.usage,
+        gateway: {
+          name: "razorpay",
+          eventId: payload.id,
+          eventType: "subscription.renewed",
+          webhookTimestamp: new Date(),
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  },
+
+  __webhooks__subscription__paused__: async (payload) => {
+    try {
+      const sub = await Subscription.findOne({
+        "gateway.subscriptionId": payload.id,
+      });
+      if (!sub) return;
+      await sub.updateOne({
+        status: "paused",
+        "lifeCycle.pause.start": new Date(),
+        "lifeCycle.pause.end": new Date(),
+        "lifeCycle.pause.reason": payload.pause_reason,
+        "metadata.pausedAt": new Date(),
+        "metadata.pauseReson": payload.pause_reason,
+      });
+      await SubscriptionHistory.create({
+        workspace: sub.workspace,
+        subscription: sub._id,
+        user: sub.user,
+        action: "subscription_paused",
+        plan: sub.plan,
+        status: "paused",
+        usageSnapshot: sub.usage,
+        metadata: {
+          pauseReason: payload.pause_reason,
+        },
+        gateway: {
+          name: "razorpay",
+          eventId: payload.id,
+          eventType: "subscription.paused",
+          webhookTimestamp: new Date(),
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  },
+
+  __webhooks__subscription__cancelled__: async (payload) => {
+    const workspace_id = payload.notes.workspace_id;
+    await Subscription.findOneAndUpdate(
+      {
+        workspace: workspace_id,
+        "gateway.subscriptionId": payload.id,
+      },
+      { status: "cancelled" }
+    );
+    await SubscriptionHistory.findOneAndUpdate(
+      {
+        "gateway.subscriptionId": payload.id,
+      },
+      { action: "subscription_cancelled", status: "cancelled" }
+    );
+  },
+
+  __webhooks__subscription__completed__: async (payload) => {
+    const workspace_id = payload.notes.workspace_id;
+    const now = new Date();
+    await Subscription.findOneAndUpdate(
+      { "gateway.subscriptionId": payload.id, workspace: workspace_id },
+      {
+        status: "completed",
+        endedAt: now,
+        "currentPeriod.end": now,
+        "lifeCycle.updatedAt": now,
+        metadata: {
+          updatedAt: now,
+          canceledAt: now,
+        },
+      }
+    );
+    await SubscriptionHistory.findOneAndUpdate(
+      {
+        "gateway.subscriptionId": payload.id,
+      },
+      {
+        action: "subscription_completed",
+        status: "completed",
+        processedAt: now,
+      }
+    );
+  },
+
+  __webhooks__subscription__resumed__: async (payload) => {
+    const workspace_id = payload.notes.workspace_id;
+    await Subscription.findOneAndUpdate(
+      { "gateway.subscriptionId": payload.id, workspace: workspace_id },
+      {
+        status: "active",
+        "lifeCycle.pause.start": null,
+        "lifeCycle.pause.end": null,
+        metadata: { updatedAt: new Date() },
+      }
+    );
+    await SubscriptionHistory.findOneAndUpdate(
+      {
+        "gateway.subscriptionId": payload.id,
+      },
+      { action: "subscription_resumed", status: "active" }
+    );
+  },
+
+  __webhooks__subscription__halted__: async (payload) => {
+    try {
+      const subscriptionId = payload.id;
+
+      // Find the subscription document
+      const sub = await Subscription.findOneAndUpdate(
+        { "gateway.subscriptionId": subscriptionId },
+        {
+          status: "paused",
+          "lifeCycle.pause.start": new Date(),
+          "lifeCycle.pause.reason": "Subscription halted by system/webhook",
+          "lifeCycle.updatedAt": new Date(),
+          "notifications.paymentFailed.sent": true,
+          "notifications.paymentFailed.sentAt": new Date(),
+        },
+        { new: true }
+      );
+
+      if (!sub) return;
+
+      // Create subscription history log
+      await SubscriptionHistory.create({
+        workspace: sub.workspace,
+        subscription: sub._id,
+        user: sub.user,
+        action: "subscription_paused",
+        plan: sub.plan,
+        billingCycle: sub.billingCycle,
+        status: "paused",
+        usageSnapshot: sub.usage,
+        gateway: {
+          name: "razorpay",
+          eventId: payload.id,
+          eventType: "subscription.halted",
+          webhookTimestamp: new Date(),
+          rawResponse: payload,
+        },
+        metadata: {
+          pauseReason: "Halted due to system trigger or webhook",
+        },
+        processedAt: new Date(),
+        idempotencyKey: `${subscriptionId}-halted-${Date.now()}`,
+      });
+    } catch (err) {
+      console.error("Halted subscription error:", err);
+    }
+  },
+
+  __webhooks__invoice__paid__: async (payload) => {
+    try {
+      // Validate and create dates safely
+      const paidAt = payload.paid_at
+        ? new Date(payload.paid_at * 1000)
+        : new Date();
+      const periodEnd = payload.period_end
+        ? new Date(payload.period_end * 1000)
+        : null;
+
+      if (isNaN(paidAt.getTime())) {
+        throw new Error(`Invalid paid_at timestamp: ${payload.paid_at}`);
+      }
+
+      if (periodEnd && isNaN(periodEnd.getTime())) {
+        console.warn(`Invalid period_end timestamp: ${payload.period_end}`);
+        periodEnd = null;
+      }
+
+      const subId = payload.subscription_id;
+      if (!subId) {
+        throw new Error("Missing subscription_id in payload");
+      }
+
+      const updateData = {
+        status: "active",
+        "lifeCycle.lastRenewal": paidAt,
+        metadata: { updatedAt: new Date() }, // Always use fresh date for metadata update
+      };
+
+      if (periodEnd) {
+        updateData["lifeCycle.nextBilling"] = periodEnd;
+      }
+
+      await Subscription.findOneAndUpdate(
+        { "gateway.subscriptionId": subId },
+        updateData
+      );
+
+      await SubscriptionHistory.findOneAndUpdate(
+        { "gateway.subscriptionId": subId },
+        {
+          status: "active",
+          amount: payload.amount_paid,
+          gateway: {
+            invoiceId: payload.id,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error in invoice_paid webhook:", error);
+      throw error; // Re-throw to ensure the webhook fails visibly
+    }
+  },
+
   __webhooks__invoice__partially_paid__: async (payload) => {
     const subId = payload.subscription_id;
     await Subscription.findOneAndUpdate(
-      { gatewaySubscriptionId: subId },
+      { "gateway.subscriptionId": subId },
       {
         status: "past_due",
         metadata: { updatedAt: new Date() },
@@ -243,7 +564,7 @@ export const _webhooksHandles = {
   __webhooks__invoice__expired__: async (payload) => {
     const subId = payload.subscription_id;
     await Subscription.findOneAndUpdate(
-      { gatewaySubscriptionId: subId },
+      { "gateway.subscriptionId": subId },
       {
         status: "expired",
         metadata: { updatedAt: new Date() },
@@ -257,56 +578,7 @@ export const _webhooksHandles = {
       }
     );
   },
-  __webhooks__subscription__cancelled__: async (payload) => {
-    const workspace_id = payload.notes.workspace_id;
-    await Subscription.findOneAndUpdate(
-      {
-        gatewaySubscriptionId: payload.id,
-      },
-      { status: "cancelled" }
-    );
-    await SubscriptionHistory.findOneAndUpdate(
-      {
-        gatewaySubscriptionId: payload.id,
-      },
-      { action: "subscription_cancelled", status: "cancelled" }
-    );
-  },
-  __webhooks__subscription__completed__: async (payload) => {
-    const workspace_id = payload.notes.workspace_id;
-    await Subscription.findOneAndUpdate(
-      { gatewaySubscriptionId: payload.id },
-      {
-        status: "unpaid",
-        endedAt: new Date(),
-        metadata: { updatedAt: new Date() },
-      }
-    );
-    await SubscriptionHistory.findOneAndUpdate(
-      {
-        "gateway.subscriptionId": payload.id,
-      },
-      { action: "subscription_completed", status: "unpaid" }
-    );
-  },
-  __webhooks__subscription__resumed__: async (payload) => {
-    const workspace_id = payload.notes.workspace_id;
-    await Subscription.findOneAndUpdate(
-      { gatewaySubscriptionId: payload.id },
-      {
-        status: "active",
-        "subscriptionLifecycle.pauseStartDate": null,
-        "subscriptionLifecycle.pauseEndDate": null,
-        metadata: { updatedAt: new Date() },
-      }
-    );
-    await SubscriptionHistory.findOneAndUpdate(
-      {
-        "gateway.subscriptionId": payload.id,
-      },
-      { action: "subscription_resumed", status: "active" }
-    );
-  },
+
   __webhooks__refunds__created__: async (payload) => {
     const refundId = payload?.id;
     const paymentId = payload?.payment_id;
@@ -331,6 +603,7 @@ export const _webhooksHandles = {
       }
     );
   },
+
   __webhooks__refunds__processed__: async (payload) => {
     await SubscriptionHistory.findOneAndUpdate(
       { "gateway.paymentId": payload.payment_id },
@@ -344,6 +617,7 @@ export const _webhooksHandles = {
       }
     );
   },
+
   __webhooks__refunds__failed__: async (payload) => {
     await SubscriptionHistory.findOneAndUpdate(
       { "gateway.paymentId": payload.payment_id },

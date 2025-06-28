@@ -500,11 +500,12 @@ workspaceSchema.statics = {
 
     await workspace.save(options);
 
-    const subscription = await Subscription.createWithPricing(
+    const subscription = await Subscription.createSubscription(
       workspace._id,
       "free",
       "lifetime",
-      session
+      session,
+      ownerId
     );
     workspace.subscription = subscription._id;
     await workspace.save(options);

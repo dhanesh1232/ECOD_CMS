@@ -79,6 +79,9 @@ const SettingsLayout = ({ children }) => {
   const toggleSection = (sectionId) => {
     setExpandedSection((prev) => (prev === sectionId ? null : sectionId));
   };
+
+  const isBillingSection = pathname?.includes("/settings/workspace/billing");
+
   return (
     <div className="flex flex-col sm:flex-row h-full relative">
       <div
@@ -192,11 +195,13 @@ const SettingsLayout = ({ children }) => {
       </div>
       {/*Settings Right Side Content */}
       <div
-        className={`flex-1 overflow-y-auto scrollbar-transparent w-full p-2 sm:p-4 bg-gray-50 dark:bg-gray-900 ${
+        className={`flex-1 ${
+          isBillingSection ? "overflow-hidden" : "overflow-y-auto"
+        } scrollbar-transparent w-full ${
           isMobile && mobileNavOpen ? "opacity-50 pointer-events-none" : ""
         }`}
       >
-        <div className={`max-w-6xl mx-auto`}>
+        <div className={`max-w-6xl mx-auto h-full`}>
           {/* Breadcrumbs - Mobile header */}
           <div className="sm:hidden mb-4 flex items-center">
             {isMobile && (
@@ -211,7 +216,9 @@ const SettingsLayout = ({ children }) => {
           </div>
           {/* Content Card */}
           <div
-            className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-transparent w-full`}
+            className={`rounded-lg border-gray-200 dark:border-gray-700 ${
+              isBillingSection ? "h-full" : "overflow-x-auto"
+            } scrollbar-transparent w-full p-2 sm:p-4`}
           >
             {children}
           </div>

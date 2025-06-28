@@ -388,3 +388,25 @@ input:checked+.slider:before {
     transform: rotate(1turn)
   }
 }
+
+/* These are utility suggestions */
+
+.input-icon-wrapper {
+  @apply relative w-full;
+}
+
+.input-icon-wrapper>svg {
+  @apply absolute inset-y-0 left-3 text-gray-400;
+}
+
+.input-disabled {
+  @apply bg-gray-100 dark:bg-gray-800 cursor-not-allowed;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
+}
+
+.input-toggle {
+  @apply absolute inset-y-0 right-3 top-0 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none;
+}
