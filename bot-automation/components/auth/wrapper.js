@@ -207,6 +207,9 @@ export default function AIFormWrapper({ children }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5 }}
       />
+      <div className="block lg:hidden absolute top-1 right-1">
+        <ThemeSwitcher />
+      </div>
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -282,7 +285,7 @@ export default function AIFormWrapper({ children }) {
           transition: { duration: 0.3 },
         }}
       >
-        <div className="absolute top-1 right-1">
+        <div className="lg:block hidden lg:absolute top-1 right-1">
           <ThemeSwitcher />
         </div>
         {/* Form Content */}
