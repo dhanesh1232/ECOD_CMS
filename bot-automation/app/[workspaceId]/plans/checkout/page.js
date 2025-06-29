@@ -9,7 +9,6 @@ import {
 import { useToast } from "@/components/ui/toast-provider";
 import { TAX_RATES } from "@/config/pricing.config";
 import { billingService } from "@/lib/client/billing";
-import { decryptData, encryptData } from "@/lib/utils/encryption";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -263,11 +262,11 @@ const PlanInfoCheckoutPage = () => {
     const parseQueryParams = async () => {
       try {
         const decrypted = {
-          email: decryptData(searchParams.get("em")),
-          phone: decryptData(searchParams.get("pn")),
-          plan_name: decryptData(searchParams.get("plan_name")),
-          id: decryptData(searchParams.get("id")),
-          cycle_: decryptData(searchParams.get("cycle")),
+          id: searchParams.get("id"),
+          cycle_: searchParams.get("cycle"),
+          email: searchParams.get("em"),
+          phone: searchParams.get("pn"),
+          plan_name: searchParams.get("plan_name"),
         };
 
         if (!decrypted.plan_name || !decrypted.phone || !decrypted.email) {
@@ -297,6 +296,7 @@ const PlanInfoCheckoutPage = () => {
 
     parseQueryParams();
   }, [searchParams, workspaceId, router, saveToLocalStorage, showToast]);
+
   useEffect(() => {
     const fetchPlan = async () => {
       try {
@@ -335,10 +335,9 @@ const PlanInfoCheckoutPage = () => {
       if (!selectedPlan) {
         throw new Error("Selected plan not found");
       }
-
       const params = new URLSearchParams(searchParams.toString());
-      params.set("plan_name", encryptData(selectedPlan.name));
-      params.set("id", encryptData(selectedPlan._id));
+      params.set("plan_name", selectedPlan.name);
+      params.set("id", selectedPlan._id);
 
       if (!params.has("em")) params.set("em", searchParams.get("em"));
       if (!params.has("pn")) params.set("pn", searchParams.get("pn"));
@@ -361,17 +360,28 @@ const PlanInfoCheckoutPage = () => {
   };
 
   const handleDurationChange = (duration) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("cycle", encryptData(duration));
-    if (!params.has("plan_name"))
-      params.set("plan_name", searchParams.get("plan_name"));
-    if (!params.has("id")) params.set("id", searchParams.get("id"));
-    if (!params.has("em")) params.set("em", searchParams.get("em"));
-    if (!params.has("pn")) params.set("pn", searchParams.get("pn"));
+    try {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("cycle", duration);
+      if (!params.has("plan_name"))
+        params.set("plan_name", searchParams.get("plan_name"));
+      if (!params.has("id")) params.set("id", searchParams.get("id"));
+      if (!params.has("em")) params.set("em", searchParams.get("em"));
+      if (!params.has("pn")) params.set("pn", searchParams.get("pn"));
 
-    router.replace(`?${params.toString()}`, { scroll: false });
-    setSelectedDuration(duration);
-    saveToLocalStorage(STORAGE_KEYS.DURATION, duration);
+      router.replace(`?${params.toString()}`, { scroll: false });
+      setSelectedDuration(duration);
+      saveToLocalStorage(STORAGE_KEYS.DURATION, duration);
+    } catch (err) {
+      if (!toastRef.current) {
+        showToast({
+          title: "Failed",
+          description:
+            err.message || "unable to change plan duration please try again",
+          variant: "destructive",
+        });
+      }
+    }
   };
   const handleBillingDetails = () => {
     const currentPath = window.location.pathname + window.location.search;
@@ -468,7 +478,9 @@ const PlanInfoCheckoutPage = () => {
           </AlertDialogDescription>
         </AlertDialogContent>
       </AlertDialog>
-      <OverlayLoader open={isLoading && !plan} />
+      {/*Loader Block while loading it can shown */}
+      <OverlayLoader open={isLoading} />
+
       {updateBillingDetails && (
         <AlertDialog open={updateBillingDetails}>
           <AlertDialogContent>

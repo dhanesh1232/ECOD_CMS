@@ -10,12 +10,13 @@ import PlanSummaryCard from "@/components/settings/PlanSummaryCard";
 import PaymentMethodForm from "@/components/settings/PaymentMethodForm";
 import PaymentHistoryTable from "@/components/settings/PaymentHistoryTable";
 import CancellationModal from "@/components/settings/CancellationModal";
-import { encryptData } from "@/lib/utils/encryption";
+import { encryptData } from "@/lib/client/crypto";
 import { billingService } from "@/lib/client/billing";
 import { BillingProfile } from "@/components/settings/billingProfile";
 import { cn } from "@/lib/utils";
 import { BillingNav } from "@/data/bot-links";
 import { Separator } from "@/components/ui/separator";
+import { OverlayLoader } from "@/components/animate/overlay_loader";
 
 const BillingPage = () => {
   // Hooks and refs
@@ -127,7 +128,7 @@ const BillingPage = () => {
   const handlePlansTab = () => {
     const newParams = new URLSearchParams(searchParams.toString());
     const encryptedId = encryptData(workspaceId);
-    newParams.set("plans_comp", `user_${encryptedId}`);
+    newParams.set("plans", `user_${encryptedId}`);
     router.replace(`/${workspaceId}/plans?${newParams.toString()}`, {
       scroll: false,
     });
@@ -195,17 +196,20 @@ const BillingPage = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex-1 p-2 bg-white h-full dark:bg-gray-900 space-y-8">
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-64 rounded-lg" />
-          <Skeleton className="h-6 w-48 rounded-lg" />
+      <>
+        <div className="flex-1 p-2 bg-white h-full dark:bg-gray-900 space-y-8">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-64 rounded-lg" />
+            <Skeleton className="h-6 w-48 rounded-lg" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 rounded-xl" />
+            ))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-48 rounded-xl" />
-          ))}
-        </div>
-      </div>
+        <OverlayLoader open={true} />
+      </>
     );
   }
 
@@ -251,8 +255,8 @@ const BillingPage = () => {
               className={cn(
                 "text-xs sm:text-sm font-medium transition-colors",
                 activeTab === link.id
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-muted-foreground hover:text-primary"
+                  ? "text-blue-500 border-b-2 border-blue-600"
+                  : "text-muted-foreground hover:text-blue-600"
               )}
             >
               {link.label}

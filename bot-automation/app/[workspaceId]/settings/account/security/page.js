@@ -39,8 +39,8 @@ const PasswordInput = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
-        className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600
-         rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
+        className={`w-full px-4 py-3 border border-gray-200 dark:border-gray-600
+         rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
         placeholder={placeholder}
         onCopy={(e) => e.preventDefault()}
         onPaste={(e) => e.preventDefault()}
@@ -242,11 +242,11 @@ const PasswordAndSecurity = () => {
   ];
 
   return (
-    <div className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg">
+    <div className="flex-1 p-2 sm:p-4 bg-transparent rounded-md shadow-lg">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
+          <h1 className="lg:text-2xl xl:text-3xl text-xl font-bold text-gray-800 dark:text-white mb-2">
             Account Security
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
@@ -256,7 +256,7 @@ const PasswordAndSecurity = () => {
 
         {/* Password Change Card */}
         <motion.div
-          className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+          className="mt-2 bg-transparent p-4 rounded-md shadow-sm border border-gray-100 dark:border-gray-700"
           initial={{ y: 20 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.3 }}
@@ -270,7 +270,7 @@ const PasswordAndSecurity = () => {
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Current Password */}
             <PasswordInput
               label="Current Password"
@@ -377,12 +377,12 @@ const PasswordAndSecurity = () => {
         </motion.div>
         {process.env.NODE_ENV === "development" && (
           <motion.div
-            className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+            className="mt-8 bg-transparent p-4 rounded-md shadow-sm border border-gray-100 dark:border-gray-700"
             initial={{ y: 20 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-3">
               <div className="p-3 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400">
                 <FiShield className="w-6 h-6" />
               </div>
@@ -406,7 +406,7 @@ const PasswordAndSecurity = () => {
                     </p>
                   </div>
                   <Button
-                    variant="subtle"
+                    variant="outline"
                     onClick={item.onClick}
                     className="w-full md:w-auto"
                   >

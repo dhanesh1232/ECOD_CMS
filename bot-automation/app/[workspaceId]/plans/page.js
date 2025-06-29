@@ -8,7 +8,6 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast-provider";
 import { AdminServices } from "@/lib/client/admin.service";
 import { billingService } from "@/lib/client/billing";
-import { encryptData } from "@/lib/utils/encryption";
 import {
   MessageSquare,
   MoveLeft,
@@ -85,11 +84,11 @@ export default function Page() {
     if (!plan.prices) return;
 
     const obj = {
-      plan_name: encryptData(plan.id),
-      em: encryptData(userCred.email),
-      pn: encryptData(userCred.phone),
-      id: encryptData(plan._id),
-      cycle: encryptData(billingPeriod),
+      id: plan._id,
+      cycle: billingPeriod,
+      plan_name: plan.id,
+      em: userCred.email,
+      pn: userCred.phone,
     };
 
     const params = new URLSearchParams(obj).toString();

@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { UserServices } from "@/lib/client/user";
 import { useToast } from "@/components/ui/toast-provider";
 import { Switch } from "@/components/ui/switch"; // Import the new Switch component
+import { Skeleton } from "@/components/ui/skeleton";
+import { OverlayLoader } from "@/components/animate/overlay_loader";
 
 const NotificationPage = () => {
   const [preferences, setPreferences] = useState({
@@ -24,6 +26,7 @@ const NotificationPage = () => {
   useEffect(() => {
     const fetchPreferences = async () => {
       try {
+        setLoading(true);
         const response = await UserServices.fetchUserProfile();
         if (response.status && !response.ok) {
           if (!toastRef.current) {
@@ -126,14 +129,6 @@ const NotificationPage = () => {
     }
   };
 
-  if (loading)
-    return (
-      <div className="text-center py-8 text-gray-600 dark:text-gray-300">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-        <p>Loading preferences...</p>
-      </div>
-    );
-
   if (error)
     return (
       <div className="text-center py-8 text-red-500 dark:text-red-400">
@@ -142,90 +137,100 @@ const NotificationPage = () => {
     );
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-xl md:text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+    <div className="max-w-4xl mx-auto p-2 lg:p-4">
+      <h1 className="text-xl md:text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">
         Notification Settings
       </h1>
-
-      <div className="space-y-6">
-        {/* Email Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
-              <span className="mr-2">📧</span> Email Notifications
-            </h2>
-            <MainToggleSwitch
-              channel="email"
-              preferences={preferences}
-              onToggle={toggleAllForChannel}
-            />
+      {loading ? (
+        <>
+          <OverlayLoader open={true} />
+          <div className="text-center py-8 text-gray-600 dark:text-gray-300">
+            <Skeleton className="w-full h-1/2 rounded-md" />
+            <Skeleton className="w-full h-1/2 rounded-md" />
+            <Skeleton className="w-full rounded-md h-1/2" />
           </div>
-          <div className="space-y-4">
-            {Object.entries(preferences.email).map(([type, value]) => (
-              <NotificationItem
-                key={`email-${type}`}
-                type={type}
-                value={value}
+        </>
+      ) : (
+        <div className="space-y-4">
+          {/* Email Notifications */}
+          <div className="bg-transparent rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
+                <span className="mr-2">📧</span> Email Notifications
+              </h2>
+              <MainToggleSwitch
                 channel="email"
-                handleToggle={handleToggle}
-                disabled={Object.values(preferences.email).every((v) => !v)}
+                preferences={preferences}
+                onToggle={toggleAllForChannel}
               />
-            ))}
+            </div>
+            <div className="space-y-4">
+              {Object.entries(preferences.email).map(([type, value]) => (
+                <NotificationItem
+                  key={`email-${type}`}
+                  type={type}
+                  value={value}
+                  channel="email"
+                  handleToggle={handleToggle}
+                  disabled={Object.values(preferences.email).every((v) => !v)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Push Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
-              <span className="mr-2">📱</span> Push Notifications
-            </h2>
-            <MainToggleSwitch
-              channel="push"
-              preferences={preferences}
-              onToggle={toggleAllForChannel}
-            />
-          </div>
-          <div className="space-y-4">
-            {Object.entries(preferences.push).map(([type, value]) => (
-              <NotificationItem
-                key={`push-${type}`}
-                type={type}
-                value={value}
+          {/* Push Notifications */}
+          <div className="bg-transparent rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
+                <span className="mr-2">📱</span> Push Notifications
+              </h2>
+              <MainToggleSwitch
                 channel="push"
-                handleToggle={handleToggle}
-                disabled={Object.values(preferences.push).every((v) => !v)}
+                preferences={preferences}
+                onToggle={toggleAllForChannel}
               />
-            ))}
+            </div>
+            <div className="space-y-4">
+              {Object.entries(preferences.push).map(([type, value]) => (
+                <NotificationItem
+                  key={`push-${type}`}
+                  type={type}
+                  value={value}
+                  channel="push"
+                  handleToggle={handleToggle}
+                  disabled={Object.values(preferences.push).every((v) => !v)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* In-App Notifications */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
-              <span className="mr-2">🔔</span> In-App Notifications
-            </h2>
-            <MainToggleSwitch
-              channel="inApp"
-              preferences={preferences}
-              onToggle={toggleAllForChannel}
-            />
-          </div>
-          <div className="space-y-4">
-            {Object.entries(preferences.inApp).map(([type, value]) => (
-              <NotificationItem
-                key={`inApp-${type}`}
-                type={type}
-                value={value}
+          {/* In-App Notifications */}
+          <div className="bg-transparent rounded-md shadow p-4 border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold flex items-center text-gray-800 dark:text-gray-200">
+                <span className="mr-2">🔔</span> In-App Notifications
+              </h2>
+              <MainToggleSwitch
                 channel="inApp"
-                handleToggle={handleToggle}
-                disabled={Object.values(preferences.inApp).every((v) => !v)}
+                preferences={preferences}
+                onToggle={toggleAllForChannel}
               />
-            ))}
+            </div>
+            <div className="space-y-4">
+              {Object.entries(preferences.inApp).map(([type, value]) => (
+                <NotificationItem
+                  key={`inApp-${type}`}
+                  type={type}
+                  value={value}
+                  channel="inApp"
+                  handleToggle={handleToggle}
+                  disabled={Object.values(preferences.inApp).every((v) => !v)}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -233,10 +238,8 @@ const NotificationPage = () => {
 const NotificationItem = ({ type, value, channel, handleToggle, disabled }) => {
   return (
     <div
-      className={`flex items-center justify-between p-3 rounded-lg ${
-        disabled
-          ? "bg-gray-100 dark:bg-gray-700 opacity-70"
-          : "bg-gray-50 dark:bg-gray-700"
+      className={`flex items-center justify-between p-3 rounded-md ${
+        disabled ? "bg-transparent opacity-70" : "bg-gray-50 dark:bg-gray-700"
       }`}
     >
       <div>

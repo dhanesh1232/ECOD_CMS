@@ -10,7 +10,6 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
-import { encryptData } from "@/lib/utils/encryption";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import {
   Calendar,
@@ -80,7 +79,7 @@ export default function ApiKeysPage() {
       const newParams = new URLSearchParams(searchParams);
       newParams.set(
         "workspace_model",
-        `api_keyECOD${encodeURIComponent(encryptData(workspaceId))}`
+        `api_keyECOD${encodeURIComponent(workspaceId)}`
       );
       router.push(
         `/${workspaceId}/settings/workspace/api-keys?${newParams.toString()}`,

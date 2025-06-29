@@ -10,7 +10,7 @@ const IV_LENGTH = 16;
 
 export function encryptData(text) {
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
+  const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY(), iv);
   let encrypted = cipher.update(text, "utf8", "hex");
   encrypted += cipher.final("hex");
   return iv.toString("hex") + ":" + encrypted;

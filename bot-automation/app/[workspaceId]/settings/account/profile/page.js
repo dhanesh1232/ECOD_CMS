@@ -318,7 +318,7 @@ const AccountInfoSection = () => {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
-      className="flex-1 p-4 sm:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm overflow-auto transition-all border border-gray-100 dark:border-gray-800"
+      className="flex-1 p-4 sm:p-6 bg-transparent rounded-xl shadow-sm overflow-auto transition-all border border-gray-100 dark:border-gray-800"
     >
       {showCropper && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4">

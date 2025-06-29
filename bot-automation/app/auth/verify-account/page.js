@@ -4,7 +4,6 @@ import AIFormWrapper from "@/components/auth/wrapper";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState, useEffect, useCallback } from "react";
 import Logo from "@/components/logo";
-import { decryptData } from "@/lib/utils/encryption";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/components/ui/toast-provider";
 import { Label } from "@/components/ui/label";
@@ -35,8 +34,8 @@ const VerifyAccount = () => {
 
     if (email && code) {
       try {
-        const enCode = decryptData(decodeURIComponent(code));
-        const enMail = decryptData(decodeURIComponent(email));
+        const enCode = decodeURIComponent(code);
+        const enMail = decodeURIComponent(email);
         setState({
           code: enCode,
           email: enMail,
@@ -99,7 +98,7 @@ const VerifyAccount = () => {
 
         const options = {
           email: data?.user?.email,
-          password: decryptData(data?.user?.password),
+          password: data?.user?.password,
           callbackUrl: "/", // Add default redirect
         };
         await signIn("credentials", options);

@@ -7,7 +7,6 @@ import { useCallback, useState, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 const OverLayComponent = dynamic(() => import("@/components/overlay/overlay"));
 import { signOut } from "next-auth/react";
-import { encryptData } from "@/lib/utils/encryption";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserServices } from "@/lib/client/user";
 import NotificationButton from "@/components/notification";
@@ -39,7 +38,7 @@ export default function ProtectLayout({ children }) {
         return;
       }
       if (data.user.requiresProfileCompletion) {
-        const encryptedName = encryptData(data.user.user_name);
+        const encryptedName = data.user.user_name;
         const newParams = new URLSearchParams(searchParams);
         newParams.set(
           "model",
