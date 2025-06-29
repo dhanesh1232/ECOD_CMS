@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { cn } from "@/lib/utils";
 import { StyledPhoneInput } from "../ui/phone_input";
+import { Checkbox } from "../ui/checkbox";
 
 const ConfettiEffect = ({ active }) => {
   const [dimensions, setDimensions] = useState({
@@ -323,7 +324,7 @@ const ProfileForm = ({
   );
 
   return (
-    <div className="w-full max-w-xs sm:max-w-md bg-white dark:bg-gray-800 px-4 sm:px-6 py-4 sm:py-8 rounded-xl shadow-lg dark:shadow-gray-900/50">
+    <div className="w-full max-w-xs sm:max-w-md bg-white dark:bg-gray-800 px-4 sm:px-6 py-4 sm:py-8 rounded-md shadow dark:shadow-gray-900/50">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -405,7 +406,7 @@ const ProfileForm = ({
                 value={profileState.phone}
                 onChange={handlePhoneChange}
                 onBlur={() => handleBlur("phone")}
-                className="w-full pl-5 sm:pl-10 custom-phone-input"
+                className="w-full pl-5"
               />
             </div>
 
@@ -491,14 +492,21 @@ const ProfileForm = ({
             </div>
           </div>
           <div className="flex items-start gap-2 pt-1">
-            <input
-              type="checkbox"
+            <Checkbox
               id="terms"
               name="terms"
               checked={profileState.terms}
               required
-              onChange={handleChange}
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+              onCheckedChange={(checked) => {
+                handleChange({
+                  target: {
+                    name: "terms",
+                    type: "checkbox",
+                    checked,
+                  },
+                });
+              }}
+              className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
             />
             <div>
               <Label
