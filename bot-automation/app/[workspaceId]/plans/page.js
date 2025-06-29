@@ -32,7 +32,6 @@ export default function Page() {
   const toastRef = useRef(false);
 
   useEffect(() => {
-    console.log("print one");
     const fetchData = async () => {
       try {
         setLoading(true);
