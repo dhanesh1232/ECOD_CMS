@@ -35,7 +35,10 @@ const BillingPage = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState([]);
-  const [activeTab, setActiveTab] = useState("current-plan");
+  const returnUrl = searchParams.get("return");
+  const [activeTab, setActiveTab] = useState(() => {
+    return returnUrl ? "billing" : "current-plan";
+  });
 
   // Reset toast ref after 10 seconds
   useEffect(() => {

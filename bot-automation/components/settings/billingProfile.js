@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useToast } from "../ui/toast-provider";
 import { billingService } from "@/lib/client/billing";
 import { Input } from "../ui/input";
@@ -26,7 +26,7 @@ import {
 } from "../ui/card";
 import { StyledPhoneInput } from "../ui/phone_input";
 
-export const BillingProfile = () => {
+export const BillingProfile = ({ returnUrl }) => {
   const { workspaceId } = useParams();
   const showToast = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -37,9 +37,7 @@ export const BillingProfile = () => {
   const [showForm, setShowForm] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const toastRef = useRef(false);
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const returnUrl = searchParams.get("return");
 
   const hasChanges = useCallback(() => {
     if (!formData || !originalData) return false;
@@ -492,7 +490,8 @@ export const BillingProfile = () => {
             {(formData || showForm) && (
               <CardFooter className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-6 py-4">
                 <div className="flex w-full items-center justify-between">
-                  {returnUrl && saveSuccess && (
+                  {((returnUrl && saveSuccess) ||
+                    (originalData && returnUrl)) && (
                     <Button
                       onClick={handleReturnToCheckout}
                       variant="outline"
