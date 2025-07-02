@@ -4,12 +4,13 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Menu, ChevronDown, X, ArrowRight } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "../logo";
 import { useMediaQuery } from "@/hooks/mediaQuery";
 import ThemeSwitcher from "../themeSwicther";
+import { navItems } from "@/data/web_links";
 
 const domain = process.env.REDIRECT_DOMAIN || "https://app.ecodrix.com";
 
@@ -19,9 +20,11 @@ export default function Header() {
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const headerRef = useRef(null);
   const mobileMenuRef = useRef(null);
-  const isMatch = useMediaQuery("(min-width:500px)");
+  const isMobile = useMediaQuery("(min-width:500px)");
+  const isTab = useMediaQuery("(min-width:768px)");
   const submenuTimeoutRef = useRef(null);
   const lastClickedRef = useRef(null);
+  const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,85 +64,6 @@ export default function Header() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const navItems = [
-    {
-      name: "Features",
-      href: "/features",
-      submenu: [
-        {
-          name: "Chatbot",
-          href: "/features/chatbot",
-          icon: "💬",
-          description: "AI-powered conversational interfaces",
-        },
-        {
-          name: "Ads Automation",
-          href: "/features/ads",
-          icon: "📢",
-          description: "Smart ad campaign management",
-        },
-        {
-          name: "AI Tools",
-          href: "/features/ai",
-          icon: "🧠",
-          description: "Cutting-edge artificial intelligence",
-        },
-      ],
-    },
-    {
-      name: "Pricing",
-      href: "/pricing",
-    },
-    {
-      name: "Use Cases",
-      href: "/use-cases",
-      submenu: [
-        {
-          name: "SaaS Companies",
-          href: "/use-cases/saas",
-          icon: "🖥️",
-          description: "Solutions for software businesses",
-        },
-        {
-          name: "E-commerce",
-          href: "/use-cases/ecommerce",
-          icon: "🛒",
-          description: "Boost your online sales",
-        },
-        {
-          name: "Agencies",
-          href: "/use-cases/agencies",
-          icon: "🏢",
-          description: "Tools for digital agencies",
-        },
-      ],
-    },
-    {
-      name: "Resources",
-      href: "/resources",
-      submenu: [
-        {
-          name: "Documentation",
-          href: "/docs",
-          icon: "📚",
-          description: "Developer guides and API references",
-        },
-        {
-          name: "Blog",
-          href: "/blog",
-          icon: "✍️",
-          description: "Latest news and insights",
-        },
-        {
-          name: "Webinars",
-          href: "/webinars",
-          icon: "🎤",
-          description: "Live sessions with our experts",
-        },
-      ],
-    },
-  ];
-
   const handleSubmenuHover = (itemName) => {
     clearTimeout(submenuTimeoutRef.current);
     setOpenSubmenu(itemName);
@@ -148,18 +72,16 @@ export default function Header() {
   const handleSubmenuLeave = () => {
     submenuTimeoutRef.current = setTimeout(() => {
       setOpenSubmenu(null);
-    }, 300);
+    }, 200);
   };
 
   const toggleMobileSubmenu = (itemName) => {
-    // If the same button was clicked again, close it
     if (openSubmenu === itemName) {
       lastClickedRef.current = itemName;
       setOpenSubmenu(null);
     } else {
-      // Prevent immediate reopen if it's the same button
       if (lastClickedRef.current === itemName) {
-        lastClickedRef.current = null; // Reset for next toggle
+        lastClickedRef.current = null;
         return;
       }
       setOpenSubmenu(itemName);
@@ -183,29 +105,29 @@ export default function Header() {
             : "bg-white/90 backdrop-blur-md dark:bg-gray-900/90"
         )}
       >
-        <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
+        <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Mobile menu button - left aligned */}
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
-            className="md:hidden rounded-lg mr-2"
+            className="lg:hidden rounded-lg mr-1"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
           >
-            <Menu className="h-4 w-4" />
+            <Menu className="h-5 w-5" />
           </Button>
 
           {/* Logo - centered on mobile */}
           <Link
             href="/"
-            className="flex items-center gap-2 group md:mx-0 mx-auto"
+            className="flex items-center gap-2 group lg:mx-0 mx-auto"
             aria-label="Home"
           >
             <Logo className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
               <div
                 key={item.name}
@@ -219,9 +141,10 @@ export default function Header() {
                   variant="ghost"
                   className={cn(
                     "flex items-center gap-1 text-sm font-medium rounded-lg px-3 py-2 transition-colors",
-                    "text-gray-600 hover:text-gray-900 hover:bg-gray-50/50",
-                    "dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-800/50",
-                    openSubmenu === item.name && "text-gray-900 dark:text-white"
+                    "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70",
+                    "dark:text-neutral-300 dark:hover:text-white dark:hover:bg-gray-800/50",
+                    openSubmenu === item.name &&
+                      "text-gray-900 bg-gray-50 dark:text-white dark:bg-gray-800/50"
                   )}
                   onClick={() =>
                     item.submenu &&
@@ -248,29 +171,63 @@ export default function Header() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute left-0 top-full mt-1 w-64 origin-top rounded-xl bg-white shadow-xl ring-1 ring-gray-900/5 p-2 dark:bg-gray-800 dark:ring-gray-700"
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className={`absolute left-0 top-full mt-1 ${
+                          item.submenu.length > 3
+                            ? "min-w-[600px]"
+                            : "min-w-[400px]"
+                        } w-full  origin-top rounded-xl bg-white shadow-xl ring-1 ring-gray-900/5 p-2 dark:bg-gray-800 dark:ring-gray-700`}
+                        onMouseEnter={() => handleSubmenuHover(item.name)}
+                        onMouseLeave={handleSubmenuLeave}
                       >
-                        {item.submenu.map((subItem) => (
-                          <Link
-                            key={subItem.name}
-                            href={subItem.href}
-                            className="group flex items-start gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                            onClick={() => setOpenSubmenu(null)}
-                          >
-                            <span className="text-lg mt-0.5">
-                              {subItem.icon}
-                            </span>
-                            <div>
-                              <div className="font-medium text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
-                                {subItem.name}
+                        <div
+                          className={cn(
+                            "grid gap-1",
+                            isLargeScreen && item.submenu.length > 3
+                              ? "grid-cols-3"
+                              : "grid-cols-1"
+                          )}
+                        >
+                          {item.submenu.map((subItem) =>
+                            subItem.upcoming ? (
+                              <div
+                                key={subItem.name}
+                                className="group flex items-start gap-3 rounded-lg px-3 py-3 cursor-not-allowed opacity-60 relative"
+                                title="Coming soon"
+                              >
+                                <subItem.icon className="w-5 h-5 mt-0.5 text-gray-400" />
+                                <div>
+                                  <div className="font-medium text-gray-500 dark:text-gray-400">
+                                    {subItem.name}
+                                    <span className="ml-1 text-xs bg-yellow-200 text-yellow-800 px-1.5 py-0.5 rounded-md">
+                                      Upcoming
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-gray-400 dark:text-gray-500">
+                                    {subItem.description.slice(0, 50) + `...`}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {subItem.description}
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
+                            ) : (
+                              <Link
+                                key={subItem.name}
+                                href={subItem.href}
+                                className="group flex items-start gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                onClick={() => setOpenSubmenu(null)}
+                              >
+                                <subItem.icon className="w-5 h-5 mt-0.5 text-gray-600 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-400" />
+                                <div>
+                                  <div className="font-medium text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+                                    {subItem.name}
+                                  </div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {subItem.description.slice(0, 50) + `...`}
+                                  </div>
+                                </div>
+                              </Link>
+                            )
+                          )}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -284,26 +241,29 @@ export default function Header() {
             <Button
               variant="outline"
               size="sm"
-              className="hidden md:block"
+              className="hidden lg:flex items-center gap-1"
               asChild
             >
               <Link
                 href={`${domain}/auth/login`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="md:flex items-center md:text-sm lg:text-base hidden justify-center"
               >
                 Login
               </Link>
             </Button>
-            <Button variant="premium" className="md:block hidden" size="sm">
+            <Button
+              variant="premium"
+              size="sm"
+              className="hidden lg:flex items-center gap-1"
+            >
               <Link
                 href={`${domain}/auth/register`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center md:text-sm lg:text-base justify-center"
+                className="flex items-center justify-center"
               >
-                Get Started <ArrowRight className="h-4 w-4 ml-2" />
+                Get Started <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </Button>
             <ThemeSwitcher />
@@ -326,11 +286,17 @@ export default function Header() {
 
             <motion.div
               ref={mobileMenuRef}
-              initial={{ width: 0 }}
-              animate={{ width: isMatch ? "45%" : "85%" }}
-              exit={{ width: 0 }}
+              initial={{ width: 0, opacity: 0 }}
+              animate={{
+                width: isMobile ? "45%" : isTab ? "35%" : "65%",
+                opacity: 1,
+              }}
+              exit={{ width: 0, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-0 left-0 h-full z-50 shadow-2xl dark:shadow-gray-900/50 overflow-hidden"
+              className={cn(
+                "fixed top-0 left-0 h-full z-50 shadow-2xl dark:shadow-gray-900/50",
+                isMobile ? "w-80" : "w-[85%]"
+              )}
             >
               <div className="h-full flex flex-col bg-white dark:bg-gray-900 w-full">
                 <div className="flex h-16 items-center justify-between px-4 border-b border-gray-100 dark:border-gray-800">
@@ -352,15 +318,15 @@ export default function Header() {
                   </Button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto py-4 px-4">
+                <div className="flex-1 overflow-y-auto scrollbar-transparent py-4 px-4">
                   <div className="space-y-1">
-                    {navItems.map((item) => (
+                    {navItems.map((item, ind) => (
                       <div key={item.name} className="space-y-1">
                         {item.submenu ? (
-                          <>
+                          <React.Fragment key={item.name + ind}>
                             <Button
                               variant="ghost"
-                              className="w-full justify-between px-3 py-3 text-base font-medium rounded-lg truncate"
+                              className="w-full justify-between px-3 py-3 text-base font-medium rounded-lg"
                               onClick={() => toggleMobileSubmenu(item.name)}
                             >
                               <span className="text-gray-900 dark:text-white">
@@ -384,33 +350,60 @@ export default function Header() {
                                   className="pl-4 space-y-1 overflow-hidden"
                                 >
                                   {item.submenu.map((subItem) => (
-                                    <Link
-                                      key={subItem.name}
-                                      href={subItem.href}
-                                      className="flex items-center truncate gap-3 px-3 py-2.5 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
-                                      onClick={closeAllMenus}
-                                    >
-                                      <span className="text-lg">
-                                        {subItem.icon}
-                                      </span>
-                                      <div>
-                                        <div className="font-medium text-gray-900 dark:text-white">
-                                          {subItem.name}
+                                    <>
+                                      {subItem.upcoming ? (
+                                        <div
+                                          key={subItem.name}
+                                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-not-allowed opacity-60"
+                                          title="Coming soon"
+                                        >
+                                          <subItem.icon className="w-5 h-5 text-gray-400" />
+                                          <div>
+                                            <div className="font-medium text-gray-500">
+                                              {subItem.name}
+                                              <span className="ml-1 text-xs bg-yellow-200 text-yellow-800 px-1.5 py-0.5 rounded-md">
+                                                Upcoming
+                                              </span>
+                                            </div>
+                                            <div className="text-xs text-gray-400">
+                                              {subItem.description.slice(
+                                                0,
+                                                50
+                                              ) + `....`}
+                                            </div>
+                                          </div>
                                         </div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                                          {subItem.description}
-                                        </div>
-                                      </div>
-                                    </Link>
+                                      ) : (
+                                        <Link
+                                          key={subItem.name}
+                                          href={subItem.href}
+                                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                                          onClick={closeAllMenus}
+                                        >
+                                          <subItem.icon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                                          <div>
+                                            <div className="font-medium text-gray-900 dark:text-white">
+                                              {subItem.name}
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                              {subItem.description.slice(
+                                                0,
+                                                50
+                                              ) + `....`}
+                                            </div>
+                                          </div>
+                                        </Link>
+                                      )}
+                                    </>
                                   ))}
                                 </motion.div>
                               )}
                             </AnimatePresence>
-                          </>
+                          </React.Fragment>
                         ) : (
                           <Link
                             href={item.href}
-                            className="block px-3 py-3 text-base truncate font-medium text-gray-900 rounded-lg hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
+                            className="block px-3 py-3 text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                             onClick={closeAllMenus}
                           >
                             {item.name}
@@ -421,23 +414,24 @@ export default function Header() {
                   </div>
 
                   <div className="mt-8 px-2 space-y-3">
-                    <Button variant="outline" fullWidth={true}>
+                    <Button variant="outline" className="w-full">
                       <Link
-                        href={`https://${domain}/auth/login`}
+                        href={`${domain}/auth/login`}
                         target="_blank"
-                        rel="noopener noreferrer truncate"
+                        rel="noopener noreferrer"
                         onClick={closeAllMenus}
+                        className="w-full block"
                       >
                         Login
                       </Link>
                     </Button>
-                    <Button variant="premium" fullWidth={true}>
+                    <Button variant="premium" className="w-full">
                       <Link
-                        href={`https://${domain}/auth/register`}
+                        href={`${domain}/auth/register`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={closeAllMenus}
-                        className="flex items-center justify-center gap-1 truncate"
+                        className="flex items-center justify-center gap-1 w-full"
                       >
                         Get Started <ArrowRight className="h-4 w-4" />
                       </Link>

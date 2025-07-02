@@ -3,6 +3,7 @@
 import { ChatBotAI } from "@/public/svg";
 
 const Logo = ({
+  showSpan = true,
   hide = false,
   size = "md",
   className = "",
@@ -60,9 +61,11 @@ const Logo = ({
             className={`font-bold ${classSize[size]} ${textColor} tracking-tight leading-none`}
           >
             ECODrIx
-            <span className="block text-xs font-normal text-gray-500 dark:text-gray-400 -mt-0.5">
-              AI Solutions
-            </span>
+            {showSpan && (
+              <span className="block text-xs font-normal text-gray-500 dark:text-gray-400 -mt-0.5">
+                AI Solutions
+              </span>
+            )}
           </span>
         </div>
       )}

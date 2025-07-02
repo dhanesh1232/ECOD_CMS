@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { DarkModeProvider } from "@/context/context";
 import Header from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -70,18 +71,47 @@ export const metadata = {
       "your-verification-code",
   },
 };
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  try {
+    const mode = localStorage.getItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (mode === 'true' || (!mode && prefersDark)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  } catch (e) {}
+})();
+          `,
+          }}
+        />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased overflow-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-transparent text-gray-900 dark:text-gray-100`}
       >
         <DarkModeProvider>
-          <Header />
-          <main className="h-full overflow-y-auto bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
-            {children}
-          </main>
+          <div className="fixed inset-0 bg-white dark:bg-gray-800 -z-10" />
+          <div className="h-full flex flex-col">
+            <Header />
+            <main className="flex-1 h-full overflow-x-hidden overflow-y-auto scrollbar-transparent">
+              {children}
+              <Footer />
+            </main>
+          </div>
         </DarkModeProvider>
       </body>
     </html>
