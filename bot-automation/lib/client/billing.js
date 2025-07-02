@@ -128,6 +128,14 @@ export const billingService = {
       }
     );
   },
+  getPaymentMethod: async (workspaceId, options = {}) => {
+    return fetchWithRetry(`/api/workspace/${workspaceId}/subscription/method`, {
+      method: "GET",
+      credentials: "include",
+      headers,
+      ...options,
+    });
+  },
   cancelSubscription: async () => {
     return fetch("/api/subscription/cancel", {
       method: "POST",

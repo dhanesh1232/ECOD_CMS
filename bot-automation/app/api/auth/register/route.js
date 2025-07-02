@@ -9,7 +9,6 @@ import { VerificationMail } from "@/lib/helper";
 import dbConnect from "@/config/dbconnect";
 import UserTemp from "@/models/user/user-temp";
 import { User } from "@/models/user/user";
-import { encryptData } from "@/lib/utils/encryption";
 
 export async function POST(request) {
   try {
@@ -27,17 +26,16 @@ export async function POST(request) {
     });
     if (user) {
       return NextResponse.json(
-        { message: "User already exist please login" },
+        { message: "User phone/email already exist please login" },
         { status: 400 }
       );
     }
     //Temp Creation
     const verificationCode = generateStrongVerificationCode(6);
     await VerificationMail(verificationCode, email);
-    const en = encryptData(password);
     await UserTemp.create({
       email,
-      password: en,
+      password: password,
       name,
       phone,
       verificationCode,

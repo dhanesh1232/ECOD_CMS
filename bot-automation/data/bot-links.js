@@ -1,24 +1,5 @@
 import {
-  FiSettings,
-  FiUsers,
-  FiBook,
-  FiLifeBuoy,
-  FiCpu,
-  FiCreditCard,
-  FiLock,
-  FiUser,
-} from "react-icons/fi";
-import {
-  Bell,
-  ChartBar,
-  GlobeIcon,
-  Key,
-  Megaphone,
-  PaintBucket,
-  Plug,
-  Puzzle,
   Settings,
-  Target,
   Users,
   LayoutDashboard,
   List,
@@ -47,11 +28,6 @@ import {
   ArchiveX, // better conveys "archived/disabled"
   SlidersHorizontal, // more admin-style for "Settings"
 } from "lucide-react";
-import {
-  ArrowPathIcon,
-  ClipboardDocumentIcon,
-} from "@heroicons/react/24/outline";
-
 // Main navigation items
 export const navLinks = [
   {
@@ -73,6 +49,7 @@ export const navLinks = [
         icon: "bot",
         label: "Bots",
         href: "/chatbot/bots",
+        isParent: true,
         nestedPages: [
           {
             id: "bot-0",
@@ -147,163 +124,162 @@ export const navLinks = [
     label: "Templates",
     href: `/template`,
   },
-
   {
     id: "settings",
     icon: "settings",
     label: "Settings",
     href: `/settings`,
+    isParent: true,
+    subPages: [
+      {
+        id: "general",
+        icon: "settings",
+        label: "General",
+        href: "/settings",
+      },
+      {
+        id: "account",
+        label: "Account",
+        icon: "user",
+        isParent: true,
+        nestedPages: [
+          {
+            id: "profile",
+            label: "Profile",
+            href: "/settings/account/profile",
+            icon: "user",
+          },
+          {
+            id: "security",
+            label: "Security",
+            href: "/settings/account/security",
+            icon: "lock",
+          },
+          {
+            id: "notifications",
+            label: "Notifications",
+            href: "/settings/account/notifications",
+            icon: "bell",
+          },
+        ],
+      },
+      {
+        id: "workspace",
+        label: "Workspace",
+        icon: "users",
+        isParent: true,
+        nestedPages: [
+          {
+            id: "team-members",
+            label: "Team Members",
+            href: "/settings/workspace/team-members",
+            icon: "users",
+          },
+          {
+            id: "api-keys",
+            label: "API Keys",
+            href: "/settings/workspace/api-keys",
+            icon: "key",
+          },
+          {
+            id: "billing",
+            label: "Billing",
+            href: "/settings/workspace/billing",
+            icon: "billing",
+          },
+          {
+            id: "usage-analytics",
+            label: "Usage Analytics",
+            href: "/settings/workspace/usage",
+            icon: "chart",
+          },
+          {
+            id: "integrations",
+            label: "Integrations",
+            href: "/settings/workspace/integrations",
+            icon: "puzzle",
+          },
+          {
+            id: "webhooks",
+            label: "Webhooks",
+            href: "/settings/workspace/webhooks",
+            icon: "arrow_path",
+          },
+          {
+            id: "custom-domains",
+            label: "Custom Domains",
+            href: "/settings/workspace/domains",
+            icon: "globe",
+          },
+          {
+            id: "audit-logs",
+            label: "Audit Logs",
+            href: "/settings/workspace/audit-logs",
+            icon: "clip_doc",
+          },
+        ],
+      },
+      {
+        id: "chatbot",
+        label: "Chatbot",
+        icon: "cpu",
+        isParent: true,
+        nestedPages: [
+          {
+            id: "appearance",
+            label: "Appearance",
+            href: "/settings/chatbot/appearance",
+            icon: "paint",
+          },
+          {
+            id: "behavior",
+            label: "Behavior",
+            href: "/settings/chatbot/behavior",
+            icon: "settings",
+          },
+          {
+            id: "chatbot-integrations",
+            label: "Integrations",
+            href: "/settings/chatbot/integrations",
+            icon: "plug",
+          },
+          {
+            id: "training",
+            label: "Training Data",
+            href: "/settings/chatbot/training",
+            icon: "cpu",
+          },
+        ],
+      },
+      {
+        id: "support",
+        label: "Support",
+        icon: "lifebuoy",
+        isParent: true,
+        nestedPages: [
+          {
+            id: "documentation",
+            label: "Documentation",
+            href: "https://docs.yourchatbot.com",
+            icon: "book",
+            external: true,
+          },
+          {
+            id: "support",
+            label: "support",
+            href: "/settings/support",
+            icon: "lifebuoy",
+            external: true,
+          },
+        ],
+      },
+    ],
   },
   {
     id: "help",
     icon: "help",
     label: "Help Center",
     href: `/help`,
-  },
-];
-
-// Workspace links configuration
-const workspaceLinks = [
-  {
-    id: "team-members",
-    name: "Team Members",
-    href: "/settings/workspace/team-members",
-    icon: <Users className="w-4 h-4" />,
-  },
-  {
-    id: "api-keys",
-    name: "API Keys",
-    href: "/settings/workspace/api-keys",
-    icon: <Key className="w-4 h-4" />,
-  },
-  {
-    id: "billing",
-    name: "Billing & Plans",
-    href: "/settings/workspace/billing",
-    icon: <FiCreditCard className="w-4 h-4" />,
-  },
-  {
-    id: "usage-analytics",
-    name: "Usage Analytics",
-    href: "/settings/workspace/usage",
-    icon: <ChartBar className="w-4 h-4" />,
-  },
-  {
-    id: "integrations",
-    name: "Integrations",
-    href: "/settings/workspace/integrations",
-    icon: <Puzzle className="w-4 h-4" />,
-  },
-  {
-    id: "webhooks",
-    name: "Webhooks",
-    href: "/settings/workspace/webhooks",
-    icon: <ArrowPathIcon className="w-4 h-4" />,
-  },
-  {
-    id: "custom-domains",
-    name: "Custom Domains",
-    href: "/settings/workspace/domains",
-    icon: <GlobeIcon className="w-4 h-4" />,
-  },
-  {
-    id: "audit-logs",
-    name: "Audit Logs",
-    href: "/settings/workspace/audit-logs",
-    icon: <ClipboardDocumentIcon className="w-4 h-4" />,
-  },
-];
-
-// Settings navigation configuration
-export const settingsNavItems = [
-  {
-    id: "general",
-    category: "General",
-    href: "/settings",
-    icon: <Settings className="w-4 h-4" />,
-  },
-  {
-    id: "account",
-    category: "Account",
-    icon: <FiUser className="w-4 h-4" />,
-    items: [
-      {
-        id: "profile",
-        name: "Profile",
-        href: "/settings/account/profile",
-        icon: <FiUser className="w-4 h-4" />,
-      },
-      {
-        id: "security",
-        name: "Security",
-        href: "/settings/account/security",
-        icon: <FiLock className="w-4 h-4" />,
-      },
-      {
-        id: "notifications",
-        name: "Notifications",
-        href: "/settings/account/notifications",
-        icon: <Bell className="w-4 h-4" />,
-      },
-    ],
-  },
-  {
-    id: "workspace",
-    category: "Workspace",
-    icon: <FiUsers className="w-4 h-4" />,
-    items: [...workspaceLinks],
-  },
-  {
-    id: "chatbot",
-    category: "Chatbot",
-    icon: <FiCpu className="w-4 h-4" />,
-    items: [
-      {
-        id: "appearance",
-        name: "Appearance",
-        href: "/settings/chatbot/appearance",
-        icon: <PaintBucket className="w-4 h-4" />,
-      },
-      {
-        id: "behavior",
-        name: "Behavior",
-        href: "/settings/chatbot/behavior",
-        icon: <FiSettings className="w-4 h-4" />,
-      },
-      {
-        id: "chatbot-integrations",
-        name: "Integrations",
-        href: "/settings/chatbot/integrations",
-        icon: <Plug className="w-4 h-4" />,
-      },
-      {
-        id: "training",
-        name: "Training Data",
-        href: "/settings/chatbot/training",
-        icon: <FiCpu className="w-4 h-4" />,
-      },
-    ],
-  },
-  {
-    id: "support",
-    category: "Support",
-    icon: <FiLifeBuoy className="w-4 h-4" />,
-    items: [
-      {
-        id: "documentation",
-        name: "Documentation",
-        href: "https://docs.yourchatbot.com",
-        icon: <FiBook className="w-4 h-4" />,
-        external: true,
-      },
-      {
-        id: "support",
-        name: "support",
-        href: "/settings/support",
-        icon: <FiLifeBuoy className="w-4 h-4" />,
-        external: true,
-      },
-    ],
   },
 ];
 

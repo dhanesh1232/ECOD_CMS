@@ -12,6 +12,7 @@ export async function GET(req) {
     const session = await validateSession(req);
     // Find the user and populate their workspaces
     const user = await User.findById(session.user.id).select("+phone").lean();
+
     if (!user) {
       return ErrorHandles.UserNotFound();
     }

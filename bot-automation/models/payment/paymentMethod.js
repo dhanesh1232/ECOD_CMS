@@ -132,7 +132,6 @@ const paymentMethodSchema = new Schema(
     toObject: { virtuals: true },
   }
 );
-
 paymentMethodSchema.index({ workspace: 1, subscription: 1 }, { unique: true });
 
 export const PaymentMethod =

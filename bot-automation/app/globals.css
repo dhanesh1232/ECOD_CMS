@@ -410,3 +410,17 @@ input:checked+.slider:before {
 .input-toggle {
   @apply absolute inset-y-0 right-3 top-0 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none;
 }
+
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.animate-progress {
+  animation: progress linear forwards;
+}

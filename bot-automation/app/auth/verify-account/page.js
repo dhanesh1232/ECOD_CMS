@@ -2,249 +2,240 @@
 import { motion } from "framer-motion";
 import AIFormWrapper from "@/components/auth/wrapper";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Logo from "@/components/logo";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/components/ui/toast-provider";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 const VerifyAccount = () => {
   const showToast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [state, setState] = useState({
-    email: "",
-    code: "",
-  });
-  const [isVerify, setIsVerify] = useState(false);
-  const [otp, setOtp] = useState(Array(6).fill(""));
-  const inputRefs = useRef([]);
-  const toastRef = useRef(false); // Track if toast has been shown
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState("idle"); // 'idle' | 'verifying' | 'success' | 'error'
+  const toastRef = useRef(false);
+  const verificationAttempted = useRef(false);
 
-  useEffect(() => {
-    setTimeout(() => {
-      toastRef.current = false;
-    }, 10000);
-  });
+  // Handle verification logic
+  const handleVerify = useCallback(
+    async (email, code) => {
+      if (!code || !email) {
+        setVerificationStatus("error");
+        if (!toastRef.current) {
+          showToast({
+            title: "Error",
+            description: "Verification link is incomplete",
+            variant: "destructive",
+          });
+          toastRef.current = true;
+        }
+        return;
+      }
+
+      try {
+        setIsVerifying(true);
+        setVerificationStatus("verifying");
+
+        const result = await signIn("credentials", {
+          iv: encodeURIComponent(email),
+          verifyToken: encodeURIComponent(code),
+          redirect: false,
+          callbackUrl: "/",
+        });
+
+        if (result?.error) {
+          console.error("Verification error:", result.error);
+          setVerificationStatus("error");
+          if (!toastRef.current) {
+            showToast({
+              title: "Verification Failed",
+              description: result.error.includes("Invalid")
+                ? "The verification link is invalid or expired. Please request a new one."
+                : result.error,
+              variant: "destructive",
+            });
+            toastRef.current = true;
+          }
+        } else {
+          console.log(result);
+          setVerificationStatus("success");
+          // Small delay to show success state before redirect
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          router.push(result?.url || "/");
+        }
+      } catch (err) {
+        console.error("Verification exception:", err);
+        setVerificationStatus("error");
+        if (!toastRef.current) {
+          showToast({
+            title: "Verification Error",
+            description:
+              err.message || "Something went wrong. Please try again.",
+            variant: "destructive",
+          });
+          toastRef.current = true;
+        }
+      } finally {
+        setIsVerifying(false);
+      }
+    },
+    [showToast, router]
+  );
+
   // Handle URL parameters and initial verification
   useEffect(() => {
     const email = searchParams.get("email");
     const code = searchParams.get("code");
 
+    // Prevent multiple verification attempts
+    if (verificationAttempted.current) return;
+
     if (email && code) {
+      verificationAttempted.current = true;
       try {
-        const enCode = decodeURIComponent(code);
-        const enMail = decodeURIComponent(email);
-        setState({
-          code: enCode,
-          email: enMail,
-        });
+        const decodedEmail = decodeURIComponent(email);
+        const decodedCode = decodeURIComponent(code);
+        handleVerify(decodedEmail, decodedCode);
       } catch (error) {
+        console.error("URL decoding error:", error);
+        setVerificationStatus("error");
         if (!toastRef.current) {
           showToast({
-            title: "Error",
-            description: "Invalid verification link",
+            title: "Invalid Link",
+            description: "The verification link is malformed.",
             variant: "destructive",
           });
           toastRef.current = true;
-          router.push("/auth/register");
         }
+        router.push("/auth/register");
       }
-    } else if (!toastRef.current) {
-      showToast({
-        title: "Error",
-        description: "Verification link is incomplete",
-        variant: "destructive",
-      });
-      toastRef.current = true;
+    } else {
+      setVerificationStatus("error");
+      if (!toastRef.current) {
+        showToast({
+          title: "Missing Information",
+          description: "The verification link is incomplete.",
+          variant: "destructive",
+        });
+        toastRef.current = true;
+      }
       router.push("/auth/register");
     }
-  }, [searchParams, showToast, router]);
-
-  // Handle verification logic
-  const handleVerify = useCallback(async () => {
-    if (!state.code || !state.email) {
-      if (!toastRef.current) {
-        showToast({
-          title: "Error",
-          description: "Verification link is incomplete",
-          variant: "destructive",
-        });
-        toastRef.current = true;
-      }
-      return;
-    }
-
-    try {
-      setIsVerify(true);
-      const res = await fetch("/api/auth/verify-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: state.email, code: state.code }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        if (!toastRef.current) {
-          showToast({
-            title: "Success",
-            description: data.message || "Account verified successfully",
-            variant: "success",
-          });
-          toastRef.current = true;
-        }
-
-        const options = {
-          email: data?.user?.email,
-          password: data?.user?.password,
-          callbackUrl: "/", // Add default redirect
-        };
-        await signIn("credentials", options);
-      } else {
-        if (!toastRef.current) {
-          let description = data.message || "Verification failed";
-          let redirectPath = "/auth/register";
-
-          if (data.errorType === "PHONE_EXISTS") {
-            description = "Phone number already exists";
-            redirectPath = "/auth/login";
-          } else if (data.errorType === "DUPLICATE_KEY") {
-            description = `${data.field} already in use`;
-            redirectPath = "/auth/login";
-          }
-          showToast({
-            title: "Error",
-            description,
-            variant: "destructive",
-          });
-          toastRef.current = true;
-          router.push(redirectPath);
-        }
-      }
-    } catch (err) {
-      if (!toastRef.current) {
-        showToast({
-          title: "Error",
-          description: "Something went wrong. Please try again.",
-          variant: "destructive",
-        });
-        toastRef.current = true;
-      }
-    } finally {
-      setIsVerify(false);
-    }
-  }, [showToast, state, router]);
-
-  // Update OTP display when code changes
-  useEffect(() => {
-    if (state.code?.length === 6) {
-      setOtp(state.code.split(""));
-    }
-  }, [state.code]);
-
-  // Auto-verify when code and email are available
-  useEffect(() => {
-    if (state.code && state.email) {
-      handleVerify();
-    }
-  }, [state.code, state.email, handleVerify]);
-
-  // Handle resend verification
-  const handleResend = async () => {
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: state.email }),
-      });
-
-      if (!toastRef.current) {
-        showToast({
-          title: res.ok ? "Success" : "Error",
-          description: res.ok
-            ? "Confirmation email sent. Please check your inbox and spam folder."
-            : "Failed to resend confirmation email.",
-          variant: res.ok ? "success" : "warning",
-        });
-        toastRef.current = true;
-      }
-    } catch (error) {
-      if (!toastRef.current) {
-        showToast({
-          title: "Error",
-          description: "Failed to resend confirmation email.",
-          variant: "warning",
-        });
-        toastRef.current = true;
-      }
-    }
-  };
+  }, [searchParams, showToast, router, handleVerify]);
 
   return (
     <AIFormWrapper>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="my-1"
+          className="mb-8"
         >
-          <Logo hide={true} size="md" />
+          <Logo hide={true} size="lg" />
         </motion.div>
 
-        <div className="w-full space-y-4 max-w-md">
-          <div>
-            <Label className="text-white text-sm">Email</Label>
-            <Input
-              readOnly
-              value={state.email || ""}
-              className="rounded w-full p-2 text-blue-500 bg-gray-100 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 outline-none"
-            />
+        <div className="w-full max-w-md px-4">
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-8 border border-gray-700 shadow-lg">
+            {verificationStatus === "verifying" && (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <Loader2 className="h-12 w-12 text-indigo-500 animate-spin" />
+                  <div className="absolute inset-0 rounded-full border-2 border-indigo-500/30 animate-ping"></div>
+                </div>
+                <h2 className="text-2xl font-bold text-white text-center">
+                  Verifying Your Account
+                </h2>
+                <p className="text-gray-400 text-center">
+                  Please wait while we verify your details...
+                </p>
+              </div>
+            )}
+
+            {verificationStatus === "success" && (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="p-3 rounded-full bg-green-500/20">
+                  <CheckCircle2 className="h-10 w-10 text-green-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-white text-center">
+                  Verification Complete!
+                </h2>
+                <p className="text-gray-400 text-center">
+                  Redirecting you to your dashboard...
+                </p>
+                <div className="w-full pt-4">
+                  <div className="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
+                    <div className="animate-progress h-full bg-indigo-500"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {verificationStatus === "error" && (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="p-3 rounded-full bg-red-500/20">
+                  <AlertCircle className="h-10 w-10 text-red-500" />
+                </div>
+                <h2 className="text-2xl font-bold text-white text-center">
+                  Verification Failed
+                </h2>
+                <p className="text-gray-400 text-center">
+                  {`We couldn't verify your account. Please try again.`}
+                </p>
+                <div className="flex flex-col w-full gap-3 pt-4">
+                  <Button
+                    onClick={() => router.push("/auth/register")}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Return to Registration
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const email = searchParams.get("email");
+                      const code = searchParams.get("code");
+                      if (email && code) {
+                        handleVerify(
+                          decodeURIComponent(email),
+                          decodeURIComponent(code)
+                        );
+                      }
+                    }}
+                    variant="primary"
+                    className="w-full"
+                    disabled={isVerifying}
+                  >
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      "Try Again"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-
-          <div>
-            <Label className="text-white text-sm">Verification Code</Label>
-            <div className="flex justify-between gap-1 sm:gap-2">
-              {otp.map((digit, idx) => (
-                <Input
-                  key={idx}
-                  ref={(el) => (inputRefs.current[idx] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  readOnly
-                  aria-label={`Verification digit ${idx + 1}`}
-                  className="sm:w-10 w-8 h-10 sm:h-12 text-center text-base sm:text-xl rounded bg-gray-100 dark:bg-gray-700 text-blue-500 dark:text-white border border-gray-300 dark:border-gray-600 outline-none focus:ring-2 focus:ring-blue-400"
-                />
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            disabled={isVerify}
-            onClick={handleVerify}
-            className={`w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded transition ${
-              isVerify ? "cursor-not-allowed opacity-85" : ""
-            }`}
-          >
-            {isVerify ? "Verifying..." : "Verify Account"}
-          </button>
-
-          <p className="text-sm text-gray-300 text-center">
-            {`Didn't receive a code?`}{" "}
-            <button
-              onClick={handleResend}
-              className="text-indigo-300 hover:text-indigo-200"
-            >
-              Resend verification
-            </button>
-          </p>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes progress {
+          0% {
+            width: 0%;
+          }
+          100% {
+            width: 100%;
+          }
+        }
+        .animate-progress {
+          animation: progress 1.5s ease-out forwards;
+        }
+      `}</style>
     </AIFormWrapper>
   );
 };

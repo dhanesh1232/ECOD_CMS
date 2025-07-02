@@ -31,7 +31,6 @@ import { Separator } from "../ui/separator";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "@/hooks/mediaQuery";
 import { useToast } from "../ui/toast-provider";
-import { billingService } from "@/lib/client/billing";
 
 // Utility functions
 const formatDate = (dateString) => {
@@ -176,7 +175,6 @@ const PaymentHistoryTable = ({
       const invoice = await fetch(
         `/api/workspace/${workspaceId}/subscription/history/${invoiceId}`
       );
-      console.log(invoice);
       if (invoice.status && !invoice.ok) {
         const data = await invoice.json();
         setDownloadingId(null);
@@ -243,7 +241,7 @@ const PaymentHistoryTable = ({
 
   const renderAmountBreakdown = (amount) => {
     return (
-      <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="grid grid-cols-2 gap-2 text-xs md:text-sm">
         <div className="text-muted-foreground">Subtotal:</div>
         <div className="text-right">{formatCurrency(amount.subtotal)}</div>
 
@@ -314,7 +312,7 @@ const PaymentHistoryTable = ({
   };
 
   const sectionVariants = {
-    hidden: { x: -10, opacity: 0 },
+    hidden: { x: -0, opacity: 0 },
     visible: {
       x: 0,
       opacity: 1,
@@ -330,7 +328,7 @@ const PaymentHistoryTable = ({
       <CardHeader className="border-b border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <div className="p-1 rounded-lg bg-primary/10 text-primary">
               <FileText className="h-5 w-5" />
             </div>
             <div>
@@ -346,17 +344,17 @@ const PaymentHistoryTable = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={onReload}
-                disabled={loading}
                 aria-label="Refresh data"
+                variant="ghost"
+                size="icon"
+                disabled={loading}
+                onClick={onReload}
                 className="rounded-full"
               >
                 {loading ? (
-                  <Loader className="h-4 w-4 animate-spin" />
+                  <Loader className="animate-spin" size={16} />
                 ) : (
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw size={16} />
                 )}
               </Button>
             </TooltipTrigger>
@@ -367,7 +365,7 @@ const PaymentHistoryTable = ({
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="text-left text-sm font-medium [&_tr]:border-b border-gray-200 dark:border-gray-700">
+            <thead className="text-left text-xs md:text-sm font-medium [&_tr]:border-b border-gray-200 dark:border-gray-700">
               <tr className="hover:bg-transparent">
                 <th className="h-12 px-4 py-2 text-muted-foreground">Date</th>
                 <th className="h-12 px-4 py-2 text-muted-foreground">Action</th>
@@ -393,20 +391,20 @@ const PaymentHistoryTable = ({
                   </td>
                 </tr>
               ) : paymentHistory.length > 0 ? (
-                paymentHistory.map((payment) => (
-                  <React.Fragment key={payment.id}>
+                paymentHistory.map((payment, ind) => (
+                  <React.Fragment key={payment._id || ind}>
                     <motion.tr
                       layout
                       className="border-b border-gray-200 dark:border-gray-700 transition-colors hover:bg-muted/50 cursor-pointer"
-                      onClick={() => toggleRowExpansion(payment.id)}
+                      onClick={() => toggleRowExpansion(payment._id)}
                       initial={false}
                       animate={{
-                        backgroundColor: expandedRows[payment.id]
+                        backgroundColor: expandedRows[payment._id]
                           ? "rgba(0, 0, 0, 0.02)"
                           : "transparent",
                       }}
                     >
-                      <td className="p-4 align-middle font-medium">
+                      <td className="p-4 align-middle text-xs sm:text-sm font-medium">
                         <div className="flex flex-col">
                           <span>
                             {formatDate(
@@ -414,26 +412,26 @@ const PaymentHistoryTable = ({
                             )}
                           </span>
                           {isMobile && (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs md:text-sm text-muted-foreground">
                               {formatCurrency(payment.amount?.total)}
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="p-4 align-middle">
+                      <td className="p-4 align-middle text-xs sm:text-sm">
                         {getActionBadge(payment.action)}
                       </td>
                       {!isMobile && (
-                        <td className="p-4 align-middle">
+                        <td className="p-4 align-middle text-xs md:text-sm">
                           {payment.amount?.total
                             ? formatCurrency(payment.amount.total)
                             : "-"}
                         </td>
                       )}
-                      <td className="p-4 align-middle">
+                      <td className="p-4 align-middle text-xs sm:text-sm">
                         {getStatusBadge(payment.status)}
                       </td>
-                      <td className="p-4 align-middle text-right">
+                      <td className="p-4 align-middle text-right text-xs sm:text-sm">
                         <div className="flex items-center justify-end gap-2">
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -446,13 +444,13 @@ const PaymentHistoryTable = ({
                                 }}
                                 disabled={
                                   (payment.status === "pending" ||
-                                    downloadingId === payment.id) &&
+                                    downloadingId === payment._id) &&
                                   !payment.gateway?.invoiceId
                                 }
                                 aria-label="Download invoice"
                                 className="rounded-full"
                               >
-                                {downloadingId === payment.id ? (
+                                {downloadingId === payment._id ? (
                                   <Loader className="h-4 w-4 animate-spin" />
                                 ) : (
                                   <Download className="h-4 w-4" />
@@ -472,25 +470,25 @@ const PaymentHistoryTable = ({
                             className="h-8 w-8 rounded-full"
                             onClick={(e) => {
                               e.stopPropagation();
-                              toggleRowExpansion(payment.id);
+                              toggleRowExpansion(payment._id);
                             }}
                             aria-label={
-                              expandedRows[payment.id]
+                              expandedRows[payment._id]
                                 ? "Collapse details"
                                 : "Expand details"
                             }
                           >
-                            {expandedRows[payment.id] ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
+                            <ChevronDown
+                              className={`${
+                                expandedRows[payment._id] && "rotate-180"
+                              } h-4 w-4`}
+                            />
                           </Button>
                         </div>
                       </td>
                     </motion.tr>
                     <AnimatePresence>
-                      {expandedRows[payment.id] && (
+                      {expandedRows[payment._id] && (
                         <motion.tr
                           layout
                           variants={rowVariants}
@@ -504,13 +502,37 @@ const PaymentHistoryTable = ({
                               initial="hidden"
                               animate="visible"
                               exit="hidden"
-                              className="p-4 bg-muted/30 border-b border-gray-200 dark:border-gray-700"
+                              className="md:p-4 p-2 bg-muted/30 border-b border-gray-200 dark:border-gray-700"
                             >
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <motion.div
                                   variants={sectionVariants}
                                   transition={{ delay: 0.1 }}
                                 >
+                                  <h4>Plan Details</h4>
+                                  <div className="space-y-3 text-sm">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">
+                                        Plan:
+                                      </span>
+                                      <span className="capitalize">
+                                        {payment.plan?.name || "N/A"}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">
+                                        Period:
+                                      </span>
+                                      <span className="capitalize">
+                                        {payment?.billingCycle || "N/A"}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-start">
+                                      <span className="font-mono flex-wrap flex-1">
+                                        {payment.plan?.description || "N/A"}
+                                      </span>
+                                    </div>
+                                  </div>
                                   <h4 className="font-medium mb-3">
                                     Transaction Details
                                   </h4>
@@ -519,7 +541,7 @@ const PaymentHistoryTable = ({
                                       <span className="text-muted-foreground">
                                         Gateway:
                                       </span>
-                                      <span>
+                                      <span className="capitalize">
                                         {payment.gateway?.name || "N/A"}
                                       </span>
                                     </div>

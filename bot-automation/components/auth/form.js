@@ -15,9 +15,7 @@ import {
   FiUser,
   FiArrowRight,
   FiCheckCircle,
-  FiArrowLeft,
 } from "react-icons/fi";
-import { decryptData } from "@/lib/utils/encryption";
 import { useToast } from "../ui/toast-provider";
 import { FaWhatsapp } from "react-icons/fa";
 import { Label } from "../ui/label";
@@ -297,8 +295,8 @@ export default function FormComponent() {
     const token = searchParams.get("token");
     const email = searchParams.get("email");
     if (token && email) {
-      const enCode = decryptData(decodeURIComponent(token));
-      const enMail = decryptData(decodeURIComponent(email));
+      const enCode = decodeURIComponent(token);
+      const enMail = decodeURIComponent(email);
       if ((enCode, enMail)) {
         setVerify({
           token: enCode,

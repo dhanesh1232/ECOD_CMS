@@ -22,7 +22,6 @@ export const _webhooksHandles = {
   __webhooks__payment__capture__: async (payload) => {
     try {
       const payment = await razorpay.payments.fetch(payload.id);
-      console.log("payment:", payment);
 
       let subId = payment.subscription_id;
 
@@ -33,7 +32,6 @@ export const _webhooksHandles = {
       ) {
         try {
           const invoice = await razorpay.invoices.fetch(payment.invoice_id);
-          console.log("invoice:", invoice);
           subId = invoice.subscription_id;
         } catch (err) {
           console.error("❌ Invoice fetch error:", err.message);
@@ -89,6 +87,7 @@ export const _webhooksHandles = {
         default:
           break;
       }
+      console.log(methodPayload);
       const history = await SubscriptionHistory.findOneAndUpdate(
         { "gateway.subscriptionId": subId },
         {
@@ -96,17 +95,46 @@ export const _webhooksHandles = {
           paymentMethod,
           status: "active",
           "gateway.paymentId": payment.id,
-        }
+        },
+        { new: true }
       );
-      await PaymentMethod.create(
-        {
+      if (
+        !history.workspace ||
+        !history.subscription ||
+        !history.gateway?.name
+      ) {
+        console.error("❌ Missing fields in history:", {
+          workspace: history.workspace,
+          subscription: history.subscription,
+          gateway: history.gateway,
+        });
+        return;
+      }
+      const pay_method = await PaymentMethod.findOne({
+        workspace: history.workspace,
+        subscription: history.subscription,
+      });
+      if (!pay_method) {
+        await PaymentMethod.create({
           workspace: history.workspace,
           subscription: history.subscription,
           provider: history.gateway.name,
           method: methodPayload,
-        },
-        { upsert: true, new: true }
-      );
+        });
+      } else {
+        await PaymentMethod.findOneAndUpdate(
+          {
+            workspace: history.workspace,
+            subscription: history.subscription,
+          },
+          {
+            provider: history.gateway.name,
+            method: methodPayload,
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+      }
     } catch (err) {
       console.error("❌ Webhook payment capture error:", err.message);
     }
@@ -117,21 +145,25 @@ export const _webhooksHandles = {
     let subId = payment.subscription_id;
     if (!subId && payment.invoice_id) {
       const invoice = await razorpay.invoices.fetch(payment.invoice_id);
+      console.log(invoice);
       subId = invoice.subscription_id;
     }
-
-    await Subscription.findOneAndUpdate(
-      { "gateway.subscriptionId": subId },
-      {
-        status: "past_due",
-        $inc: { "lifeCycle.billingRetryCount": 1 },
-        "notifications.paymentFailed": {
-          sent: true,
-          sentAt: new Date(),
-        },
-        metadata: { updatedAt: new Date() },
-      }
-    );
+    console.log(payment);
+    const sub = await Subscription.findOne({ "gateway.subscriptionId": subId });
+    if (!sub) {
+      await Subscription.findOneAndUpdate(
+        { "gateway.subscriptionId": subId },
+        {
+          status: "past_due",
+          $inc: { "lifeCycle.billingRetryCount": 1 },
+          "notifications.paymentFailed": {
+            sent: true,
+            sentAt: new Date(),
+          },
+          metadata: { updatedAt: new Date() },
+        }
+      );
+    }
     await SubscriptionHistory.findOneAndUpdate(
       {
         "gateway.subscriptionId": subId,

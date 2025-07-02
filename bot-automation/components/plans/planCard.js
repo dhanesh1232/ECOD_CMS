@@ -21,6 +21,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import React, { useState } from "react";
 import { iconMap, limitIcons } from "@/data/icons";
+import { cn } from "@/lib/utils";
 
 export const PlanCard = ({
   plan,
@@ -206,7 +207,7 @@ export const PlanCard = ({
                     <span className="text-3xl font-bold text-gray-900 dark:text-white">
                       ₹{priceInfo.localized.toLocaleString("en-IN")}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">
+                    <span className="text-gray-400 dark:text-gray-500 text-sm">
                       /{cycle}
                     </span>
                   </>
@@ -236,6 +237,8 @@ export const PlanCard = ({
                 ? "premium"
                 : isFree
                 ? "ghost"
+                : plan.metadata.recommended
+                ? "ocean"
                 : "outline"
             }
             className="flex items-center gap-1 my-1"
@@ -332,19 +335,33 @@ export const PlanCard = ({
                               .replace(/^\w/, (c) => c.toUpperCase())}
                           </span>
                           <span className="text-sm font-medium flex items-center justify-center flex-wrap gap-3">
-                            {Array.isArray(category.features[key])
-                              ? category.features[key].map((each) => (
-                                  <span key={each} className="h-3 w-3">
-                                    {React.cloneElement(
-                                      iconMap[each.toLowerCase()],
-                                      {
-                                        className:
-                                          "h-3 w-3 text-gray-500 dark:text-gray-300",
-                                      }
-                                    )}
-                                  </span>
-                                ))
-                              : renderFeatureValue(category.features[key])}
+                            {Array.isArray(category.features[key]) ? (
+                              <div className="flex flex-wrap items-center justify-end gap-2">
+                                {category.features[key].map((each) => {
+                                  const iconName = each.toLowerCase();
+                                  if (!iconMap[iconName])
+                                    return <span key={each}>{each}</span>;
+
+                                  return (
+                                    <span
+                                      key={each}
+                                      className="inline-flex items-center gap-1.5"
+                                    >
+                                      {React.cloneElement(iconMap[iconName], {
+                                        className: "h-4 w-4 flex-shrink-0",
+                                        style: {
+                                          color:
+                                            iconMap[iconName].props?.style
+                                              ?.color,
+                                        },
+                                      })}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              renderFeatureValue(category.features[key])
+                            )}
                           </span>
                         </div>
                       ))}
@@ -355,48 +372,6 @@ export const PlanCard = ({
             ))}
           </div>
         </CardContent>
-
-        <CardFooter className="pt-0">
-          <Button
-            className={`w-full text-sm gap-2 font-semibold transition-all hover:shadow-md ${
-              plan.metadata?.popular ? "text-white" : ""
-            }`}
-            glass={true}
-            size="lg"
-            variant={
-              isEnterprise
-                ? "premium"
-                : plan.metadata?.popular
-                ? "ocean"
-                : isFree
-                ? "ghost"
-                : "primary"
-            }
-            onClick={() => handlePlanSelection(plan)}
-            disabled={isCurrentPlan}
-          >
-            {isCurrentPlan ? (
-              <span className="flex items-center justify-center gap-2">
-                <CheckCircle className="text-green-500 dark:text-green-400" />
-                Current Plan
-              </span>
-            ) : plan.metadata?.trialDays > 0 ? (
-              <span className="flex text-sm items-center justify-center gap-2">
-                <Rocket />
-                Start {plan.metadata.trialDays}-Day Free Trial
-              </span>
-            ) : !isEnterprise ? (
-              <span className="flex items-center justify-center gap-2">
-                <Rocket />
-                Get {plan.name}
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                Contact Sales
-              </span>
-            )}
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

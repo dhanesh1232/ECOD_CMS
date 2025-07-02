@@ -17,7 +17,6 @@ import {
   ArrowLeftIcon,
   CheckCircleIcon,
   InformationCircleIcon,
-  SpinnerIcon,
   XCircleIcon,
 } from "@/public/Images/svg_ecod";
 import {
@@ -42,7 +41,6 @@ import {
   PlusIcon,
   AlertCircleIcon,
   CreditCardIcon,
-  TagIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminServices } from "@/lib/client/admin.service";
@@ -64,6 +62,7 @@ const PAYMENT_STATUS = {
   VERIFYING: "verifying",
   SUCCESS: "success",
   ERROR: "error",
+  DELAY: "delay",
 };
 
 const FEATURE_CATEGORIES = [
@@ -126,10 +125,11 @@ const PlanInfoCheckoutPage = () => {
   const [isAgreed, setIsAgreed] = useState(false);
   const [plan, setPlan] = useState(null);
   const [paymentStatus, setPaymentStatus] = useState(PAYMENT_STATUS.IDLE);
-  const [paymentError, setPaymentError] = useState(null);
+  const [paymentMessage, setPaymentMessage] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({});
+  const payButtonRef = useRef();
   const [prices, setFinalPrice] = useState({
     base: 0,
     tax: 0,
@@ -298,6 +298,15 @@ const PlanInfoCheckoutPage = () => {
   }, [searchParams, workspaceId, router, saveToLocalStorage, showToast]);
 
   useEffect(() => {
+    if (paymentStatus === PAYMENT_STATUS.SUCCESS) {
+      const timer = setTimeout(() => {
+        //router.push("/"); // Or your success route
+        console.log("redirecting.....");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentStatus, router]);
+  useEffect(() => {
     const fetchPlan = async () => {
       try {
         setIsLoading(true);
@@ -400,84 +409,248 @@ const PlanInfoCheckoutPage = () => {
   return (
     <>
       {/* Payment Verification Modal */}
-      <AlertDialog
-        open={showVerificationModal}
-        onOpenChange={(open) => {
-          if (!open && paymentStatus === PAYMENT_STATUS.SUCCESS) return;
-          setShowVerificationModal(open);
-        }}
-      >
-        <AlertDialogContent
-          className="rounded-xl"
-          aria-describedby="dialog-description"
-        >
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center text-2xl font-bold">
-              {paymentStatus === PAYMENT_STATUS.SUCCESS
-                ? "Payment Successful!"
-                : paymentStatus === PAYMENT_STATUS.VERIFYING
-                ? "Verifying Payment"
-                : "Payment Verification"}
+      <AlertDialog open={showVerificationModal}>
+        <AlertDialogContent className="max-w-md rounded-lg p-8">
+          <AlertDialogHeader className="flex flex-col items-center space-y-6">
+            {/* Visually hidden title for accessibility */}
+            <AlertDialogTitle className="sr-only">
+              Payment Verification Status
             </AlertDialogTitle>
-          </AlertDialogHeader>
-          <AlertDialogDescription asChild>
-            <div
-              id="dialog-description"
-              className="flex flex-col items-center justify-center py-6 space-y-4"
-            >
-              {paymentStatus === PAYMENT_STATUS.VERIFYING && (
-                <>
-                  <div className="relative">
-                    <SpinnerIcon className="w-12 h-12 text-blue-500 animate-spin" />
-                    <div className="absolute inset-0 rounded-full border-4 border-blue-100 animate-ping opacity-75"></div>
+
+            {/* VERIFYING STATE */}
+            {paymentStatus === PAYMENT_STATUS.VERIFYING && (
+              <div className="flex flex-col items-center space-y-6">
+                <div className="relative w-24 h-24">
+                  {/* Outer ring with gradient */}
+                  <div className="absolute inset-0 rounded-full border-8 border-blue-50 dark:border-blue-900/50"></div>
+                  {/* Animated spinner with gradient */}
+                  <div
+                    className="absolute inset-0 rounded-full border-8 border-transparent border-t-blue-500 border-r-blue-500 animate-spin"
+                    style={{ animationDuration: "1.5s" }}
+                  ></div>
+                  {/* Inner icon */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-pulse"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
                   </div>
-                  <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
-                    Please wait while we verify your payment. This usually takes
-                    just a few seconds.
+                </div>
+                <div className="text-center space-y-3">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {paymentMessage.title || "Verifying Payment"}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {paymentMessage.description ||
+                      "Please wait while we confirm your payment details..."}
                   </p>
-                </>
-              )}
-              {paymentStatus === PAYMENT_STATUS.SUCCESS && (
-                <>
-                  <div className="relative">
-                    <CheckCircleIcon className="w-12 h-12 text-green-500" />
-                    <div className="absolute -inset-2 rounded-full bg-green-100 dark:bg-green-900/30 opacity-60 animate-pulse"></div>
+                </div>
+                {/* Animated dots for better waiting indication */}
+                <div className="flex space-x-1">
+                  {[1, 2, 3].map((dot) => (
+                    <div
+                      key={dot}
+                      className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                      style={{
+                        animationDelay: `${dot * 0.2}s`,
+                        animationDuration: "1s",
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* DELAY STATE */}
+            {paymentStatus === PAYMENT_STATUS.DELAY && (
+              <div className="flex flex-col items-center space-y-6">
+                <div className="relative">
+                  <div className="w-24 h-24 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-orange-500 dark:text-orange-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
                   </div>
-                  <p className="text-center text-gray-600 dark:text-gray-400 text-lg">
-                    Your payment was successfully processed!
+                  {/* Pulsing animation for attention */}
+                  <div className="absolute inset-0 rounded-full border-4 border-orange-200 dark:border-orange-900/30 animate-ping opacity-75"></div>
+                </div>
+                <div className="text-center space-y-3">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {paymentMessage.title || "Processing Delay"}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {paymentMessage.description ||
+                      "Your payment is taking longer than usual to process. We'll notify you once it's completed."}
                   </p>
-                  <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div className="bg-green-500 h-2.5 rounded-full animate-progress"></div>
+                </div>
+                <div className="w-full space-y-2">
+                  <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+                    <span>Processing</span>
+                    <span>Estimated time: 2-5 mins</span>
                   </div>
-                </>
-              )}
-              {paymentStatus === PAYMENT_STATUS.ERROR && (
-                <>
-                  <div className="relative">
-                    <XCircleIcon className="w-12 h-12 text-red-500" />
-                    <div className="absolute -inset-2 rounded-full bg-red-100 dark:bg-red-900/30 opacity-60 animate-pulse"></div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-orange-500 h-2 rounded-full animate-progress-pulse"
+                      style={{ width: "70%" }}
+                    ></div>
                   </div>
-                  <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
-                    {paymentError ||
-                      "Payment verification failed. Please try again."}
-                  </p>
+                </div>
+                <div className="flex gap-4 w-full pt-2">
                   <Button
                     variant="outline"
-                    className="mt-4"
-                    onClick={() => {
-                      setShowVerificationModal(false);
-                      setPaymentStatus(PAYMENT_STATUS.IDLE);
-                      setPaymentError(null);
-                    }}
+                    className="flex-1"
+                    onClick={() => setShowVerificationModal(false)}
                   >
-                    Close
+                    {`I'll check later`}
                   </Button>
-                </>
-              )}
-            </div>
-          </AlertDialogDescription>
+                  <Button
+                    variant="primary"
+                    className="flex-1"
+                    onClick={() => payButtonRef.current?.startVerification()}
+                  >
+                    Refresh Status
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* SUCCESS STATE */}
+            {paymentStatus === PAYMENT_STATUS.SUCCESS && (
+              <div className="flex flex-col items-center space-y-6">
+                <div className="relative">
+                  <div className="w-24 h-24 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-green-500 dark:text-green-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  {/* Celebration confetti effect */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-1 h-4 bg-yellow-400 rounded-full opacity-0 animate-confetti"
+                        style={{
+                          transform: `rotate(${i * 30}deg) translateY(-40px)`,
+                          animationDelay: `${i * 0.1}s`,
+                        }}
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+                <div className="text-center space-y-3">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {paymentMessage.title || "Payment Successful!"}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {paymentMessage.description ||
+                      "Your payment has been verified and processed successfully."}
+                  </p>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                  <div
+                    className="bg-green-500 h-2 rounded-full animate-progress"
+                    style={{ animationDuration: "3s", width: "100%" }}
+                  ></div>
+                </div>
+                <Button
+                  variant="primary"
+                  className="w-full py-3 rounded-lg"
+                  onClick={() => setShowVerificationModal(false)}
+                >
+                  Continue to Dashboard
+                </Button>
+              </div>
+            )}
+
+            {/* ERROR STATE */}
+            {paymentStatus === PAYMENT_STATUS.ERROR && (
+              <div className="flex flex-col items-center space-y-6">
+                <div className="relative">
+                  <div className="w-24 h-24 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-red-500 dark:text-red-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  {/* Pulsing error effect */}
+                  <div className="absolute inset-0 rounded-full border-4 border-red-200 dark:border-red-900/30 animate-pulse opacity-75"></div>
+                </div>
+                <div className="text-center space-y-3">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {paymentMessage.title || "Verification Failed"}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {paymentMessage.description ||
+                      "We couldn't verify your payment. Please try again or contact support."}
+                  </p>
+                </div>
+                <div className="flex gap-4 w-full">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowVerificationModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="flex-1"
+                    onClick={() => payButtonRef.current?.startVerification()}
+                  >
+                    Try Again
+                  </Button>
+                </div>
+                <div className="pt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Need help?{" "}
+                  <a href="#" className="text-blue-500 hover:underline">
+                    Contact support
+                  </a>
+                </div>
+              </div>
+            )}
+          </AlertDialogHeader>
         </AlertDialogContent>
       </AlertDialog>
+
       {/*Loader Block while loading it can shown */}
       <OverlayLoader open={isLoading} />
 
@@ -1195,8 +1368,9 @@ const PlanInfoCheckoutPage = () => {
                       )}
 
                       <PayButton
+                        ref={payButtonRef}
                         onSetModal={setShowVerificationModal}
-                        onSetError={setPaymentError}
+                        onShowMessage={setPaymentMessage}
                         workspaceId={workspaceId}
                         agree={isAgreed}
                         onCompleteBilling={hasCompleteBillingDetails}

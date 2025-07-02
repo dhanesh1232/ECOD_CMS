@@ -11,6 +11,7 @@ function AuthWrapper({ children }) {
 
   useEffect(() => {
     setIsMounted(true);
+    console.log(session);
     return () => setIsMounted(false);
   }, [setIsMounted, session]);
   useEffect(() => {

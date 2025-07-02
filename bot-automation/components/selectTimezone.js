@@ -7,71 +7,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Globe, Loader2 } from "lucide-react";
-import { UserServices } from "@/lib/client/user";
-import { useToast } from "./ui/toast-provider";
+import { Globe, Loader2, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Virtuoso } from "react-virtuoso";
 import { Input } from "./ui/input";
 
 const ITEMS_PER_PAGE = 50;
 
-const TimezoneSelect = ({ value = "UTC", onValueChange, className }) => {
-  const [timezones, setTimezones] = useState([]);
+const TimezoneSelect = ({
+  timezones,
+  value = "UTC",
+  onValueChange,
+  className,
+  isLoading,
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadedCount, setLoadedCount] = useState(ITEMS_PER_PAGE);
   const searchInputRef = useRef(null);
   const contentRef = useRef(null);
-  const toastRef = useRef(false);
-  const showToast = useToast();
-
-  const fetchTimezones = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await UserServices.getTimezone();
-
-      if (response.status && response.status !== 200) {
-        if (!toastRef.current) {
-          showToast({
-            description: "Failed to load timezones. Please try again later.",
-            variant: "warning",
-          });
-          toastRef.current = true;
-        }
-        return;
-      }
-
-      if (Array.isArray(response)) {
-        // Ensure UTC is always in the list (Etc/UTC is the IANA timezone for UTC)
-        const hasUTC = response.some(
-          (tz) => tz.value === "Etc/UTC" || tz.value === "UTC"
-        );
-        if (!hasUTC) {
-          response.unshift({
-            value: "UTC",
-            label: "UTC (Coordinated Universal Time)",
-            offsetFormatted: "UTC+00:00",
-            currentTime: "",
-            isDST: false,
-          });
-        }
-        setTimezones(response);
-      }
-    } catch (error) {
-      if (!toastRef.current) {
-        showToast({
-          description: "Failed to load timezones. Please try again later.",
-          variant: "warning",
-        });
-        toastRef.current = true;
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [showToast]);
 
   const filteredTimezones = useMemo(() => {
     if (!searchTerm) return timezones;
@@ -105,7 +59,6 @@ const TimezoneSelect = ({ value = "UTC", onValueChange, className }) => {
   };
 
   const handleOpenChange = (open) => {
-    setIsOpen(open);
     if (open) {
       setSearchTerm("");
       setLoadedCount(ITEMS_PER_PAGE);
@@ -120,12 +73,6 @@ const TimezoneSelect = ({ value = "UTC", onValueChange, className }) => {
       e.stopPropagation();
     }
   };
-
-  useEffect(() => {
-    if (!timezones.length) {
-      fetchTimezones();
-    }
-  }, [timezones.length, fetchTimezones]);
 
   const selectedTimezone = useMemo(() => {
     const exactMatch = timezones.find((tz) => tz.value === value);
@@ -174,8 +121,11 @@ const TimezoneSelect = ({ value = "UTC", onValueChange, className }) => {
         className="max-h-[40vh] w-[var(--radix-select-trigger-width)] p-0"
         onKeyDown={handleKeyDown}
       >
-        <div className="sticky top-0 z-10 bg-background p-2 border-b">
+        <div className="sticky top-0 z-10 bg-transparent py-1 px-0 border-b">
           <div className="relative">
+            <span className="absolute z-20 left-0 h-full w-10 flex items-center justify-center">
+              <Search size={14} />
+            </span>
             <Input
               ref={searchInputRef}
               type="search"
@@ -216,8 +166,6 @@ const TimezoneSelect = ({ value = "UTC", onValueChange, className }) => {
                       <div className="font-medium truncate">{tz.label}</div>
                       <div className="text-xs text-muted-foreground truncate">
                         <span className="mr-1">{tz.value}</span>
-                        {tz.offsetFormatted}
-                        {tz.isDST && <span className="ml-1">(DST)</span>}
                       </div>
                     </div>
                   </div>

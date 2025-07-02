@@ -18,15 +18,18 @@ export async function getInvoiceById(id) {
       })
       .populate({
         path: "subscription",
+        select: "billingCycle currentPeriod",
       })
       .populate({
         path: "plan",
-        select: "name",
-      });
+        select: "id description name billingCycle",
+      })
+      .lean({ virtual: false });
 
     const details = await BillingDetails.findOne({
       workspace: history.workspace,
     });
+    console.log(history, details);
     if (!history) {
       console.error("Invoice not found for ID:", id);
       throw new Error("Invoice not found");
@@ -39,13 +42,10 @@ export async function getInvoiceById(id) {
     }
 
     if (
-      !history.subscription?.currentPeriod?.start ||
+      !history.subscription?.currentPeriod?.start &&
       !history.subscription?.currentPeriod?.end
     ) {
-      console.error(
-        "Missing subscription currentPeriod:",
-        history.subscription
-      );
+      console.error("Missing subscription currentPeriod:");
       throw new Error("Subscription period missing");
     }
 
@@ -54,21 +54,25 @@ export async function getInvoiceById(id) {
       id: `INV-ECOD-${id}`,
       user: {
         name: history.user?.name || "Unknown",
-        email: details.email,
-        company: details.companyName,
-        phone: details.phone,
+        email: details?.email,
+        company: details?.companyName,
+        phone: details?.phone,
         gst: details?.gstin || "NA",
       },
-      plan: history.subscription.plan,
-      cycle: history.subscription.billingCycle,
-      amount: history.amount,
-      status: history.status,
+      plan: history.plan?.name,
+      cycle: history.plan?.billingCycle,
+      amount: history?.amount,
+      status: history?.status,
       invoiceDate: now,
-      billingPeriod: `${new Date(
-        history.subscription.currentPeriod.start
-      ).toLocaleDateString()} to ${new Date(
-        history.subscription.currentPeriod.end
-      ).toLocaleDateString()}`,
+      billingPeriod: `${
+        new Date(
+          history.subscription?.currentPeriod?.start
+        ).toLocaleDateString() || null
+      } to ${
+        new Date(
+          history.subscription?.currentPeriod?.end
+        ).toLocaleDateString() || null
+      }`,
       paymentMethod: history.paymentMethod?.type || "Razorpay - UPI",
     };
   } catch (err) {

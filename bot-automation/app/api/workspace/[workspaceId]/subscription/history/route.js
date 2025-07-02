@@ -17,7 +17,12 @@ export async function GET(request, { params }) {
     const history = await SubscriptionHistory.find({
       workspace: workspace._id,
       subscription: sub._id,
-    });
+    })
+      .populate({
+        path: "plan",
+        select: "id name description",
+      })
+      .lean({ virtual: false });
     return SuccessHandle.DefaultSuccess({ history });
   } catch (err) {
     return ErrorHandles.InternalServer(

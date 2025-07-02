@@ -2,29 +2,176 @@
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { Button } from "../ui/button";
 import { useToast } from "../ui/toast-provider";
-import { useRef } from "react";
+import { useRef, useImperativeHandle, forwardRef } from "react";
 import { billingService } from "@/lib/client/billing";
 import Script from "next/script";
 
-export function PayButton({
-  workspaceId,
-  agree,
-  onCompleteBilling,
-  status,
-  paymentStatus,
-  trial,
-  price,
-  plan_name,
-  plan,
-  onPaymentStatus,
-  cycle,
-  profile,
-  currency = "INR",
-  shown,
-  couponCode,
-}) {
+export const PayButton = forwardRef(function PayButton(
+  {
+    workspaceId,
+    onSetModal,
+    onShowMessage,
+    agree,
+    onCompleteBilling,
+    status,
+    paymentStatus,
+    trial,
+    price,
+    plan_name,
+    plan,
+    onPaymentStatus,
+    cycle,
+    profile,
+    currency = "INR",
+    shown,
+    couponCode,
+  },
+  ref
+) {
   const showToast = useToast();
   const toastRef = useRef(false);
+
+  useImperativeHandle(ref, () => ({
+    startVerification: onHandleVerificationProccess,
+  }));
+  const onHandleVerificationProccess = async () => {
+    // Set initial verifying state
+    console.log("🔄 Starting payment verification process...");
+    onPaymentStatus(paymentStatus.VERIFYING);
+    onShowMessage({
+      title: "Verifying Payment",
+      description: "We're currently verifying your payment. Please wait...",
+    });
+    onSetModal(true);
+
+    try {
+      // In testing mode - simulate network delay (1-3 seconds)
+      const minDelay = 1000;
+      const maxDelay = 3000;
+      const delayTime =
+        Math.floor(Math.random() * (maxDelay - minDelay)) + minDelay;
+
+      // Simulate API call with timeout
+      const verificationResult = await new Promise(async (resolve, reject) => {
+        // Set timeout as a safety net (real API would have this too)
+        const timeoutId = setTimeout(() => {
+          reject({
+            status: paymentStatus.ERROR,
+            title: "Verification Timeout",
+            description:
+              "Payment verification took too long. Please try again.",
+          });
+        }, 10000); // 10 second timeout
+
+        try {
+          // Simulate network delay
+          await new Promise((res) => setTimeout(res, delayTime));
+
+          // Simulate different response scenarios
+          const scenarios = [
+            {
+              status: paymentStatus.SUCCESS,
+              probability: 0.6,
+              data: {
+                title: "Payment Verified",
+                description: "Your subscription is now active!",
+                metadata: {
+                  /* can add additional success data */
+                },
+              },
+            },
+            {
+              status: paymentStatus.DELAY,
+              probability: 0.3,
+              data: {
+                title: "Verification in Progress",
+                description:
+                  "Your payment is being processed. This may take a few minutes.",
+                metadata: { estimatedTime: "2-5 minutes" },
+              },
+            },
+            {
+              status: paymentStatus.ERROR,
+              probability: 0.1,
+              data: {
+                title: "Verification Failed",
+                description:
+                  "We couldn't verify your payment. Please try again.",
+                metadata: { errorCode: "SIMULATED_ERROR" },
+              },
+            },
+          ];
+
+          // Select scenario based on probability
+          const random = Math.random();
+          let cumulativeProbability = 0;
+          let selectedScenario = scenarios[0];
+
+          for (const scenario of scenarios) {
+            cumulativeProbability += scenario.probability;
+            if (random <= cumulativeProbability) {
+              selectedScenario = scenario;
+              break;
+            }
+          }
+
+          clearTimeout(timeoutId);
+          resolve({
+            status: selectedScenario.status,
+            ...selectedScenario.data,
+          });
+        } catch (error) {
+          clearTimeout(timeoutId);
+          reject({
+            status: paymentStatus.ERROR,
+            title: "Verification Error",
+            description: "An unexpected error occurred during verification.",
+            error: error,
+          });
+        }
+      });
+
+      // Handle successful verification response
+      onPaymentStatus(verificationResult.status);
+      onShowMessage({
+        title: verificationResult.title,
+        description: verificationResult.description,
+      });
+
+      console.log("✅ Verification result:", verificationResult);
+
+      // For success case, add automatic redirection
+      if (verificationResult.status === paymentStatus.SUCCESS) {
+        // Track successful payment (analytics, etc.)
+        console.log("💰 Payment successfully verified");
+
+        // Optional: Add delay before auto-redirect
+        await new Promise((res) => setTimeout(res, 3000));
+        // router.push('/dashboard'); // Uncomment when ready
+      }
+    } catch (error) {
+      console.error("❗ Payment verification error:", error);
+
+      // Enhanced error handling
+      const errorTitle = error.title || "Verification Failed";
+      let errorDescription = error.description || "Please try again later.";
+
+      // Add specific error handling if available
+      if (error.error?.code === "NETWORK_ERROR") {
+        errorDescription =
+          "Network connection failed. Please check your internet.";
+      }
+
+      onPaymentStatus(paymentStatus.ERROR);
+      onShowMessage({
+        title: errorTitle,
+        description: errorDescription,
+      });
+    } finally {
+      // Any cleanup logic can go here
+      console.log("🏁 Verification process completed");
+    }
+  };
 
   const handleCheckout = async () => {
     if (!agree) {
@@ -225,4 +372,4 @@ export function PayButton({
       </Button>
     </>
   );
-}
+});

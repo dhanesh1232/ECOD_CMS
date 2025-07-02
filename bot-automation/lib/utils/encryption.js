@@ -23,7 +23,7 @@ export function decryptData(text) {
 
   try {
     const iv = Buffer.from(ivHex, "hex");
-    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
+    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY(), iv);
     let decrypted = decipher.update(encryptedData, "hex", "utf8");
     decrypted += decipher.final("utf8");
     return decrypted;

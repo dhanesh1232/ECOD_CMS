@@ -28,13 +28,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { DomainWhitelist } from "@/components/ui/domain-whitelist";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { Building, Contact, Palette, Shield } from "lucide-react";
-import { FaSpinner } from "react-icons/fa";
+import { Building, Contact, Loader, Palette, Shield } from "lucide-react";
 import { deepEqual } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import dynamic from "next/dynamic";
 import { StyledPhoneInput } from "@/components/ui/phone_input";
 import { OverlayLoader } from "@/components/animate/overlay_loader";
+import { UserServices } from "@/lib/client/user";
 const TimezoneSelect = dynamic(() => import("@/components/selectTimezone"), {
   ssr: false,
 });
@@ -75,7 +75,8 @@ const GeneralPage = () => {
       apiKeyRotationDays: 90,
     },
   };
-
+  const [timezones, setTimezones] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [state, setState] = useState({
     loading: true,
     saving: false,
@@ -147,9 +148,55 @@ const GeneralPage = () => {
     }
   }, [workspaceId, showToast]);
 
+  const fetchTimezones = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await UserServices.getTimezone();
+
+      if (response.status && response.status !== 200) {
+        if (!toastRef.current) {
+          showToast({
+            description: "Failed to load timezones. Please try again later.",
+            variant: "warning",
+          });
+          toastRef.current = true;
+        }
+        return;
+      }
+
+      if (Array.isArray(response)) {
+        // Ensure UTC is always in the list (Etc/UTC is the IANA timezone for UTC)
+        const hasUTC = response.some(
+          (tz) => tz.value === "Etc/UTC" || tz.value === "UTC"
+        );
+        if (!hasUTC) {
+          response.unshift({
+            value: "UTC",
+            label: "UTC (Coordinated Universal Time)",
+            offsetFormatted: "UTC+00:00",
+            currentTime: "",
+            isDST: false,
+          });
+        }
+        setTimezones(response);
+      }
+    } catch (error) {
+      if (!toastRef.current) {
+        showToast({
+          description: "Failed to load timezones. Please try again later.",
+          variant: "warning",
+        });
+        toastRef.current = true;
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showToast]);
+
   useEffect(() => {
     if (session && workspaceId) {
       fetchWorkspaceSettings();
+      fetchTimezones();
     }
   }, [session, workspaceId, fetchWorkspaceSettings]);
 
@@ -307,7 +354,7 @@ const GeneralPage = () => {
   if (state.loading && !state.workspace) {
     return (
       <>
-        <OverlayLoader />
+        <OverlayLoader open={true} />
         <div className="space-y-4 p-4 sm:p-6 h-full">
           <Skeleton className="h-10 w-1/3" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,9 +368,9 @@ const GeneralPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 max-w-7xl mx-auto">
+    <div className="space-y-2 p-2 max-w-7xl mx-auto">
       <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <h1 className="md:text-2xl text-xl lg:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           General Settings
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
@@ -331,7 +378,7 @@ const GeneralPage = () => {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Workspace Information Card */}
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
           <CardHeader className="pb-3">
@@ -349,12 +396,13 @@ const GeneralPage = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2 p-4 pt-3">
             <div className="space-y-2">
               <Label htmlFor="name">Organization</Label>
               <Input
                 id="name"
                 name="name"
+                autoComplete="name"
                 value={state.formData.name}
                 onChange={handleChange}
                 placeholder="Your Organization"
@@ -385,9 +433,11 @@ const GeneralPage = () => {
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 col-span-1">
               <Label htmlFor="timezone">Timezone</Label>
               <TimezoneSelect
+                isLoading={isLoading}
+                timezones={timezones}
                 value={state.formData.timezone}
                 onValueChange={(value) =>
                   handleChange({
@@ -411,8 +461,6 @@ const GeneralPage = () => {
           </CardContent>
         </Card>
 
-        <Separator className="my-6" />
-
         {/* Contact Information Card */}
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
           <CardHeader className="pb-3">
@@ -430,11 +478,12 @@ const GeneralPage = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2 p-4 pt-3">
             <div className="space-y-2">
               <Label htmlFor="supportEmail">Support Email</Label>
               <Input
                 type="email"
+                autoComplete="email"
                 id="supportEmail"
                 name="supportEmail"
                 value={state.formData.contactInfo.supportEmail}
@@ -447,6 +496,7 @@ const GeneralPage = () => {
               <Label htmlFor="websiteURL">Website URL</Label>
               <Input
                 type="url"
+                autoComplete="url"
                 id="websiteURL"
                 name="websiteURL"
                 value={state.formData.contactInfo.websiteURL}
@@ -459,6 +509,8 @@ const GeneralPage = () => {
               <Label htmlFor="phone">Phone Number</Label>
               <StyledPhoneInput
                 id="phone"
+                autoComplete="tel"
+                className="pl-0"
                 onChange={handlePhoneChange}
                 value={state.formData.contactInfo.phone || ""}
               />
@@ -474,6 +526,7 @@ const GeneralPage = () => {
                   <Label htmlFor="street">Street</Label>
                   <Input
                     id="street"
+                    autoComplete="street"
                     name="street"
                     value={state.formData.contactInfo?.address?.street || ""}
                     onChange={handleAddressChange}
@@ -484,6 +537,7 @@ const GeneralPage = () => {
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
+                    autoComplete="city"
                     name="city"
                     value={state.formData.contactInfo?.address?.city || ""}
                     onChange={handleAddressChange}
@@ -494,6 +548,7 @@ const GeneralPage = () => {
                   <Label htmlFor="state">State/Province</Label>
                   <Input
                     id="state"
+                    autoComplete="state"
                     name="state"
                     value={state.formData.contactInfo?.address?.state || ""}
                     onChange={handleAddressChange}
@@ -505,6 +560,7 @@ const GeneralPage = () => {
                   <Input
                     id="postalCode"
                     name="postalCode"
+                    autoComplete="postalCode"
                     value={
                       state.formData.contactInfo?.address?.postalCode || ""
                     }
@@ -516,6 +572,7 @@ const GeneralPage = () => {
                   <Label htmlFor="country">Country</Label>
                   <Input
                     id="country"
+                    autoComplete="country"
                     name="country"
                     value={state.formData.contactInfo?.address?.country || ""}
                     onChange={handleAddressChange}
@@ -526,8 +583,6 @@ const GeneralPage = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Separator className="my-6" />
 
         {/* Branding Card */}
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
@@ -544,7 +599,7 @@ const GeneralPage = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-3">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2 p-4 pt-3">
             <div className="space-y-2">
               <Label htmlFor="logoUrl">Logo URL</Label>
               <ImageUpload
@@ -598,6 +653,7 @@ const GeneralPage = () => {
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="customDomain">Custom Domain</Label>
               <Input
+                autoComplete="customDomain"
                 id="customDomain"
                 name="customDomain"
                 value={state.formData.branding.customDomain || ""}
@@ -610,8 +666,6 @@ const GeneralPage = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Separator className="my-6" />
 
         {/* Security Card */}
         <Card className="border border-gray-200 dark:border-gray-800 shadow-sm bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
@@ -628,7 +682,7 @@ const GeneralPage = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6 pt-3">
+          <CardContent className="space-y-3 pt-3">
             <div className="space-y-4">
               <div>
                 <Label>Widget Domain Whitelist</Label>
@@ -651,6 +705,7 @@ const GeneralPage = () => {
               </Label>
               <Input
                 type="number"
+                autoComplete="apiKeyRotationDays"
                 id="apiKeyRotationDays"
                 name="apiKeyRotationDays"
                 min="1"
@@ -678,41 +733,46 @@ const GeneralPage = () => {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
-          <Button
-            type="button"
-            onClick={handleReset}
-            disabled={!hasChanges || state.saving}
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
-            Reset
-          </Button>
-          <Button
-            type="submit"
-            disabled={!hasChanges || state.saving}
-            className="w-full sm:w-auto relative overflow-hidden"
-          >
-            {state.saving && (
-              <motion.span
-                className="absolute inset-0 bg-primary/20"
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            )}
-            <span className="relative z-10 flex items-center justify-center">
-              {state.saving ? (
-                <>
-                  <FaSpinner className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
+        {hasChanges && (
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              onClick={handleReset}
+              disabled={state.saving}
+              variant="outline"
+              className="w-full sm:w-auto"
+              size="sm"
+            >
+              Reset
+            </Button>
+            <Button
+              type="submit"
+              variant="success"
+              size="sm"
+              disabled={state.saving}
+              className="w-full sm:w-auto relative overflow-hidden"
+            >
+              {state.saving && (
+                <motion.span
+                  className="absolute inset-0 bg-primary/20"
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               )}
-            </span>
-          </Button>
-        </div>
+              <span className="relative z-10 flex items-center justify-center">
+                {state.saving ? (
+                  <>
+                    <Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </span>
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   );

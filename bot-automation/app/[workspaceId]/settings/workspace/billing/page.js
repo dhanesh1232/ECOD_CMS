@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import PlanSummaryCard from "@/components/settings/PlanSummaryCard";
-import PaymentMethodForm from "@/components/settings/PaymentMethodForm";
+import PaymentMethod from "@/components/settings/PaymentMethod";
 import PaymentHistoryTable from "@/components/settings/PaymentHistoryTable";
 import CancellationModal from "@/components/settings/CancellationModal";
 import { encryptData } from "@/lib/client/crypto";
@@ -31,6 +31,7 @@ const BillingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [subscription, setSubscription] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -82,23 +83,25 @@ const BillingPage = () => {
 
   // Fetch payment history
   const fetchPaymentHistory = useCallback(async () => {
-    if (
-      !workspaceId ||
-      !subscription ||
-      subscription?.plan?.toLowerCase() === "free"
-    )
-      return;
+    if (!workspaceId || !subscription) return;
 
     try {
       setIsLoadingHistory(true);
-      const response = await billingService.getPaymentHistory(workspaceId);
+      const [response, method] = await Promise.all([
+        billingService.getPaymentHistory(workspaceId),
+        billingService.getPaymentMethod(workspaceId),
+      ]);
 
-      if (response?.status && !response.ok) {
-        const errorData = await response.json();
+      if (
+        (response?.status && !response.ok) ||
+        (method?.status && !method.ok)
+      ) {
+        const errorData = await (response.json() || method.json());
         throw new Error(errorData.message || "Failed to fetch payment history");
       }
 
       setPaymentHistory(response?.history || []);
+      setPaymentMethod(method.method);
     } catch (err) {
       if (!toastRef.current) {
         showToast({
@@ -256,7 +259,7 @@ const BillingPage = () => {
               onClick={() => handleTabChange(link.id)}
               key={link.id}
               className={cn(
-                "text-xs sm:text-sm font-medium transition-colors",
+                "text-sm md:text-base font-medium rounded-none transition-colors",
                 activeTab === link.id
                   ? "text-blue-500 border-b-2 border-blue-600"
                   : "text-muted-foreground hover:text-blue-600"
@@ -268,7 +271,11 @@ const BillingPage = () => {
         </div>
       </div>
 
-      <div className="flex-1 p-0 bg-transparent border border-gray-200 dark:border-gray-700 transition-all duration-300 scrollbar-transparent h-[90%] sm:h-[96%] w-full overflow-y-auto">
+      <div
+        className={`flex-1 p-0 bg-transparent border border-gray-200 dark:border-gray-700 transition-all duration-300 scrollbar-transparent h-[96%] sm:h-[97%] w-full ${
+          activeTab === "history-invoice" ? "" : "overflow-y-auto"
+        }`}
+      >
         {activeTab === "current-plan" && (
           <PlanSummaryCard
             subscription={subscription}
@@ -280,24 +287,11 @@ const BillingPage = () => {
 
         {activeTab === "billing" && (
           <>
-            <PaymentMethodForm
-              subscription={subscription}
-              onUpdatePaymentMethod={async () => {
-                try {
-                  const response = await fetch("/api/billing/portal");
-                  const { url } = await response.json();
-                  window.location.href = url;
-                } catch (err) {
-                  showToast({
-                    title: "Error",
-                    description: "Failed to load billing portal",
-                    variant: "destructive",
-                  });
-                }
-              }}
+            <PaymentMethod
+              paymentMethod={paymentMethod}
+              onSetPaymentMethod={setPaymentMethod}
             />
-            <Separator />
-            <BillingProfile />
+            <BillingProfile returnUrl={returnUrl} />
           </>
         )}
         {activeTab === "add-on" && <div className="">Add Ons</div>}

@@ -28,41 +28,24 @@ import {
 } from "react-icons/fa";
 
 export const iconMap = {
-  whatsapp: (
-    <FaWhatsapp className="text-[#25D366] text-base md:text-lg lg:text-xl" />
-  ),
-  instagram: (
-    <FaInstagram className="text-[#E1306C] text-base md:text-lg lg:text-xl" />
-  ),
-  facebook: (
-    <FaFacebook className="text-[#1877F2] text-base md:text-lg lg:text-xl" />
-  ),
-  telegram: (
-    <FaTelegram className="text-[#0088CC] text-base md:text-lg lg:text-xl" />
-  ),
-  web: (
-    <Earth
-      size={16}
-      className="text-base md:text-lg lg:text-xl text-[#4285F4]"
-    />
-  ),
+  whatsapp: <FaWhatsapp style={{ color: "#25d365" }} className="text-base" />,
+  instagram: <FaInstagram style={{ color: "#E1306C" }} className="text-base" />,
+  facebook: <FaFacebook style={{ color: "#1877F2" }} className="text-base" />,
+  telegram: <FaTelegram style={{ color: "#0088CC" }} className="text-base" />,
+  web: <Earth style={{ color: "#4285F4" }} className="text-base" size={16} />,
   sms: (
     <MessageSquare
+      style={{ color: "#34B7F1" }}
+      className="text-base"
       size={16}
-      className="text-base md:text-lg lg:text-xl text-[#34B7F1]"
     />
   ),
-  discord: (
-    <FaDiscord className="text-base md:text-lg lg:text-xl text-[#5865F2]" />
-  ),
+  discord: <FaDiscord style={{ color: "#5865F2" }} className="text-base" />,
   customsdk: (
-    <Code
-      size={16}
-      className="text-base md:text-lg lg:text-xl text-[#5865F2]"
-    />
+    <Code style={{ color: "#5865F2" }} className="text-base" size={16} />
   ),
-  voice: <Mic className="text-base md:text-lg lg:text-xl text-[#9C27B0]" />,
-  slack: <FaSlack className="text-blue-600 text-base md:text-lg lg:text-xl" />,
+  voice: <Mic style={{ color: "#9C27B0" }} className="text-base" />,
+  slack: <FaSlack style={{ color: "#4A154B" }} className="text-base" />,
 };
 
 export const limitIcons = {

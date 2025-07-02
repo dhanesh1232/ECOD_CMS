@@ -38,6 +38,7 @@ import Logo from "./logo";
 import { Icons } from "./icons";
 import { SpinnerIcon } from "@/public/Images/svg_ecod";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { useMediaQuery } from "@/hooks/mediaQuery";
 
 const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const pathname = usePathname();
@@ -52,6 +53,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [navLinks, setNavLinks] = useState([]);
+  const isIncrease = useMediaQuery("(min-width:1024px)");
   const [apiState, setApiState] = useState({
     loading: false,
     success: false,
@@ -78,6 +80,11 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     setTimeout(() => {
       toastRef.current = false;
     }, 10000);
+  });
+  useEffect(() => {
+    if (isIncrease && mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
   });
   useEffect(() => {
     localStorage.setItem("nav-collapsed", JSON.stringify(isCollapsed));
@@ -161,17 +168,36 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   // Initialize expanded state based on current path
   useEffect(() => {
     const initialExpanded = {};
+    const initialSubExpanded = {};
 
     navLinks.forEach((item) => {
       if (item.subPages) {
-        // Check if current path matches any subpage
+        // Check if current path matches any subpage or nested page
         const hasActiveSubpage = item.subPages.some(
-          (subItem) => pathname === `/${workspaceId}${subItem.href}`
+          (subItem) =>
+            pathname === `/${workspaceId}${subItem.href}` ||
+            (subItem.nestedPages &&
+              subItem.nestedPages.some(
+                (nestedItem) => pathname === `/${workspaceId}${nestedItem.href}`
+              ))
         );
+
         initialExpanded[item.id] =
           pathname.startsWith(`/${workspaceId}${item.href}`) ||
           hasActiveSubpage ||
           item.expandedByDefault;
+
+        // Also expand sub-items if their nested pages are active
+        item.subPages.forEach((subItem) => {
+          if (subItem.nestedPages) {
+            const hasActiveNestedPage = subItem.nestedPages.some(
+              (nestedItem) => pathname === `/${workspaceId}${nestedItem.href}`
+            );
+            if (hasActiveNestedPage) {
+              initialSubExpanded[subItem.id] = true;
+            }
+          }
+        });
       } else if (item.isParent) {
         initialExpanded[item.id] = pathname.startsWith(
           `/${workspaceId}${item.href}`
@@ -180,8 +206,8 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     });
 
     setExpandedItems(initialExpanded);
+    setExpandedSubItems(initialSubExpanded);
   }, [pathname, workspaceId, navLinks]);
-
   useEffect(() => {
     if (navRef.current) {
       const activeItem = navRef.current.querySelector(".bg-indigo-100");
@@ -280,7 +306,7 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
     return (
       <nav
         ref={navRef}
-        className="scrollbar-transparent flex-1 overflow-y-auto px-2.5 py-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+        className="scrollbar-transparent flex-1 text-sm md:text-base overflow-y-auto px-2.5 py-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
       >
         {navLinks.map((item) => (
           <div key={item.id} className="space-y-1.5">
@@ -394,13 +420,12 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                       className={cn(
                                         "w-full flex items-center justify-between px-3 py-2 rounded-lg relative group",
                                         "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
-                                        "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
-                                        (isActive(subItem.href) ||
-                                          (subItem.nestedPages.some((sub) =>
-                                            isSubpageActive(sub.href)
-                                          ) &&
-                                            "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200 border-l-4 rounded-l-lg border-indigo-500 dark:border-indigo-400"),
-                                        "transition-colors duration-150")
+                                        "focus:outline-none focus:ring-0",
+                                        subItem.nestedPages.some((sub) =>
+                                          isSubpageActive(sub.href)
+                                        ) &&
+                                          "bg-indigo-50/80 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-200 border-l-4 border-indigo-500 dark:border-indigo-400",
+                                        "transition-colors duration-150"
                                       )}
                                     >
                                       <div className="flex items-center space-x-3">
@@ -493,26 +518,22 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                               >
                                                 <span
                                                   className={cn(
-                                                    "flex items-center space-x-3 px-3 py-2 rounded-lg relative",
-                                                    "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                                    "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                                    isSubpageActive(
-                                                      each.href
-                                                    ) &&
-                                                      "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                                    "flex items-center space-x-3 px-3 py-2 rounded-lg relative group",
+                                                    "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                                                    isActive(each.href) && [
+                                                      "bg-indigo-50/80 dark:bg-indigo-900/10",
+                                                      "text-indigo-700 dark:text-indigo-200",
+                                                      "border-l-4 border-indigo-500 dark:border-indigo-400",
+                                                    ],
+                                                    "transition-colors duration-150"
                                                   )}
                                                 >
-                                                  {isSubpageActive(
-                                                    each.href
-                                                  ) && (
-                                                    <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full" />
-                                                  )}
                                                   <span
                                                     className={cn(
-                                                      "p-1 rounded-md",
-                                                      isSubpageActive(each.href)
+                                                      "p-1.5 rounded-lg shadow-sm relative",
+                                                      isActive(each.href)
                                                         ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                                                     )}
                                                   >
                                                     {Icons[each.icon]}
@@ -539,22 +560,22 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
                                   >
                                     <span
                                       className={cn(
-                                        "flex items-center space-x-3 px-3 py-2 rounded-lg relative",
-                                        "text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                                        "hover:bg-gray-100/50 dark:hover:bg-gray-800/50",
-                                        isSubpageActive(subItem.href) &&
-                                          "text-indigo-700 dark:text-indigo-200 bg-indigo-50/80 dark:bg-indigo-900/20"
+                                        "flex items-center space-x-3 px-3 py-2 rounded-lg relative group",
+                                        "text-gray-700 dark:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-gray-800/80",
+                                        isSubpageActive(subItem.href) && [
+                                          "bg-indigo-50/80 dark:bg-indigo-900/10",
+                                          "text-indigo-700 dark:text-indigo-200",
+                                          "border-l-4 border-indigo-500 dark:border-indigo-400",
+                                        ],
+                                        "transition-colors duration-150"
                                       )}
                                     >
-                                      {isSubpageActive(subItem.href) && (
-                                        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-indigo-500 rounded-r-full" />
-                                      )}
                                       <span
                                         className={cn(
-                                          "p-1 rounded-md",
+                                          "p-1.5 rounded-lg shadow-sm relative",
                                           isSubpageActive(subItem.href)
                                             ? "bg-indigo-100 dark:bg-indigo-800/80 text-indigo-600 dark:text-indigo-300"
-                                            : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                                         )}
                                       >
                                         {Icons[subItem.icon]}
@@ -690,7 +711,12 @@ const PremiumSidebar = ({ mobileMenuOpen, setMobileMenuOpen }) => {
           >
             <Link href={`/${workspaceId}`}>
               <div className="flex w-full justify-center items-center cursor-pointer group">
-                <Logo textShow={!isCollapsed} size="md" />
+                <Logo
+                  textShow={!isCollapsed}
+                  verison={true}
+                  size="md"
+                  textClassName="flex items-start justify-center flex-col gap-0"
+                />
               </div>
             </Link>
 

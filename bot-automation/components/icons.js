@@ -10,23 +10,58 @@ import {
   SettingsIcon,
   TemplatesIcon,
 } from "@/public/Images/svg_ecod";
-import { Megaphone, Target } from "lucide-react";
+import {
+  ArrowPathIcon,
+  ClipboardDocumentIcon,
+} from "@heroicons/react/24/outline";
+import {
+  Bell,
+  ChartBar,
+  Cpu,
+  GlobeIcon,
+  Key,
+  Megaphone,
+  PaintBucket,
+  Plug,
+  Puzzle,
+  Target,
+} from "lucide-react";
+import {
+  FiBook,
+  FiCreditCard,
+  FiLifeBuoy,
+  FiLock,
+  FiUser,
+  FiUsers,
+} from "react-icons/fi";
 
 export const Icons = {
-  bot: <BotIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  analytics: <AnalyticsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  chatbot: <ChatBotAI primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  dashboard: <DashboardIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  conversation: (
-    <ConversationsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
-  ),
-  contacts: <ContactsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  megaphone: <Megaphone size={20} />,
-  ads_creative: (
-    <CreativeIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />
-  ),
-  templates: <TemplatesIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  settings: <SettingsIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  help: <HelpIcon primaryColor="#A5B4FC" secondaryColor="#6366F1" />,
-  target: <Target size={20} />,
+  bot: <BotIcon className="w-4 h-4 text-current" />,
+  analytics: <AnalyticsIcon className="w-4 h-4 text-current" />,
+  chatbot: <ChatBotAI className="w-4 h-4 text-current" />,
+  dashboard: <DashboardIcon className="w-4 h-4 text-current" />,
+  conversation: <ConversationsIcon className="w-4 h-4 text-current" />,
+  contacts: <ContactsIcon className="w-4 h-4 text-current" />,
+  megaphone: <Megaphone className="w-4 h-4 text-current" />,
+  ads_creative: <CreativeIcon className="w-4 h-4 text-current" />,
+  templates: <TemplatesIcon className="w-4 h-4 text-current" />,
+  settings: <SettingsIcon className="w-4 h-4 text-current" />,
+  help: <HelpIcon className="w-4 h-4 text-current" />,
+  target: <Target className="w-4 h-4 text-current" />,
+  billing: <FiCreditCard className="w-4 h-4 text-current" />,
+  user: <FiUser className="w-4 h-4 text-current" />,
+  lock: <FiLock className="w-4 h-4 text-current" />,
+  bell: <Bell className="w-4 h-4 text-current" />,
+  users: <FiUsers className="w-4 h-4 text-current" />,
+  key: <Key className="w-4 h-4 text-current" />,
+  chart: <ChartBar className="w-4 h-4 text-current" />,
+  puzzle: <Puzzle className="w-4 h-4 text-current" />,
+  arrow_path: <ArrowPathIcon className="w-4 h-4 text-current" />,
+  globe: <GlobeIcon className="w-4 h-4 text-current" />,
+  clip_doc: <ClipboardDocumentIcon className="w-4 h-4 text-current" />,
+  cpu: <Cpu className="w-4 h-4 text-current" />,
+  paint: <PaintBucket className="w-4 h-4 text-current" />,
+  plug: <Plug className="w-4 h-4 text-current" />,
+  lifebuoy: <FiLifeBuoy className="w-4 h-4 text-current" />,
+  book: <FiBook className="w-4 h-4 text-current" />,
 };

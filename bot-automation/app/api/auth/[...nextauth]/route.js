@@ -3,13 +3,20 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { User } from "@/models/user/user";
 import dbConnect from "@/config/dbconnect";
-import { NewSignupGoogleMail, sendLoginAlertEmail } from "@/lib/helper";
+import {
+  AccountVerificationCompletedMail,
+  NewSignupGoogleMail,
+  sendLoginAlertEmail,
+} from "@/lib/helper";
 import validator from "validator";
 import { Workspace } from "@/models/user/workspace";
 import mongoose from "mongoose";
 import { generateRandomSlug } from "@/lib/slugGenerator";
+import { decryptData } from "@/lib/utils/encryption";
+import UserTemp from "@/models/user/user-temp";
 const isProd = process.env.NODE_ENV === "production";
 const isAdmin = process.env.SUPER_ADMIN_EMAIL;
+const CODE_EXPIRY_TIME = 60 * 60 * 1000; // 60 minutes
 const getCookiesSettings = () => {
   const ecodDomain = process.env.NEXTAUTH_URL?.includes(
     process.env.AUTH_DOMAIN
@@ -51,13 +58,84 @@ const authorizeCredentials = async (credentials) => {
   await dbConnect();
 
   try {
-    const { email, phone, password } = credentials;
-    if ((!email && !phone) || !password) return null;
+    const { email, phone, password, iv, verifyToken } = credentials;
+    if (iv && verifyToken) {
+      console.log(iv, verifyToken);
+      const code = await decryptData(decodeURIComponent(verifyToken));
+      const email = await decryptData(decodeURIComponent(iv));
+      console.log(email, code);
+      const temp = await UserTemp.findOne({ email });
+      console.log(temp);
+      if (!temp) throw new Error("No verification request found");
+      const codeAge = Date.now() - new Date(temp.createdAt).getTime();
+      if (codeAge > CODE_EXPIRY_TIME) {
+        await UserTemp.deleteOne({ email });
+        throw new Error("Verification code expired");
+      }
+      if (temp.attemptsRemaining <= 0) {
+        await UserTemp.deleteOne({ email });
+        throw new Error("Too many failed attempts");
+      }
+      if (temp.verificationCode !== code) {
+        const updatedAttempts = temp.attemptsRemaining - 1;
+        await UserTemp.updateOne(
+          { email },
+          {
+            $set: { attemptsRemaining: updatedAttempts },
+          }
+        );
+        throw new Error("Invalid varification please try again");
+      }
+      const user = await User.create({
+        email: temp.email,
+        password: temp.password,
+        name: temp.name,
+        phone: temp.phone,
+        isVerified: true,
+        role: temp.email === isAdmin ? "super_admin" : "user",
+        termsAccepted: temp.termsAccepted || true,
+        provider: "credentials",
+      });
+      let workspace;
+      if (isAdmin !== user.email) {
+        workspace = await Workspace.createWithOwner(user._id, {
+          name: `${user.name.split(" ")[0]}'s Workspace`,
+          slug: generateRandomSlug(),
+        });
+        user.workspaces.push({
+          workspace: workspace._id,
+          role: "owner",
+          status: "active",
+          joinedAt: new Date(),
+        });
+        if (!user.currentWorkspace) {
+          user.currentWorkspace = workspace._id;
+        }
+        await user.save();
+      }
+      await UserTemp.deleteOne({ email });
 
+      await AccountVerificationCompletedMail(user.name, user.email);
+      // ✅ ✅ ✅ RETURN user object so session is created
+      return {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        phone: user.phone || null,
+        image: user.image || null,
+        role: user.email === isAdmin ? "super_admin" : user.role || "member",
+        requiresProfileCompletion: user.requiresProfileCompletion ?? true,
+        provider: "credentials",
+        ...(isAdmin !== user.email && {
+          workspaceSlug: workspace?.slug,
+          redirectTo: `/${workspace?.slug}/dashboard`,
+        }),
+      };
+    }
+    if ((!email && !phone) || !password) return null;
     if (email && !validator.isEmail(email)) {
       throw new Error("Invalid email format");
     }
-
     const user = await User.findOne({
       $or: [{ email: email?.trim().toLowerCase() }, { phone: phone?.trim() }],
     })
@@ -258,6 +336,9 @@ export const authOptions = {
 
         if (user.email && user.email !== isAdmin) {
           await sendLoginAlertEmail(user.name, user.email);
+          return {
+            url: user.redirectTo,
+          };
         }
 
         return true;

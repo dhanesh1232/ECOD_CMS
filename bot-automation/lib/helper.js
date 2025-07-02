@@ -1,5 +1,5 @@
-import { encryptData } from "@/lib/utils/encryption";
 import nodemailer from "nodemailer";
+import { encryptData } from "./utils/encryption";
 
 // Configure transporter with additional settings to improve deliverability
 const transporter = nodemailer.createTransport({
@@ -80,8 +80,8 @@ export async function PasswordResetLinkGenerator(
   name,
   email
 ) {
-  const enMail = encryptData(email);
-  const enToken = encryptData(verificationCode);
+  const enMail = email;
+  const enToken = verificationCode;
   const resetLink = `${baseUrl}/auth/reset-password?email=${encodeURIComponent(
     enMail
   )}&token=${enToken}`;

@@ -122,7 +122,7 @@ export default React.memo(function SelectWorkspace({
             </div>
           ) : (
             <SelectValue
-              className="mr-1 text-sm"
+              className="mr-1 text-sm truncate"
               placeholder={"Select Workspace"}
             >
               {collapsed ? selectedValue[0] : selectedValue}
