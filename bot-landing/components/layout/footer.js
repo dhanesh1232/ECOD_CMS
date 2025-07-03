@@ -74,29 +74,30 @@ export const Footer = () => {
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-gray-700 my-10"></div>
+        <div className="border-t border-gray-200 dark:border-gray-700 my-10" />
 
         {/* Bottom section */}
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            © {new Date().getFullYear()} Your Company. All rights reserved.
+            © {new Date().getFullYear()} <strong>ECODrIx</strong>. All rights
+            reserved.
           </p>
 
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link
-              href="#"
+              href="/privacy-policy"
               className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="#"
+              href="/terms-and-conditions"
               className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors"
             >
               Terms of Service
             </Link>
             <Link
-              href="#"
+              href="/cookies-policy"
               className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-sm transition-colors"
             >
               Cookies

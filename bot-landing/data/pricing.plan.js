@@ -1,4 +1,4 @@
-// utils/config.plans.js
+// data/pricing.plan.js
 const BASE_CHANNELS = ["web", "instagram", "facebook", "whatsapp"];
 const getChannels = (channels) => [...BASE_CHANNELS, ...channels];
 

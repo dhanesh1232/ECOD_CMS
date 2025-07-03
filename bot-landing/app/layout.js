@@ -3,6 +3,7 @@ import "./globals.css";
 import { DarkModeProvider } from "@/context/context";
 import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { CookieConsentBanner } from "@/components/layout/cookies-banner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -111,6 +112,7 @@ export default function RootLayout({ children }) {
               {children}
               <Footer />
             </main>
+            <CookieConsentBanner />
           </div>
         </DarkModeProvider>
       </body>

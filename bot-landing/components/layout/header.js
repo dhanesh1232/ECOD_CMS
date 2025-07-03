@@ -350,7 +350,7 @@ export default function Header() {
                                   className="pl-4 space-y-1 overflow-hidden"
                                 >
                                   {item.submenu.map((subItem) => (
-                                    <>
+                                    <React.Fragment key={subItem.name}>
                                       {subItem.upcoming ? (
                                         <div
                                           key={subItem.name}
@@ -394,7 +394,7 @@ export default function Header() {
                                           </div>
                                         </Link>
                                       )}
-                                    </>
+                                    </React.Fragment>
                                   ))}
                                 </motion.div>
                               )}
