@@ -88,9 +88,6 @@ export const Footer = () => {
           <div className="space-y-4">
             <Link href="/" className="inline-flex items-center">
               <Logo showSpan={false} />
-              <span className="ml-2 text-xl font-semibold dark:text-white">
-                ECODrIx
-              </span>
             </Link>
             <p className="max-w-xs text-gray-500 dark:text-gray-400">
               Building the future of digital experiences with innovative
