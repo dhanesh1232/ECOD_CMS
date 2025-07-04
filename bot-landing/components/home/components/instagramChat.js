@@ -396,108 +396,49 @@ const InstagramChat = () => {
       <div
         className={`mt-3 relative w-full flex items-center ${inputContainerStyle} px-4 py-2 ${inputPadding}`}
       >
-        {isIOS ? (
-          <>
-            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mr-2">
+        <>
+          <div className="hidden md:flex space-x-2 mr-2">
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
               <Camera className="w-5 h-5" />
             </button>
-            <input
-              type="text"
-              placeholder="Message..."
-              className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSending || isAutoConversation}
-            />
-            <div className="flex space-x-2 ml-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Mic className="w-5 h-5" />
-              </button>
-              <button
-                className="p-1 text-blue-500 hover:text-blue-600 transition-colors"
-                onClick={handleUserSend}
-                disabled={isSending || isAutoConversation}
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </>
-        ) : isAndroid ? (
-          <>
-            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mr-2">
-              <GalleryThumbnails className="w-5 h-5" />
+          </div>
+          <input
+            type="text"
+            placeholder="Message..."
+            className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isSending || isAutoConversation}
+          />
+          <div className="hidden md:flex space-x-3 ml-2">
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+              <BsFiletypeGif className="w-5 h-5" />
             </button>
-            <input
-              type="text"
-              placeholder="Message..."
-              className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSending || isAutoConversation}
-            />
-            <div className="flex space-x-3 ml-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Camera className="w-5 h-5" />
-              </button>
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Smile className="w-5 h-5" />
-              </button>
-              <button
-                className="p-1 text-blue-500 hover:text-blue-600 transition-colors"
-                onClick={handleUserSend}
-                disabled={isSending || isAutoConversation}
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="hidden md:flex space-x-2 mr-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Paperclip className="w-5 h-5" />
-              </button>
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Camera className="w-5 h-5" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Message..."
-              className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSending || isAutoConversation}
-            />
-            <div className="hidden md:flex space-x-3 ml-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <BsFiletypeGif className="w-5 h-5" />
-              </button>
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Sticker className="w-5 h-5" />
-              </button>
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Smile className="w-5 h-5" />
-              </button>
-            </div>
-            <button
-              className="md:hidden p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors ml-2"
-              onClick={toggleMobileMenu}
-            >
-              <MoreHorizontal className="w-5 h-5" />
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+              <Sticker className="w-5 h-5" />
             </button>
-            <button
-              className="p-1 text-blue-500 hover:text-blue-600 transition-colors"
-              onClick={handleUserSend}
-              disabled={isSending || isAutoConversation}
-            >
-              <Send className="w-5 h-5" />
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+              <Smile className="w-5 h-5" />
             </button>
-          </>
-        )}
+          </div>
+          <button
+            className="md:hidden p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors ml-2"
+            onClick={toggleMobileMenu}
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+          <button
+            className="p-1 text-blue-500 hover:text-blue-600 transition-colors"
+            onClick={handleUserSend}
+            disabled={isSending || isAutoConversation}
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </>
         {/* Mobile menu overlay for input actions */}
         {showMobileMenu && (
           <div className="absolute bottom-14 rounded-md max-w-[250px] w-full right-0 bg-gray-800 px-3 py-1.5 shadow-lg md:hidden z-10">

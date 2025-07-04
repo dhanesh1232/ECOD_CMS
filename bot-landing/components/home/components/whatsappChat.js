@@ -419,93 +419,34 @@ const WhatsAppChat = () => {
 
       {/* Input area */}
       <div
-        className={`mt-3 w-full flex items-center ${inputContainerStyle} px-4 py-2`}
+        className={`mt-3 w-full flex items-center ${inputContainerStyle} px-2 md:px-4 py-2`}
       >
-        {isIOS ? (
-          <>
-            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mr-2">
-              <MdAttachFile className="w-5 h-5" />
+        <>
+          <div className="flex space-x-0 md:space-x-2 mr-0 md:mr-2">
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+              <MdEmojiEmotions className="md:w-5 md:h-5 w-4 h-4" />
             </button>
-            <input
-              type="text"
-              placeholder="iMessage"
-              className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSending || isAutoConversation}
-            />
-            <div className="flex space-x-2 ml-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Mic className="w-5 h-5" />
-              </button>
-              <button
-                className="p-1 text-green-500 hover:text-green-600 transition-colors"
-                onClick={handleUserSend}
-                disabled={isSending || isAutoConversation}
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </>
-        ) : isAndroid ? (
-          <>
-            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mr-2">
-              <MdEmojiEmotions className="w-5 h-5" />
+            <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+              <Paperclip className="md:w-5 md:h-5 w-4 h-4" />
             </button>
-            <input
-              type="text"
-              placeholder="Type a message"
-              className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSending || isAutoConversation}
-            />
-            <div className="flex space-x-3 ml-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Paperclip className="w-5 h-5" />
-              </button>
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Camera className="w-5 h-5" />
-              </button>
-              <button
-                className="p-1 text-green-500 hover:text-green-600 transition-colors"
-                onClick={handleUserSend}
-                disabled={isSending || isAutoConversation}
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex space-x-2 mr-2">
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <MdEmojiEmotions className="w-5 h-5" />
-              </button>
-              <button className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                <Paperclip className="w-5 h-5" />
-              </button>
-            </div>
-            <input
-              type="text"
-              placeholder="Type a message"
-              className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isSending || isAutoConversation}
-            />
-            <button
-              className="p-1 text-green-500 hover:text-green-600 transition-colors ml-2"
-              onClick={handleUserSend}
-              disabled={isSending || isAutoConversation}
-            >
-              <Send className="w-5 h-5" />
-            </button>
-          </>
-        )}
+          </div>
+          <input
+            type="text"
+            placeholder="Type a message"
+            className="flex-1 text-sm bg-transparent focus:outline-none placeholder-gray-500 dark:placeholder-gray-400 dark:text-gray-200"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isSending || isAutoConversation}
+          />
+          <button
+            className="p-1 text-green-500 hover:text-green-600 transition-colors ml-2"
+            onClick={handleUserSend}
+            disabled={isSending || isAutoConversation}
+          >
+            <Send className="w-4 md:w-5 h-4 md:h-5" />
+          </button>
+        </>
       </div>
 
       {/* Conversation control */}

@@ -410,7 +410,50 @@ const DiscordChat = () => {
       <div
         className={`mt-3 w-full relative flex items-center ${inputContainerStyle} px-4 py-2 ${inputStyle}`}
       >
-        {isIOS ? (
+        <>
+          <button className="hidden md:block p-1 text-gray-400 hover:text-gray-200 transition-colors mr-2">
+            <Plus className="w-5 h-5" />
+          </button>
+          <input
+            type="text"
+            placeholder="Message #customer-support"
+            className="flex-1 text-sm bg-transparent text-gray-200 focus:outline-none placeholder-gray-500"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isSending || isAutoConversation}
+          />
+          <div className="hidden md:flex items-center space-x-3 ml-2">
+            <button className="p-1 text-gray-400 hover:text-gray-200 transition-colors">
+              <Gift className="w-5 h-5" />
+            </button>
+            <button className="p-1 text-gray-400 hover:text-gray-200 transition-colors">
+              <BsFiletypeGif className="w-5 h-5" />
+            </button>
+            <button className="p-1 text-gray-400 hover:text-gray-200 transition-colors">
+              <Sticker className="w-5 h-5" />
+            </button>
+            <button className="p-1 text-gray-400 hover:text-gray-200 transition-colors">
+              <Smile className="w-5 h-5" />
+            </button>
+          </div>
+          <button
+            className="md:hidden p-1 text-gray-400 hover:text-gray-200 transition-colors ml-2"
+            onClick={toggleMobileMenu}
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
+          <motion.button
+            className="p-1 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 transition-colors"
+            whileTap={{ scale: 0.95 }}
+            onClick={handleUserSend}
+            disabled={isSending || isAutoConversation}
+          >
+            <Send className="w-4 h-4" />
+          </motion.button>
+        </>
+        {/* In future want to enable this feature for detect device and display based on device view */}
+        {/*isIOS ? (
           <>
             <button className="p-1 text-gray-400 hover:text-gray-200 transition-colors">
               <Paperclip className="w-5 h-5" />
@@ -497,7 +540,7 @@ const DiscordChat = () => {
               <Send className="w-4 h-4" />
             </motion.button>
           </>
-        )}
+        )*/}
       </div>
 
       {/* Conversation control */}

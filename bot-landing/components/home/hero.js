@@ -105,7 +105,7 @@ export const HeroSection = () => {
         setIsAnimating(false);
         setIsLoading(false);
       }, 500);
-    }, 10000); // Changed to 10 seconds for better UX
+    }, 100000); // Changed to 10 seconds for better UX
 
     return () => {
       clearInterval(interval);
@@ -162,7 +162,7 @@ export const HeroSection = () => {
   }
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 py-12 md:py-20">
+    <section className="container mx-auto px-2 sm:px-4 py-12 md:py-20">
       <div className="flex flex-col lg:flex-row items-center gap-8 xl:gap-12">
         {/* Content Section */}
         <div className="w-full lg:w-[45%] xl:w-[48%] flex flex-col">
