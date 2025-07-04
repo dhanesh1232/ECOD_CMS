@@ -1,4 +1,11 @@
-import { ChevronUp, Code, Globe, MessageCircle, Phone } from "lucide-react";
+import {
+  ChevronUp,
+  Code,
+  ExternalLink,
+  Globe,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
 import { BsLinkedin, BsTelegram, BsWhatsapp } from "react-icons/bs";
 import {
   FaDiscord,
@@ -23,4 +30,5 @@ export const Icons = {
   voice: Phone,
   customSDK: Code,
   cheveronUp: ChevronUp,
+  external: ExternalLink,
 };

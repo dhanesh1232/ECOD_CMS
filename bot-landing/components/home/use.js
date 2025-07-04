@@ -3,17 +3,15 @@ import {
   ChevronRight,
   Zap,
   ShoppingCart,
-  Users,
   Rocket,
   Briefcase,
   Banknote,
-  Microscope,
   GraduationCap,
   HeartPulse,
   Building2,
   Smartphone,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { PLANS } from "@/data/pricing.plan";
 export const UseCaseSection = () => {
   const useCases = [

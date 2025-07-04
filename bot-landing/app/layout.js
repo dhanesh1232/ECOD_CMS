@@ -4,6 +4,8 @@ import { DarkModeProvider } from "@/context/context";
 import Header from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { CookieConsentBanner } from "@/components/layout/cookies-banner";
+import { NewsletterPop } from "@/components/layout/newsletter";
+import { ToastProvider } from "@/components/ui/toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -105,15 +107,18 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-transparent text-gray-900 dark:text-gray-100`}
       >
         <DarkModeProvider>
-          <div className="fixed inset-0 bg-white dark:bg-gray-800 -z-10" />
-          <div className="h-full flex flex-col">
-            <Header />
-            <main className="flex-1 h-full overflow-x-hidden overflow-y-auto scrollbar-transparent">
-              {children}
-              <Footer />
-            </main>
-            <CookieConsentBanner />
-          </div>
+          <ToastProvider>
+            <div className="fixed inset-0 bg-white dark:bg-gray-800 -z-10" />
+            <div className="h-full flex flex-col">
+              <Header />
+              <main className="flex-1 h-full overflow-x-hidden overflow-y-auto scrollbar-transparent">
+                {children}
+                <Footer />
+              </main>
+              <CookieConsentBanner />
+              <NewsletterPop />
+            </div>
+          </ToastProvider>
         </DarkModeProvider>
       </body>
     </html>
