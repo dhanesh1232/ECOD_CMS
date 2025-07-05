@@ -1,5 +1,7 @@
 import dbConnect from "@/config/dbConnect";
 import { ErrorHandles, SuccessHandles } from "@/lib/server/respons_handles";
+import { mailSender } from "@/lib/server/sender";
+import { encryptData } from "@/lib/utils/encrypt";
 import { Newsletter } from "@/model/newsletter";
 
 export async function POST(req) {
@@ -17,15 +19,15 @@ export async function POST(req) {
       utmCampaign,
       metadata = {},
     } = body;
-    if (source !== "model") {
+    if (source === "modal") {
       if (!email || !name || !agreed) {
         return ErrorHandles.BadRequest(
           "Name, email and agreement are required."
         );
-      } else {
-        if (!email) {
-          return ErrorHandles.BadRequest("Email is required.");
-        }
+      }
+    } else {
+      if (!email) {
+        return ErrorHandles.BadRequest("Email is required.");
       }
     }
     const ip =
@@ -43,6 +45,7 @@ export async function POST(req) {
         location = null;
       }
     }
+    const enMail = encryptData(email);
     // Check if already subscribed
     const existing = await Newsletter.findOne({ email });
     if (existing) {
@@ -58,6 +61,14 @@ export async function POST(req) {
           $inc: { openCount: 1 },
         }
       );
+      await mailSender({
+        template: "newsletter.subscribe_confirmation",
+        to: email,
+        variables: {
+          userName: name,
+          email: enMail,
+        },
+      });
       return SuccessHandles.Ok("Already subscribed, updated info.");
     }
     const data = {
@@ -77,8 +88,13 @@ export async function POST(req) {
       openCount: 1,
       metadata,
     };
-    console.log(data);
+    console.log(enMail);
     await Newsletter.create(data);
+    await mailSender({
+      template: "newsletter.subscribe_confirmation",
+      to: email,
+      email: enMail,
+    });
     return SuccessHandles.Created("Successfully subscribed!");
   } catch (err) {
     return ErrorHandles.InternalServer(err.message || "Something went wrong");

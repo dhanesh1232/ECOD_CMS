@@ -130,6 +130,18 @@ export const HeroSection = () => {
       scale: prefersReducedMotion ? 1 : 0.95,
     }),
   };
+  const handleButtonfunction = async () => {
+    try {
+      const res = await fetch("/api/contact", {
+        method: "GET",
+        credentials: "include",
+      });
+      const value = await res.json();
+      console.log(value);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
 
   if (!isMounted) {
     return (
@@ -250,6 +262,7 @@ export const HeroSection = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              onClick={handleButtonfunction}
               className="px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg transition-all flex items-center justify-center shadow-lg hover:shadow-indigo-500/20 text-sm sm:text-base font-medium"
               aria-label="Start free trial"
             >

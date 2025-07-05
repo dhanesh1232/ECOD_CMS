@@ -15,7 +15,7 @@ const newsLetterSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/,
       "Please fill a valid email address",
     ],
   },
@@ -41,7 +41,7 @@ const newsLetterSchema = new mongoose.Schema({
   },
   isVerified: {
     type: Boolean,
-    default: false, // set to true only after double opt-in (if you add that flow)
+    default: false,
   },
   source: {
     type: String,
@@ -64,10 +64,23 @@ const newsLetterSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  metadata: mongoose.Schema.Types.Mixed, // screen size, browser, etc.
+  metadata: mongoose.Schema.Types.Mixed,
 });
 
-// Index for fast lookup
+// Virtual method to check if user is active
+newsLetterSchema.methods.isActive = function () {
+  return this.status === "subscribed";
+};
+
+// Auto-manage unsubscribedAt field
+newsLetterSchema.pre("save", function (next) {
+  if (this.isModified("status")) {
+    this.unsubscribedAt = this.status === "unsubscribed" ? new Date() : null;
+  }
+  next();
+});
+
+// Index
 newsLetterSchema.index({ email: 1, subscribedAt: -1 });
 
 export const Newsletter =

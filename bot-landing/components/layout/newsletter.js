@@ -152,7 +152,7 @@ export const NewsletterPop = () => {
           setIsOpen(open);
         }}
       >
-        <DialogContent className="max-w-md p-6 rounded-2xl">
+        <DialogContent className="max-w-xs md:max-w-md p-6 rounded-2xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
