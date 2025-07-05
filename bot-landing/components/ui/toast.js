@@ -79,10 +79,10 @@ export function ToastProvider({ children }) {
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 overflow-hidden">
                 <div
-                  className={`h-full ${iconColor.replace(
-                    "text",
-                    "bg"
-                  )} animate-progress`}
+                  className={`h-full ${iconColor.replace("text", "bg")}`}
+                  style={{
+                    animation: `progress ${3000}ms linear forwards`,
+                  }}
                 />
               </div>
             </div>

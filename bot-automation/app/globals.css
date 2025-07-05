@@ -249,12 +249,8 @@ input:checked+.slider:before {
   }
 
   to {
-    width: 0;
+    width: 0%;
   }
-}
-
-.animate-progress {
-  animation: progress 5s linear forwards;
 }
 
 /* Scrollbar styling */

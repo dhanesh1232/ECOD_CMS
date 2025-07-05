@@ -5,81 +5,142 @@ import { Icons } from "../icons";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useMediaQuery } from "@/hooks/mediaQuery";
+import { useEffect, useRef, useState } from "react";
+import { collectUserMetadata, getUTMParams } from "@/lib/client/metadata";
+import { useToast } from "../ui/toast";
+import { LandingPageAPIHandles } from "@/lib/client/api";
+import { Loader } from "lucide-react";
+
+const sections = [
+  {
+    title: "Product",
+    links: [
+      { name: "Features", href: "/features" },
+      { name: "Integrations", href: "/integrations" },
+      { name: "Pricing", href: "/pricing" },
+      { name: "FAQ", href: "/faq" },
+      { name: "Roadmap", href: "/roadmap" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { name: "About", href: "/about" },
+      //{ name: "Careers", href: "/careers", highlight: true },
+      { name: "Blog", href: "/blog" },
+      { name: "Press", href: "/press" },
+      { name: "Contact", href: "/contact" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { name: "Documentation", href: "/docs" },
+      { name: "API", href: "/api" },
+      { name: "Guides", href: "/guides" },
+      { name: "Community", href: "/community" },
+      { name: "Status", href: "https://status.ecodrix.com", external: true },
+    ],
+  },
+];
+
+const legalLinks = [
+  { name: "Privacy", href: "/legal/privacy-policy" },
+  { name: "Terms", href: "/legal/terms-and-conditions" },
+  { name: "Cookies", href: "/legal/cookies-policy" },
+  { name: "DPA", href: "/legal/dpa" },
+];
+
+const socialLinks = [
+  {
+    name: "Twitter",
+    icon: "twitter",
+    href: "#",
+    lightColor: "#1DA1F2",
+    darkColor: "#1DA1F2",
+  },
+  {
+    name: "GitHub",
+    icon: "github",
+    href: "#",
+    lightColor: "#181717",
+    darkColor: "#f0f0f0",
+  },
+  {
+    name: "LinkedIn",
+    icon: "linkedin",
+    href: "#",
+    lightColor: "#0077B5",
+    darkColor: "#0A66C2",
+  },
+  {
+    name: "Discord",
+    icon: "discord",
+    href: "#",
+    lightColor: "#5865F2",
+    darkColor: "#5865F2",
+  },
+];
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const Footer = () => {
   const isMobile = useMediaQuery("(max-width:640px)");
   const currentYear = new Date().getFullYear();
-
-  const sections = [
-    {
-      title: "Product",
-      links: [
-        { name: "Features", href: "/features" },
-        { name: "Integrations", href: "/integrations" },
-        { name: "Pricing", href: "/pricing" },
-        { name: "FAQ", href: "/faq" },
-        { name: "Roadmap", href: "/roadmap" },
-      ],
-    },
-    {
-      title: "Company",
-      links: [
-        { name: "About", href: "/about" },
-        //{ name: "Careers", href: "/careers", highlight: true },
-        { name: "Blog", href: "/blog" },
-        { name: "Press", href: "/press" },
-        { name: "Contact", href: "/contact" },
-      ],
-    },
-    {
-      title: "Resources",
-      links: [
-        { name: "Documentation", href: "/docs" },
-        { name: "API", href: "/api" },
-        { name: "Guides", href: "/guides" },
-        { name: "Community", href: "/community" },
-        { name: "Status", href: "https://status.ecodrix.com", external: true },
-      ],
-    },
-  ];
-
-  const legalLinks = [
-    { name: "Privacy", href: "/legal/privacy-policy" },
-    { name: "Terms", href: "/legal/terms-and-conditions" },
-    { name: "Cookies", href: "/legal/cookies-policy" },
-    { name: "DPA", href: "/legal/dpa" },
-  ];
-
-  const socialLinks = [
-    {
-      name: "Twitter",
-      icon: "twitter",
-      href: "#",
-      lightColor: "#1DA1F2",
-      darkColor: "#1DA1F2",
-    },
-    {
-      name: "GitHub",
-      icon: "github",
-      href: "#",
-      lightColor: "#181717",
-      darkColor: "#f0f0f0",
-    },
-    {
-      name: "LinkedIn",
-      icon: "linkedin",
-      href: "#",
-      lightColor: "#0077B5",
-      darkColor: "#0A66C2",
-    },
-    {
-      name: "Discord",
-      icon: "discord",
-      href: "#",
-      lightColor: "#5865F2",
-      darkColor: "#5865F2",
-    },
-  ];
-
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [email, setEmail] = useState("");
+  const showToast = useToast();
+  const toastRef = useRef(false);
+  useEffect(() => {
+    setTimeout(() => {
+      toastRef.current = false;
+    }, 10000);
+  });
+  useEffect(() => {
+    // Check if already subscribed
+    const subscribed = localStorage.getItem("newsletterSubscribed");
+    console.log(subscribed);
+    if (subscribed) {
+      setIsSubscribed(true);
+      return;
+    }
+  }, []);
+  const isValid = (mail) => emailRegex.test(mail);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const metadata = collectUserMetadata();
+    const utm = getUTMParams();
+    try {
+      setSending(true);
+      const news = await LandingPageAPIHandles.newsLetterUpdate({
+        email,
+        source: "footer",
+        metadata,
+        ...utm,
+        tags: ["early-access"],
+      });
+      if (news.status && !news.ok) {
+        throw new Error("Subscription failed");
+      }
+      localStorage.setItem("newsletterSubscribed", "true");
+      setIsSubscribed(true);
+      showToast({
+        title: "Success!",
+        description: "You've been subscribed to our newsletter.",
+        variant: "success",
+      });
+    } catch (er) {
+      setSending(false);
+      if (!toastRef.current) {
+        showToast({
+          title: "Failed",
+          description: "Failed to subscribe",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setSending(false);
+    }
+  };
   return (
     <footer className="bg-white dark:bg-gray-950 border-t border-gray-100/80 dark:border-gray-800/30">
       <div className="container px-4 pt-12 pb-6 mx-auto">
@@ -95,27 +156,46 @@ export const Footer = () => {
             </p>
 
             {/* Newsletter Subscription */}
-            <div className="mt-4">
-              <h4 className="text-sm font-medium dark:text-gray-200 mb-2">
-                Subscribe to our newsletter
-              </h4>
-              <form className="flex items-center gap-2 w-full">
-                <Input
-                  size={isMobile ? "sm" : "md"}
-                  type="email"
-                  placeholder="Your email"
-                  required
-                />
-                <Button
-                  variant="primary"
-                  size={isMobile ? "sm" : "md"}
-                  type="submit"
-                  className="focus:outline-none focus:ring-2 focus:ring-primary-500"
+            {isSubscribed ? (
+              <div className="mt-4 text-green-600 text-sm font-medium">
+                🎉 You’re successfully subscribed to ECODrIx updates!
+              </div>
+            ) : (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium dark:text-gray-200 mb-2">
+                  Subscribe to our newsletter
+                </h4>
+                <form
+                  className="flex items-center gap-2 w-full"
+                  onSubmit={handleSubmit}
                 >
-                  Subscribe
-                </Button>
-              </form>
-            </div>
+                  <Input
+                    size={isMobile ? "sm" : "md"}
+                    type="email"
+                    placeholder="Your email"
+                    required
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                    }}
+                  />
+                  <Button
+                    variant="primary"
+                    size={isMobile ? "sm" : "md"}
+                    type="submit"
+                    disabled={!email || !isValid(email)}
+                    onClick={handleSubmit}
+                    className="focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {sending ? (
+                      <Loader className="animate-spin" size={16} />
+                    ) : (
+                      "Subscribe"
+                    )}
+                  </Button>
+                </form>
+              </div>
+            )}
           </div>
 
           {/* Links Sections */}

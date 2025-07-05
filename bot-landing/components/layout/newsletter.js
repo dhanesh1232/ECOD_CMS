@@ -22,6 +22,7 @@ import { LandingPageAPIHandles } from "@/lib/client/api";
 import { collectUserMetadata, getUTMParams } from "@/lib/client/metadata";
 import { getCookie, setCookie } from "@/lib/client/cookies";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const NewsletterPop = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -59,6 +60,14 @@ export const NewsletterPop = () => {
 
     return () => clearTimeout(timer);
   }, []);
+  const isValid = () => {
+    const { name, agreed, email } = formData;
+
+    if (!name || !agreed || !emailRegex.test(email)) {
+      return false;
+    }
+    return true;
+  };
 
   const handleClose = () => {
     setIsOpen(false);
@@ -130,7 +139,7 @@ export const NewsletterPop = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.5 }}
             transition={{ type: "spring", damping: 10, stiffness: 100 }}
-            className="fixed right-6 bottom-6 z-[999]"
+            className="fixed left-6 bottom-6 z-[999]"
           >
             <Button
               variant="premium"
@@ -254,7 +263,7 @@ export const NewsletterPop = () => {
                 type="submit"
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700"
                 size="lg"
-                disabled={isLoading || !formData.agreed}
+                disabled={isLoading || !isValid()}
               >
                 {isLoading ? (
                   "Subscribing..."
