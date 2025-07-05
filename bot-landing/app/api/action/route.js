@@ -2,7 +2,6 @@ import dbConnect from "@/config/dbConnect";
 import { Newsletter } from "@/model/newsletter";
 import { mailSender } from "@/lib/server/sender";
 import { ErrorHandles } from "@/lib/server/respons_handles";
-import { decryptData, encryptData } from "@/lib/utils/encrypt";
 
 // GET handler for /api/action?iv=email&status=inactive|active
 export async function GET(req) {
@@ -10,15 +9,15 @@ export async function GET(req) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const email = decryptData(searchParams.get("iv"))?.trim().toLowerCase();
-    const status = decryptData(searchParams.get("status"))?.toLowerCase(); // 'inactive' or 'active'
+    const iv = searchParams.get("iv")?.trim().toLowerCase();
+    const status = searchParams.get("status")?.toLowerCase(); // 'inactive' or 'active'
 
     // Validate query
-    if (!email || !["inactive", "active"].includes(status)) {
+    if (!iv || !["inactive", "active"].includes(status)) {
       return ErrorHandles.BadRequest("Missing or invalid parameters.");
     }
 
-    const user = await Newsletter.findOne({ email });
+    const user = await Newsletter.findById(iv);
     if (!user) return ErrorHandles.NotFound("Subscriber not found");
 
     const isActive = status === "active";
@@ -61,10 +60,10 @@ export async function GET(req) {
       template: isActive
         ? "newsletter.subscribe_confirmation"
         : "newsletter.unsubscribe_confirmation",
-      to: email,
+      to: user.email,
       variables: {
         userName: user.name || "there",
-        email: encryptData(email),
+        email: user._id,
       },
     });
 

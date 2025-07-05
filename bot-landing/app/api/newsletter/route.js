@@ -1,7 +1,6 @@
 import dbConnect from "@/config/dbConnect";
 import { ErrorHandles, SuccessHandles } from "@/lib/server/respons_handles";
 import { mailSender } from "@/lib/server/sender";
-import { encryptData } from "@/lib/utils/encrypt";
 import { Newsletter } from "@/model/newsletter";
 
 export async function POST(req) {
@@ -45,19 +44,22 @@ export async function POST(req) {
         location = null;
       }
     }
-    const enMail = encryptData(email);
     // Check if already subscribed
     const existing = await Newsletter.findOne({ email });
     if (existing) {
+      const updates = {
+        lastSeenAt: new Date(),
+        userAgent,
+        location,
+      };
+      if (existing.status === "unsubscribed") {
+        updates.status = "subscribed";
+      }
       // Already exists: update metadata
-      await Newsletter.updateOne(
+      const news = await Newsletter.updateOne(
         { email },
         {
-          $set: {
-            lastSeenAt: new Date(),
-            userAgent,
-            location,
-          },
+          $set: updates,
           $inc: { openCount: 1 },
         }
       );
@@ -65,8 +67,8 @@ export async function POST(req) {
         template: "newsletter.subscribe_confirmation",
         to: email,
         variables: {
-          userName: name,
-          email: enMail,
+          userName: name || "there",
+          id: news._id,
         },
       });
       return SuccessHandles.Ok("Already subscribed, updated info.");
@@ -88,12 +90,14 @@ export async function POST(req) {
       openCount: 1,
       metadata,
     };
-    console.log(enMail);
-    await Newsletter.create(data);
+    const news = await Newsletter.create(data);
     await mailSender({
       template: "newsletter.subscribe_confirmation",
       to: email,
-      email: enMail,
+      variables: {
+        userName: news.name,
+        id: news._id,
+      },
     });
     return SuccessHandles.Created("Successfully subscribed!");
   } catch (err) {

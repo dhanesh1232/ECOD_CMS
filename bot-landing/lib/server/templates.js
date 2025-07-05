@@ -1,203 +1,162 @@
+const isDev = process.env.NODE_ENV !== "production";
+const domain = isDev ? "http://localhost:3000" : "https://ecodrix.com";
+
 export const useTemplates = {
   newsletter: {
     update_newsletter: {
       subject: "🚀 ECODrIx Monthly Update: New Features & Improvements",
-      html: `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
-  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #2f80ed;">ECODrIx Monthly Update</h1>
-      </div>
-      
-      <h2 style="color: #2f80ed;">What's New This Month</h2>
-      
-      <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid #2f80ed;">
-        <h3 style="margin-top: 0;">Enhanced Analytics Dashboard</h3>
-        <p>Track your chatbot performance with new metrics and visualizations.</p>
-      </div>
-      
-      <div style="background-color: white; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 3px solid #2f80ed;">
-        <h3 style="margin-top: 0;">Multi-language Support</h3>
-        <p>Your chatbots can now understand and respond in 5 additional languages.</p>
-      </div>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="https://app.ecodrix.com/dashboard" style="background-color: #2f80ed; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Try These Features</a>
-      </div>
-      
-      <div style="border-top: 1px solid #ddd; padding-top: 20px; font-size: 14px; color: #777;">
-        <p>You're receiving this email because you subscribed to ECODrIx updates.</p>
-        <p><a href="https://ecodrix.com/unsubscribe" style="color: #2f80ed;">Unsubscribe</a> | <a href="https://ecodrix.com/preferences" style="color: #2f80ed;">Preferences</a></p>
-        <p>© 2023 ECODrIx. All rights reserved.</p>
-      </div>
-    </div>
-  </body>
-  </html>
-  `,
+      html: ({ id }) => `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto;">
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 10px;">
+            <h1 style="color: #2f80ed; text-align: center;">ECODrIx Monthly Update</h1>
+
+            <h2 style="color: #2f80ed;">What's New</h2>
+
+            <div style="border-left: 4px solid #2f80ed; background: #fff; padding: 12px 15px; border-radius: 5px; margin-bottom: 12px;">
+              <strong>Enhanced Analytics Dashboard</strong>
+              <p>Track chatbot performance with new metrics and visualizations.</p>
+            </div>
+
+            <div style="border-left: 4px solid #2f80ed; background: #fff; padding: 12px 15px; border-radius: 5px; margin-bottom: 12px;">
+              <strong>Multi-language Support</strong>
+              <p>Respond in 5+ new languages with ease.</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://app.ecodrix.com/dashboard" target="_blank" style="background: #2f80ed; color: #fff; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Explore Now</a>
+            </div>
+
+            <footer style="border-top: 1px solid #ddd; margin-top: 20px; font-size: 12px; text-align: center; color: #888;">
+              <p>You’re receiving this because you subscribed to ECODrIx updates.</p>
+              <p>
+                <a href="${domain}/api/action?iv=${id}&status=inactive" target="_blank" style="color: #2f80ed;">Unsubscribe</a> | 
+                <a href="${domain}/preferences" target="_blank" style="color: #2f80ed;">Preferences</a>
+              </p>
+              <p>© ${new Date().getFullYear()} ECODrIx. All rights reserved.</p>
+            </footer>
+          </div>
+        </body>
+        </html>
+      `,
     },
+
     early_access: {
       subject: "✨ Welcome to ECODrIx Early Access!",
-      html: `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
-  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #2f80ed;">Welcome to ECODrIx Early Access!</h1>
-        <p>You're among the first to experience our next-generation chatbot platform.</p>
-      </div>
-      
-      <div style="background-color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-        <h2 style="color: #2f80ed; margin-top: 0;">Getting Started</h2>
-        <ol style="padding-left: 20px;">
-          <li style="margin-bottom: 10px;">Complete your profile setup</li>
-          <li style="margin-bottom: 10px;">Connect your first channel</li>
-          <li style="margin-bottom: 10px;">Build your initial conversation flow</li>
-        </ol>
-      </div>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="https://app.ecodrix.com/onboarding" style="background-color: #2f80ed; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Start Building</a>
-      </div>
-      
-      <div style="font-size: 14px; color: #777; margin-top: 30px;">
-        <p>Need help? Reply to this email or join our <a href="https://ecodrix.com/slack" style="color: #2f80ed;">Early Access Community</a>.</p>
-      </div>
-      
-      <div style="border-top: 1px solid #ddd; padding-top: 20px; font-size: 14px; color: #777;">
-        <p>You're receiving this email because you signed up for ECODrIx Early Access.</p>
-        <p><a href="https://ecodrix.com/unsubscribe" style="color: #2f80ed;">Unsubscribe</a></p>
-        <p>© 2023 ECODrIx. All rights reserved.</p>
-      </div>
-    </div>
-  </body>
-  </html>
-  `,
+      html: ({ id }) => `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto;">
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 10px;">
+            <h1 style="color: #2f80ed; text-align: center;">Welcome to ECODrIx Early Access!</h1>
+            <p style="text-align: center;">You're among the first to experience our next-gen chatbot platform.</p>
+
+            <h2 style="color: #2f80ed;">Getting Started</h2>
+            <ol>
+              <li>Complete your profile</li>
+              <li>Connect your first channel</li>
+              <li>Build your conversation flow</li>
+            </ol>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://app.ecodrix.com/onboarding" target="_blank" style="background: #2f80ed; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">Start Building</a>
+            </div>
+
+            <footer style="border-top: 1px solid #ddd; margin-top: 30px; font-size: 12px; text-align: center; color: #888;">
+              <p>Need help? <a href="https://ecodrix.com/slack" style="color: #2f80ed;" target="_blank">Join our Slack</a></p>
+              <p><a href="${domain}/api/action?iv=${id}&status=inactive" style="color: #2f80ed;">Unsubscribe</a></p>
+              <p>© ${new Date().getFullYear()} ECODrIx. All rights reserved.</p>
+            </footer>
+          </div>
+        </body>
+        </html>
+      `,
     },
+
     feature_launch: {
       subject: "📱 WhatsApp Integration Now Available!",
-      html: `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
-  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #2f80ed;">WhatsApp Integration is Here!</h1>
-        <p style="font-size: 18px;">Connect your chatbots to WhatsApp Business API</p>
-      </div>
-      
-      <div style="background-color: white; padding: 20px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
-        <img src="https://ecodrix.com/images/whatsapp-integration.png" alt="WhatsApp Integration" style="max-width: 100%; border-radius: 5px; margin-bottom: 15px;">
-        <h2 style="color: #2f80ed; margin-top: 0;">Key Features</h2>
-        <ul style="text-align: left; padding-left: 20px;">
-          <li style="margin-bottom: 8px;">Seamless connection to WhatsApp Business</li>
-          <li style="margin-bottom: 8px;">Media support (images, videos, documents)</li>
-          <li style="margin-bottom: 8px;">Template message approval assistance</li>
-          <li>End-to-end conversation history</li>
-        </ul>
-      </div>
-      
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="https://app.ecodrix.com/whatsapp" style="background-color: #2f80ed; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Connect WhatsApp Now</a>
-      </div>
-      
-      <div style="border-top: 1px solid #ddd; padding-top: 20px; font-size: 14px; color: #777;">
-        <p>You're receiving this email because you're an ECODrIx customer.</p>
-        <p><a href="https://ecodrix.com/unsubscribe" style="color: #2f80ed;">Unsubscribe</a> | <a href="https://ecodrix.com/preferences" style="color: #2f80ed;">Preferences</a></p>
-        <p>© 2023 ECODrIx. All rights reserved.</p>
-      </div>
-    </div>
-  </body>
-  </html>
-  `,
+      html: ({ id }) => `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+        <body style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto;">
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 10px;">
+            <h1 style="color: #2f80ed; text-align: center;">WhatsApp Integration is Live!</h1>
+            <p style="text-align: center;">Connect your chatbot to WhatsApp Business API in minutes.</p>
+
+            <img src="https://ecodrix.com/images/whatsapp-integration.png" alt="WhatsApp Integration" style="width: 100%; border-radius: 5px; margin: 20px 0;">
+
+            <ul>
+              <li>📎 Media (images, docs, videos)</li>
+              <li>💬 Message templates</li>
+              <li>📜 Conversation history</li>
+            </ul>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://app.ecodrix.com/whatsapp" target="_blank" style="background: #2f80ed; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">Connect WhatsApp</a>
+            </div>
+
+            <footer style="border-top: 1px solid #ddd; margin-top: 20px; font-size: 12px; text-align: center; color: #888;">
+              <p>You're receiving this email because you're an ECODrIx user.</p>
+              <p>
+                <a href="${domain}/api/action?iv=${id}&status=inactive" target="_blank" style="color: #2f80ed;">Unsubscribe</a> | 
+                <a href="${domain}/preferences" target="_blank" style="color: #2f80ed;">Preferences</a>
+              </p>
+              <p>© ${new Date().getFullYear()} ECODrIx. All rights reserved.</p>
+            </footer>
+          </div>
+        </body>
+        </html>
+      `,
     },
+
     subscribe_confirmation: {
       subject: "✅ You’re Subscribed to ECODrIx Early Access Updates!",
-      html: ({ userName = "there", email }) => `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body style="font-family: Arial, sans-serif; background: #f8f9fc; padding: 0; margin: 0;">
-    <div style="max-width: 600px; background: #ffffff; margin: 40px auto; padding: 30px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-      <h2 style="color: #2f80ed; text-align: center;">You’re officially on the list! 🎉</h2>
-      <p style="font-size: 16px; color: #333;">Hi <strong>${userName}</strong>,</p>
-      <p style="font-size: 16px; color: #333;">
-        Thanks for subscribing to <strong>ECODrIx Early Access</strong>! You’ll now be the first to hear about:
-      </p>
-      <ul style="font-size: 16px; color: #333; padding-left: 20px;">
-        <li>🚀 Product updates and new features</li>
-        <li>📢 Insider announcements</li>
-        <li>🎁 Exclusive offers for early adopters</li>
-      </ul>
-      <p style="font-size: 16px; color: #333;">We’ll notify you when we launch our products so you can be among the first to try them.</p>
-      <p style="font-size: 16px; color: #333;">We’re excited to have you on board! 💙</p>
-      <!--<div style="text-align: center; margin-top: 30px;">
-        <a href="https://app.ecodrix.com/early-access" style="background: #2f80ed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Access Your Dashboard</a>
-      </div> -->
-      <div style="border-top: 1px solid #eee; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #888; text-align: center;">
-        <p>You’re receiving this because you subscribed to ECODrIx updates.</p>
-        <p><a href="https://ecodrix.com/api/action?iv=${email}&status=inactive" style="color: #2f80ed;">Unsubscribe</a> | <a href="https://ecodrix.com/preferences" style="color: #2f80ed;">Manage Preferences</a></p>
-        <p>© 2025 ECODrIx. All rights reserved.</p>
-      </div>
-    </div>
-  </body>
-</html>
-  `,
-    },
+      html: ({ userName = "there", id }) => `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+        <body style="font-family: Arial; background: #f8f9fc; margin: 0; padding: 0;">
+          <div style="max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px;">
+            <h2 style="color: #2f80ed; text-align: center;">You’re officially on the list! 🎉</h2>
+            <p>Hello <strong>${userName}</strong>, thanks for subscribing to ECODrIx!</p>
+            <p>We’ll keep you updated on:</p>
+            <ul><li>🚀 Product launches</li><li>📢 Insider announcements</li><li>🎁 Early offers</li></ul>
+
+            <footer style="border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #888; text-align: center;">
+              <p><a href="${domain}/api/action?iv=${id}&status=inactive" style="color: #2f80ed;" target="_blank">Unsubscribe</a></p>
+              <p>© ${new Date().getFullYear()} ECODrIx. All rights reserved.</p>
+            </footer>
+          </div>
+        </body>
+        </html>
+      `,
+    }, // Subscribe mail template
     unsubscribe_confirmation: {
       subject: "🔕 You’ve Unsubscribed from ECODrIx Updates",
-      html: ({ userName = "there", email }) => `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body style="font-family: Arial, sans-serif; background: #f8f9fc; padding: 0; margin: 0;">
-    <div style="max-width: 600px; background: #ffffff; margin: 40px auto; padding: 30px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-      <h2 style="color: #e63946; text-align: center;">You’ve been unsubscribed 😞</h2>
-      <p style="font-size: 16px; color: #333;">Hi <strong>${userName}</strong>,</p>
-      <p style="font-size: 16px; color: #333;">
-        We're sorry to see you go! You've been successfully unsubscribed from <strong>ECODrIx Early Access</strong> updates.
-      </p>
-      <p style="font-size: 16px; color: #333;">You will no longer receive:</p>
-      <ul style="font-size: 16px; color: #333; padding-left: 20px;">
-        <li>🚀 Product announcements</li>
-        <li>📢 Insider early access features</li>
-        <li>🎁 Exclusive offers and beta invites</li>
-      </ul>
-      <p style="font-size: 16px; color: #333;">
-        If this was a mistake or you change your mind, you can re-subscribe anytime.
-      </p>
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="https://ecodrix.com/api/action?iv=${email}&status=active" style="background: #2f80ed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Re-subscribe</a>
-      </div>
-      <div style="border-top: 1px solid #eee; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #888; text-align: center;">
-        <p>Changed your mind? <a href="https://ecodrix.com/api/action?iv=${email}&status=active" style="color: #2f80ed;">Subscribe Again</a></p>
-        <p>© 2025 ECODrIx. All rights reserved.</p>
-      </div>
-    </div>
-  </body>
-</html>
-`,
-    },
+      html: ({ userName = "there", id }) => `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+        <body style="font-family: Arial; background: #f8f9fc; margin: 0; padding: 0;">
+          <div style="max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px;">
+            <h2 style="color: #e63946; text-align: center;">You’ve been unsubscribed 😞</h2>
+            <p>Hello <strong>${userName}</strong>, you’ve successfully unsubscribed from ECODrIx updates.</p>
+            <p>If this was a mistake, you can re-subscribe:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${domain}/api/action?iv=${id}&status=active" style="background: #2f80ed; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">Re-subscribe</a>
+            </div>
+            <footer style="border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #888; text-align: center;">
+              <p>© ${new Date().getFullYear()} ECODrIx. All rights reserved.</p>
+            </footer>
+          </div>
+        </body>
+        </html>
+      `,
+    }, // UnSubscribe mail template
   },
   support: {
     welcome_user: {

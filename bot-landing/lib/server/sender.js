@@ -13,7 +13,6 @@ import { businessEmails } from "@/config/mail";
 export const mailSender = async ({ template, to, variables = {} }) => {
   if (!template || !to)
     throw new Error("Template and recipient email are required");
-  console.log(variables);
   const [category, key] = template.split(".");
   const templateObj = useTemplates?.[category]?.[key];
 
