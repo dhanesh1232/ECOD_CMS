@@ -8,7 +8,9 @@ const domain = process.env.REDIRECT_DOMAIN || "https://app.ecodrix.com";
 export const AuthButton = ({ className, fullWidth = false }) => {
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/user");
+      const res = await fetch("/api/user", {
+        credentials: "include",
+      });
       const value = await res.json();
       console.log(value);
     };

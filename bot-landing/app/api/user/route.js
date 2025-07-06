@@ -11,7 +11,6 @@ export async function GET(req) {
         ? "__Secure-next-auth.session-token"
         : "next-auth.session-token",
     });
-    console.log(token);
     return SuccessHandles.Ok("Success", token);
   } catch (err) {
     ErrorHandles.InternalServer();
