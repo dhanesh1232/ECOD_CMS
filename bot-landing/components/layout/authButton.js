@@ -53,8 +53,8 @@ export const AuthButton = ({ className, fullWidth = false }) => {
     <div className={`flex items-center gap-2 ${className}`}>
       {authState.user ? (
         <Button
-          variant="default"
           size="sm"
+          variant="outline-primary"
           className={`flex items-center gap-1 ${fullWidth && "w-full"}`}
           asChild
         >
