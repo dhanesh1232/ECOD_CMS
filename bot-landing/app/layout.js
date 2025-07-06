@@ -63,10 +63,15 @@ export default function RootLayout({ children }) {
       >
         <DarkModeProvider>
           <ToastProvider>
-            <div className="fixed inset-0 bg-white dark:bg-gray-800 -z-10" />
-            <div className="h-full flex flex-col">
+            <div className="h-full flex flex-col bg-white dark:bg-gray-800">
               <Header />
-              <main className="flex-1 h-full overflow-x-hidden overflow-y-auto scrollbar-transparent">
+              <main
+                className="flex-1 h-full overflow-x-hidden overflow-y-auto scrollbar-transparent"
+                /*style={{
+                  scrollbarWidth: "none", // For Firefox
+                  msOverflowStyle: "none", // For IE and Edge
+                }}*/
+              >
                 {children}
                 <Footer />
               </main>

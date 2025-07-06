@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { Icons } from "../icons";
 
 export const FeatureHighlightSection = () => {
   const planColors = {
@@ -37,11 +38,52 @@ export const FeatureHighlightSection = () => {
         <MessageSquare className="w-6 h-6 text-indigo-600 dark:text-indigo-300" />
       ),
       plans: {
-        free: "Web, Instagram, Facebook, WhatsApp",
-        starter: "+ Telegram",
-        pro: "+ SMS, Discord",
-        growth: "+ Slack, Voice",
-        enterprise: "+ Custom SDK, All Channels",
+        free: (
+          <div className="flex gap-1 items-center">
+            <Icons.web className="h-4 w-4 text-blue-500" />{" "}
+            {/* generic blue for web */}
+            <Icons.instagram className="h-4 w-4" style={{ color: "#E1306C" }} />
+            <Icons.facebook className="h-4 w-4 text-[#1877F2]" />
+            <Icons.whatsapp className="h-4 w-4 text-[#25D366]" />
+          </div>
+        ),
+        starter: (
+          <div className="flex items-center gap-2">
+            <span>Free +</span>
+            <div className="flex flex-row items-center gap-1">
+              <Icons.telegram className="h-4 w-4 text-[#229ED9]" />
+            </div>
+          </div>
+        ),
+        pro: (
+          <div className="flex items-center gap-2">
+            <span>Starter +</span>
+            <div className="flex flex-row items-center gap-1">
+              <Icons.sms className="h-4 w-4 text-[#3c3c3c] dark:text-[#d9d9d9]" />{" "}
+              {/* SMS grayish */}
+              <Icons.discord className="h-4 w-4 text-[#5865F2]" />
+            </div>
+          </div>
+        ),
+        growth: (
+          <div className="flex items-center gap-2">
+            <span>Pro +</span>
+            <div className="flex flex-row items-center gap-1">
+              <Icons.slack className="h-4 w-4 text-[#941d96]" />
+              <Icons.voice className="h-4 w-4 text-[#1DB954]" />{" "}
+              {/* voice: Spotify green (example) */}
+            </div>
+          </div>
+        ),
+        enterprise: (
+          <div className="flex items-center gap-2">
+            <span>Growth +</span>
+            <div className="flex flex-row items-center gap-1">
+              <Icons.customSDK className="h-4 w-4 text-[#FF9900]" />{" "}
+              {/* SDK - orange generic */}
+            </div>
+          </div>
+        ),
       },
     },
     {
@@ -203,7 +245,7 @@ export const FeatureHighlightSection = () => {
   ];
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-800 py-20">
+    <section className="bg-gray-50 dark:bg-gray-800 py-14">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
           <motion.h2

@@ -178,7 +178,7 @@ export const UseCaseSection = () => {
   ];
 
   return (
-    <section className="relative bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 py-28 overflow-hidden">
+    <section className="relative bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 py-16 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-32 w-64 h-64 bg-indigo-100/30 dark:bg-indigo-900/10 rounded-full filter blur-3xl opacity-60 animate-blob"></div>
@@ -204,7 +204,7 @@ export const UseCaseSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-4xl sm:text-5xl font-bold mb-6 leading-tight tracking-tight"
+            className="text-3xl md:text-5xl font-bold mb-6 leading-tight tracking-tight"
           >
             Tailored Automation for{" "}
             <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -217,7 +217,7 @@ export const UseCaseSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true }}
-            className="text-gray-600 dark:text-gray-300 text-lg md:text-xl max-w-3xl mx-auto"
+            className="text-gray-600 dark:text-gray-300 text-base md:text-lg max-w-3xl mx-auto"
           >
             Our platform adapts to your specific business needs with
             industry-optimized workflows and integrations.

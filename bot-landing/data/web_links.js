@@ -20,7 +20,6 @@ export const navItems = [
   {
     name: "Features",
     href: "/features",
-
     submenu: [
       {
         name: "Chatbot",
@@ -153,10 +152,5 @@ export const navItems = [
           "Learn directly from our experts through live sessions and demos.",
       },
     ],
-  },
-
-  {
-    name: "About",
-    href: "/about",
   },
 ];

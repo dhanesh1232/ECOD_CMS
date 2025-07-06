@@ -61,7 +61,7 @@ export const FeatureSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   return (
-    <section className="relative container mx-auto px-6 py-20 md:py-24 lg:py-32">
+    <section className="relative container mx-auto px-6 py-6 md:py-10 lg:py-14">
       {/* Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-32 -left-24 w-72 h-72 bg-indigo-100/30 dark:bg-indigo-900/10 rounded-full filter blur-3xl opacity-60 animate-blob"></div>
@@ -86,7 +86,7 @@ export const FeatureSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight tracking-tight"
+          className="text-3xl md:text-4xl lg:text-6xl font-bold mb-2 leading-tight tracking-tight"
         >
           Everything You Need to{" "}
           <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -99,7 +99,7 @@ export const FeatureSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           viewport={{ once: true }}
-          className="text-gray-600 dark:text-gray-300 text-lg md:text-xl max-w-3xl mx-auto"
+          className="text-gray-600 dark:text-gray-300 md:text-base text-sm lg:text-lg max-w-3xl mx-auto"
         >
           Automate conversations, manage customers, and scale your operations
           with our comprehensive platform.

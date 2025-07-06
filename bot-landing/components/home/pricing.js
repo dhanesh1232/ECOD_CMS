@@ -518,7 +518,7 @@ const PlanCard = ({
 
   return (
     <motion.div
-      whileHover={{ y: -5 }}
+      whileHover={{ y: 0 }}
       onHoverStart={() => setHoveredPlan(plan.id)}
       onHoverEnd={() => setHoveredPlan(null)}
       className={`relative h-full flex flex-col rounded-xl overflow-hidden border ${

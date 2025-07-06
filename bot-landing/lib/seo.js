@@ -74,13 +74,6 @@ export const defaultMeta = {
       maxVideoPreview: -1,
     },
   },
-  verification: {
-    google:
-      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
-      "your-verification-code",
-    yandex: "yandex-verification-code",
-    bing: "bing-verification-code",
-  },
   category: "business",
   applicationName: "ECODrIx",
   creator: "ECODrIx Team",
