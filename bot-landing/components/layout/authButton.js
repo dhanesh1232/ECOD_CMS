@@ -2,49 +2,18 @@
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
 const domain = process.env.REDIRECT_DOMAIN || "https://app.ecodrix.com";
 
-export const AuthButton = ({ className, fullWidth = false }) => {
-  const [authState, setAuthState] = useState({
-    loading: true,
-    user: null,
-  });
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const res = await fetch("/api/user", {
-          credentials: "include",
-          cache: "no-store",
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch auth status");
-
-        const data = await res.json();
-        setAuthState({
-          loading: false,
-          user: data.data?.loggedIn ? data.data.user : null,
-        });
-      } catch (err) {
-        setAuthState({
-          loading: false,
-          user: null,
-        });
-        console.log("Auth check error:", err);
-      }
-    };
-
-    checkAuthStatus();
-  }, []);
-
+export const AuthButton = ({ className, fullWidth = false, authState }) => {
   if (authState.loading) {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
-        <Skeleton className="h-9 w-20 rounded-md" />
-        <Skeleton className="h-9 w-28 rounded-md" />
+      <div
+        className={`flex lg:flex-row flex-col items-center gap-2 ${className}`}
+      >
+        <Skeleton className={`h-9 w-full lg:w-20 rounded-md`} />
+        <Skeleton className={`h-9 w-full lg:w-20 rounded-md`} />
       </div>
     );
   }

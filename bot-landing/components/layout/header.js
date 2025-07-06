@@ -26,6 +26,37 @@ export default function Header() {
   const submenuTimeoutRef = useRef(null);
   const lastClickedRef = useRef(null);
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
+  const [authState, setAuthState] = useState({
+    loading: true,
+    user: null,
+  });
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const res = await fetch("/api/user", {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch auth status");
+
+        const data = await res.json();
+        setAuthState({
+          loading: false,
+          user: data.data?.loggedIn ? data.data.user : null,
+        });
+      } catch (err) {
+        setAuthState({
+          loading: false,
+          user: null,
+        });
+        console.log("Auth check error:", err);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -255,7 +286,10 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-2">
-            <AuthButton className="lg:flex items-center gap-2 hidden" />
+            <AuthButton
+              className="lg:flex items-center gap-2 hidden"
+              authState={authState}
+            />
 
             <ThemeSwitcher />
           </div>
@@ -315,9 +349,8 @@ export default function Header() {
                       <div key={item.name} className="space-y-1">
                         {item.submenu ? (
                           <React.Fragment key={item.name + ind}>
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-between px-3 py-3 text-base font-medium rounded-lg"
+                            <button
+                              className="w-full px-3 py-3 flex items-center justify-between text-base font-medium text-gray-900 rounded-lg hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                               onClick={() => toggleMobileSubmenu(item.name)}
                             >
                               <span className="text-gray-900 dark:text-white">
@@ -329,7 +362,7 @@ export default function Header() {
                                   openSubmenu === item.name ? "rotate-180" : ""
                                 )}
                               />
-                            </Button>
+                            </button>
 
                             <AnimatePresence>
                               {openSubmenu === item.name && (
@@ -405,6 +438,7 @@ export default function Header() {
                   </div>
 
                   <AuthButton
+                    authState={authState}
                     className="mt-8 px-2 space-y-3"
                     fullWidth={true}
                   />
