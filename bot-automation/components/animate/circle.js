@@ -11,7 +11,6 @@ const DotByDotLoader = ({ size = "sm", dots = 12, speed = 1.2 }) => {
   };
   return (
     <>
-      {" "}
       <div className="loader" />
     </>
   );

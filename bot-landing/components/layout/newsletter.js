@@ -40,7 +40,6 @@ export const NewsletterPop = () => {
     // Check if already subscribed
     const subscribed = localStorage.getItem("newsletterSubscribed");
     const popupDismissed = getCookie("newsletterPopupDismissed");
-    console.log(subscribed, popupDismissed);
     if (subscribed) {
       setIsSubscribed(true);
       setShowFloatButton(false);

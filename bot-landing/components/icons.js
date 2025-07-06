@@ -1,10 +1,17 @@
 import {
+  BarChart2,
+  Bot,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Code,
+  Cpu,
   ExternalLink,
   Globe,
+  Link,
   MessageCircle,
   Phone,
+  Zap,
 } from "lucide-react";
 import { BsLinkedin, BsTelegram, BsWhatsapp } from "react-icons/bs";
 import {
@@ -31,4 +38,11 @@ export const Icons = {
   customSDK: Code,
   cheveronUp: ChevronUp,
   external: ExternalLink,
+  link: Link,
+  automation: Zap,
+  marketing: BarChart2,
+  ai: Cpu,
+  chatbots: Bot,
+  chevronRight: ChevronRight,
+  chevronLeft: ChevronLeft,
 };

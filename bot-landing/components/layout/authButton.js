@@ -61,6 +61,8 @@ export const AuthButton = ({ className, fullWidth = false }) => {
           <Link
             href={`${domain}/${authState.user.workspaceSlug}/dashboard`}
             className="flex items-center"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <LayoutDashboard className="h-4 w-4 mr-1" />
             Dashboard

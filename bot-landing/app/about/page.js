@@ -1,3 +1,4 @@
+import AboutPage from "@/components/about/__page";
 import { metadataForPath } from "@/lib/seo";
 
 export async function generateMetadata() {
@@ -17,10 +18,6 @@ export async function generateMetadata() {
     },
   });
 }
-export default function AboutPage() {
-  return (
-    <div className="flex py-12 items-center justify-center">
-      <h1>About Page</h1>
-    </div>
-  );
+export default function About() {
+  return <AboutPage />;
 }

@@ -27,7 +27,7 @@ const sections = [
     links: [
       { name: "About", href: "/about" },
       //{ name: "Careers", href: "/careers", highlight: true },
-      { name: "Blog", href: "/blog" },
+      { name: "Blog", href: "/blogs" },
       { name: "Press", href: "/press" },
       { name: "Contact", href: "/contact" },
     ],
@@ -90,20 +90,21 @@ export const Footer = () => {
   const [email, setEmail] = useState("");
   const showToast = useToast();
   const toastRef = useRef(false);
+
   useEffect(() => {
     setTimeout(() => {
       toastRef.current = false;
     }, 10000);
   });
+
   useEffect(() => {
-    // Check if already subscribed
     const subscribed = localStorage.getItem("newsletterSubscribed");
-    console.log(subscribed);
     if (subscribed) {
       setIsSubscribed(true);
       return;
     }
   }, []);
+
   const isValid = (mail) => emailRegex.test(mail);
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,7 +184,7 @@ export const Footer = () => {
                     variant="primary"
                     size={isMobile ? "sm" : "md"}
                     type="submit"
-                    disabled={!email || !isValid(email)}
+                    disabled={!email || !isValid(email) || sending}
                     onClick={handleSubmit}
                     className="focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
