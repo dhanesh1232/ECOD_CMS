@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { CookieConsentBanner } from "@/components/layout/cookies-banner";
 import { NewsletterPop } from "@/components/layout/newsletter";
 import { ToastProvider } from "@/components/ui/toast";
+import { defaultMeta } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,59 +21,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL),
-  title: {
-    default: "ECODrIx – WhatsApp Automation Bot for Businesses",
-    template: "%s | ECODrIx",
+  ...defaultMeta,
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
   },
-  description:
-    "Automate your WhatsApp business conversations, sales, and customer service with AI-powered bots, CRM integration, and lead workflows.",
-  alternates: {
-    canonical: "/",
-    languages: {
-      "en-US": "/en",
-    },
-  },
-  openGraph: {
-    title: "ECODrIx – Automate WhatsApp for Business",
-    description:
-      "Boost customer engagement, automate chats, and drive sales with ECODrIx, our all-in-one WhatsApp automation platform.",
-    url: "https://ecodrix.com",
-    siteName: "ECODrIx",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "ECODrIx Platform Screenshot",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ECODrIx – WhatsApp Automation Bot",
-    description:
-      "Smart automation for WhatsApp: chatbots, CRM, templates, broadcasts, and more.",
-    creator: "@ecodrix",
-    images: ["/og-image.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-    },
-  },
-  verification: {
-    google:
-      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
-      "your-verification-code",
-  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({ children }) {
