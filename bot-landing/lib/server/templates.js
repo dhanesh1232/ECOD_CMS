@@ -157,6 +157,48 @@ export const useTemplates = {
         </html>
       `,
     }, // UnSubscribe mail template
+    pre_launch_signup: {
+      subject: "🌟 Exciting News: ECODrIx is Coming Soon!",
+      html: ({ userName = "there", id }) => `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+    <body style="font-family: Arial, sans-serif; color: #333; padding: 20px; max-width: 600px; margin: auto;">
+      <div style="background: #f9f9f9; padding: 30px; border-radius: 10px;">
+        <h1 style="color: #2f80ed; text-align: center;">Thank You for Your Interest!</h1>
+        
+        <p>Hello <strong>${userName}</strong>,</p>
+        
+        <p>We're thrilled you've joined the ECODrIx waiting list. Our team is working hard to build something truly special for you.</p>
+        
+        <div style="background: #fff; border-left: 4px solid #2f80ed; padding: 15px; margin: 20px 0; border-radius: 0 5px 5px 0;">
+          <h3 style="margin-top: 0; color: #2f80ed;">What to Expect:</h3>
+          <ul style="padding-left: 20px;">
+            <li>Revolutionary chatbot platform with AI capabilities</li>
+            <li>Seamless multi-channel integration</li>
+            <li>Enterprise-grade security and reliability</li>
+          </ul>
+        </div>
+        
+        <p>We'll notify you as soon as we're ready to launch. In the meantime, follow us on social media for sneak peeks and updates.</p>
+        
+        <div style="text-align: center; margin: 25px 0; color: #666; font-size: 14px;">
+          <p>Your spot in line is reserved.</p>
+        </div>
+        
+        <footer style="border-top: 1px solid #ddd; margin-top: 30px; padding-top: 20px; font-size: 12px; text-align: center; color: #888;">
+          <p>You're receiving this because you signed up for ECODrIx updates.</p>
+          <p>
+            <a href="${domain}/api/action?iv=${id}&status=inactive" target="_blank" style="color: #2f80ed;">Unsubscribe</a> | 
+            <a href="${domain}/preferences" target="_blank" style="color: #2f80ed;">Preferences</a>
+          </p>
+          <p>© ${new Date().getFullYear()} ECODrIx. All rights reserved.</p>
+        </footer>
+      </div>
+    </body>
+    </html>
+  `,
+    },
   },
   support: {
     welcome_user: {

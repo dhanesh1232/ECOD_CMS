@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import TestimonialsSection from "./components/testimonials";
 import Link from "next/link";
-
+import { LeadsForm } from "../layout/leads_form";
+const isLive = process.env.NEXT_PUBLIC_LIVE === "true";
 const domain = process.env.REDIRECT_DOMAIN || "https://app.ecodrix.com";
 export default function AboutPage() {
   return (
@@ -32,16 +33,25 @@ export default function AboutPage() {
             your business.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href={`${domain}/auth/login`}
-              className="inline-flex items-center justify-center px-4 md:px-8 py-2 md:py-4 rounded-full font-bold text-base md:text-lg bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Get Started for Free
-              <Rocket className="ml-2 h-5 w-5" />
-            </Link>
+            {isLive ? (
+              <Link
+                href={`${domain}/auth/login`}
+                className="inline-flex items-center justify-center px-4 md:px-6 py-2 rounded-full font-bold text-base md:text-lg bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Get Started for Free
+                <Rocket className="ml-2 h-5 w-5" />
+              </Link>
+            ) : (
+              <LeadsForm
+                buttonText="Get Notified"
+                icon={Rocket}
+                iconPosition="right"
+                className="inline-flex items-center justify-center px-4 md:px-6 py-2 rounded-full"
+              />
+            )}
             <Link
               href="/features"
-              className="inline-flex items-center justify-center px-4 md:px-8 py-2 md:py-4 rounded-full font-bold text-base md:text-lg border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-300"
+              className="inline-flex items-center justify-center px-4 md:px-6 py-2 rounded-full font-bold text-base md:text-lg border-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-300"
             >
               Explore Features
             </Link>
@@ -55,7 +65,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="p-6">
               <p className="text-4xl font-bold text-green-600 dark:text-green-400">
-                10,000+
+                1,000+
               </p>
               <p className="text-gray-600 dark:text-gray-300">
                 Businesses Empowered
@@ -340,23 +350,29 @@ export default function AboutPage() {
             AI automation platform.`}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href={`${domain}/auth/login`}
-              className="px-8 py-4 bg-white text-green-700 font-bold rounded-full hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center"
-            >
-              Start Free Trial - No Credit Card Needed
-            </Link>
+            {isLive ? (
+              <Link
+                href={`${domain}/auth/login`}
+                className="px-4 py-2 bg-white text-green-700 font-bold rounded-full hover:bg-gray-100 transition-colors duration-300 flex items-center justify-center"
+              >
+                Start Free Trial - No Credit Card Needed
+              </Link>
+            ) : (
+              <LeadsForm
+                buttonText="Notify Me When We Launch"
+                className="
+                 px-4 py-2 rounded-full font-semibold transition-all backdrop-blur-sm flex items-center justify-center"
+              />
+            )}
             <Link
               href="/demo"
-              className="px-8 py-4 border-2 border-white text-white font-bold rounded-full hover:bg-white hover:bg-opacity-10 transition-colors duration-300 flex items-center justify-center"
+              className="
+               px-4 py-2 border-2 border-white text-white font-bold rounded-full hover:bg-white hover:bg-opacity-10 transition-colors duration-300 flex items-center justify-center"
             >
               <span>Schedule Personalized Demo</span>
               <ChevronRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
-          <p className="mt-6 text-sm opacity-80">
-            Try all features free forever • Cancel anytime • 24/7 support
-          </p>
         </div>
       </section>
     </div>

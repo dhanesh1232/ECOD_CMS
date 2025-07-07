@@ -48,7 +48,8 @@ const legalLinks = [
   { name: "Privacy", href: "/legal/privacy-policy" },
   { name: "Terms", href: "/legal/terms-and-conditions" },
   { name: "Cookies", href: "/legal/cookies-policy" },
-  { name: "DPA", href: "/legal/dpa" },
+  { name: "DPA", href: "/legal/data-processing-agreement" },
+  { name: "Refund Policy", href: "/legal/refund-and-cancellation-policy" },
 ];
 
 const socialLinks = [
@@ -244,7 +245,7 @@ export const Footer = () => {
             © {currentYear} <strong>ECODrIx</strong>. All rights reserved.
           </p>
 
-          <div className="flex items-center flex-col sm:flex-row justify-between sm:w-full  md:w-1/2 gap-3">
+          <div className="flex items-center flex-col sm:flex-row justify-between sm:w-full md:w-3/5 gap-3">
             {/* Legal Links */}
             <div className="flex flex-wrap justify-center gap-4 mt-4 md:mt-0">
               {legalLinks.map((link) => (

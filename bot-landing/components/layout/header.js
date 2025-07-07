@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { Menu, ChevronDown, X, ArrowRight } from "lucide-react";
+import { Menu, ChevronDown, X } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,8 +12,6 @@ import { useMediaQuery } from "@/hooks/mediaQuery";
 import ThemeSwitcher from "../themeSwicther";
 import { navItems } from "@/data/web_links";
 import { AuthButton } from "./authButton";
-
-const domain = process.env.REDIRECT_DOMAIN || "https://app.ecodrix.com";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -60,7 +58,7 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      setScrolled(window.scrollY > 100);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -287,8 +285,10 @@ export default function Header() {
           {/* Auth Buttons */}
           <div className="flex items-center gap-2">
             <AuthButton
+              isHeader={true}
               className="lg:flex items-center gap-2 hidden"
               authState={authState}
+              size="sm"
             />
 
             <ThemeSwitcher />
@@ -439,8 +439,9 @@ export default function Header() {
 
                   <AuthButton
                     authState={authState}
-                    className="mt-8 px-2 space-y-3"
+                    className="mt-8 px-2 flex-col"
                     fullWidth={true}
+                    size="md"
                   />
                 </div>
               </div>

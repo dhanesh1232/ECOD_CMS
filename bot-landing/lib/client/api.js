@@ -32,4 +32,13 @@ export const LandingPageAPIHandles = {
       ...options,
     });
   },
+  preNotifyConnect: async (data, options = {}) => {
+    return fetchWithRetry("/api/notify", {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: JSON.stringify(data),
+      ...options,
+    });
+  },
 };

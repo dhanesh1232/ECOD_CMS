@@ -198,7 +198,7 @@ export const FeatureSection = () => {
         viewport={{ once: true }}
         className="text-center mt-24"
       >
-        <button className="relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-medium text-lg group overflow-hidden">
+        <button className="relative px-4 md:px-8 py-2 md:py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all font-medium text-lg group overflow-hidden">
           <span className="relative z-10">Explore All Features</span>
           <span className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></span>
         </button>

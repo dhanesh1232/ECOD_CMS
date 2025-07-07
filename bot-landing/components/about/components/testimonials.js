@@ -99,9 +99,9 @@ const TestimonialsSection = () => {
                 className="bg-white dark:bg-gray-700 p-8 rounded-xl shadow-lg absolute inset-0"
               >
                 <div className="flex flex-col sm:flex-row items-start h-full">
-                  <div className="flex-shrink-0 mr-6 mb-4 sm:mb-0">
+                  <div className="flex-shrink-0 mr-6 mb-2 sm:mb-0">
                     <motion.div
-                      className="h-16 w-16 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-2xl font-bold text-white"
+                      className="md:h-16 h-12 w-12 md:w-16 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-xl md:text-2xl font-bold text-white"
                       initial={{ scale: 0.8 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.2, type: "spring" }}
@@ -111,7 +111,7 @@ const TestimonialsSection = () => {
                   </div>
                   <div className="flex-1">
                     <motion.blockquote
-                      className="text-base md:text-lg text-gray-600 italic dark:text-gray-300 mb-6"
+                      className="text-base md:text-lg text-gray-600 italic dark:text-gray-300 mb-2 sm:mb-4 md:mb-6"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.3 }}
@@ -123,10 +123,16 @@ const TestimonialsSection = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
                     >
-                      <p className="font-semibold">
-                        {testimonials[currentTestimonial].author}
-                      </p>
-                      <p className="text-gray-500 dark:text-gray-400">
+                      <div className="relative">
+                        <p className="font-semibold">
+                          {testimonials[currentTestimonial].author}
+                        </p>
+
+                        <span className="absolute right-0 top-0 inline-block px-3 py-1 text-xs sm:text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full">
+                          {testimonials[currentTestimonial].plan} Plan User
+                        </span>
+                      </div>
+                      <p className="text-gray-500 dark:text-gray-400 truncate">
                         {testimonials[currentTestimonial].role},{" "}
                         {testimonials[currentTestimonial].company}
                       </p>
@@ -134,7 +140,7 @@ const TestimonialsSection = () => {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-5 w-5 ${
+                            className={`sm:h-5 sm:w-5 w-3 h-3 ${
                               i < testimonials[currentTestimonial].rating
                                 ? "text-yellow-400 fill-yellow-400"
                                 : "text-gray-300 dark:text-gray-500"
@@ -142,15 +148,6 @@ const TestimonialsSection = () => {
                           />
                         ))}
                       </div>
-                      <motion.div
-                        className="mt-2"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ type: "spring", stiffness: 400 }}
-                      >
-                        <span className="inline-block px-3 py-1 text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full">
-                          {testimonials[currentTestimonial].plan} Plan User
-                        </span>
-                      </motion.div>
                     </motion.div>
                   </div>
                 </div>

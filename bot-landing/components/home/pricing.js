@@ -140,10 +140,10 @@ const PricingSection = () => {
           <span className="inline-block bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200 px-3 py-1 rounded-full text-sm font-medium mb-4">
             Pricing Plans
           </span>
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Choose Your Perfect Plan
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-base md:text-lg text-gray-600 dark:text-gray-300">
             Select the plan that matches your business needs. All plans include
             our powerful chatbot platform with different levels of features and
             support.

@@ -335,10 +335,8 @@ export const UseCaseSection = () => {
           className="text-center mt-20"
         >
           <div className="inline-flex flex-col items-center">
-            <button className="relative px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all font-medium text-lg group overflow-hidden">
-              <span className="relative z-10">
-                Get Customized Recommendations
-              </span>
+            <button className="relative md:px-8 md:py-4 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg md:rounded-xl shadow-lg hover:shadow-xl transition-all font-medium text-lg group overflow-hidden">
+              <span className="relative z-10">Get Customized</span>
               <span className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></span>
             </button>
             <p className="mt-4 text-gray-500 dark:text-gray-400 text-sm">

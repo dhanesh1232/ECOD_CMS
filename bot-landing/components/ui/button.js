@@ -65,6 +65,7 @@ const buttonVariants = cva(
         lg: "h-10 px-6 text-lg",
         icon: "h-9 w-9 p-0",
         iconSm: "h-7 w-7 p-0",
+        custom: "",
       },
       fullWidth: {
         true: "w-full",
@@ -190,12 +191,12 @@ const Button = React.forwardRef(
       const child = React.Children.only(children);
       return React.cloneElement(child, {
         className: twMerge(
-          buttonVariants({ variant, size, fullWidth, rounded, className }),
+          buttonVariants({ variant, size, fullWidth, rounded }),
           clsx({
             "flex-row-reverse": iconPosition === "right",
             "cursor-wait": isLoading,
           }),
-          child.props.className
+          className
         ),
         disabled: isLoading || props.disabled,
         "aria-busy": isLoading,

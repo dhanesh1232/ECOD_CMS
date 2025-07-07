@@ -17,6 +17,8 @@ import {
   Suspense,
   useRef,
 } from "react";
+import { LeadsForm } from "../layout/leads_form";
+const isLive = process.env.NEXT_PUBLIC_LIVE === "true";
 
 const WhatsAppChat = lazy(() => import("./components/whatsappChat"));
 const InstagramChat = lazy(() => import("./components/instagramChat"));
@@ -259,19 +261,16 @@ export const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
+            <LeadsForm
+              className="md:px-5 px-3 py-2 md:py-3 cursor-pointer"
+              buttonText={isLive ? "Start Free Trial" : "Notify Me"}
+              icon={ArrowRight}
+              iconPosition="right"
+            />
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={handleButtonfunction}
-              className="px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg transition-all flex items-center justify-center shadow-lg hover:shadow-indigo-500/20 text-sm sm:text-base font-medium"
-              aria-label="Start free trial"
-            >
-              Start Free Trial <ArrowRight className="ml-2" size={18} />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-5 py-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all flex items-center justify-center text-sm sm:text-base font-medium"
+              className="md:px-5 px-3 py-2 md:py-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all flex items-center justify-center text-sm sm:text-base font-medium"
               aria-label="See all features"
             >
               <Settings className="mr-2" size={16} /> See All Features
@@ -343,9 +342,9 @@ export const HeroSection = () => {
               <button
                 key={index}
                 onClick={() => handlePlatformChange(index)}
-                className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
+                className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all ${
                   index === currentPlatform
-                    ? "bg-indigo-600 w-4 sm:w-6"
+                    ? "bg-indigo-600 w-4 md:w-6"
                     : "bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500"
                 }`}
                 aria-label={`View ${CHAT_PLATFORMS[index].name} demo`}

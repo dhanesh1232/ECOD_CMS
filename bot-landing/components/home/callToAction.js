@@ -1,6 +1,9 @@
 import { ArrowRight, Rocket } from "lucide-react";
 import { motion } from "framer-motion";
+import { LeadsForm } from "../layout/leads_form";
+import { Button } from "../ui/button";
 
+const isLive = process.env.NEXT_PUBLIC_LIVE === "true";
 export const CallToActionSection = () => {
   return (
     <motion.section
@@ -19,36 +22,36 @@ export const CallToActionSection = () => {
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="inline-flex items-center justify-center mb-4 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm">
           <Rocket className="h-5 w-5 text-white mr-2" />
-          <span className="text-sm font-medium text-white">
+          <span className="text-xs md:text-sm font-medium text-white">
             New Feature Launch
           </span>
         </div>
 
-        <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+        <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
           Ready to transform your business?
         </h3>
 
-        <p className="text-lg text-indigo-100 mb-10 max-w-2xl mx-auto">
+        <p className="text-base md:text-lg text-indigo-100 mb-10 max-w-2xl mx-auto">
           Join thousands of businesses growing with our platform. Start your
           free trial today — no credit card required.
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="bg-white text-indigo-600 hover:bg-gray-50 px-8 py-4 rounded-xl font-semibold transition-all flex items-center justify-center shadow-lg hover:shadow-xl"
-          >
-            Start <ArrowRight className="ml-3 h-5 w-5" />
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="bg-transparent border-2 border-white/50 text-white hover:bg-white/10 hover:border-white px-8 py-4 rounded-xl font-semibold transition-all backdrop-blur-sm"
+          <LeadsForm
+            buttonText={isLive ? "Get Started" : "Notify Me"}
+            icon={ArrowRight}
+            variant="ocean"
+            iconPosition="right"
+            aria-label="Notify me about the launch"
+            className="px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold transition-all backdrop-blur-sm flex items-center justify-center"
+          />
+          <Button
+            variant="outline"
+            size="custom"
+            className="px-4 md:px-8 py-2 md:py-3 rounded-lg md:rounded-xl font-semibold transition-all backdrop-blur-sm"
           >
             Schedule a Demo
-          </motion.button>
+          </Button>
         </div>
 
         <p className="mt-6 text-sm text-white/80">

@@ -96,9 +96,7 @@ export function generateMetadata(config = {}) {
   // Handle title (string or object)
   const titleString =
     typeof title === "object" ? getSafe(title, "default", "") : String(title);
-  const fullTitle = titleString.includes(SITE_NAME)
-    ? titleString
-    : `${titleString} | ${SITE_NAME}`;
+  const fullTitle = `${titleString} | ${SITE_NAME}`;
 
   // Handle keywords
   const fullKeywords = [
@@ -124,7 +122,8 @@ export function generateMetadata(config = {}) {
   return {
     ...defaultMeta,
     title: {
-      default: fullTitle,
+      default:
+        typeof title === "object" ? getSafe(title, "default", "") : title,
       template: getSafe(defaultMeta.title, "template", `%s | ${SITE_NAME}`),
     },
     description: description,

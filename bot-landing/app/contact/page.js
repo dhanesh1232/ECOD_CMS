@@ -3,7 +3,7 @@ import { metadataForPath } from "@/lib/seo";
 
 export async function generateMetadata() {
   return metadataForPath("/contact", {
-    title: "Contact ECODrIx",
+    title: "Contact",
     description: "Contact our AI-powered business automation platform",
     keywords: ["about", "company", "history", "contact", "info", "location"],
     openGraph: {
