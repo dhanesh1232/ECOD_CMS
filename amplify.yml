@@ -1,18 +1,20 @@
 version: 1
 applications:
-  - appRoot: bot-automation # ← path to your actual Next.js project
+  - appRoot: bot-automation
     frontend:
       phases:
         preBuild:
           commands:
+            - cd bot-automation
             - npm ci
         build:
           commands:
+            - cd bot-automation
             - npm run build
       artifacts:
-        baseDirectory: .next
+        baseDirectory: bot-automation/.next
         files:
           - "**/*"
       cache:
         paths:
-          - node_modules/**/*
+          - bot-automation/node_modules/**/*
