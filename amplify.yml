@@ -1,20 +1,18 @@
 version: 1
 applications:
-  - appRoot: bot-automation
+  - appRoot: ECOD_CMS/bot-automation
     frontend:
       phases:
         preBuild:
           commands:
-            - cd bot-automation
             - npm ci
         build:
           commands:
-            - cd bot-automation
             - npm run build
       artifacts:
-        baseDirectory: bot-automation/.next
+        baseDirectory: .next
         files:
           - "**/*"
       cache:
         paths:
-          - bot-automation/node_modules/**/*
+          - node_modules/**/*
